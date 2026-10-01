@@ -29,10 +29,12 @@ export function ClipboardCopyButton({ label, feedback, onCopy, onDismiss }: Clip
           {copied ? <><span aria-hidden="true">✓</span> Copied</> : label}
         </Button>
       </Popover.Target>
-      <Popover.Dropdown>
+      <Popover.Dropdown bg="orange.4" c="dark.9"
+        style={{ '--popover-border-color': 'var(--mantine-color-orange-6)' }}>
         <Group gap="xs" wrap="nowrap" align="flex-start">
           <Text size="sm" flex={1}>{feedback.message}</Text>
-          <CloseButton size="sm" aria-label="Dismiss copy error" onClick={dismiss} />
+          <CloseButton size="sm" c="dark.9" variant="transparent"
+            aria-label="Dismiss copy error" onClick={dismiss} />
         </Group>
       </Popover.Dropdown>
     </Popover>
