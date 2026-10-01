@@ -7,10 +7,10 @@ Its planned diagnostic tools aim to help users inspect network information,
 investigate connectivity problems, and understand diagnostic results, including
 connectivity from mainland China.
 
-The first calculator supports interactive use through a website and programmatic
+The tools support interactive use through a website and programmatic
 access through a web API, command-line interface (CLI), Model Context Protocol
-(MCP) server, and reusable agent skill. Additional diagnostic tools and agent
-workflows are planned.
+(MCP) server, with a reusable agent skill for CIDR covering. Additional diagnostic
+tools and agent workflows are planned.
 
 ## Status
 
@@ -19,8 +19,14 @@ and blocklists. Its [user story](docs/user-stories/001-smallest-covering-cidr.md
 and [API contract](docs/api/README.md) are defined. The shared IPv4/IPv6 calculation
 and Hono API are implemented in the Workers runtime. The React web calculator
 is also implemented and calculates entirely in the browser.
-The stateless MCP server, offline command-line interface, and reusable agent
+The stateless MCP server, offline CIDR command, and reusable agent
 skill are implemented as well.
+
+The second tool checks the IP address observed for the current connection,
+whether IPv4 or IPv6. Its [user story](docs/user-stories/002-current-public-ip.md),
+shared contract, Web API, web page, CLI command, and MCP tool are implemented.
+With a VPN or proxy this is its exit address. A hosted MCP client observes its
+own connection, which may differ from the user's computer.
 
 The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
 Vite. The website, Web API, and MCP server are deployed on Cloudflare Workers
@@ -29,7 +35,9 @@ with Static Assets and verified at `https://packetrove.com`.
 | Interface | Public address |
 | --- | --- |
 | Website | [packetrove.com](https://packetrove.com) |
-| Web API | `POST https://packetrove.com/api/v1/cidr/cover` |
+| Public IP page | [My Public IP](https://packetrove.com/ip) |
+| CIDR Web API | `POST https://packetrove.com/api/v1/cidr/cover` |
+| Public IP Web API | `GET https://packetrove.com/api/v1/ip` |
 | OpenAPI document | [API specification](https://packetrove.com/api/openapi.json) |
 | MCP server | `https://packetrove.com/mcp` (Streamable HTTP) |
 | Health | [Service health](https://packetrove.com/health) |
@@ -98,19 +106,32 @@ deployment ordering, run commands, and cost controls.
 `pnpm dev:api` builds the web app and serves both the built website and API at
 `http://localhost:8787`. For React development with hot reload, run
 `pnpm dev:web` and open `http://localhost:5173`. The Vite development server
-proxies the API specification link to the local Worker; calculation itself
+proxies API requests to the local Worker; CIDR calculation itself
 never calls the API and works with the Vite server alone.
 
 The web app accepts one address or CIDR per line, displays normalized inputs
 and exact address counts, and clears stale results when inputs change. All code
 and styles are bundled locally, without fonts or scripts from external CDNs.
 
+The `/ip` page queries the same-origin API on opening, with refresh and copy
+controls. It clears stale results while refreshing and provides retry behavior.
+IP lookup needs a network request, with a 10-second timeout and no background
+polling. Results and errors are not cached; the application does not store or
+log lookup addresses. Each lookup counts toward the Worker's request allowance.
+The CIDR page makes no IP lookup request.
+
+Local servers without Cloudflare connection metadata return
+`CLIENT_IP_UNAVAILABLE`; local emulation may also supply a local connection
+address. Use the production endpoint to check your public connection.
+
 ## MCP server
 
 The deployed Worker serves Streamable HTTP at `https://packetrove.com/mcp`;
 local development uses `http://localhost:8787/mcp`.
-It exposes `smallest_covering_cidr` with shared input and output schemas, exact
-address counts, and read-only tool annotations. See the
+It exposes `smallest_covering_cidr` and `get_public_ip` with shared input and
+output schemas and read-only tool annotations. CIDR counts remain exact decimal
+strings. The IP tool reports the MCP caller's connection for each tool call;
+it cannot establish a separate user device's IP. See the
 [MCP connection guide](docs/integrations/mcp.md) for client setup and examples.
 
 ## CLI and agent skill
@@ -120,9 +141,12 @@ After `pnpm build`, run the CLI locally:
 ```sh
 pnpm cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6
 node packages/cli/dist/cli.js cidr cover --stdin --json < addresses.txt
+node packages/cli/dist/cli.js ip
+node packages/cli/dist/cli.js ip --json
 ```
 
-The CLI bundles its runtime dependencies and calculates offline. JSON success
+The CLI bundles its runtime dependencies. CIDR calculations are offline; the
+`ip` command calls the production API and prints the observed address. JSON success
 goes to stdout, errors to stderr, with exit status `0` or `1`. See the
 [CLI guide](docs/integrations/cli.md) for piping, packaging, and exact result
 semantics.

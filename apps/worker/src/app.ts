@@ -35,6 +35,10 @@ export function createApp() {
   app.get(PUBLIC_IP_PATH, context => context.json(getPublicIp(context.req.raw.headers)));
   app.get('/health', context => context.json({ status: 'ok' }));
   app.get('/api/openapi.json', context => context.json(specification));
+  app.use('/mcp', async (context, next) => {
+    await next();
+    context.header('Cache-Control', 'no-store, no-transform');
+  });
   app.all('/mcp', async context => {
     if (context.req.method === 'POST') {
       const parsedBody = await readJsonBody(context.req.raw);

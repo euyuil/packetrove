@@ -4,7 +4,7 @@
   "license": "MIT",
   "private": true,
   "type": "module",
-  "description": "Offline Packetrove network calculations for scripts and agents.",
+  "description": "Packetrove network calculations and IP diagnostics for scripts and agents.",
   "engines": { "node": "^22.22.2 || ^24.15.0 || >=26.0.0" },
   "bin": { "packetrove": "./dist/cli.js" },
   "files": ["dist", "THIRD_PARTY_NOTICES"],

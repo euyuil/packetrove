@@ -1,8 +1,8 @@
 # Command-line interface
 
-The Packetrove CLI calculates locally. It shares the Web API's calculation and
-JSON schemas and does not need a running Worker, Cloudflare account, or network
-connection.
+The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
+locally without a Worker, Cloudflare account, or network connection. The `ip`
+command queries the current connection through an IP lookup API.
 
 ## Run from the repository
 
@@ -56,6 +56,45 @@ For the three IPv4 addresses above, the result is `203.0.113.0/29`, with
 `inputAddressCount: "3"`, `coveredAddressCount: "8"`, and
 `additionalAddressCount: "5"`. This expansion permits additional addresses in
 an allowlist or blocks additional addresses in a blocklist.
+
+## Current public IP
+
+```sh
+node packages/cli/dist/cli.js ip
+node packages/cli/dist/cli.js ip --json
+```
+
+Without `--json`, stdout contains just the IP address and a newline for shell
+use. With `--json`, stdout contains the shared result, for example
+`{ "ip": "203.0.113.1", "family": "ipv4" }`. Errors follow the same stderr and
+exit-status convention as the calculator.
+
+The command queries `https://packetrove.com/api/v1/ip` without authentication,
+with a 10-second timeout, no cache, and no redirects. It rejects invalid or
+inconsistent result JSON. It does not read standard input or take address
+arguments. For a self-hosted deployment or local integration test:
+
+```sh
+node packages/cli/dist/cli.js ip --api-origin http://localhost:8787 --json
+```
+
+`--api-origin` is supported only by `ip`. Use an HTTP or HTTPS origin without
+credentials, a path, query, or fragment. An endpoint without Cloudflare connection
+metadata returns `CLIENT_IP_UNAVAILABLE`. The command does not print underlying
+network exception details or an invalid response body.
+
+The result describes the machine running the CLI and its network path. A VPN or
+proxy changes the observed address, and the browser may use a different path.
+One request observes IPv4 or IPv6; it does not separately discover both.
+When HTTP proxy environment variables are configured, the pinned Node.js
+version can opt into them with `--use-env-proxy`:
+
+```sh
+node --use-env-proxy packages/cli/dist/cli.js ip --json
+```
+
+This uses Node.js's `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` support; it does
+not automatically import browser or operating-system proxy preferences.
 
 ## Local package artifact
 

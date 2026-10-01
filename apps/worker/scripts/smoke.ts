@@ -5,6 +5,7 @@ import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextp
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, MCP_TOOL_NAME,
+  PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
 
 const argument = process.argv[2];
@@ -24,6 +25,7 @@ const timedFetch: typeof fetch = async (input, init) => {
 const mcpFetch: typeof fetch = async (input, init) => {
   const response = await timedFetch(input, init);
   assert.equal(response.headers.get('mcp-session-id'), null, 'MCP must remain stateless.');
+  assert.match(response.headers.get('cache-control') ?? '', /\bno-store\b/, 'MCP responses must not be stored.');
   return response;
 };
 
@@ -32,7 +34,7 @@ assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
 const html = await website.text();
 assert.match(html, /<title>Packetrove — Network tools<\/title>/);
-const ipPage = await timedFetch(`${origin}/ip`);
+const ipPage = await timedFetch(`${origin}/ip`, { headers: { accept: 'text/html' } });
 assert.equal(ipPage.status, 200, 'Public IP page status');
 assert.match(ipPage.headers.get('content-type') ?? '', /text\/html/);
 assert.match(await ipPage.text(), /Packetrove/);
@@ -55,6 +57,13 @@ assert.equal(specification.status, 200, 'Specification status');
 const document = await specification.json() as { openapi: string; paths: Record<string, unknown> };
 assert.equal(document.openapi, '3.1.0');
 assert(document.paths[CIDR_COVER_PATH], 'Missing calculator endpoint in the specification.');
+assert(document.paths[PUBLIC_IP_PATH], 'Missing public IP endpoint in the specification.');
+const publicIpResponse = await timedFetch(`${origin}${PUBLIC_IP_PATH}`, { cache: 'no-store' });
+assert.equal(publicIpResponse.status, 200, 'Public IP API status');
+assert.equal(publicIpResponse.headers.get('cache-control'), 'no-store', 'Public IP results must not be stored.');
+// Validate without printing the address into public deployment logs.
+assert(PublicIpResultSchema.safeParse(await publicIpResponse.json()).success, 'Invalid public IP result.');
+console.log('PASS public IP API result and no-store header');
 for (const example of CIDR_COVER_EXAMPLES) {
   const response = await timedFetch(`${origin}${CIDR_COVER_PATH}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(example.request),
@@ -76,12 +85,17 @@ const client = new Client({ name: 'packetrove-smoke', version: '0.1.0' }, {
 });
 try {
   await client.connect(new StreamableHTTPClientTransport(new URL(`${origin}/mcp`), { fetch: mcpFetch }));
-  assert.equal((await client.listTools()).tools[0]?.name, MCP_TOOL_NAME);
+  const tools = (await client.listTools()).tools;
+  assert(tools.some(tool => tool.name === MCP_TOOL_NAME), 'Missing CIDR tool.');
+  assert(tools.some(tool => tool.name === PUBLIC_IP_TOOL_NAME), 'Missing public IP tool.');
   const result = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
+  const publicIp = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
+  assert.notEqual(publicIp.isError, true, 'Public IP tool failed.');
+  assert(PublicIpResultSchema.safeParse(publicIp.structuredContent).success, 'Invalid public IP tool result.');
 } finally { await client.close(); }
-console.log('PASS modern MCP discovery and calculation without an Origin header');
+console.log('PASS modern MCP discovery, calculation, and public IP without an Origin header');
 
 const legacyClient = new LegacyClient({ name: 'packetrove-legacy-smoke', version: '0.1.0' });
 try {
@@ -95,8 +109,11 @@ try {
   const result = await legacyClient.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
+  const publicIp = await legacyClient.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
+  assert.notEqual(publicIp.isError, true, 'Legacy public IP tool failed.');
+  assert(PublicIpResultSchema.safeParse(publicIp.structuredContent).success, 'Invalid legacy public IP tool result.');
 } finally { await legacyClient.close(); }
-console.log('PASS legacy MCP initialization, discovery, and calculation with a same-origin header');
+console.log('PASS legacy MCP initialization, discovery, calculation, and public IP with a same-origin header');
 
 const rejected = await timedFetch(`${origin}/mcp`, {
   method: 'POST', headers: {

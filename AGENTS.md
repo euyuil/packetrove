@@ -89,6 +89,10 @@ story, API contract, or integration guide when its behavior is affected.
 - For interface changes, keep the Web API, MCP, CLI, and skill aligned with the
   shared contracts. Preserve structured errors, decimal-string address counts,
   and machine-readable CLI output. Regenerate OpenAPI from its source.
+- For IP lookup changes, verify the trusted connection metadata, per-call MCP
+  context, concurrent-client isolation, and no-store responses including errors.
+  Never infer a user's device IP from a hosted client's exit address or print
+  real lookup addresses in application or production-check logs.
 - For web changes, preserve browser-local calculation where the operation can
   run locally. Review new network requests and logging for accidental disclosure
   of user inputs.

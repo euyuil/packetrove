@@ -10,7 +10,7 @@ Worker with `pnpm dev:api`.
 | Local URL | `http://localhost:8787/mcp` |
 | Transport | Streamable HTTP |
 | Authentication | None |
-| Tool | `smallest_covering_cidr` |
+| Tools | `smallest_covering_cidr`, `get_public_ip` |
 
 Use your client's remote HTTP server configuration and set the production URL
 above. Configuration keys vary by client. The production endpoint is deployed
@@ -66,6 +66,32 @@ try {
 ```
 
 For local development, replace the URL with `http://localhost:8787/mcp`.
+
+## Current public IP tool
+
+Call `get_public_ip` with an empty arguments object:
+
+```ts
+const result = await client.callTool({ name: 'get_public_ip', arguments: {} });
+```
+
+Success returns the same result in `structuredContent` and a text JSON block,
+for example `{ "ip": "203.0.113.1", "family": "ipv4" }`. Tool discovery is
+available even when connection metadata is missing; a call then returns an
+`isError: true` result with `CLIENT_IP_UNAVAILABLE` in its text error JSON.
+
+The address belongs to the connection making this tool call. A hosted AI client
+may report its own exit address, not the user's computer. Use the web page or
+run the CLI on the user's machine when that is the network path to inspect.
+The tool does not discover a pre-proxy address or separately probe IPv4 and
+IPv6. Cloudflare Worker subrequests can have platform-specific address semantics;
+the result is not a client identity or authorization proof.
+
+The server reads metadata for each tool-call request, with isolated server
+instances for concurrent clients. MCP responses use `Cache-Control: no-store,
+no-transform`. The application does not retain or log lookup addresses. The
+tool is read-only, non-destructive, idempotent, and annotated as open-world
+because its result depends on the current network connection.
 
 ## Deployment configuration
 

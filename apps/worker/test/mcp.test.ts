@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema,
   MAX_REQUEST_BYTES, MCP_TOOL_NAME,
+  PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
 
 const workerFetch: typeof fetch = async (input, init) => {
@@ -15,16 +16,17 @@ const workerFetch: typeof fetch = async (input, init) => {
   request.headers.set('host', new URL(request.url).host);
   const response = await exports.default.fetch(request);
   expect(response.headers.get('mcp-session-id')).toBeNull();
+  expect(response.headers.get('cache-control')).toContain('no-store');
   return response;
 };
 
-async function connectedClient(url = 'http://localhost/mcp', origin?: string) {
+async function connectedClient(url = 'http://localhost/mcp', origin?: string, ip?: string) {
   const client = new Client({ name: 'packetrove-tests', version: '0.1.0' }, {
     versionNegotiation: { mode: 'auto' },
   });
   await client.connect(new StreamableHTTPClientTransport(new URL(url), {
     fetch: workerFetch,
-    ...(origin ? { requestInit: { headers: { origin } } } : {}),
+    requestInit: { headers: { ...(origin ? { origin } : {}), ...(ip ? { 'cf-connecting-ip': ip } : {}) } },
   }));
   return client;
 }
@@ -34,11 +36,15 @@ describe('stateless MCP in the Workers runtime', () => {
     const client = await connectedClient();
     try {
       const { tools } = await client.listTools();
-      expect(tools).toHaveLength(1);
+      expect(tools).toHaveLength(2);
       expect(tools[0]).toMatchObject({
         name: MCP_TOOL_NAME, annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
         inputSchema: { type: 'object', required: ['inputs'] },
         outputSchema: { type: 'object' },
+      });
+      expect(tools.find(tool => tool.name === PUBLIC_IP_TOOL_NAME)).toMatchObject({
+        annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
+        inputSchema: { type: 'object', additionalProperties: false },
       });
     } finally { await client.close(); }
   });
@@ -119,5 +125,73 @@ describe('stateless MCP in the Workers runtime', () => {
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
     });
     expect(response.status).toBe(403);
+  });
+});
+
+describe('public IP over MCP', () => {
+  it.each([
+    { ip: '203.0.113.1', family: 'ipv4' },
+    { ip: '2001:db8::7', family: 'ipv6' },
+  ])('reports the tool caller connection: $ip', async result => {
+    const client = await connectedClient('http://localhost/mcp', undefined, result.ip);
+    try {
+      const response = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
+      expect(response.isError).not.toBe(true);
+      expect(PublicIpResultSchema.parse(response.structuredContent)).toEqual(result);
+      expect(response.content).toHaveLength(1);
+      const text = response.content?.[0];
+      if (text?.type !== 'text') throw new Error('Missing result content');
+      expect(PublicIpResultSchema.parse(JSON.parse(text.text))).toEqual(result);
+    } finally { await client.close(); }
+  });
+
+  it('isolates concurrent client addresses', async () => {
+    const addresses = ['203.0.113.1', '2001:db8::7'];
+    const clients = await Promise.all(addresses.map(ip => connectedClient('http://localhost/mcp', undefined, ip)));
+    try {
+      const responses = await Promise.all(clients.map(client => client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} })));
+      expect(responses.map(response => PublicIpResultSchema.parse(response.structuredContent).ip)).toEqual(addresses);
+    } finally { await Promise.all(clients.map(client => client.close())); }
+  });
+
+  it('uses the tool-call request rather than initialization metadata', async () => {
+    let ip = '203.0.113.1';
+    const client = new Client({ name: 'changing-network-tests', version: '0.1.0' }, { versionNegotiation: { mode: 'auto' } });
+    await client.connect(new StreamableHTTPClientTransport(new URL('http://localhost/mcp'), {
+      fetch: async (input, init) => {
+        const request = new Request(input, init);
+        request.headers.set('cf-connecting-ip', ip);
+        return workerFetch(request);
+      },
+    }));
+    try {
+      ip = '2001:db8::7';
+      const response = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
+      expect(response.structuredContent).toEqual({ ip, family: 'ipv6' });
+    } finally { await client.close(); }
+  });
+
+  it('returns a structured tool error when connection metadata is unavailable', async () => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
+      expect(response.isError).toBe(true);
+      const text = response.content?.find(content => content.type === 'text');
+      if (text?.type !== 'text') throw new Error('Missing error content');
+      expect(ErrorResponseSchema.parse(JSON.parse(text.text)).error.code).toBe('CLIENT_IP_UNAVAILABLE');
+    } finally { await client.close(); }
+  });
+
+  it('serves the same IP contract to a legacy MCP client', async () => {
+    const client = new LegacyClient({ name: 'legacy-ip-tests', version: '0.1.0' });
+    const transport = new LegacyTransport(new URL('http://localhost/mcp'), {
+      fetch: workerFetch, requestInit: { headers: { 'cf-connecting-ip': '203.0.113.1' } },
+    });
+    await client.connect(transport as LegacyTransportContract);
+    try {
+      const response = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
+      expect(response.isError).not.toBe(true);
+      expect(PublicIpResultSchema.parse(response.structuredContent)).toEqual({ ip: '203.0.113.1', family: 'ipv4' });
+    } finally { await client.close(); }
   });
 });
