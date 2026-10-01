@@ -1,6 +1,8 @@
 name: CI and deployment
 
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
@@ -9,13 +11,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: production-${{ github.ref }}
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('pull-request-{0}', github.event.pull_request.number) || format('production-{0}', github.ref) }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
-    name: Validate and deploy production
-    if: github.ref == 'refs/heads/main'
+    name: Validate project
+    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     env:
@@ -45,6 +47,7 @@ jobs:
         run: pnpm check
 
       - name: Check whether this revision is still current
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         id: revision
         env:
           GH_TOKEN: ${{ github.token }}
@@ -58,7 +61,7 @@ jobs:
           fi
 
       - name: Deploy Worker and static assets
-        if: steps.revision.outputs.current == 'true'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -72,7 +75,7 @@ jobs:
             --message "GitHub Actions run $GITHUB_RUN_ID"
 
       - name: Verify production website, API, and MCP
-        if: steps.revision.outputs.current == 'true'
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
         run: |
           for attempt in 1 2 3; do
             echo "Production smoke check attempt $attempt of 3"

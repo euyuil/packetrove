@@ -1,9 +1,14 @@
 # Continuous integration and deployment
 
 [`ci.yml`](../.github/workflows/ci.yml) defines Packetrove's GitHub Actions
-validation and production deployment workflow. It runs on pushes to `main` and
-can be started manually on `main`. The repository continues to use direct
-commits to `main`; each update is intended for production.
+validation and production deployment workflow. It runs on pull requests targeting
+`main`, updates to `main`, and manual runs on `main`. All changes reach `main`
+through a pull request using squash merging.
+
+The `main` ruleset requires the `Validate project` check from GitHub Actions to
+pass before merging and requires the pull request branch to be up to date with
+`main`. Pull requests run validation; successful current revisions on `main`
+also deploy and verify production.
 
 ## Validation
 
@@ -25,6 +30,12 @@ The workflow runs `pnpm check`, which includes:
 The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
 
+Pull request validation checks the prospective merge revision with `main`.
+There are no path filters, so documentation-only changes also run the required
+check. The job name `Validate project` is the required status check's context;
+keep the workflow and the `main` ruleset aligned if it is renamed. The ruleset
+accepts this check only from the GitHub Actions app.
+
 The job sets `VITE_GITHUB_REPOSITORY` to `github.repository` and `VITE_GIT_COMMIT`
 to `github.sha`. Vite embeds these public values while building the website, so
 the shared footer links to the source tree for that exact commit on GitHub and
@@ -33,7 +44,8 @@ source or fetched by the browser. Fork workflows use their own repository name.
 
 ## Production deployment
 
-After validation succeeds, the workflow reads the current `main` revision through
+Only runs on `main` enter the deployment steps. After validation succeeds, the
+workflow reads the current `main` revision through
 the GitHub API. It only deploys if that revision still matches the run's commit.
 Superseded commits retain their validation result and skip publishing.
 
@@ -60,7 +72,7 @@ skipped or the live checks failed.
 ## Triggers and results
 
 Open [the workflow's runs](https://github.com/euyuil/packetrove/actions/workflows/ci.yml)
-to inspect validation results and logs. With GitHub CLI access to the private
+to inspect validation results and logs. With GitHub CLI access to the
 repository, use:
 
 ```sh
@@ -78,8 +90,13 @@ overwriting a newer version. If `main` changes after that check, the active
 deployment finishes and a subsequent successful run can publish the newer
 revision. See [GitHub workflow concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
 
-Each job has a ten-minute timeout. Other branches neither deploy nor
-automatically run this workflow. A manual run also requires the `main` branch.
+Pull request runs use a separate concurrency group for each pull request.
+New commits cancel an older run for that pull request so the latest revision
+receives the required check. They do not cancel a production run.
+
+Each job has a ten-minute timeout. A branch push alone does not run this workflow
+unless it updates `main`; opening, reopening, or updating a pull request targeting
+`main` triggers validation. Manual validation and deployment require `main`.
 
 ## Cloudflare credentials
 
@@ -151,15 +168,15 @@ run as well.
 
 ## Cost controls
 
-The workflow uses one standard Linux runner, a dependency cache, a timeout, and
-skips deployments of superseded commits. It does not upload build artifacts to
-GitHub. The project uses the repository owner's included GitHub Actions
-allowance for private repositories. This is separate from Cloudflare's Workers
-request and build quotas. Builds happen on the GitHub runner and do not use
-Cloudflare Workers Builds minutes. Production smoke checks make a small number
-of dynamic requests against the account's Workers request quota.
-
-Included minutes depend on the GitHub plan; usage beyond the included allowance
-can be billed according to the account's billing settings. Check account usage
-and budgets in GitHub when increasing CI frequency or adding jobs. See
+Each run uses one standard Linux runner, a dependency cache, and a timeout.
+Superseded pull request runs are canceled and superseded `main` revisions skip
+deployment. The workflow does not upload build artifacts to GitHub. Standard
+GitHub-hosted runner usage is free for this public repository; private copies
+use their owner's included allowance and billing settings. See
 [GitHub Actions billing](https://docs.github.com/en/billing/concepts/product-billing/github-actions).
+
+GitHub Actions usage is separate from Cloudflare's Workers request and build
+quotas. Builds happen on the GitHub runner and do not use Cloudflare Workers
+Builds minutes. Pull request validation makes no production smoke-check requests;
+production smoke checks make a small number of dynamic requests against the
+account's Workers request quota.
