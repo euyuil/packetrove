@@ -2,8 +2,8 @@
 
 **Network tools for humans and agents.**
 
-Packetrove is a planned network tools and diagnostics platform for developers and
-network administrators. It aims to help users inspect network information,
+Packetrove is a network tools project for developers and network administrators.
+Its planned diagnostic tools aim to help users inspect network information,
 investigate connectivity problems, and understand diagnostic results, including
 connectivity from mainland China.
 
@@ -17,14 +17,33 @@ workflows are planned.
 The first tool is a smallest covering CIDR calculator for firewall IP allowlists
 and blocklists. Its [user story](docs/user-stories/001-smallest-covering-cidr.md)
 and [API contract](docs/api/README.md) are defined. The shared IPv4/IPv6 calculation
-and Hono API are implemented and verified locally in the Workers runtime. The
-React web calculator is also implemented and calculates entirely in the browser.
+and Hono API are implemented in the Workers runtime. The React web calculator
+is also implemented and calculates entirely in the browser.
 The stateless MCP server, offline command-line interface, and reusable agent
 skill are implemented as well.
 
 The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
-Vite. IPv4 and IPv6 are supported by the contract. Deployment preparation is
-documented in the [Cloudflare deployment guide](docs/deployment.md).
+Vite. The website, Web API, and MCP server are deployed on Cloudflare Workers
+with Static Assets and verified on both public hostnames.
+
+| Interface | Public address |
+| --- | --- |
+| Website | [packetrove.com](https://packetrove.com) |
+| Web API | `POST https://packetrove.com/api/v1/cidr/cover` |
+| OpenAPI document | [API specification](https://packetrove.com/api/openapi.json) |
+| MCP server | `https://packetrove.com/mcp` (Streamable HTTP) |
+| Health | [Service health](https://packetrove.com/health) |
+| Verification hostname | [packetrove.example.workers.dev](https://packetrove.example.workers.dev) |
+
+Deployments use the project-local Wrangler and local builds. See the
+[Cloudflare deployment guide](docs/deployment.md) for login, publishing, costs,
+live checks, and rollback. Publishing is manual:
+
+```sh
+pnpm check
+pnpm run deploy
+pnpm smoke https://packetrove.com
+```
 
 ## Development
 
@@ -67,7 +86,8 @@ and styles are bundled locally, without fonts or scripts from external CDNs.
 
 ## MCP server
 
-The same local Worker serves Streamable HTTP at `http://localhost:8787/mcp`.
+The deployed Worker serves Streamable HTTP at `https://packetrove.com/mcp`;
+local development uses `http://localhost:8787/mcp`.
 It exposes `smallest_covering_cidr` with shared input and output schemas, exact
 address counts, and read-only tool annotations. See the
 [MCP connection guide](docs/integrations/mcp.md) for client setup and examples.

@@ -1,18 +1,21 @@
 # MCP connection
 
 Packetrove provides a stateless remote Model Context Protocol (MCP) server using
-Streamable HTTP. Start it locally with `pnpm dev:api`.
+Streamable HTTP. Connect to the production endpoint below, or start a local
+Worker with `pnpm dev:api`.
 
 | Setting | Value |
 | --- | --- |
+| Production URL | `https://packetrove.com/mcp` |
+| Verification URL | `https://packetrove.example.workers.dev/mcp` |
 | Local URL | `http://localhost:8787/mcp` |
 | Transport | Streamable HTTP |
 | Authentication | None |
 | Tool | `smallest_covering_cidr` |
 
-Use your client's remote HTTP server configuration and set the URL above. This
-is a local development address, not a deployed public service. Configuration keys
-vary by client. The server supports modern stateless requests and legacy
+Use your client's remote HTTP server configuration and set the production URL
+above. Configuration keys vary by client. Both public hostnames are deployed and
+verified. The server supports modern stateless requests and legacy
 Streamable HTTP initialization, tool discovery, and tool calls. It does not
 provide persistent MCP sessions or standalone server event streams.
 
@@ -51,7 +54,7 @@ const client = new Client(
   { versionNegotiation: { mode: 'auto' } },
 );
 try {
-  await client.connect(new StreamableHTTPClientTransport(new URL('http://localhost:8787/mcp')));
+  await client.connect(new StreamableHTTPClientTransport(new URL('https://packetrove.com/mcp')));
   const { tools } = await client.listTools();
   const result = await client.callTool({
     name: 'smallest_covering_cidr',
@@ -62,6 +65,8 @@ try {
   await client.close();
 }
 ```
+
+For local development, replace the URL with `http://localhost:8787/mcp`.
 
 ## Deployment configuration
 

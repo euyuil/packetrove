@@ -57,9 +57,9 @@ perform it locally without calling the hosted API. Browser and server interfaces
 will share TypeScript calculation code. The selected stack is Cloudflare
 Workers with Hono for API and MCP access, and React with Vite for the web app.
 
-Keep hosting costs low. The first delivery includes local verification and
-Cloudflare deployment configuration; actual deployment is a separate step.
-API and MCP access will be anonymous, without accounts or authentication.
+Keep hosting costs low. The website, API, and MCP are deployed on Cloudflare
+Workers with Static Assets; see the [deployment guide](../deployment.md).
+API and MCP access is anonymous, without accounts or authentication.
 
 ## Result presentation
 

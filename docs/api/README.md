@@ -6,6 +6,16 @@ that the committed document matches its source and validates OpenAPI semantics.
 
 ## Smallest covering CIDR
 
+The production base URL is `https://packetrove.com`. The deployed specification
+is available at [api/openapi.json](https://packetrove.com/api/openapi.json).
+For example:
+
+```sh
+curl https://packetrove.com/api/v1/cidr/cover \
+  -H 'Content-Type: application/json' \
+  -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
+```
+
 `POST /api/v1/cidr/cover` accepts an object with an `inputs` array containing
 1 to 1,000 IP addresses or CIDRs. Each string can contain at most 64 characters.
 Use `Content-Type: application/json`; the request body limit is 64 KiB.

@@ -4,6 +4,10 @@ Packetrove uses one Cloudflare Worker for its static website, Web API, and
 stateless MCP endpoint. The website calculates in the browser; it does not call
 the API for calculations. Builds run locally and Wrangler uploads the output.
 
+The service is live at `https://packetrove.com` and
+`https://packetrove.example.workers.dev`. Both hostnames have passed the live smoke
+checks for static assets, the Web API, and modern and legacy MCP clients.
+
 ## Prerequisites
 
 Use the Node.js and pnpm versions described in the repository README, install
@@ -56,12 +60,13 @@ the website and CLI, performs a Wrangler deployment dry run, and runs the test
 suite. It does not publish anything. `pnpm run deploy` builds the project and
 publishes the Worker and static assets using the existing Wrangler login.
 
-For the first deployment, publish to `workers.dev` before configuring the
-custom domain. Verify the deployed website, assets, API, and both modern and
-legacy MCP clients:
+The configuration already includes the production custom domain. Each deployment
+updates both hostnames. Verify the website, assets, API, and both modern and legacy
+MCP clients after publishing:
 
 ```sh
 pnpm smoke https://packetrove.example.workers.dev
+pnpm smoke https://packetrove.com
 ```
 
 The smoke command performs read-only HTTP calculations using documentation
@@ -71,14 +76,18 @@ behavior, and browser Origin validation. It can also target the local Worker:
 
 ## Custom domain
 
-Once the initial deployment passes verification, add a custom domain route to
-the Wrangler configuration and deploy again:
+The Wrangler configuration binds the production hostname using a custom domain
+route:
 
 ```json
 "routes": [
   { "pattern": "packetrove.com", "custom_domain": true }
 ]
 ```
+
+To deploy into a different account, first update the MCP hostname allowlists and
+verify its `workers.dev` endpoint with the custom domain route temporarily
+omitted. Add the route after that check passes.
 
 The domain must be an active zone in the same Cloudflare account. Check existing
 DNS records before binding a hostname. Cloudflare provisions the DNS record and
@@ -92,8 +101,7 @@ After DNS and certificate provisioning, run:
 pnpm smoke https://packetrove.com
 ```
 
-Only publish production URLs in integration documentation after these checks
-pass. The Web API and MCP URL paths are identical on both hostnames.
+The Web API and MCP URL paths are identical on both hostnames.
 
 ## Costs and limits
 
@@ -117,7 +125,7 @@ Cloudflare Builds. Domain registration and renewal remain separate expenses.
 
 ## Later deployments and rollback
 
-After the custom domain is configured, `pnpm run deploy` updates both hostnames.
+`pnpm run deploy` updates both configured hostnames.
 Run `pnpm check` before publishing and the smoke command against each hostname
 afterward. Builds and deployments remain manual.
 
