@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverRequestSchema,
   CidrCoverResultSchema, ErrorResponseSchema, HealthResultSchema, MAX_REQUEST_BYTES,
+  PUBLIC_IP_PATH, PublicIpResultSchema,
 } from './index';
 
 extendZodWithOpenApi(z);
@@ -14,6 +15,7 @@ export function createOpenApiDocument() {
   const result = registry.register('CidrCoverResult', CidrCoverResultSchema.clone());
   const error = registry.register('ErrorResponse', ErrorResponseSchema.clone());
   const health = registry.register('HealthResult', HealthResultSchema.clone());
+  const publicIp = registry.register('PublicIpResult', PublicIpResultSchema.clone());
   const errorResponse = (description: string) => ({
     description, content: { 'application/json': { schema: error } },
   });
@@ -43,6 +45,25 @@ export function createOpenApiDocument() {
     },
   });
   registry.registerPath({
+    method: 'get', path: PUBLIC_IP_PATH, operationId: 'getPublicIp', tags: ['IP'],
+    summary: 'Get the IP address observed for the current request',
+    description: 'Returns one IPv4 or IPv6 address from the current connection to Packetrove. With a VPN or proxy this is its exit address. A hosted caller observes its own connection, not a user device behind it. It does not discover local addresses or separately probe both address families. The Cloudflare deployment reads edge-provided connection headers, including preserved IPv6 when Pseudo IPv4 overwrites headers. Results and errors are not cached; the application does not store or log the returned IP address.',
+    security: [],
+    responses: {
+      200: {
+        description: 'The IP address and matching address family observed for this request.',
+        headers: { 'Cache-Control': { description: 'Do not store this per-request result.', schema: { type: 'string', const: 'no-store' } } },
+        content: { 'application/json': { schema: publicIp, examples: {
+          ipv4: { value: { ip: '203.0.113.1', family: 'ipv4' } },
+          ipv6: { value: { ip: '2001:db8::1', family: 'ipv6' } },
+        } } },
+      },
+      503: errorResponse('CLIENT_IP_UNAVAILABLE: edge connection information is missing or invalid. No guessed or caller-supplied forwarded address is returned.'),
+      405: errorResponse('Method is not supported for this endpoint.'),
+      500: errorResponse('Unexpected internal failure.'),
+    },
+  });
+  registry.registerPath({
     method: 'get', path: '/health', operationId: 'getHealth', tags: ['Platform'],
     summary: 'Check service health', security: [],
     responses: { 200: { description: 'Service is healthy.', content: { 'application/json': { schema: health } } },
@@ -61,9 +82,10 @@ export function createOpenApiDocument() {
     openapi: '3.1.0',
     info: { title: 'Packetrove API', version: '0.1.0',
       license: { name: 'MIT', url: 'https://opensource.org/license/mit/' },
-      description: 'Deterministic network tools for humans and agents. Address counts are decimal strings for exact IPv6 representation.' },
+      description: 'Network tools for humans and agents, including local calculations and request-based diagnostics. Address counts are decimal strings for exact IPv6 representation.' },
     servers: [{ url: '/', description: 'The host serving this specification' }],
     tags: [{ name: 'CIDR', description: 'IP address and CIDR calculations.' },
+      { name: 'IP', description: 'Request-based IP address diagnostics.' },
       { name: 'Platform', description: 'Service metadata.' }],
     security: [],
   });

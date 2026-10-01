@@ -5,6 +5,16 @@ export const MAX_INPUT_LENGTH = 64;
 export const MAX_REQUEST_BYTES = 64 * 1_024;
 export const CIDR_COVER_PATH = '/api/v1/cidr/cover';
 export const MCP_TOOL_NAME = 'smallest_covering_cidr';
+export const PUBLIC_IP_PATH = '/api/v1/ip';
+export const PUBLIC_IP_TOOL_NAME = 'get_public_ip';
+export const PUBLIC_API_ORIGIN = 'https://packetrove.com';
+
+export const PublicIpRequestSchema = z.strictObject({});
+export const PublicIpResultSchema = z.discriminatedUnion('family', [
+  z.strictObject({ family: z.literal('ipv4'), ip: z.ipv4() }),
+  z.strictObject({ family: z.literal('ipv6'), ip: z.ipv6() }),
+]).describe('The IP address observed for this request. A VPN, proxy, or hosted client can change whose exit address is observed. One request observes one address family.');
+export type PublicIpResult = z.infer<typeof PublicIpResultSchema>;
 
 export const CidrCoverRequestSchema = z.strictObject({
   inputs: z.array(z.string().min(1).max(MAX_INPUT_LENGTH))
@@ -30,7 +40,8 @@ export const CidrCoverResultSchema = z.strictObject({
 export const ErrorCodeSchema = z.enum([
   'INVALID_INPUT', 'MIXED_ADDRESS_FAMILIES', 'INVALID_JSON',
   'PAYLOAD_TOO_LARGE', 'UNSUPPORTED_MEDIA_TYPE', 'NOT_FOUND',
-  'METHOD_NOT_ALLOWED', 'INTERNAL_ERROR',
+  'METHOD_NOT_ALLOWED', 'INTERNAL_ERROR', 'CLIENT_IP_UNAVAILABLE',
+  'NETWORK_ERROR', 'INVALID_RESPONSE',
 ]);
 
 export const ErrorResponseSchema = z.strictObject({

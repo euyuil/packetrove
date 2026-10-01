@@ -37,6 +37,28 @@ A covering CIDR may add addresses. Replacing allowlist entries with that CIDR
 can allow additional addresses; replacing blocklist entries can block additional
 addresses. The tool calculates a result and does not edit firewall rules.
 
+## Current public IP
+
+`GET /api/v1/ip` takes no request body and returns the address observed for the
+current request, for example:
+
+```json
+{ "ip": "203.0.113.1", "family": "ipv4" }
+```
+
+The address family is either `ipv4` or `ipv6`, matching the `ip` field. A request
+observes one address family; it does not separately discover both addresses.
+With a VPN or proxy this is the exit address. A hosted client observes its own
+connection, which may differ from a user's browser or computer.
+
+Responses use `Cache-Control: no-store`. The application does not retain or log
+the result. Cloudflare connection headers supply the address in the production
+deployment; arbitrary forwarded headers, query parameters, or request bodies
+cannot supply a substitute. Missing or invalid connection metadata returns
+`503` with `CLIENT_IP_UNAVAILABLE`, including local environments without that
+metadata. See the [user story](../user-stories/002-current-public-ip.md) for
+network-path and hosting limitations.
+
 ## Errors
 
 Errors use `{ "error": { "code": "...", "message": "...", "issues": [] } }`.
@@ -46,7 +68,8 @@ entries are never silently skipped.
 
 Invalid JSON, invalid inputs, and mixed address families return `400`. Oversized
 request bodies return `413`, unsupported media types return `415`, and unexpected
-failures return `500` without exposing internal exception details. Unsupported
+failures return `500` without exposing internal exception details. Missing IP
+connection metadata returns `503`. Unsupported
 methods on known endpoints return `405` with an `Allow` header.
 
 ## Service metadata

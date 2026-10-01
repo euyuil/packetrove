@@ -7,7 +7,7 @@
       "name": "MIT",
       "url": "https://opensource.org/license/mit/"
     },
-    "description": "Deterministic network tools for humans and agents. Address counts are decimal strings for exact IPv6 representation."
+    "description": "Network tools for humans and agents, including local calculations and request-based diagnostics. Address counts are decimal strings for exact IPv6 representation."
   },
   "servers": [
     {
@@ -19,6 +19,10 @@
     {
       "name": "CIDR",
       "description": "IP address and CIDR calculations."
+    },
+    {
+      "name": "IP",
+      "description": "Request-based IP address diagnostics."
     },
     {
       "name": "Platform",
@@ -136,7 +140,10 @@
                   "UNSUPPORTED_MEDIA_TYPE",
                   "NOT_FOUND",
                   "METHOD_NOT_ALLOWED",
-                  "INTERNAL_ERROR"
+                  "INTERNAL_ERROR",
+                  "CLIENT_IP_UNAVAILABLE",
+                  "NETWORK_ERROR",
+                  "INVALID_RESPONSE"
                 ]
               },
               "message": {
@@ -189,6 +196,51 @@
           "status"
         ],
         "additionalProperties": false
+      },
+      "PublicIpResult": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "family": {
+                "type": "string",
+                "enum": [
+                  "ipv4"
+                ]
+              },
+              "ip": {
+                "type": "string",
+                "format": "ip"
+              }
+            },
+            "required": [
+              "family",
+              "ip"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "family": {
+                "type": "string",
+                "enum": [
+                  "ipv6"
+                ]
+              },
+              "ip": {
+                "type": "string",
+                "format": "ip"
+              }
+            },
+            "required": [
+              "family",
+              "ip"
+            ],
+            "additionalProperties": false
+          }
+        ],
+        "description": "The IP address observed for this request. A VPN, proxy, or hosted client can change whose exit address is observed. One request observes one address family."
       }
     },
     "parameters": {}
@@ -353,6 +405,82 @@
           },
           "500": {
             "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/ip": {
+      "get": {
+        "operationId": "getPublicIp",
+        "tags": [
+          "IP"
+        ],
+        "summary": "Get the IP address observed for the current request",
+        "description": "Returns one IPv4 or IPv6 address from the current connection to Packetrove. With a VPN or proxy this is its exit address. A hosted caller observes its own connection, not a user device behind it. It does not discover local addresses or separately probe both address families. The Cloudflare deployment reads edge-provided connection headers, including preserved IPv6 when Pseudo IPv4 overwrites headers. Results and errors are not cached; the application does not store or log the returned IP address.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The IP address and matching address family observed for this request.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not store this per-request result.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "examples": {
+                  "ipv4": {
+                    "value": {
+                      "ip": "203.0.113.1",
+                      "family": "ipv4"
+                    }
+                  },
+                  "ipv6": {
+                    "value": {
+                      "ip": "2001:db8::1",
+                      "family": "ipv6"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/PublicIpResult"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method is not supported for this endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "CLIENT_IP_UNAVAILABLE: edge connection information is missing or invalid. No guessed or caller-supplied forwarded address is returned.",
             "content": {
               "application/json": {
                 "schema": {
