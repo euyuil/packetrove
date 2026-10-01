@@ -20,7 +20,7 @@ a { color: inherit; }
 .site { max-width: 1232px; margin: 0 auto; padding: 0 40px; }
 .site-header { min-height: 92px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); gap: 24px; }
 .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; font-size: 21px; font-weight: 750; letter-spacing: -.6px; }
-.brand-mark { display: grid; place-items: center; background: #173f43; color: white; height: 34px; width: 34px; border-radius: 9px; font-size: 20px; }
+.brand-mark { display: block; height: 40px; width: 40px; flex-shrink: 0; object-fit: contain; }
 .api-link { font-size: 13px; font-weight: 600; text-decoration: none; color: var(--muted); }
 .api-link:hover { color: var(--accent); }
 .api-link span { margin-left: 6px; }
@@ -106,7 +106,7 @@ footer span { margin: 0 7px; }
   .site { padding: 0 16px; }
   .panel { padding: 20px; }
   .brand { font-size: 18px; gap: 8px; }
-  .brand-mark { height: 29px; width: 29px; }
+  .brand-mark { height: 34px; width: 34px; }
   .api-link { font-size: 11px; }
   .counts > div { grid-template-columns: 1fr; gap: 7px; }
   .counts dd { text-align: left; }

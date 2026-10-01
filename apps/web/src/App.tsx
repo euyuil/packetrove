@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
 
@@ -14,7 +15,7 @@ export function App() {
   return <div className="site">
     <header className="site-header">
       <a className="brand" href="/" aria-label="Packetrove home">
-        <span className="brand-mark" aria-hidden="true">P</span>Packetrove
+        <img className="brand-mark" src={packetroveLogo} width="40" height="40" alt="" />Packetrove
       </a>
       <a className="api-link" href="/api/openapi.json">API specification <span aria-hidden="true">↗</span></a>
     </header>
