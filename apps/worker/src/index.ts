@@ -1,5 +1,5 @@
-import { createApp } from './app';
+import { createApp, type WorkerBindings } from './app';
 
 const app = createApp();
 
-export default { fetch: app.fetch } satisfies ExportedHandler;
+export default { fetch: app.fetch } satisfies ExportedHandler<WorkerBindings>;

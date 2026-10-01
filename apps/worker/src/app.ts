@@ -5,8 +5,10 @@ import { createOpenApiDocument } from '@packetrove/contracts/openapi';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
 
+export type WorkerBindings = { ASSETS?: Fetcher };
+
 export function createApp() {
-  const app = new Hono();
+  const app = new Hono<{ Bindings: WorkerBindings }>();
   const specification = createOpenApiDocument();
   app.use('/api/*', cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
   app.onError((error, context) => {
@@ -34,8 +36,13 @@ export function createApp() {
       } } satisfies ErrorResponse, 405);
     });
   }
-  app.notFound(context => context.json({ error: {
-    code: 'NOT_FOUND', message: 'Endpoint not found.',
-  } } satisfies ErrorResponse, 404));
+  app.notFound(context => {
+    if (!context.req.path.startsWith('/api/') && context.env?.ASSETS) {
+      return context.env.ASSETS.fetch(context.req.raw);
+    }
+    return context.json({ error: {
+      code: 'NOT_FOUND', message: 'Endpoint not found.',
+    } } satisfies ErrorResponse, 404);
+  });
   return app;
 }

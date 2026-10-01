@@ -6,13 +6,14 @@
   "packageManager": "pnpm@10.19.0",
   "engines": { "node": "^22.22.2 || ^24.15.0 || >=26.0.0" },
   "scripts": {
-    "dev:api": "pnpm --filter @packetrove/worker dev",
+    "dev:api": "pnpm --filter @packetrove/web build && pnpm --filter @packetrove/worker dev",
+    "dev:web": "pnpm --filter @packetrove/web dev",
     "spec:generate": "tsx scripts/openapi.ts",
     "spec:check": "tsx scripts/openapi.ts --check && redocly lint docs/api/openapi.json",
     "typecheck": "pnpm -r --if-present typecheck && tsc --noEmit -p tsconfig.scripts.json",
-    "test": "vitest run",
+    "test": "pnpm build && vitest run",
     "build": "pnpm spec:check && pnpm -r --if-present build",
-    "check": "pnpm spec:check && pnpm typecheck && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm test"
   },
   "devDependencies": {
     "@redocly/cli": "2.57.0",

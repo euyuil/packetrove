@@ -68,6 +68,17 @@ describe('API in the Workers runtime', () => {
     expect(await (await exports.default.fetch('http://localhost/health')).json()).toEqual({ status: 'ok' });
     expect(await (await exports.default.fetch('http://localhost/api/openapi.json')).json()).toEqual(createOpenApiDocument());
   });
+  it('serves the built website and bundled JavaScript', async () => {
+    const response = await exports.default.fetch('http://localhost/');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
+    const html = await response.text();
+    const script = html.match(/src="(\/assets\/[^\"]+\.js)"/)?.[1];
+    expect(script).toBeDefined();
+    const javascript = await exports.default.fetch(`http://localhost${script}`);
+    expect(javascript.status).toBe(200);
+    expect(javascript.headers.get('content-type')).toContain('javascript');
+  });
   it('supports API preflight', async () => {
     const response = await exports.default.fetch(`http://localhost${CIDR_COVER_PATH}`, {
       method: 'OPTIONS', headers: { origin: 'https://client.example', 'access-control-request-method': 'POST' },

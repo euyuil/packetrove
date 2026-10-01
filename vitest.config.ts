@@ -5,6 +5,7 @@ export default defineConfig({
     projects: [
       { test: { name: 'shared', include: ['packages/**/*.test.ts'] } },
       './apps/worker/vitest.config.ts',
+      './apps/web/vitest.config.ts',
     ],
   },
 });

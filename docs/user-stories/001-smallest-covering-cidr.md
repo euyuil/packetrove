@@ -1,8 +1,8 @@
 # Smallest covering CIDR for firewall IP lists
 
 This document records a user story for Packetrove. The calculation described
-below and the first implementation choices are agreed. The shared calculation
-and API are implemented; the remaining interfaces are tracked in the README.
+below and the first implementation choices are agreed. The shared calculation,
+API, and web app are implemented; the remaining interfaces are tracked in the README.
 
 ## User story
 
@@ -67,8 +67,8 @@ addresses it adds beyond the union of the original inputs. Count overlapping
 inputs once. These counts describe all addresses covered by firewall rules;
 they do not subtract subnet network or broadcast addresses.
 
-The web app will show the calculation locally. The API and MCP will return the
-same structured result, with exact counts represented as decimal strings.
+The web app performs the calculation locally. The API returns a structured
+result with exact counts represented as decimal strings; MCP will use the same result.
 
 ## Implementation decisions
 

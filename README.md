@@ -18,7 +18,8 @@ The first tool is a smallest covering CIDR calculator for firewall IP allowlists
 and blocklists. Its [user story](docs/user-stories/001-smallest-covering-cidr.md)
 and [API contract](docs/api/README.md) are defined. The shared IPv4/IPv6 calculation
 and Hono API are implemented and verified locally in the Workers runtime. The
-web application, MCP server, and command-line interface are not implemented yet.
+React web calculator is also implemented and calculates entirely in the browser.
+The MCP server and command-line interface are not implemented yet.
 
 The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
 Vite. IPv4 and IPv6 are supported by the contract. Deployment is a later step.
@@ -49,3 +50,15 @@ curl http://localhost:8787/api/v1/cidr/cover \
 `pnpm build` validates the specification and performs a Wrangler deployment dry
 run. It does not deploy a live service. No Cloudflare account is needed for local
 development and tests.
+
+## Web application
+
+`pnpm dev:api` builds the web app and serves both the built website and API at
+`http://localhost:8787`. For React development with hot reload, run
+`pnpm dev:web` and open `http://localhost:5173`. The Vite development server
+proxies the API specification link to the local Worker; calculation itself
+never calls the API and works with the Vite server alone.
+
+The web app accepts one address or CIDR per line, displays normalized inputs
+and exact address counts, and clears stale results when inputs change. All code
+and styles are bundled locally, without fonts or scripts from external CDNs.
