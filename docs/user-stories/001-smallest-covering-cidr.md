@@ -1,8 +1,8 @@
 # Smallest covering CIDR for firewall IP lists
 
 This document records a user story for Packetrove. The calculation described
-below is agreed; interface details and implementation choices remain under
-discussion. The tool has not been implemented.
+below and the first implementation choices are agreed. The tool has not been
+implemented yet.
 
 ## User story
 
@@ -25,12 +25,13 @@ addresses in a blocklist.
 ## Agreed calculation
 
 The tool accepts a list of inputs, with more than two entries supported. For
-IPv4 inputs, the agreed calculation is:
+IPv4 and IPv6 inputs, the agreed calculation is:
 
 - Each input can be an individual IP address or a CIDR range. An individual
-  address represents a single address, equivalent to a `/32` range.
-- Return one canonical CIDR in `a.b.c.d/n` form. The address must be the network
-  address for the returned prefix.
+  address represents a single address, equivalent to `/32` for IPv4 or `/128`
+  for IPv6. A calculation must use one address family throughout.
+- Return one canonical CIDR. The address must be the network address for the
+  returned prefix; IPv6 uses its standard address notation.
 - The result must contain every address represented by any input, including
   the entire range when an input is a CIDR.
 - Maximize the prefix length `n` among all single CIDRs that contain all inputs.
@@ -47,35 +48,35 @@ IPv4 inputs, the agreed calculation is:
 ## Requested access and cost goals
 
 The user wants an interactive web application, a web API, and access for AI
-agents through Model Context Protocol (MCP) and reusable skills. Command-line
-access is also a project direction under consideration.
+agents through Model Context Protocol (MCP), a command-line interface, and a
+reusable skill.
 
 When a calculation can run in the browser, the web application should be able to
 perform it locally without calling the hosted API. Browser and server interfaces
-can share the same calculation code. TypeScript is a candidate for this shared
-code; the language and server runtime have not been selected.
+will share TypeScript calculation code. The selected stack is Cloudflare
+Workers with Hono for API and MCP access, and React with Vite for the web app.
 
-Keep hosting costs low. Consider Cloudflare services and inexpensive server
-hosting according to what the tool actually needs. A deployment choice has not
-been made.
+Keep hosting costs low. The first delivery includes local verification and
+Cloudflare deployment configuration; actual deployment is a separate step.
+API and MCP access will be anonymous, without accounts or authentication.
 
-## Proposed result presentation
+## Result presentation
 
 In addition to the resulting CIDR, show the covered address range and how many
 addresses it adds beyond the union of the original inputs. Count overlapping
 inputs once. These counts describe all addresses covered by firewall rules;
 they do not subtract subnet network or broadcast addresses.
 
-This presentation is a proposal to make the effect of combining entries clear.
-The exact web interface and programmatic response fields remain to be agreed.
+The web app will show the calculation locally. The API and MCP will return the
+same structured result, with exact counts represented as decimal strings.
 
-## Open design decisions
+## Implementation decisions
 
-- Whether the first version supports IPv4 only or both IPv4 and IPv6.
-- Whether CIDRs with host bits set are normalized with an explanation or rejected.
-- The web API contract, MCP tool definition, skill contents, and command-line
-  interface scope.
-- The deployment platform and runtime.
+- Support both IPv4 and IPv6, rejecting mixed address families in one calculation.
+- Normalize CIDRs with host bits set and show canonical inputs in the result.
+- Use shared Zod schemas to generate the OpenAPI specification.
+- Accept 1 to 1,000 entries per calculation, with a 64 KiB HTTP request body limit.
+- Deliver a local CLI and repository skill in addition to the web app, API, and MCP.
 
 Choosing which entries to combine across an entire list to meet a target entry
 limit would require a separate definition of the optimization goal. That broader

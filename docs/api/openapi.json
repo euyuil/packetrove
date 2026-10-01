@@ -1,0 +1,450 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Packetrove API",
+    "version": "0.1.0",
+    "description": "Deterministic network tools for humans and agents. Address counts are decimal strings for exact IPv6 representation."
+  },
+  "servers": [
+    {
+      "url": "/",
+      "description": "The host serving this specification"
+    }
+  ],
+  "tags": [
+    {
+      "name": "CIDR",
+      "description": "IP address and CIDR calculations."
+    },
+    {
+      "name": "Platform",
+      "description": "Service metadata."
+    }
+  ],
+  "security": [],
+  "components": {
+    "schemas": {
+      "CidrCoverRequest": {
+        "type": "object",
+        "properties": {
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 1000,
+            "description": "IP addresses or CIDRs from one address family. Surrounding whitespace is ignored during parsing; CIDRs with host bits are normalized."
+          }
+        },
+        "required": [
+          "inputs"
+        ],
+        "additionalProperties": false
+      },
+      "CidrCoverResult": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "enum": [
+              "ipv4",
+              "ipv6"
+            ]
+          },
+          "normalizedInputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 1000,
+            "description": "Canonical CIDRs in input order. Individual addresses become /32 or /128. Duplicates are retained here."
+          },
+          "cidr": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "The smallest single canonical CIDR containing every input address."
+          },
+          "range": {
+            "type": "object",
+            "properties": {
+              "first": {
+                "type": "string",
+                "minLength": 1
+              },
+              "last": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "first",
+              "last"
+            ],
+            "additionalProperties": false
+          },
+          "inputAddressCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "Number of distinct addresses in the union of the inputs."
+          },
+          "coveredAddressCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "Number of all addresses in the resulting CIDR."
+          },
+          "additionalAddressCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "Covered address count minus input address count."
+          }
+        },
+        "required": [
+          "family",
+          "normalizedInputs",
+          "cidr",
+          "range",
+          "inputAddressCount",
+          "coveredAddressCount",
+          "additionalAddressCount"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "INVALID_INPUT",
+                  "MIXED_ADDRESS_FAMILIES",
+                  "INVALID_JSON",
+                  "PAYLOAD_TOO_LARGE",
+                  "UNSUPPORTED_MEDIA_TYPE",
+                  "NOT_FOUND",
+                  "METHOD_NOT_ALLOWED",
+                  "INTERNAL_ERROR"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "issues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Zero-based index in the inputs array, when an entry is responsible for the error."
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "HealthResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/api/v1/cidr/cover": {
+      "post": {
+        "operationId": "smallestCoveringCidr",
+        "tags": [
+          "CIDR"
+        ],
+        "summary": "Find the smallest single CIDR covering all inputs",
+        "description": "Accepts IPv4 or IPv6 addresses and CIDRs from one address family. The output maximizes the prefix length while covering every input address, and may include additional addresses. Overlapping inputs are counted once. CIDRs with host bits are normalized. The request body must not exceed 65536 bytes. This is a stateless calculation and does not modify firewall rules.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "summary": "Adjacent IPv4 ranges without expansion",
+                  "value": {
+                    "inputs": [
+                      "203.0.113.0/25",
+                      "203.0.113.128/25"
+                    ]
+                  }
+                },
+                "example2": {
+                  "summary": "Multiple IPv4 addresses with expansion",
+                  "value": {
+                    "inputs": [
+                      "203.0.113.1",
+                      "203.0.113.2",
+                      "203.0.113.6"
+                    ]
+                  }
+                },
+                "example3": {
+                  "summary": "IPv6 counts beyond the JavaScript safe integer range",
+                  "value": {
+                    "inputs": [
+                      "2001:db8::/64",
+                      "2001:db8:0:1::/64"
+                    ]
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CidrCoverRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The covering CIDR and exact address counts.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "Adjacent IPv4 ranges without expansion",
+                    "value": {
+                      "family": "ipv4",
+                      "normalizedInputs": [
+                        "203.0.113.0/25",
+                        "203.0.113.128/25"
+                      ],
+                      "cidr": "203.0.113.0/24",
+                      "range": {
+                        "first": "203.0.113.0",
+                        "last": "203.0.113.255"
+                      },
+                      "inputAddressCount": "256",
+                      "coveredAddressCount": "256",
+                      "additionalAddressCount": "0"
+                    }
+                  },
+                  "example2": {
+                    "summary": "Multiple IPv4 addresses with expansion",
+                    "value": {
+                      "family": "ipv4",
+                      "normalizedInputs": [
+                        "203.0.113.1/32",
+                        "203.0.113.2/32",
+                        "203.0.113.6/32"
+                      ],
+                      "cidr": "203.0.113.0/29",
+                      "range": {
+                        "first": "203.0.113.0",
+                        "last": "203.0.113.7"
+                      },
+                      "inputAddressCount": "3",
+                      "coveredAddressCount": "8",
+                      "additionalAddressCount": "5"
+                    }
+                  },
+                  "example3": {
+                    "summary": "IPv6 counts beyond the JavaScript safe integer range",
+                    "value": {
+                      "family": "ipv6",
+                      "normalizedInputs": [
+                        "2001:db8::/64",
+                        "2001:db8:0:1::/64"
+                      ],
+                      "cidr": "2001:db8::/63",
+                      "range": {
+                        "first": "2001:db8::",
+                        "last": "2001:db8:0:1:ffff:ffff:ffff:ffff"
+                      },
+                      "inputAddressCount": "36893488147419103232",
+                      "coveredAddressCount": "36893488147419103232",
+                      "additionalAddressCount": "0"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CidrCoverResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, invalid input, or mixed address families. Entry-specific issues include a zero-based input index.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method is not supported for this endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 64 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected an application/json request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "tags": [
+          "Platform"
+        ],
+        "summary": "Check service health",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method is not supported for this endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/openapi.json": {
+      "get": {
+        "operationId": "getOpenApiSpecification",
+        "tags": [
+          "Platform"
+        ],
+        "summary": "Read the OpenAPI specification",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The OpenAPI 3.1.0 document.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method is not supported for this endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {}
+}

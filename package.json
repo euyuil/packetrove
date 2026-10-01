@@ -1,0 +1,23 @@
+{
+  "name": "packetrove",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.19.0",
+  "engines": { "node": "^22.22.2 || ^24.15.0 || >=26.0.0" },
+  "scripts": {
+    "spec:generate": "tsx scripts/openapi.ts",
+    "spec:check": "tsx scripts/openapi.ts --check && redocly lint docs/api/openapi.json",
+    "typecheck": "pnpm -r --if-present typecheck && tsc --noEmit -p tsconfig.scripts.json",
+    "test": "vitest run",
+    "build": "pnpm spec:check && pnpm -r --if-present build",
+    "check": "pnpm spec:check && pnpm typecheck && pnpm test && pnpm build"
+  },
+  "devDependencies": {
+    "@redocly/cli": "2.57.0",
+    "@types/node": "26.6.3",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  }
+}

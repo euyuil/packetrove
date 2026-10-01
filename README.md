@@ -14,6 +14,24 @@ reusable skills, and agent workflows.
 
 ## Status
 
-Packetrove is in early product planning. No network tools, integrations, or
-application code have been implemented. The feature set, technology stack, and
-interfaces are still to be decided.
+The first tool is a smallest covering CIDR calculator for firewall IP allowlists
+and blocklists. Its [user story](docs/user-stories/001-smallest-covering-cidr.md)
+and [API contract](docs/api/README.md) are defined. The calculation, API server,
+web application, MCP server, and command-line interface are not implemented yet.
+
+The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
+Vite. IPv4 and IPv6 are supported by the contract. Deployment is a later step.
+
+## Development
+
+Use a supported Node.js version from `package.json` and pnpm 10.19.0. Development
+is verified with Node.js 26.10.0.
+
+```sh
+pnpm install
+pnpm spec:generate
+pnpm check
+```
+
+The shared Zod schemas are the source of truth for request and response types.
+The generated OpenAPI 3.1.0 document is committed for consumers to read directly.

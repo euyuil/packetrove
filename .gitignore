@@ -5,3 +5,10 @@
 .env
 .env.*
 !.env.example
+
+# Dependencies and local build artifacts
+node_modules/
+dist/
+.wrangler/
+coverage/
+*.tsbuildinfo
