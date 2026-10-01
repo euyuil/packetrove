@@ -1,3 +1,7 @@
+<p>
+  <img src="apps/web/src/assets/packetrove-logo-160x160.png" width="96" height="96" alt="Packetrove logo" />
+</p>
+
 # Packetrove
 
 **Network tools for humans and agents.**
