@@ -1,6 +1,7 @@
 import ipaddr from 'ipaddr.js';
 import {
   CidrCoverRequestSchema,
+  ErrorResponseSchema, PublicIpResultSchema, type PublicIpResult,
   type CidrCoverResult, type ErrorCode, type ErrorResponse, type InputIssue,
 } from '@packetrove/contracts';
 
@@ -130,4 +131,33 @@ export function smallestCoveringCidr(value: unknown): CidrCoverResult {
     coveredAddressCount: covered.toString(),
     additionalAddressCount: (covered - original).toString(),
   };
+}
+
+/** Query an IP endpoint without persisting its per-request result. */
+export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSignal): Promise<PublicIpResult> {
+  let response: Response;
+  try {
+    const options = {
+      headers: { accept: 'application/json' },
+      cache: 'no-store', credentials: 'omit', redirect: 'error',
+      signal: AbortSignal.any([AbortSignal.timeout(10_000), ...(signal ? [signal] : [])]),
+    } as const;
+    response = await fetch(endpoint, options);
+  } catch {
+    throw new ToolError('NETWORK_ERROR', 'Unable to reach the IP lookup service. Check your connection and try again.');
+  }
+  let body: unknown;
+  try { body = await response.json(); } catch {
+    throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
+  }
+  if (!response.ok) {
+    const failure = ErrorResponseSchema.safeParse(body);
+    if (failure.success) throw new ToolError(failure.data.error.code, failure.data.error.message);
+    throw new ToolError('NETWORK_ERROR', `The IP lookup service returned HTTP ${response.status}. Please try again.`);
+  }
+  const result = PublicIpResultSchema.safeParse(body);
+  if (!result.success) {
+    throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
+  }
+  return result.data;
 }

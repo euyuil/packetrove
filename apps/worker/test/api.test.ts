@@ -79,6 +79,12 @@ describe('API in the Workers runtime', () => {
     expect(javascript.status).toBe(200);
     expect(javascript.headers.get('content-type')).toContain('javascript');
   });
+  it('serves a direct public IP page navigation through static assets', async () => {
+    const response = await exports.default.fetch('http://localhost/ip');
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('text/html');
+    expect(await response.text()).toContain('Packetrove');
+  });
   it('supports API preflight', async () => {
     const response = await exports.default.fetch(`http://localhost${CIDR_COVER_PATH}`, {
       method: 'OPTIONS', headers: { origin: 'https://client.example', 'access-control-request-method': 'POST' },

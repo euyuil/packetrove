@@ -1,0 +1,100 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { App } from './App';
+import { PublicIpTool } from './PublicIpTool';
+
+afterEach(() => {
+  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
+  window.history.replaceState({}, '', '/');
+});
+
+describe('public IP web tool', () => {
+  it('queries on opening and presents the observed address and family', async () => {
+    let resolve!: (response: Response) => void;
+    const fetch = vi.fn(() => new Promise<Response>(complete => { resolve = complete; }));
+    vi.stubGlobal('fetch', fetch);
+    render(<PublicIpTool />);
+    expect(screen.getByText('Checking your public IP…')).toBeDefined();
+    expect((screen.getByRole('button', { name: 'Checking…' }) as HTMLButtonElement).disabled).toBe(true);
+    resolve(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+    expect(screen.getByText('IPv4')).toBeDefined();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith('/api/v1/ip', expect.objectContaining({ cache: 'no-store' }));
+  });
+
+  it('clears an old address while refreshing and accepts a changed address family', async () => {
+    let resolve!: (response: Response) => void;
+    const fetch = vi.fn().mockResolvedValueOnce(Response.json({ ip: '203.0.113.1', family: 'ipv4' }))
+      .mockImplementationOnce(() => new Promise<Response>(complete => { resolve = complete; }));
+    vi.stubGlobal('fetch', fetch);
+    render(<PublicIpTool />);
+    await screen.findByText('203.0.113.1');
+    fireEvent.click(screen.getByRole('button', { name: 'Refresh IP' }));
+    expect(screen.queryByText('203.0.113.1')).toBeNull();
+    expect(screen.getByText('Checking your public IP…')).toBeDefined();
+    resolve(Response.json({ ip: '2001:db8::7', family: 'ipv6' }));
+    expect(await screen.findByText('2001:db8::7')).toBeDefined();
+    expect(screen.getByText('IPv6')).toBeDefined();
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows useful network errors and retries without exposing exception details', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValueOnce(new Error('private proxy detail'))
+      .mockResolvedValueOnce(Response.json({ ip: '203.0.113.1', family: 'ipv4' })));
+    render(<PublicIpTool />);
+    expect((await screen.findByRole('alert')).textContent).toContain('Check your connection');
+    expect(screen.queryByText(/private proxy detail/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('explains unavailable metadata and rejects an invalid service result', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValueOnce(Response.json({
+      error: { code: 'CLIENT_IP_UNAVAILABLE', message: 'Connection metadata is unavailable.' },
+    }, { status: 503 })).mockResolvedValueOnce(Response.json({ ip: '2001:db8::7', family: 'ipv4' })));
+    render(<PublicIpTool />);
+    expect((await screen.findByRole('alert')).textContent).toBe('Connection metadata is unavailable.');
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('invalid response'));
+    expect(screen.queryByText('2001:db8::7')).toBeNull();
+  });
+
+  it('copies the IP and explains clipboard failures', async () => {
+    const user = userEvent.setup();
+    vi.stubGlobal('fetch', async () => Response.json({ ip: '2001:db8::7', family: 'ipv6' }));
+    render(<PublicIpTool />);
+    await screen.findByText('2001:db8::7');
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText');
+    await user.click(screen.getByRole('button', { name: 'Copy IP' }));
+    expect(writeText).toHaveBeenCalledWith('2001:db8::7');
+    expect(screen.getByRole('status').textContent).toBe('IP address copied.');
+    writeText.mockRejectedValueOnce(new Error('Denied'));
+    await user.click(screen.getByRole('button', { name: 'Copy IP' }));
+    expect(screen.getByRole('status').textContent).toContain('Select and copy');
+  });
+
+  it('cancels pending requests when the page is unmounted', () => {
+    let signal!: AbortSignal;
+    vi.stubGlobal('fetch', (_endpoint: string, options: RequestInit) => {
+      signal = options.signal!;
+      return new Promise<Response>(() => {});
+    });
+    const view = render(<PublicIpTool />);
+    expect(signal.aborted).toBe(false);
+    view.unmount();
+    expect(signal.aborted).toBe(true);
+  });
+
+  it('selects the IP page from its URL and provides navigation to the calculator', async () => {
+    window.history.replaceState({}, '', '/ip');
+    vi.stubGlobal('fetch', async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'My Public IP', level: 1 })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('href')).toBe('/');
+    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBe('page');
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+  });
+});
