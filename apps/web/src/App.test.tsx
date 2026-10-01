@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { CidrCoverResultSchema } from '@packetrove/contracts';
+import * as core from '@packetrove/core';
 import { App } from './App';
 
 afterEach(() => {
@@ -81,6 +83,27 @@ describe('browser calculator', () => {
     expect(screen.getAllByText('36,893,488,147,419,103,232')).toHaveLength(2);
     expect(screen.getByText('2001:db8::/64')).toBeDefined();
     expect(screen.getByText('Exact coverage: this CIDR adds no addresses.')).toBeDefined();
+  });
+  it('uses the shared core locally for equivalent dotted-tail IPv6 inputs', () => {
+    const calculation = vi.spyOn(core, 'smallestCoveringCidr');
+    const fetch = vi.fn(() => { throw new Error('Unexpected API request'); });
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    const inputs = ['::192.0.2.1', '::c000:201'];
+    enter(inputs.join('\n'));
+    expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs });
+    const result = CidrCoverResultSchema.parse(calculation.mock.results[0]?.value);
+    expect(result.cidr).toBe('::c000:201/128');
+    expect(screen.getAllByText(result.cidr)).toHaveLength(3);
+    for (const [label, count] of [
+      ['Unique input addresses', result.inputAddressCount],
+      ['Covered addresses', result.coveredAddressCount],
+      ['Additional addresses', result.additionalAddressCount],
+    ]) {
+      expect(screen.getByText(label!).nextElementSibling?.textContent).toBe(count);
+    }
+    expect(screen.getByText('Exact coverage: this CIDR adds no addresses.')).toBeDefined();
+    expect(fetch).not.toHaveBeenCalled();
   });
   it('maps errors to actual input lines after ignoring blank lines', () => {
     render(<App />);

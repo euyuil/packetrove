@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema } from '@packetrove/contracts';
+import { smallestCoveringCidr } from '@packetrove/core';
 
 const bundle = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
 function run(args: string[], input = '') {
@@ -21,6 +22,16 @@ describe('bundled offline CLI', () => {
     expect(execution.status).toBe(0);
     expect(execution.stderr).toBe('');
     expect(CidrCoverResultSchema.parse(JSON.parse(execution.stdout))).toEqual(result);
+  });
+  it('preserves dotted-tail IPv6 values in the bundled shared calculation', () => {
+    const inputs = ['::192.0.2.1', '::c000:201'];
+    const execution = run(['cidr', 'cover', ...inputs, '--json']);
+    expect(execution.status).toBe(0);
+    expect(execution.stderr).toBe('');
+    const result = CidrCoverResultSchema.parse(JSON.parse(execution.stdout));
+    expect(result).toEqual(smallestCoveringCidr({ inputs }));
+    expect(result.cidr).toBe('::c000:201/128');
+    expect(result.inputAddressCount).toBe('1');
   });
   it('combines positional inputs and nonblank stdin lines in order', () => {
     const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin', '--json'], '\r\n 203.0.113.2 \r\n\r\n203.0.113.6\n');

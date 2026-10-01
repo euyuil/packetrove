@@ -53,6 +53,66 @@ describe('smallest covering CIDR', () => {
   });
 });
 
+describe('IPv6 addresses with dotted IPv4 tails', () => {
+  it('preserves the address instead of silently converting it to an IPv4-mapped address', () => {
+    expect(smallestCoveringCidr({ inputs: ['::192.0.2.1'] })).toEqual({
+      family: 'ipv6', normalizedInputs: ['::c000:201/128'], cidr: '::c000:201/128',
+      range: { first: '::c000:201', last: '::c000:201' },
+      inputAddressCount: '1', coveredAddressCount: '1', additionalAddressCount: '0',
+    });
+  });
+
+  it.each([
+    ['::192.0.2.1', '::c000:201'],
+    ['::0:192.0.2.1', '::c000:201'],
+    ['0:0:0:0:0:0:192.0.2.1', '::c000:201'],
+    ['::ffff:192.0.2.1', '::ffff:c000:201'],
+    ['2001:db8::192.0.2.1', '2001:db8::c000:201'],
+  ])('counts equivalent forms %s and %s as one address', (dotted, hexadecimal) => {
+    const result = smallestCoveringCidr({ inputs: [dotted, hexadecimal] });
+    expect(result.normalizedInputs).toEqual([`${hexadecimal}/128`, `${hexadecimal}/128`]);
+    expect(result.cidr).toBe(`${hexadecimal}/128`);
+    expect(result.range).toEqual({ first: hexadecimal, last: hexadecimal });
+    expect(result.inputAddressCount).toBe('1');
+    expect(result.coveredAddressCount).toBe('1');
+    expect(result.additionalAddressCount).toBe('0');
+  });
+
+  it.each([0, 1, 64, 80, 95, 96, 97, 112, 120, 127, 128])(
+    'preserves the full dotted-tail CIDR range and exact counts for /%s', prefix => {
+      const dotted = smallestCoveringCidr({ inputs: [`::192.0.2.129/${prefix}`, '::c000:281'] });
+      const hexadecimal = smallestCoveringCidr({ inputs: [`::c000:281/${prefix}`, '::c000:281'] });
+      expect(dotted).toEqual(hexadecimal);
+      expect(dotted.cidr).toMatch(new RegExp(`/${prefix}$`));
+      const count = (1n << BigInt(128 - prefix)).toString();
+      expect(dotted.inputAddressCount).toBe(count);
+      expect(dotted.coveredAddressCount).toBe(count);
+      expect(dotted.additionalAddressCount).toBe('0');
+    },
+  );
+
+  it('keeps compatible and mapped addresses distinct with exact expansion counts', () => {
+    const result = smallestCoveringCidr({ inputs: ['::192.0.2.1', '::ffff:192.0.2.1'] });
+    expect(result.normalizedInputs).toEqual(['::c000:201/128', '::ffff:c000:201/128']);
+    expect(result.cidr).toBe('::/80');
+    expect(result.range).toEqual({ first: '::', last: '::ffff:ffff:ffff' });
+    expect(result.inputAddressCount).toBe('2');
+    expect(result.coveredAddressCount).toBe('281474976710656');
+    expect(result.additionalAddressCount).toBe('281474976710654');
+  });
+
+  it.each(['::192.0.002.1', '::192.0.2.256', '::192.0.2.1%eth0',
+    '::192.0.2.1/129', '::192.0.2.1/01'])('still rejects invalid embedded input %s', input => {
+    expect(() => smallestCoveringCidr({ inputs: [input] }))
+      .toThrowError(expect.objectContaining({ code: 'INVALID_INPUT', issues: [{ index: 0, message: expect.any(String) }] }));
+  });
+
+  it('does not merge dotted-tail IPv6 into the IPv4 address family', () => {
+    expect(() => smallestCoveringCidr({ inputs: ['::192.0.2.1', '192.0.2.1'] }))
+      .toThrowError(expect.objectContaining({ code: 'MIXED_ADDRESS_FAMILIES' }));
+  });
+});
+
 describe('covering and union properties against a small exhaustive oracle', () => {
   it('matches enumeration, has a maximal prefix, and is invariant to order and duplicates', () => {
     let seed = 12345;

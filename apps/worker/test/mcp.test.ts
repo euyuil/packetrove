@@ -4,6 +4,7 @@ import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.j
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { describe, expect, it } from 'vitest';
+import { smallestCoveringCidr } from '@packetrove/core';
 import {
   CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema,
   MAX_REQUEST_BYTES, MCP_TOOL_NAME,
@@ -52,6 +53,18 @@ describe('stateless MCP in the Workers runtime', () => {
     const client = await connectedClient();
     try {
       await client.listTools();
+      const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: request });
+      expect(response.isError).not.toBe(true);
+      expect(CidrCoverResultSchema.parse(response.structuredContent)).toEqual(result);
+      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+    } finally { await client.close(); }
+  });
+  it('preserves dotted-tail IPv6 values using the shared calculation', async () => {
+    const request = { inputs: ['::192.0.2.1', '::c000:201'] };
+    const result = smallestCoveringCidr(request);
+    expect(result.cidr).toBe('::c000:201/128');
+    const client = await connectedClient();
+    try {
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: request });
       expect(response.isError).not.toBe(true);
       expect(CidrCoverResultSchema.parse(response.structuredContent)).toEqual(result);
