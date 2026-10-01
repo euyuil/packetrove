@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CidrCoverResultSchema } from '@packetrove/contracts';
@@ -17,13 +17,31 @@ function enter(value: string) {
 }
 
 describe('web page routing', () => {
+  it.each(['/', '/index.html'])('introduces the project at %s without opening a tool or querying an API', path => {
+    window.history.replaceState({}, '', path);
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBeNull();
+    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Open CIDR calculator' }).getAttribute('href')).toBe('/cidr');
+    expect(screen.getByRole('link', { name: 'Open public IP tool' }).getAttribute('href')).toBe('/ip');
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Calculate covering CIDR' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Refresh IP' })).toBeNull();
+    expect(document.title).toBe('Packetrove — Network tools for humans and agents');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('links API documentation to the separate API origin', () => {
     render(<App />);
     expect(screen.getByRole('link', { name: /API specification/ }).getAttribute('href'))
       .toBe('https://api.packetrove.com/openapi.json');
   });
 
-  it.each(['/missing-page', '/ip/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {
+  it.each(['/missing-page', '/ip/missing-page', '/cidr/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {
     window.history.replaceState({}, '', path);
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
@@ -34,6 +52,20 @@ describe('web page routing', () => {
     expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBeNull();
     expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBeNull();
     expect(document.title).toBe('Page not found — Packetrove');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(['/cidr', '/cidr/', '/cidr.html'])('opens the calculator directly at %s without querying an API', path => {
+    window.history.replaceState({}, '', path);
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'Smallest Covering CIDR', level: 1 })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBeNull();
+    expect(document.title).toBe('Smallest Covering CIDR — Packetrove');
+    enter('203.0.113.1');
+    expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -68,10 +100,14 @@ describe('GitHub source link', () => {
     expect(link.getAttribute('href')).toBe(`https://github.com/example-owner/packetrove/tree/${commit}`);
     expect(within(link).getByText('0123456')).toBeDefined();
     expect(link.getAttribute('title')).toContain(commit);
+    expect(screen.getByRole('link', { name: 'Read the API guide' }).getAttribute('href'))
+      .toBe(`https://github.com/example-owner/packetrove/blob/${commit}/docs/api/README.md`);
   });
 });
 
 describe('browser calculator', () => {
+  beforeEach(() => { window.history.replaceState({}, '', '/cidr'); });
+
   it('calculates locally without an API request and displays expansion', () => {
     const fetch = vi.fn(() => { throw new Error('Unexpected API request'); });
     vi.stubGlobal('fetch', fetch);

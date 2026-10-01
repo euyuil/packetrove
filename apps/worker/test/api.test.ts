@@ -88,7 +88,7 @@ describe('API in the Workers runtime', () => {
     expect(await (await exports.default.fetch('http://localhost/health')).json()).toEqual({ status: 'ok' });
     expect(await (await exports.default.fetch('http://localhost/openapi.json')).json()).toEqual(createOpenApiDocument());
   });
-  it.each(['/', '/ip', '/assets/main.js', '/api/v1/ip', '/api/openapi.json'])('does not serve website assets or old API paths at %s', async path => {
+  it.each(['/', '/cidr', '/ip', '/assets/main.js', '/api/v1/ip', '/api/openapi.json'])('does not serve website assets or old API paths at %s', async path => {
     const response = await exports.default.fetch(`http://localhost${path}`, {
       headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
     });

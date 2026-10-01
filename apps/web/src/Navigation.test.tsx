@@ -5,7 +5,10 @@ import { App } from './App';
 import { render } from './test-utils';
 
 let originalClipboard: PropertyDescriptor | undefined;
-beforeEach(() => { originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard'); });
+beforeEach(() => {
+  originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+  window.history.replaceState({}, '', '/cidr');
+});
 afterEach(() => {
   cleanup();
   if (originalClipboard) Object.defineProperty(navigator, 'clipboard', originalClipboard);
@@ -32,6 +35,8 @@ function lookup() {
 async function visitIpAndReturn() {
   openTool('My Public IP');
   await screen.findByText('198.51.100.2');
+  fireEvent.click(screen.getByRole('link', { name: 'Home' }));
+  expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
   openTool('Smallest Covering CIDR');
 }
 
@@ -57,7 +62,7 @@ describe('tool navigation in one page session', () => {
     expect(await screen.findByText('198.51.100.2')).toBeDefined();
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
     openTool('Smallest Covering CIDR');
-    expect(window.location.pathname).toBe('/');
+    expect(window.location.pathname).toBe('/cidr');
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe(input);
     expect(screen.getByText('203.0.113.0/30')).toBeDefined();
     expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', '203.0.113.2'] });
@@ -133,6 +138,14 @@ describe('tool navigation in one page session', () => {
     expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBe('page');
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('::/0');
     expect(screen.getAllByText('340,282,366,920,938,463,463,374,607,431,768,211,456')).toHaveLength(2);
+    fireEvent.click(screen.getByRole('link', { name: 'Home' }));
+    expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
+    act(() => { window.history.back(); });
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Smallest Covering CIDR'));
+    expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('::/0');
+    act(() => { window.history.forward(); });
+    await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Network tools for humans and agents'));
+    expect(document.title).toBe('Packetrove — Network tools for humans and agents');
     expect(fetch).toHaveBeenCalledTimes(2);
   });
   it('handles an unknown history route and returns home with the existing draft', () => {
@@ -148,6 +161,10 @@ describe('tool navigation in one page session', () => {
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
     fireEvent.click(screen.getByRole('link', { name: 'Return to home' }));
     expect(window.location.pathname).toBe('/');
+    expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
+    expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
+    fireEvent.click(screen.getByRole('link', { name: 'Open CIDR calculator' }));
+    expect(window.location.pathname).toBe('/cidr');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -159,15 +176,19 @@ describe('tool navigation in one page session', () => {
     await screen.findByText('198.51.100.2');
     fireEvent.click(screen.getByRole('link', { name: 'Packetrove home' }));
     expect(window.location.pathname).toBe('/');
+    expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
+    expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
+    fireEvent.click(screen.getByRole('link', { name: 'Open CIDR calculator' }));
+    expect(window.location.pathname).toBe('/cidr');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
   });
   it('follows the tool href when the current path has a query or fragment', () => {
-    window.history.replaceState(null, '', '/?source=example#top');
+    window.history.replaceState(null, '', '/cidr?source=example#top');
     const fetch = lookup();
     render(<App />);
     calculate('203.0.113.1');
     openTool('Smallest Covering CIDR');
-    expect(window.location.pathname).toBe('/');
+    expect(window.location.pathname).toBe('/cidr');
     expect(window.location.search).toBe('');
     expect(window.location.hash).toBe('');
     expect(window.history.state).toBeNull();
@@ -187,13 +208,34 @@ describe('tool navigation in one page session', () => {
       }, { once: true });
       fireEvent(screen.getByRole('link', { name: 'My Public IP' }), click);
       expect(push).not.toHaveBeenCalled();
-      expect(window.location.pathname).toBe('/');
+      expect(window.location.pathname).toBe('/cidr');
       expect(fetch).not.toHaveBeenCalled();
     },
   );
 });
 
 describe('navigation request and clipboard lifetimes', () => {
+  it('opens the public IP tool from home and cancels its request when returning home', () => {
+    window.history.replaceState(null, '', '/');
+    let signal!: AbortSignal;
+    const fetch = vi.fn((_url: string, options: RequestInit) => {
+      signal = options.signal!;
+      return new Promise<Response>(() => {});
+    });
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    expect(fetch).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('link', { name: 'Open public IP tool' }));
+    expect(window.location.pathname).toBe('/ip');
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(signal.aborted).toBe(false);
+    fireEvent.click(screen.getByRole('link', { name: 'Home' }));
+    expect(window.location.pathname).toBe('/');
+    expect(signal.aborted).toBe(true);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
+  });
+
   it('queries IP only when entering or refreshing, and not when reselecting the active tool', async () => {
     const fetch = lookup();
     render(<App />);

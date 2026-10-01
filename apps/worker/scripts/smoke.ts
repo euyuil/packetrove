@@ -40,14 +40,15 @@ const website = await timedFetch(`${origin}/`);
 assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
 const html = await website.text();
-assert.match(html, /<title>Smallest Covering CIDR — Packetrove<\/title>/);
-for (const path of ['/ip', '/ip/']) {
-  const ipPage = await timedFetch(`${origin}${path}`, {
+assert.match(html, /<title>Packetrove — Network tools for humans and agents<\/title>/);
+for (const path of ['/cidr', '/cidr/', '/ip', '/ip/']) {
+  const toolPage = await timedFetch(`${origin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });
-  assert.equal(ipPage.status, 200, `Public IP page status: ${path}`);
-  assert.match(ipPage.headers.get('content-type') ?? '', /text\/html/);
-  assert.match(await ipPage.text(), /<title>My Public IP — Packetrove<\/title>/);
+  assert.equal(toolPage.status, 200, `Tool page status: ${path}`);
+  assert.match(toolPage.headers.get('content-type') ?? '', /text\/html/);
+  assert.match(await toolPage.text(), path.startsWith('/cidr')
+    ? /<title>Smallest Covering CIDR — Packetrove<\/title>/ : /<title>My Public IP — Packetrove<\/title>/);
 }
 const missingPage = await timedFetch(`${origin}/missing-page`, {
   headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
@@ -71,7 +72,7 @@ for (const path of ['/api/v1/cidr/cover', '/mcp']) {
   assert.equal(response.status, 405, `Website must reject tool-call POST requests: ${path}`);
   await response.body?.cancel();
 }
-for (const path of ['/', '/ip', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
+for (const path of ['/', '/cidr', '/ip', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
   const response = await timedFetch(`${apiOrigin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });

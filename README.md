@@ -10,7 +10,8 @@ Packetrove helps developers and network administrators simplify firewall IP
 lists, check a connection's public IP, and use the same tools from a browser,
 scripts, or an AI agent.
 
-**[Try the CIDR calculator](https://packetrove.com) ·
+**[Explore Packetrove](https://packetrove.com) ·
+[Try the CIDR calculator](https://packetrove.com/cidr) ·
 [Check your public IP](https://packetrove.com/ip)**
 
 ## What you can do
@@ -60,7 +61,7 @@ the returned address, and lookup results and errors are not cached.
 
 | Interface | Get started |
 | --- | --- |
-| Website | [CIDR calculator](https://packetrove.com) · [My Public IP](https://packetrove.com/ip) |
+| Website | [Project overview](https://packetrove.com) · [CIDR calculator](https://packetrove.com/cidr) · [My Public IP](https://packetrove.com/ip) |
 | Web API | [API guide](docs/api/README.md) · [OpenAPI specification](https://api.packetrove.com/openapi.json) |
 | Command-line interface (CLI) | [CLI guide](docs/integrations/cli.md), with offline CIDR calculations and JSON output |
 | AI agents | [MCP connection guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
