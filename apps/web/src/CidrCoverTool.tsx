@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import type { FormEvent } from 'react';
 import {
   Accordion, Alert, Badge, Button, DataList, Group, List, Paper, ScrollArea, SimpleGrid, Stack, Text, Textarea, Title,
 } from '@mantine/core';
@@ -15,17 +15,17 @@ function formatCount(count: string) {
   return BigInt(count).toLocaleString('en-US');
 }
 
-export function CidrCoverTool() {
-  const [input, setInput] = useState('');
-  const [result, setResult] = useState<CidrCoverResult | null>(null);
-  const [error, setError] = useState<ErrorResponse['error'] | null>(null);
+export type CidrCoverDraft = { input: string; result: CidrCoverResult | null; error: ErrorResponse['error'] | null };
+
+export function CidrCoverTool({ draft, onDraftChange }: {
+  draft: CidrCoverDraft; onDraftChange: (draft: CidrCoverDraft) => void;
+}) {
+  const { input, result, error } = draft;
   const { copyMessage, clearCopyMessage, copyText } = useClipboardFeedback();
   const rows = inputRows(input);
 
   function replaceInput(value: string) {
-    setInput(value);
-    setResult(null);
-    setError(null);
+    onDraftChange({ input: value, result: null, error: null });
     clearCopyMessage();
   }
 
@@ -33,13 +33,11 @@ export function CidrCoverTool() {
     event.preventDefault();
     clearCopyMessage();
     try {
-      setResult(smallestCoveringCidr({ inputs: rows.map(row => row.value) }));
-      setError(null);
+      onDraftChange({ input, result: smallestCoveringCidr({ inputs: rows.map(row => row.value) }), error: null });
     } catch (failure) {
-      setResult(null);
-      setError(failure instanceof ToolError ? failure.toResponse().error : {
+      onDraftChange({ input, result: null, error: failure instanceof ToolError ? failure.toResponse().error : {
         code: 'INTERNAL_ERROR', message: 'Unable to calculate this input. Please try again.',
-      });
+      } });
     }
   }
 
@@ -80,7 +78,8 @@ export function CidrCoverTool() {
                   onChange={event => replaceInput(event.currentTarget.value)} />
                 <Group justify="space-between">
                   <Text size="xs" c="dimmed">{rows.length.toLocaleString('en-US')} {rows.length === 1 ? 'entry' : 'entries'}</Text>
-                  <Button type="button" variant="subtle" size="xs" onClick={() => replaceInput('')} disabled={!input}>Clear</Button>
+                  <Button type="button" variant="subtle" size="xs" onClick={() => replaceInput('')}
+                    disabled={!input && !result && !error}>Clear</Button>
                 </Group>
                 <Group gap="sm">
                   <Text size="sm" c="dimmed">Try an example</Text>
