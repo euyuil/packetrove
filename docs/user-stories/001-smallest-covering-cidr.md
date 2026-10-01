@@ -55,7 +55,9 @@ reusable skill.
 When a calculation can run in the browser, the web application should be able to
 perform it locally without calling the hosted API. Browser and server interfaces
 will share TypeScript calculation code. The selected stack is Cloudflare
-Workers with Hono for API and MCP access, and React with Vite for the web app.
+Workers with Hono for API and MCP access, and React with Vite and Mantine for
+the web app. Use Mantine controls, layout components, and a shared theme to
+minimize custom CSS.
 
 Keep hosting costs low. The website, API, and MCP are deployed on Cloudflare
 Workers with Static Assets; see the [deployment guide](../deployment.md).

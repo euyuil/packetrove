@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { StrictMode } from 'react';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { PublicIpTool } from './PublicIpTool';
+import { render } from './test-utils';
 
 afterEach(() => {
   cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
@@ -105,7 +105,7 @@ describe('public IP web tool', () => {
         },
       })));
     }).mockImplementationOnce(() => new Promise<Response>(resolve => { resolveCurrent = resolve; })));
-    render(<StrictMode><PublicIpTool /></StrictMode>);
+    render(<PublicIpTool />, { reactStrictMode: true });
     expect(cancelled.aborted).toBe(true);
     await waitFor(() => expect(screen.getByText('Checking your public IP…')).toBeDefined());
     expect(screen.queryByRole('alert')).toBeNull();

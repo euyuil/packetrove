@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CidrCoverResultSchema } from '@packetrove/contracts';
 import * as core from '@packetrove/core';
 import { App } from './App';
+import { render } from './test-utils';
 
 afterEach(() => {
   cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
@@ -76,11 +77,16 @@ describe('browser calculator', () => {
     expect(screen.getByText('This CIDR adds 5 addresses. Applying it expands the addresses allowed or blocked by your list.')).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
   });
-  it('displays precise IPv6 counts and canonical inputs', () => {
+  it('displays precise IPv6 counts and canonical inputs', async () => {
+    const user = userEvent.setup();
     render(<App />);
     enter('2001:DB8::7/64\n2001:db8:0:1::/64');
     expect(screen.getByText('2001:db8::/63')).toBeDefined();
     expect(screen.getAllByText('36,893,488,147,419,103,232')).toHaveLength(2);
+    const normalizedInputs = screen.getByRole('button', { name: 'Normalized inputs (2)' });
+    expect(normalizedInputs.getAttribute('aria-expanded')).toBe('false');
+    await user.click(normalizedInputs);
+    expect(normalizedInputs.getAttribute('aria-expanded')).toBe('true');
     expect(screen.getByText('2001:db8::/64')).toBeDefined();
     expect(screen.getByText('Exact coverage: this CIDR adds no addresses.')).toBeDefined();
   });
@@ -104,6 +110,27 @@ describe('browser calculator', () => {
     }
     expect(screen.getByText('Exact coverage: this CIDR adds no addresses.')).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
+  });
+  it('shows the full IPv6 range and exact 128-bit counts', () => {
+    render(<App />);
+    enter('2001:db8::/0');
+    expect(screen.getByText('::')).toBeDefined();
+    expect(screen.getByText('ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff')).toBeDefined();
+    expect(screen.getAllByText('340,282,366,920,938,463,463,374,607,431,768,211,456')).toHaveLength(2);
+  });
+  it('associates input instructions and validation errors with the textarea', () => {
+    render(<App />);
+    const input = screen.getByRole('textbox', { name: 'IP addresses or CIDR ranges' });
+    expect(input.getAttribute('aria-describedby')).toBe('input-help');
+    expect(document.getElementById('input-help')?.textContent).toContain('One entry per line.');
+    enter('invalid');
+    expect(input.getAttribute('aria-invalid')).toBe('true');
+    expect(input.getAttribute('aria-describedby')?.trim().split(/\s+/).sort()).toEqual(['input-error', 'input-help']);
+    expect(document.getElementById('input-error')?.contains(screen.getByRole('alert'))).toBe(true);
+    fireEvent.change(input, { target: { value: '203.0.113.1' } });
+    expect(input.getAttribute('aria-invalid')).not.toBe('true');
+    expect(input.getAttribute('aria-describedby')).toBe('input-help');
+    expect(screen.queryByRole('alert')).toBeNull();
   });
   it('maps errors to actual input lines after ignoring blank lines', () => {
     render(<App />);

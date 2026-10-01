@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { CidrCoverTool } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
+import { render } from './test-utils';
 
 let originalClipboard: PropertyDescriptor | undefined;
 beforeEach(() => { originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard'); });
@@ -61,7 +62,10 @@ async function openTool(tool: typeof tools[number]) {
     } else {
       await act(async () => { refresh.resolve(Response.json({ ip: tool.second, family: 'ipv4' })); });
     }
-    expect(screen.getByText(tool.second, { selector: '.cidr-value, .ip-value' })).toBeDefined();
+    const result = screen.getByRole('region', {
+      name: Component === CidrCoverTool ? 'Coverage result' : 'Your current connection',
+    });
+    expect(within(result).getAllByText(tool.second, { selector: 'code' }).length).toBeGreaterThan(0);
   }
   return { view, beginResultChange, finishResultChange };
 }
