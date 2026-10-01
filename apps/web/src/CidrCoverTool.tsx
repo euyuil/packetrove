@@ -51,10 +51,10 @@ export function CidrCoverTool() {
   return (
     <Stack gap="xl">
       <Stack component="section" aria-labelledby="tool-title" gap="sm">
-        <Text size="xs" c="teal" fw={700}>IP ADDRESS TOOLS</Text>
+        <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>IP ADDRESS TOOLS</Text>
         <Title order={1} id="tool-title">Smallest Covering CIDR</Title>
         <Text c="dimmed">Combine IPv4 or IPv6 addresses and ranges into the smallest single CIDR that covers them all.</Text>
-        <Text size="sm" c="teal">Calculated in your browser · No API request</Text>
+        <Text size="sm" c="var(--mantine-primary-color-filled)">Calculated in your browser · No API request</Text>
       </Stack>
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
         <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="input-heading">
@@ -104,7 +104,7 @@ export function CidrCoverTool() {
               {result ? <>
                 <Text size="xs" c="dimmed">SMALLEST COVERING CIDR</Text>
                 <Group justify="space-between">
-                  <Text component="code" className="network-value" size="xl" fw={600} c="teal">{result.cidr}</Text>
+                  <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.cidr}</Text>
                   <Button type="button" variant="default" size="xs" onClick={copyCidr}>Copy CIDR</Button>
                 </Group>
                 <Text size="xs" c="dimmed" role="status">{copyMessage}</Text>
