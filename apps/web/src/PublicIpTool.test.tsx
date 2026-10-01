@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { StrictMode } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
@@ -40,9 +41,14 @@ describe('public IP web tool', () => {
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 
-  it('shows useful network errors and retries without exposing exception details', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockRejectedValueOnce(new Error('private proxy detail'))
-      .mockResolvedValueOnce(Response.json({ ip: '203.0.113.1', family: 'ipv4' })));
+  it.each(['request', 'response body'])('shows useful %s network errors and retries without exposing details', async stage => {
+    const fetch = vi.fn();
+    const failure = new Error('private proxy detail');
+    if (stage === 'request') fetch.mockRejectedValueOnce(failure);
+    else fetch.mockResolvedValueOnce(new Response(new ReadableStream({
+      start(controller) { controller.error(failure); },
+    })));
+    vi.stubGlobal('fetch', fetch.mockResolvedValueOnce(Response.json({ ip: '203.0.113.1', family: 'ipv4' })));
     render(<PublicIpTool />);
     expect((await screen.findByRole('alert')).textContent).toContain('Check your connection');
     expect(screen.queryByText(/private proxy detail/)).toBeNull();
@@ -86,6 +92,26 @@ describe('public IP web tool', () => {
     expect(signal.aborted).toBe(false);
     view.unmount();
     expect(signal.aborted).toBe(true);
+  });
+
+  it('does not show a cancelled body-read error after its effect restarts', async () => {
+    let cancelled!: AbortSignal;
+    let resolveCurrent!: (response: Response) => void;
+    vi.stubGlobal('fetch', vi.fn().mockImplementationOnce((_endpoint: string, options: RequestInit) => {
+      cancelled = options.signal!;
+      return Promise.resolve(new Response(new ReadableStream({
+        start(controller) {
+          cancelled.addEventListener('abort', () => controller.error(cancelled.reason), { once: true });
+        },
+      })));
+    }).mockImplementationOnce(() => new Promise<Response>(resolve => { resolveCurrent = resolve; })));
+    render(<StrictMode><PublicIpTool /></StrictMode>);
+    expect(cancelled.aborted).toBe(true);
+    await waitFor(() => expect(screen.getByText('Checking your public IP…')).toBeDefined());
+    expect(screen.queryByRole('alert')).toBeNull();
+    resolveCurrent(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+    expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('selects the IP page from its URL and provides navigation to the calculator', async () => {
