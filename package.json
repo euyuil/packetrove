@@ -22,7 +22,8 @@
     "build": "pnpm spec:check && pnpm -r --if-present build",
     "check": "pnpm typecheck && pnpm test",
     "deploy": "pnpm build && pnpm --filter @packetrove/worker run deploy",
-    "smoke": "pnpm --filter @packetrove/worker smoke"
+    "smoke": "pnpm --filter @packetrove/worker smoke",
+    "wait:deployment": "tsx scripts/wait-for-deployment.ts"
   },
   "devDependencies": {
     "@redocly/cli": "2.57.0",
