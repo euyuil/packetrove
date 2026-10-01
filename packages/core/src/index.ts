@@ -136,6 +136,7 @@ export function smallestCoveringCidr(value: unknown): CidrCoverResult {
 /** Query an IP endpoint without persisting its per-request result. */
 export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSignal): Promise<PublicIpResult> {
   let response: Response;
+  let text: string;
   try {
     const options = {
       headers: { accept: 'application/json' },
@@ -143,11 +144,12 @@ export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSigna
       signal: AbortSignal.any([AbortSignal.timeout(10_000), ...(signal ? [signal] : [])]),
     } as const;
     response = await fetch(endpoint, options);
+    text = await response.text();
   } catch {
     throw new ToolError('NETWORK_ERROR', 'Unable to reach the IP lookup service. Check your connection and try again.');
   }
   let body: unknown;
-  try { body = await response.json(); } catch {
+  try { body = JSON.parse(text) as unknown; } catch {
     throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
   }
   if (!response.ok) {

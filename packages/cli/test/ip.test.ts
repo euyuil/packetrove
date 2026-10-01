@@ -83,6 +83,39 @@ describe('bundled public IP CLI', () => {
     });
   });
 
+  it('reports header and body timeouts as network errors with empty stdout', async () => {
+    await Promise.all(['headers', 'body'].map(stage => withApi((_request, response) => {
+      if (stage === 'body') {
+        response.writeHead(200, { 'content-type': 'application/json' });
+        response.write('{');
+      }
+    }, async origin => {
+      const execution = await run(['ip', '--api-origin', origin, '--json']);
+      expect(execution.status).toBe(1);
+      expect(execution.stdout).toBe('');
+      expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error).toEqual({
+        code: 'NETWORK_ERROR', message: 'Unable to reach the IP lookup service. Check your connection and try again.',
+      });
+    })));
+  }, 20_000);
+
+  it.each([
+    { complete: false, code: 'NETWORK_ERROR' },
+    { complete: true, code: 'INVALID_RESPONSE' },
+  ])('distinguishes an interrupted body from complete malformed JSON: $code', async ({ complete, code }) => {
+    await withApi((_request, response) => {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.write('{');
+      if (complete) response.end();
+      else setTimeout(() => response.destroy(), 50);
+    }, async origin => {
+      const execution = await run(['ip', '--api-origin', origin, '--json']);
+      expect(execution.status).toBe(1);
+      expect(execution.stdout).toBe('');
+      expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error.code).toBe(code);
+    });
+  });
+
   it.each([
     ['ip', '--stdin'], ['ip', '203.0.113.1'],
     ['ip', '--api-origin', 'not-a-url'], ['ip', '--api-origin', 'file:///tmp/ip'],
