@@ -28,10 +28,14 @@
 - Gitleaks is installed globally. Check `gitleaks version` and reuse the existing
   installation across clones. On a Mac without Gitleaks, the installation command
   is `brew install gitleaks`. Do not download it on each commit.
-- Current setup is explicit: run `pnpm install`, then `pnpm hooks:install` for a
-  fresh clone. Inspect `git config --local --get core.hooksPath`; this repository
-  uses .githooks. An already configured checkout does not need repeated setup.
-  Preserve existing custom hooks and report configuration conflicts.
+- Run `pnpm install` for a fresh clone. Its prepare script automatically enables
+  the repository-local hooks. Inspect `git config --local --get core.hooksPath`;
+  this repository uses .githooks. Repeated installs are safe. Preserve existing
+  custom hooks and resolve setup warnings before committing. If lifecycle scripts
+  were disabled or setup needs repair, use `pnpm hooks:install`.
+- Automatic setup skips continuous integration, production installs, and source
+  archives without their own Git metadata. Missing Gitleaks allows dependency
+  installation and local development, but blocks commits until it is installed.
 - The hooks scan staged changes and commit messages for credentials and validate
   Conventional Commit headers. Resolve failed checks before committing; do not
   bypass them or expose credentials in output. Run `pnpm test:git-checks` when
@@ -40,13 +44,8 @@
   Gitleaks. Credential scanning in continuous integration is deferred by the
   owner; do not add it as part of unrelated work.
 
-The recommended setup improvement is not implemented yet: enable hooks through
-the package.json prepare script during `pnpm install`, skip setup in continuous
-integration and production environments, preserve custom hooks, and allow
-dependency installation without Gitleaks while requiring it at commit time.
-Gitleaks would remain a globally installed tool. Until that change is implemented,
-use the explicit setup above. When implementing it, update this file, README.md,
-and docs/git-checks.md together and verify both a fresh clone and the skipped
+When changing setup, update this file, README.md, and docs/git-checks.md together.
+Verify a fresh clone, missing Gitleaks, preserved custom hooks, and the skipped
 continuous integration path.
 
 ## Open source practices

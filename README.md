@@ -59,11 +59,15 @@ pnpm check
 pnpm dev:api
 ```
 
-For local commit checks, install Gitleaks once (`brew install gitleaks` on macOS),
-then run `pnpm hooks:install` in this clone. The hooks scan staged changes and
-commit messages for credentials and require Conventional Commit headers.
+`pnpm install` automatically enables this repository's local Git hooks through
+the `prepare` script. Install Gitleaks once (`brew install gitleaks` on macOS)
+for commit checks; reuse that global installation across clones. Missing Gitleaks
+does not prevent dependency installation or local development, but stops commits
+until it is available. The hooks scan staged changes and commit messages for
+credentials and require Conventional Commit headers.
 See the [local Git checks guide](docs/git-checks.md) for setup, troubleshooting,
-and coverage. Hook installation is explicit and affects only this repository.
+and coverage. Automatic setup skips continuous integration, production installs,
+and source archives without Git metadata, and preserves existing custom hooks.
 
 The shared Zod schemas are the source of truth for request and response types.
 The generated OpenAPI 3.1.0 document is committed for consumers to read directly.

@@ -13,11 +13,17 @@ Install the stable Homebrew release of Gitleaks once on macOS:
 brew install gitleaks
 ```
 
-From the repository root, enable the hooks for this clone:
+From the repository root, install dependencies as usual:
 
 ```sh
-pnpm hooks:install
+pnpm install
 ```
+
+The root `prepare` script automatically enables the hooks for this clone. An
+existing global Gitleaks installation is reused. If Gitleaks is missing, setup
+prints an installation reminder and still enables the hooks; dependency
+installation and local development remain available, while commits fail with an
+actionable message until Gitleaks is installed.
 
 Node.js, Git, and Gitleaks must be available on `PATH` when committing, including
 from a graphical Git client. Other operating systems can use a Gitleaks binary
@@ -25,10 +31,25 @@ from the [official installation instructions](https://github.com/gitleaks/gitlea
 
 Setup writes `core.hooksPath = .githooks` to this repository's Git configuration.
 It does not change global Git settings or automatically replace existing custom
-hooks. It can be run again safely. Git does not activate these hooks when cloning;
-run setup for each fresh clone or worktree that needs its own Git configuration.
-Dependencies can be installed and the application can be built without enabling
-the hooks or installing Gitleaks.
+hooks. Repeated installs are safe. Custom hooks or an unsuccessful automatic
+setup produce a warning without stopping dependency installation; review the
+configuration before committing.
+
+Automatic setup skips continuous integration (`CI` set to a value other than
+empty, `0`, or `false`), production (`NODE_ENV=production` or
+`npm_config_production=true`), and source archives without their own `.git`
+metadata. It does not inspect or configure a containing repository. Git itself
+does not activate these hooks when cloning; the subsequent `pnpm install` does.
+
+If lifecycle scripts were disabled, or automatic setup needs troubleshooting,
+run the explicit setup command after installing Gitleaks:
+
+```sh
+pnpm hooks:install
+```
+
+Explicit setup reports configuration conflicts or missing Gitleaks as errors.
+It is available for manual repair; fresh clones normally need only `pnpm install`.
 
 Gitleaks is a globally installed tool, with no repository-local download or
 version pin. Commit checks do not download anything or require network access.
