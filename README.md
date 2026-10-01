@@ -2,63 +2,113 @@
 
 **Network tools for humans and agents.**
 
-Packetrove is a network tools project for developers and network administrators.
-Its planned diagnostic tools aim to help users inspect network information,
-investigate connectivity problems, and understand diagnostic results, including
-connectivity from mainland China.
+Packetrove helps developers and network administrators simplify firewall IP
+lists, check a connection's public IP, and use the same tools from a browser,
+scripts, or an AI agent.
 
-The tools support interactive use through a website and programmatic
-access through a web API, command-line interface (CLI), Model Context Protocol
-(MCP) server, with a reusable agent skill for CIDR covering. Additional diagnostic
-tools and agent workflows are planned.
+**[Try the CIDR calculator](https://packetrove.com) ·
+[Check your public IP](https://packetrove.com/ip)**
 
-## Status
+## What you can do
 
-The first tool is a smallest covering CIDR calculator for firewall IP allowlists
-and blocklists. Its [user story](docs/user-stories/001-smallest-covering-cidr.md)
-and [API contract](docs/api/README.md) are defined. The shared IPv4/IPv6 calculation
-and Hono API are implemented in the Workers runtime. The React web calculator
-is also implemented and calculates entirely in the browser.
-The stateless MCP server, offline CIDR command, and reusable agent
-skill are implemented as well.
+### Simplify firewall IP lists
 
-The second tool checks the IP address observed for the current connection,
-whether IPv4 or IPv6. Its [user story](docs/user-stories/002-current-public-ip.md),
-shared contract, Web API, web page, CLI command, and MCP tool are implemented.
-With a VPN or proxy this is its exit address. A hosted MCP client observes its
-own connection, which may differ from the user's computer.
+Running out of entries in an IP allowlist or blocklist? Paste your IPv4 or IPv6
+addresses and CIDR ranges to find the smallest single CIDR that covers them all.
+Packetrove shows the full address range and exactly how many additional
+addresses it includes, so you can decide whether the wider coverage fits your
+firewall rules.
 
-The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
-Vite. The website, Web API, and MCP server are deployed on Cloudflare Workers
-with Static Assets and verified at `https://packetrove.com`.
+| Your inputs | Smallest covering CIDR | Coverage |
+| --- | --- | --- |
+| `203.0.113.1`, `203.0.113.2`, `203.0.113.6` | `203.0.113.0/29` | 8 addresses: your 3 plus 5 additional addresses |
+| `203.0.113.0/25`, `203.0.113.128/25` | `203.0.113.0/24` | 256 addresses, with no additional coverage |
 
-| Interface | Public address |
+Use up to 1,000 entries of one address family per calculation. Overlapping
+ranges and duplicate addresses count once. A covering CIDR can allow or block
+addresses outside your original list; review that expansion before applying it.
+
+### Check your connection's public IP
+
+Open [My Public IP](https://packetrove.com/ip) to see and copy the IPv4 or IPv6
+address used by your current connection. Refresh after changing networks, VPNs,
+or proxy settings.
+
+With a VPN or proxy, the result is its exit address. Each check observes one
+address family; it does not separately discover both IPv4 and IPv6 addresses.
+
+## Why Packetrove?
+
+- **Keep CIDR inputs local.** The web calculator runs entirely in your browser
+  without sending your address list to the API. The CLI calculates offline after
+  it is built.
+- **See what changes.** Results include the canonical CIDR, address range, and
+  exact counts, including large IPv6 ranges and any additional coverage.
+- **Fit your workflow.** Use the website for a quick check, JSON results for
+  scripts, or Model Context Protocol (MCP) tools for AI agents.
+- **Start without an account.** The hosted website, Web API, and MCP server
+  require no login or API key.
+
+Public IP checks make a network request. The application does not store or log
+the returned address, and lookup results and errors are not cached.
+
+## Use it your way
+
+| Interface | Get started |
 | --- | --- |
-| Website | [packetrove.com](https://packetrove.com) |
-| Public IP page | [My Public IP](https://packetrove.com/ip) |
-| CIDR Web API | `POST https://packetrove.com/api/v1/cidr/cover` |
-| Public IP Web API | `GET https://packetrove.com/api/v1/ip` |
-| OpenAPI document | [API specification](https://packetrove.com/api/openapi.json) |
-| MCP server | `https://packetrove.com/mcp` (Streamable HTTP) |
-| Health | [Service health](https://packetrove.com/health) |
+| Website | [CIDR calculator](https://packetrove.com) · [My Public IP](https://packetrove.com/ip) |
+| Web API | [API guide](docs/api/README.md) · [OpenAPI specification](https://packetrove.com/api/openapi.json) |
+| Command-line interface (CLI) | [CLI guide](docs/integrations/cli.md), with offline CIDR calculations and JSON output |
+| AI agents | [MCP connection guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
 
-Deployments use the project-local Wrangler and builds on GitHub Actions. See the
-[Cloudflare deployment guide](docs/deployment.md) for login, publishing, costs,
-live checks, and rollback. Updates to `main` are deployed automatically after
-validation, then checked against the live website, API, and MCP service. Manual
-publishing is also available:
+### Call the API
+
+Calculate a covering CIDR with a single request:
 
 ```sh
-pnpm check
-pnpm run deploy
-pnpm smoke https://packetrove.com
+curl https://packetrove.com/api/v1/cidr/cover \
+  -H 'Content-Type: application/json' \
+  -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
 ```
+
+The result includes `cidr: "203.0.113.0/29"` and
+`additionalAddressCount: "5"`. Address counts are decimal strings to preserve
+exact IPv6 values. Use `GET https://packetrove.com/api/v1/ip` to check the
+connection making the request.
+
+### Connect an AI agent
+
+Add `https://packetrove.com/mcp` to a client that supports Streamable HTTP.
+The server provides `smallest_covering_cidr` and `get_public_ip` without
+authentication. The repository also includes a
+[CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) for calculating ranges
+and explaining additional allowlist or blocklist coverage.
+
+A hosted MCP client checks its own connection, which may differ from your
+computer's. Use the website or run the CLI on your machine to inspect that
+network path.
+
+### Run the CLI
+
+With the [development toolchain](#development) installed, build from this
+repository:
+
+```sh
+pnpm install
+pnpm build
+node packages/cli/dist/cli.js cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+node packages/cli/dist/cli.js ip
+```
+
+CIDR calculations run locally; `ip` calls the public API from the machine
+running the command. The CLI is supplied in this repository and has not been
+published to npm. See the [CLI guide](docs/integrations/cli.md) for file input,
+JSON errors, and packaging.
 
 ## Development
 
 Use Node.js 24.21.0 LTS, pinned in `.node-version`, and pnpm 12.8.1, pinned in
-`package.json`. Development and CI are verified with this toolchain. Other
-supported Node.js versions are listed in `package.json`.
+`package.json`.
 
 ```sh
 pnpm install
@@ -67,107 +117,31 @@ pnpm check
 pnpm dev:api
 ```
 
-`pnpm install` automatically enables this repository's local Git hooks through
-the `prepare` script. Install Gitleaks once (`brew install gitleaks` on macOS)
-for commit checks; reuse that global installation across clones. Missing Gitleaks
-does not prevent dependency installation or local development, but stops commits
-until it is available. The hooks scan staged changes and commit messages for
-credentials and require Conventional Commit headers.
-See the [local Git checks guide](docs/git-checks.md) for setup, troubleshooting,
-and coverage. Automatic setup skips continuous integration, production installs,
-and source archives without Git metadata, and preserves existing custom hooks.
+`pnpm dev:api` serves the website and API at `http://localhost:8787`. For React
+development with hot reload, run `pnpm dev:web` and open `http://localhost:5173`.
+CIDR calculation works with the web development server alone; API calls use
+the local Worker.
 
-The shared Zod schemas are the source of truth for request and response types.
-The generated OpenAPI 3.1.0 document is committed for consumers to read directly.
+`pnpm install` automatically enables repository-local Git hooks. Install
+Gitleaks once (`brew install gitleaks` on macOS) for credential scanning and
+Conventional Commit checks. Missing Gitleaks allows local development but blocks
+commits. See the [local Git checks guide](docs/git-checks.md) for setup and
+troubleshooting.
 
-The local API runs at `http://localhost:8787`. For example:
+Local development and tests need no Cloudflare account or production credentials.
+`pnpm build` validates the API specification and performs a deployment dry run.
+Local public IP lookup depends on Cloudflare connection metadata; without it,
+the API returns `CLIENT_IP_UNAVAILABLE`.
 
-```sh
-curl http://localhost:8787/api/v1/cidr/cover \
-  -H 'Content-Type: application/json' \
-  -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
-```
+## Self-hosting
 
-`pnpm build` validates the specification and performs a Wrangler deployment dry
-run. It does not deploy a live service. No Cloudflare account is needed for local
-development and tests.
+The hosted website, Web API, and MCP server run on Cloudflare Workers. Follow
+the [deployment guide](docs/deployment.md) to deploy your own copy, configure
+credentials, and verify it.
 
-## Continuous integration and deployment
-
-GitHub Actions runs `pnpm check` on pull requests targeting `main` and on updates
-to `main`. The `Validate project` check must pass before a pull request can merge,
-and its branch must be up to date with `main`. Pull request runs only validate;
-successful current updates to `main` deploy and verify production. Manual runs
-on `main` use the same validation and deployment process.
-The workflow uses one Ubuntu 26.04 runner, the Node.js LTS version in
-`.node-version`, the project's pnpm version, and locked dependencies. See the
-[CI guide](docs/continuous-integration.md) for validation coverage, credentials,
-deployment ordering, run commands, and cost controls.
-
-## Web application
-
-`pnpm dev:api` builds the web app and serves both the built website and API at
-`http://localhost:8787`. For React development with hot reload, run
-`pnpm dev:web` and open `http://localhost:5173`. The Vite development server
-proxies API requests to the local Worker; CIDR calculation itself
-never calls the API and works with the Vite server alone.
-
-The web app accepts one address or CIDR per line, displays normalized inputs
-and exact address counts, and clears stale results when inputs change. All code
-and styles are bundled locally, without fonts or scripts from external CDNs.
-
-The built website serves `/` and `/ip` as static pages. Unknown page paths
-return HTTP 404 with a page-not-found message and a homepage link; missing
-static resources also return 404. The Vite development server retains its HTML
-fallback for hot reload; use the local Worker to verify HTTP routing.
-
-The shared footer links to GitHub. GitHub Actions supplies `VITE_GITHUB_REPOSITORY`
-and `VITE_GIT_COMMIT` at build time so the link opens the deployed commit's source
-tree and displays its seven-character hash. Without a build commit, local builds
-link to the repository homepage. The link requires no runtime request to GitHub.
-
-The `/ip` page queries the same-origin API on opening, with refresh and copy
-controls. It clears stale results while refreshing and provides retry behavior.
-IP lookup needs a network request, with a 10-second timeout and no background
-polling. Results and errors are not cached; the application does not store or
-log lookup addresses. Each lookup counts toward the Worker's request allowance.
-The CIDR page makes no IP lookup request.
-
-Local servers without Cloudflare connection metadata return
-`CLIENT_IP_UNAVAILABLE`; local emulation may also supply a local connection
-address. Use the production endpoint to check your public connection.
-
-## MCP server
-
-The deployed Worker serves Streamable HTTP at `https://packetrove.com/mcp`;
-local development uses `http://localhost:8787/mcp`.
-It exposes `smallest_covering_cidr` and `get_public_ip` with shared input and
-output schemas and read-only tool annotations. CIDR counts remain exact decimal
-strings. The IP tool reports the MCP caller's connection for each tool call;
-it cannot establish a separate user device's IP. See the
-[MCP connection guide](docs/integrations/mcp.md) for client setup and examples.
-
-## CLI and agent skill
-
-After `pnpm build`, run the CLI locally:
-
-```sh
-pnpm cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6
-node packages/cli/dist/cli.js cidr cover --stdin --json < addresses.txt
-node packages/cli/dist/cli.js ip
-node packages/cli/dist/cli.js ip --json
-```
-
-The CLI bundles its runtime dependencies. CIDR calculations are offline; the
-`ip` command calls the production API and prints the observed address. JSON success
-goes to stdout, errors to stderr, with exit status `0` or `1`. See the
-[CLI guide](docs/integrations/cli.md) for piping, packaging, and exact result
-semantics.
-
-The [CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) helps agents use
-an available CLI or MCP connection and explain additional address coverage.
-See the [skill setup guide](docs/integrations/skill.md). The skill is supplied
-in this repository; no global installation or npm publication is performed.
+GitHub Actions validates pull requests with `pnpm check`; updates to `main`
+deploy after validation and run production checks. See the
+[continuous integration guide](docs/continuous-integration.md) for details.
 
 ## Contributing
 
