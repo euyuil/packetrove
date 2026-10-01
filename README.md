@@ -71,6 +71,14 @@ curl http://localhost:8787/api/v1/cidr/cover \
 run. It does not deploy a live service. No Cloudflare account is needed for local
 development and tests.
 
+## Continuous integration
+
+GitHub Actions runs `pnpm check` on pushes to `main` and supports manual runs.
+The workflow uses one Ubuntu runner, Node.js 26.10.0, the project's pnpm version,
+and locked dependencies. See the [CI guide](docs/continuous-integration.md) for
+validation coverage, run commands, and cost controls. Production deployment
+continues to use the manual commands above.
+
 ## Web application
 
 `pnpm dev:api` builds the web app and serves both the built website and API at

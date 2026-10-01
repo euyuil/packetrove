@@ -111,9 +111,10 @@ Workers Builds minutes. Pricing and limits can change; check the official
 and [static asset limits](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/)
 before changing the deployment model.
 
-This setup requires no database, Durable Objects, hosted build integration, or
-paid Worker plan. It does not enable GitHub Actions or connect the repository to
-Cloudflare Builds. Domain registration and renewal remain separate expenses.
+This deployment requires no database, Durable Objects, Cloudflare Builds
+integration, or paid Worker plan. GitHub Actions runs the validation workflow
+described in the [CI guide](continuous-integration.md); publishing remains
+manual. Domain registration and renewal remain separate expenses.
 
 ## Later deployments and rollback
 
