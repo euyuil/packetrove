@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PUBLIC_IP_PATH, type PublicIpResult } from '@packetrove/contracts';
 import { lookupPublicIp, ToolError } from '@packetrove/core';
+import { useClipboardFeedback } from './useClipboardFeedback';
 
 export function PublicIpTool() {
   const [result, setResult] = useState<PublicIpResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [copyMessage, setCopyMessage] = useState('');
+  const { copyMessage, clearCopyMessage, copyText } = useClipboardFeedback();
   const activeRequest = useRef<AbortController | null>(null);
 
   const lookup = useCallback(async () => {
@@ -16,7 +17,7 @@ export function PublicIpTool() {
     setLoading(true);
     setResult(null);
     setError('');
-    setCopyMessage('');
+    clearCopyMessage();
     try {
       const current = await lookupPublicIp(PUBLIC_IP_PATH, request.signal);
       if (!request.signal.aborted) setResult(current);
@@ -27,22 +28,16 @@ export function PublicIpTool() {
     } finally {
       if (!request.signal.aborted) setLoading(false);
     }
-  }, []);
+  }, [clearCopyMessage]);
 
   useEffect(() => {
     void lookup();
     return () => activeRequest.current?.abort();
   }, [lookup]);
 
-  async function copyIp() {
+  function copyIp() {
     if (!result) return;
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error('Clipboard is unavailable');
-      await navigator.clipboard.writeText(result.ip);
-      setCopyMessage('IP address copied.');
-    } catch {
-      setCopyMessage('Copy is unavailable. Select and copy the IP address above.');
-    }
+    void copyText(result.ip, 'IP address copied.', 'Copy is unavailable. Select and copy the IP address above.');
   }
 
   return <>
