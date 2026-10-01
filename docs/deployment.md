@@ -76,6 +76,20 @@ the website and CLI, performs a Wrangler deployment dry run, and runs the test
 suite. It does not publish anything. `pnpm run deploy` builds the project and
 publishes the Worker and static assets using the existing Wrangler login.
 
+GitHub Actions automatically embeds the deployed commit in the website's GitHub
+footer link. For a manual deployment from a clean committed checkout, provide
+the same public build metadata:
+
+```sh
+VITE_GITHUB_REPOSITORY=euyuil/packetrove VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm run deploy
+VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm smoke https://packetrove.com
+```
+
+Use your own GitHub repository name when deploying a fork. Without
+`VITE_GIT_COMMIT`, the footer links to the repository homepage and the smoke
+command skips the build-commit check. Uncommitted changes are not represented
+by a commit link; validate and commit changes before using it for a deployment.
+
 The configuration includes the production custom domain. Each deployment updates
 the service at `packetrove.com`. Verify the website, assets, API, and both modern
 and legacy MCP clients after publishing:

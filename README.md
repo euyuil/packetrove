@@ -113,6 +113,11 @@ The web app accepts one address or CIDR per line, displays normalized inputs
 and exact address counts, and clears stale results when inputs change. All code
 and styles are bundled locally, without fonts or scripts from external CDNs.
 
+The shared footer links to GitHub. GitHub Actions supplies `VITE_GITHUB_REPOSITORY`
+and `VITE_GIT_COMMIT` at build time so the link opens the deployed commit's source
+tree and displays its seven-character hash. Without a build commit, local builds
+link to the repository homepage. The link requires no runtime request to GitHub.
+
 The `/ip` page queries the same-origin API on opening, with refresh and copy
 controls. It clears stale results while refreshing and provides retry behavior.
 IP lookup needs a network request, with a 10-second timeout and no background

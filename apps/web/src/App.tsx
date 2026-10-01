@@ -4,6 +4,9 @@ import { PublicIpTool } from './PublicIpTool';
 
 export function App() {
   const ipPage = window.location.pathname.replace(/\/+$/, '') === '/ip';
+  const repository = import.meta.env.VITE_GITHUB_REPOSITORY || 'euyuil/packetrove';
+  const commit = import.meta.env.VITE_GIT_COMMIT;
+  const sourceUrl = `https://github.com/${repository}${commit ? `/tree/${commit}` : ''}`;
   useEffect(() => {
     document.title = `${ipPage ? 'My Public IP' : 'Smallest Covering CIDR'} — Packetrove`;
   }, [ipPage]);
@@ -20,6 +23,12 @@ export function App() {
       <a href="/ip" aria-current={ipPage ? 'page' : undefined}>My Public IP</a>
     </nav>
     <main>{ipPage ? <PublicIpTool /> : <CidrCoverTool />}</main>
-    <footer>Packetrove <span aria-hidden="true">·</span> Network tools for humans and agents</footer>
+    <footer>
+      <div>Packetrove <span aria-hidden="true">·</span> Network tools for humans and agents</div>
+      <a className="source-link" href={sourceUrl} target="_blank" rel="noopener noreferrer"
+        title={commit ? `View source for commit ${commit} on GitHub` : 'View Packetrove on GitHub'}>
+        GitHub{commit && <><span aria-hidden="true">·</span>{' '}<code>{commit.slice(0, 7)}</code></>}
+      </a>
+    </footer>
   </div>;
 }

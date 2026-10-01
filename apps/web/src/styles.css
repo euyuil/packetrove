@@ -89,8 +89,10 @@ summary { cursor: pointer; font-weight: 500; }
 .explanation { max-width: 860px; padding: 38px 0 40px; }
 .explanation h2 { font-size: 13px; margin-bottom: 12px; }
 .explanation p { font-size: 12px; line-height: 1.8; color: var(--muted); margin: 8px 0; }
-footer { padding: 23px 0 30px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 23px 0 30px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
 footer span { margin: 0 7px; }
+.source-link { display: inline-flex; align-items: center; white-space: nowrap; text-decoration: none; }
+.source-link:hover { color: var(--accent); }
 @media (max-width: 800px) {
   .site { padding: 0 22px; }
   .site-header { min-height: 76px; }

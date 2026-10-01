@@ -3,12 +3,35 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
-afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 function enter(value: string) {
   fireEvent.change(screen.getByLabelText('IP addresses or CIDR ranges'), { target: { value } });
   fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
 }
+
+describe('GitHub source link', () => {
+  it('links to the repository when build metadata is unavailable', () => {
+    vi.stubEnv('VITE_GITHUB_REPOSITORY', '');
+    vi.stubEnv('VITE_GIT_COMMIT', '');
+    render(<App />);
+    const link = screen.getByRole('link', { name: 'GitHub' });
+    expect(link.getAttribute('href')).toBe('https://github.com/euyuil/packetrove');
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+  });
+
+  it('uses the full build commit and repository while showing a short commit', () => {
+    const commit = '0123456789abcdef0123456789abcdef01234567';
+    vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
+    vi.stubEnv('VITE_GIT_COMMIT', commit);
+    render(<App />);
+    const link = screen.getByRole('link', { name: /^GitHub/ });
+    expect(link.getAttribute('href')).toBe(`https://github.com/example-owner/packetrove/tree/${commit}`);
+    expect(within(link).getByText('0123456')).toBeDefined();
+    expect(link.getAttribute('title')).toContain(commit);
+  });
+});
 
 describe('browser calculator', () => {
   it('calculates locally without an API request and displays expansion', () => {

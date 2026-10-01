@@ -17,6 +17,8 @@ assert(['http:', 'https:'].includes(target.protocol), 'Use an HTTP or HTTPS orig
 assert(!target.username && !target.password, 'Do not include credentials in the URL.');
 assert(target.pathname === '/' && !target.search && !target.hash, 'Pass an origin without a path, query, or fragment.');
 const origin = target.origin;
+const expectedCommit = process.env.VITE_GIT_COMMIT;
+if (expectedCommit) assert.match(expectedCommit, /^[0-9a-f]{40}$/i, 'Expected a full Git commit SHA.');
 
 const timedFetch: typeof fetch = async (input, init) => {
   const request = new Request(input, init);
@@ -41,13 +43,20 @@ assert.match(await ipPage.text(), /Packetrove/);
 const assets = Array.from(html.matchAll(/(?:src|href)="(\/assets\/[^\"]+\.(?:js|css))"/g), match => match[1]!);
 assert(assets.some(path => path.endsWith('.js')), 'Missing bundled JavaScript.');
 assert(assets.some(path => path.endsWith('.css')), 'Missing bundled stylesheet.');
+let sourceCommitFound = false;
 for (const path of assets) {
   const response = await timedFetch(new URL(path, origin));
   assert.equal(response.status, 200, `Asset status: ${path}`);
   assert.match(response.headers.get('content-type') ?? '', path.endsWith('.js') ? /javascript/ : /text\/css/);
-  assert((await response.arrayBuffer()).byteLength > 0, `Empty asset: ${path}`);
+  const content = await response.text();
+  assert(content.length > 0, `Empty asset: ${path}`);
+  if (path.endsWith('.js') && expectedCommit && content.includes(expectedCommit)) sourceCommitFound = true;
 }
 console.log(`PASS website and ${assets.length} bundled assets`);
+if (expectedCommit) {
+  assert(sourceCommitFound, 'Website JavaScript does not contain the expected build commit.');
+  console.log('PASS website build commit matches the deployment');
+}
 
 const health = await timedFetch(`${origin}/health`);
 assert.equal(health.status, 200, 'Health status');

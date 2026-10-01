@@ -25,6 +25,12 @@ The workflow runs `pnpm check`, which includes:
 The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
 
+The job sets `VITE_GITHUB_REPOSITORY` to `github.repository` and `VITE_GIT_COMMIT`
+to `github.sha`. Vite embeds these public values while building the website, so
+the shared footer links to the source tree for that exact commit on GitHub and
+displays its seven-character hash. Neither value is committed as generated
+source or fetched by the browser. Fork workflows use their own repository name.
+
 ## Production deployment
 
 After validation succeeds, the workflow reads the current `main` revision through
@@ -40,8 +46,10 @@ the GitHub Actions run ID in the version message.
 
 The workflow then runs `pnpm smoke https://packetrove.com` to verify the website,
 bundled assets, API results, OpenAPI document, modern and legacy MCP clients, and
-Origin validation. It makes up to three attempts, waiting five seconds between
-failures to allow for temporary network or deployment propagation delays.
+Origin validation. With `VITE_GIT_COMMIT` set, it also checks that the deployed
+JavaScript contains the expected build commit. It makes up to three attempts,
+waiting five seconds between failures to allow for temporary network or
+deployment propagation delays.
 
 A failed validation prevents publishing. A failed smoke check marks the run as
 failed after publishing; it does not automatically undo the deployment. Inspect
