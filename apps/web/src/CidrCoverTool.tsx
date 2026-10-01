@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { CIDR_COVER_EXAMPLES, MAX_INPUTS, type CidrCoverResult, type ErrorResponse } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
+import { useClipboardFeedback } from './useClipboardFeedback';
 
 function inputRows(text: string) {
   return text.split(/\r?\n/).map((value, index) => ({ value: value.trim(), line: index + 1 }))
@@ -15,19 +16,19 @@ export function CidrCoverTool() {
   const [input, setInput] = useState('');
   const [result, setResult] = useState<CidrCoverResult | null>(null);
   const [error, setError] = useState<ErrorResponse['error'] | null>(null);
-  const [copyMessage, setCopyMessage] = useState('');
+  const { copyMessage, clearCopyMessage, copyText } = useClipboardFeedback();
   const rows = inputRows(input);
 
   function replaceInput(value: string) {
     setInput(value);
     setResult(null);
     setError(null);
-    setCopyMessage('');
+    clearCopyMessage();
   }
 
   function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setCopyMessage('');
+    clearCopyMessage();
     try {
       setResult(smallestCoveringCidr({ inputs: rows.map(row => row.value) }));
       setError(null);
@@ -39,15 +40,9 @@ export function CidrCoverTool() {
     }
   }
 
-  async function copyCidr() {
+  function copyCidr() {
     if (!result) return;
-    try {
-      if (!navigator.clipboard?.writeText) throw new Error('Clipboard is unavailable');
-      await navigator.clipboard.writeText(result.cidr);
-      setCopyMessage('CIDR copied.');
-    } catch {
-      setCopyMessage('Copy is unavailable. Select and copy the CIDR above.');
-    }
+    void copyText(result.cidr, 'CIDR copied.', 'Copy is unavailable. Select and copy the CIDR above.');
   }
 
   return (
