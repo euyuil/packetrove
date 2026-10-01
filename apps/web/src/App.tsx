@@ -3,13 +3,16 @@ import { CidrCoverTool } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
 
 export function App() {
-  const ipPage = window.location.pathname.replace(/\/+$/, '') === '/ip';
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+  const ipPage = path === '/ip' || path === '/ip.html';
+  const cidrPage = path === '/' || path === '/index.html';
+  const pageTitle = ipPage ? 'My Public IP' : cidrPage ? 'Smallest Covering CIDR' : 'Page not found';
   const repository = import.meta.env.VITE_GITHUB_REPOSITORY || 'euyuil/packetrove';
   const commit = import.meta.env.VITE_GIT_COMMIT;
   const sourceUrl = `https://github.com/${repository}${commit ? `/tree/${commit}` : ''}`;
   useEffect(() => {
-    document.title = `${ipPage ? 'My Public IP' : 'Smallest Covering CIDR'} — Packetrove`;
-  }, [ipPage]);
+    document.title = `${pageTitle} — Packetrove`;
+  }, [pageTitle]);
 
   return <div className="site">
     <header className="site-header">
@@ -19,10 +22,15 @@ export function App() {
       <a className="api-link" href="/api/openapi.json">API specification <span aria-hidden="true">↗</span></a>
     </header>
     <nav className="tool-navigation" aria-label="Network tools">
-      <a href="/" aria-current={!ipPage ? 'page' : undefined}>Smallest Covering CIDR</a>
+      <a href="/" aria-current={cidrPage ? 'page' : undefined}>Smallest Covering CIDR</a>
       <a href="/ip" aria-current={ipPage ? 'page' : undefined}>My Public IP</a>
     </nav>
-    <main>{ipPage ? <PublicIpTool /> : <CidrCoverTool />}</main>
+    <main>{ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool /> : <section className="intro">
+      <p className="eyebrow">404</p>
+      <h1>Page not found</h1>
+      <p className="intro-description">The page you requested does not exist.</p>
+      <p><a href="/">Return to home</a></p>
+    </section>}</main>
     <footer>
       <div>Packetrove <span aria-hidden="true">·</span> Network tools for humans and agents</div>
       <a className="source-link" href={sourceUrl} target="_blank" rel="noopener noreferrer"

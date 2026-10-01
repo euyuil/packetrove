@@ -3,12 +3,41 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
-afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+afterEach(() => {
+  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
+  window.history.replaceState({}, '', '/');
+});
 
 function enter(value: string) {
   fireEvent.change(screen.getByLabelText('IP addresses or CIDR ranges'), { target: { value } });
   fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
 }
+
+describe('web page routing', () => {
+  it.each(['/missing-page', '/ip/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {
+    window.history.replaceState({}, '', path);
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'Page not found', level: 1 })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'Return to home' }).getAttribute('href')).toBe('/');
+    expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
+    expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBeNull();
+    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBeNull();
+    expect(document.title).toBe('Page not found — Packetrove');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(['/ip/', '/ip.html'])('recognizes the public IP page at %s', async path => {
+    window.history.replaceState({}, '', path);
+    vi.stubGlobal('fetch', async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    render(<App />);
+    expect(screen.getByRole('heading', { name: 'My Public IP', level: 1 })).toBeDefined();
+    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBe('page');
+    expect(document.title).toBe('My Public IP — Packetrove');
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+  });
+});
 
 describe('GitHub source link', () => {
   it('links to the repository when build metadata is unavailable', () => {
