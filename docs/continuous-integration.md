@@ -6,10 +6,11 @@ The repository continues to use direct commits to `main`.
 
 ## Validation
 
-One standard Ubuntu 24.04 runner installs Node.js 26.10.0 and the pnpm version
-declared in the root `package.json`. Dependencies are installed from the
-committed lockfile with `pnpm install --frozen-lockfile`. The pnpm package store
-is cached using that lockfile's hash.
+One standard Ubuntu 26.04 runner installs Node.js 24.21.0 LTS from
+`.node-version` and the pnpm version declared in the root `package.json`.
+Dependencies are installed from the committed lockfile with
+`pnpm install --frozen-lockfile`. The pnpm package store is cached using that
+lockfile's hash.
 
 The workflow runs `pnpm check`, which includes:
 
@@ -47,9 +48,25 @@ credentials are not persisted for subsequent build and test commands. Actions
 are pinned to full commit hashes, with release versions recorded in comments.
 When updating an action, verify its release and replace the pinned commit.
 
-Keep the Node.js version aligned with the version verified in the README.
-Update pnpm through the root `packageManager` field and regenerate the lockfile
-when changing dependencies.
+Keep `.node-version` aligned with the Node.js LTS version verified in the README
+and the matching major version of `@types/node`. Update pnpm through the root
+`packageManager` field and regenerate the lockfile when changing dependencies.
+
+Prefer the default stable release channel and versions that satisfy the
+dependencies' declared peer requirements. Vitest stays on 4.1.11 while
+`@cloudflare/vitest-plugin` requires `^4.1.0`. The MCP SDK packages stay on
+2.0.0 and 1.30.0 while `agents` 0.24.0 requires those exact versions.
+
+`pnpm-workspace.yaml` gives newly published dependencies a 24-hour waiting
+period with `minimumReleaseAge: 1440`. Its exact-version exceptions cover
+the Cloudflare test plugin's security update and the previously validated
+Wrangler, Miniflare, and Redocly CLI versions. Reassess these exceptions when
+updating those packages. Dependency installation scripts are approved
+explicitly through `allowBuilds`; esbuild and workerd require them.
+The informational `core-js-pure` postinstall is explicitly disabled.
+After dependency changes, validate a frozen-lockfile install, run `pnpm check`,
+and inspect `pnpm audit` before pushing. Verify the resulting GitHub Actions
+run as well.
 
 ## Cost controls
 

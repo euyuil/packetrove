@@ -46,8 +46,9 @@ pnpm smoke https://packetrove.com
 
 ## Development
 
-Use a supported Node.js version from `package.json` and pnpm 10.19.0. Development
-is verified with Node.js 26.10.0.
+Use Node.js 24.21.0 LTS, pinned in `.node-version`, and pnpm 12.8.1, pinned in
+`package.json`. Development and CI are verified with this toolchain. Other
+supported Node.js versions are listed in `package.json`.
 
 ```sh
 pnpm install
@@ -74,10 +75,11 @@ development and tests.
 ## Continuous integration
 
 GitHub Actions runs `pnpm check` on pushes to `main` and supports manual runs.
-The workflow uses one Ubuntu runner, Node.js 26.10.0, the project's pnpm version,
-and locked dependencies. See the [CI guide](docs/continuous-integration.md) for
-validation coverage, run commands, and cost controls. Production deployment
-continues to use the manual commands above.
+The workflow uses one Ubuntu 26.04 runner, the Node.js LTS version in
+`.node-version`, the project's pnpm version, and locked dependencies. See the
+[CI guide](docs/continuous-integration.md) for validation coverage, run commands,
+and cost controls. Production deployment continues to use the manual commands
+above.
 
 ## Web application
 
