@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
-import { CidrCoverTool } from './CidrCoverTool';
+import { useState } from 'react';
+import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
 import { render } from './test-utils';
 
@@ -32,11 +33,16 @@ async function finishCopy(copy: ReturnType<typeof deferred<void>>, outcome: 'suc
 }
 
 const tools = [
-  { name: 'CIDR calculator', Component: CidrCoverTool, button: 'Copy CIDR',
+  { name: 'CIDR calculator', Component: CidrCalculator, button: 'Copy CIDR',
     first: '203.0.113.1/32', second: '198.51.100.2/32', success: 'CIDR copied.' },
   { name: 'public IP page', Component: PublicIpTool, button: 'Copy IP',
     first: '203.0.113.1', second: '198.51.100.2', success: 'IP address copied.' },
 ] as const;
+
+function CidrCalculator() {
+  const [draft, setDraft] = useState<CidrCoverDraft>({ input: '', result: null, error: null });
+  return <CidrCoverTool draft={draft} onDraftChange={setDraft} />;
+}
 
 async function openTool(tool: typeof tools[number]) {
   const refresh = deferred<Response>();
@@ -46,24 +52,24 @@ async function openTool(tool: typeof tools[number]) {
   }
   const { Component } = tool;
   const view = render(<Component />);
-  if (Component === CidrCoverTool) {
+  if (Component === CidrCalculator) {
     fireEvent.change(screen.getByLabelText('IP addresses or CIDR ranges'), { target: { value: '203.0.113.1' } });
     fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
   } else await screen.findByText(tool.first);
 
   function beginResultChange() {
-    if (Component === CidrCoverTool) {
+    if (Component === CidrCalculator) {
       fireEvent.change(screen.getByLabelText('IP addresses or CIDR ranges'), { target: { value: '198.51.100.2' } });
     } else fireEvent.click(screen.getByRole('button', { name: 'Refresh IP' }));
   }
   async function finishResultChange() {
-    if (Component === CidrCoverTool) {
+    if (Component === CidrCalculator) {
       fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
     } else {
       await act(async () => { refresh.resolve(Response.json({ ip: tool.second, family: 'ipv4' })); });
     }
     const result = screen.getByRole('region', {
-      name: Component === CidrCoverTool ? 'Coverage result' : 'Your current connection',
+      name: Component === CidrCalculator ? 'Coverage result' : 'Your current connection',
     });
     expect(within(result).getAllByText(tool.second, { selector: 'code' }).length).toBeGreaterThan(0);
   }
