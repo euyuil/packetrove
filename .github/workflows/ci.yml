@@ -1,4 +1,4 @@
-name: CI
+name: CI and deployment
 
 on:
   push:
@@ -9,12 +9,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  group: production-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   check:
-    name: Validate project
+    name: Validate and deploy production
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     env:
@@ -40,3 +41,47 @@ jobs:
 
       - name: Run project validation
         run: pnpm check
+
+      - name: Check whether this revision is still current
+        id: revision
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [[ "$GITHUB_SHA" == "$latest_sha" ]]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "Deployment skipped: $GITHUB_SHA has been superseded by $latest_sha on main." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Deploy Worker and static assets
+        if: steps.revision.outputs.current == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::Configure the CLOUDFLARE_API_TOKEN repository secret and CLOUDFLARE_ACCOUNT_ID repository variable before deploying."
+            exit 1
+          fi
+          pnpm --filter @packetrove/worker run deploy \
+            --tag "$GITHUB_SHA" \
+            --message "GitHub Actions run $GITHUB_RUN_ID"
+
+      - name: Verify production website, API, and MCP
+        if: steps.revision.outputs.current == 'true'
+        run: |
+          for attempt in 1 2 3; do
+            echo "Production smoke check attempt $attempt of 3"
+            if pnpm smoke https://packetrove.com; then
+              echo "Deployed and verified $GITHUB_SHA at https://packetrove.com." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [[ "$attempt" -lt 3 ]]; then
+              sleep 5
+            fi
+          done
+          echo "::error::Production smoke checks failed after deployment. Review the deployment and use the rollback procedure in docs/deployment.md."
+          echo "Deployment completed for $GITHUB_SHA, but production smoke checks failed. Review the live service and the rollback procedure in docs/deployment.md." >> "$GITHUB_STEP_SUMMARY"
+          exit 1

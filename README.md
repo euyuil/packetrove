@@ -34,9 +34,11 @@ with Static Assets and verified at `https://packetrove.com`.
 | MCP server | `https://packetrove.com/mcp` (Streamable HTTP) |
 | Health | [Service health](https://packetrove.com/health) |
 
-Deployments use the project-local Wrangler and local builds. See the
+Deployments use the project-local Wrangler and builds on GitHub Actions. See the
 [Cloudflare deployment guide](docs/deployment.md) for login, publishing, costs,
-live checks, and rollback. Publishing is manual:
+live checks, and rollback. Updates to `main` are deployed automatically after
+validation, then checked against the live website, API, and MCP service. Manual
+publishing is also available:
 
 ```sh
 pnpm check
@@ -72,14 +74,14 @@ curl http://localhost:8787/api/v1/cidr/cover \
 run. It does not deploy a live service. No Cloudflare account is needed for local
 development and tests.
 
-## Continuous integration
+## Continuous integration and deployment
 
-GitHub Actions runs `pnpm check` on pushes to `main` and supports manual runs.
+GitHub Actions runs `pnpm check` on pushes to `main`, deploys successful current
+revisions, and verifies production. It also supports manual runs on `main`.
 The workflow uses one Ubuntu 26.04 runner, the Node.js LTS version in
 `.node-version`, the project's pnpm version, and locked dependencies. See the
-[CI guide](docs/continuous-integration.md) for validation coverage, run commands,
-and cost controls. Production deployment continues to use the manual commands
-above.
+[CI guide](docs/continuous-integration.md) for validation coverage, credentials,
+deployment ordering, run commands, and cost controls.
 
 ## Web application
 

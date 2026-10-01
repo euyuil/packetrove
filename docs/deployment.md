@@ -2,12 +2,28 @@
 
 Packetrove uses one Cloudflare Worker for its static website, Web API, and
 stateless MCP endpoint. The website calculates in the browser; it does not call
-the API for calculations. Builds run locally and Wrangler uploads the output.
+the API for calculations. GitHub Actions builds and publishes updates to `main`
+after validation succeeds, then runs production smoke checks. Local publishing
+with Wrangler is also available.
 
 The service is live at `https://packetrove.com` and has passed the live smoke
 checks for static assets, the Web API, and modern and legacy MCP clients.
 
-## Prerequisites
+## Automatic deployment
+
+The [GitHub Actions workflow](../.github/workflows/ci.yml) validates updates to
+`main`, publishes the current successful revision, and checks
+`https://packetrove.com`. A manual workflow run on `main` uses the same process.
+Configure the dedicated `CLOUDFLARE_API_TOKEN` repository secret and the
+`CLOUDFLARE_ACCOUNT_ID` repository variable as described in the
+[continuous integration and deployment guide](continuous-integration.md).
+
+Deployments are serialized. New pushes can supersede pending runs but do not
+interrupt a deployment already in progress. Worker versions are tagged with the
+Git commit SHA to connect Cloudflare deployments to their source and GitHub
+Actions run. The workflow does not create a `workers.dev` or preview URL.
+
+## Local publishing prerequisites
 
 Use the Node.js and pnpm versions described in the repository README, install
 dependencies with `pnpm install --frozen-lockfile`, and authenticate Wrangler:
@@ -46,7 +62,7 @@ hostnames in
 [`apps/worker/src/mcp.ts`](../apps/worker/src/mcp.ts) and rerun checks. Clients
 without an Origin header are supported. Unrelated browser Origins are rejected.
 
-## Build and deploy
+## Manual build and deploy
 
 Run local validation before publishing:
 
@@ -105,22 +121,31 @@ time per HTTP request. Dynamic requests can fail after the free limit is reached
 ordinary static asset requests remain on their separate serving path.
 
 The Free plan supports 20,000 static asset files per Worker version and a maximum
-size of 25 MiB per file. Local builds uploaded with Wrangler do not use hosted
-Workers Builds minutes. Pricing and limits can change; check the official
+size of 25 MiB per file. Builds on local machines or GitHub Actions uploaded
+with Wrangler do not use hosted Workers Builds minutes. Pricing and limits can
+change; check the official
 [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/)
 and [static asset limits](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/)
 before changing the deployment model.
 
 This deployment requires no database, Durable Objects, Cloudflare Builds
-integration, or paid Worker plan. GitHub Actions runs the validation workflow
-described in the [CI guide](continuous-integration.md); publishing remains
-manual. Domain registration and renewal remain separate expenses.
+integration, or paid Worker plan. GitHub Actions performs validation, publishing,
+and live checks as described in the [CI guide](continuous-integration.md).
+Private-repository Actions usage draws on the repository owner's GitHub
+allowance. Domain registration and renewal remain separate expenses.
 
 ## Later deployments and rollback
 
-`pnpm run deploy` updates the service on the configured custom domain.
-Run `pnpm check` before publishing and `pnpm smoke https://packetrove.com`
-afterward. Builds and deployments remain manual.
+Successful current updates to `main` publish automatically. For manual local
+publishing, `pnpm run deploy` updates the configured custom domain; run
+`pnpm check` beforehand and `pnpm smoke https://packetrove.com` afterward.
+Coordinate manual deployments and rollbacks with any active GitHub Actions run,
+because the workflow's concurrency group does not serialize local commands.
+
+If production smoke checks fail after automatic publishing, the workflow is
+marked as failed and the deployed version remains live until a subsequent
+deployment or rollback. Review the failed checks and target version before
+rolling back. A failed build or test does not publish a new version.
 
 To inspect previous deployments or roll back to a known version, use the
 project's Wrangler:

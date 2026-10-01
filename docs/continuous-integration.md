@@ -1,8 +1,9 @@
-# Continuous integration
+# Continuous integration and deployment
 
 [`ci.yml`](../.github/workflows/ci.yml) defines Packetrove's GitHub Actions
-validation workflow. It runs on pushes to `main` and can be started manually.
-The repository continues to use direct commits to `main`.
+validation and production deployment workflow. It runs on pushes to `main` and
+can be started manually on `main`. The repository continues to use direct
+commits to `main`; each update is intended for production.
 
 ## Validation
 
@@ -21,9 +22,32 @@ The workflow runs `pnpm check`, which includes:
 - Shared calculation, CLI, web application, API, and MCP tests. Worker tests
   execute in the local Workers runtime on the GitHub runner.
 
-The same command is available locally. CI uses no Cloudflare account credentials;
-production publishing remains the manual process in the
-[deployment guide](deployment.md).
+The same command is available locally. Installation, builds, and tests receive
+no Cloudflare account credentials.
+
+## Production deployment
+
+After validation succeeds, the workflow reads the current `main` revision through
+the GitHub API. It only deploys if that revision still matches the run's commit.
+Superseded commits retain their validation result and skip publishing.
+
+The deployment step uses the workspace's pinned Wrangler through
+`pnpm --filter @packetrove/worker run deploy`. The website is already built by
+`pnpm check`, so the root `pnpm run deploy` command is unnecessary in CI.
+Wrangler publishes the Worker and its static assets together using the committed
+configuration. It tags the Worker version with the full Git commit SHA and records
+the GitHub Actions run ID in the version message.
+
+The workflow then runs `pnpm smoke https://packetrove.com` to verify the website,
+bundled assets, API results, OpenAPI document, modern and legacy MCP clients, and
+Origin validation. It makes up to three attempts, waiting five seconds between
+failures to allow for temporary network or deployment propagation delays.
+
+A failed validation prevents publishing. A failed smoke check marks the run as
+failed after publishing; it does not automatically undo the deployment. Inspect
+the service and follow the [rollback procedure](deployment.md#later-deployments-and-rollback).
+The workflow summary records the verified commit or explains why publishing was
+skipped or the live checks failed.
 
 ## Triggers and results
 
@@ -37,9 +61,57 @@ gh run view <run-id> --repo euyuil/packetrove --log-failed
 gh workflow run ci.yml --repo euyuil/packetrove --ref main
 ```
 
-A new run for the same branch cancels an older pending or running CI job. Each
-job has a ten-minute timeout. Pushes to other branches do not automatically run
-this workflow.
+Runs for `main` share a production concurrency group with
+`cancel-in-progress: false`. Only one run can execute at a time. New pushes do
+not interrupt a running validation, deployment, or smoke check. GitHub keeps
+one pending run by default and replaces it when another run enters the queue.
+The revision check prevents an older queued or manually rerun commit from
+overwriting a newer version. If `main` changes after that check, the active
+deployment finishes and a subsequent successful run can publish the newer
+revision. See [GitHub workflow concurrency](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/control-workflow-concurrency).
+
+Each job has a ten-minute timeout. Other branches neither deploy nor
+automatically run this workflow. A manual run also requires the `main` branch.
+
+## Cloudflare credentials
+
+Configure these repository settings in GitHub Actions before the first run:
+
+| Setting | Storage | Purpose |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Repository secret | Dedicated Cloudflare token for publishing the Worker. |
+| `CLOUDFLARE_ACCOUNT_ID` | Repository variable | Cloudflare account containing the Worker and production zone. |
+
+Create a dedicated account-owned API token named `packetrove-github-actions`.
+Cloudflare's **Edit Cloudflare Workers** template is a starting point; retain only
+the permissions required by the current Worker and custom domain configuration:
+
+| API permission | Resource scope | Dashboard selection |
+| --- | --- | --- |
+| `Workers Scripts Write` | Packetrove's Cloudflare account | Workers Scripts / Edit |
+| `Zone Read` | `packetrove.com` only | Zone / Read |
+
+The script permission is account-wide in this configuration. The token does not
+need permissions for KV, R2, Pages, databases, hosted builds, containers, or
+observability. The Worker uses a custom domain, rather than a zone route that
+requires `Workers Routes Write`.
+
+Store the token directly in GitHub Secrets. The token is exposed only to the
+deployment step, not dependency installation, validation, or smoke checks. An
+interactive local OAuth login does not authenticate the GitHub runner. See
+[Cloudflare's GitHub Actions authentication guide](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
+
+Set the account variable and the secret with GitHub CLI if preferred:
+
+```sh
+gh variable set CLOUDFLARE_ACCOUNT_ID --repo euyuil/packetrove --body <account-id>
+gh secret set CLOUDFLARE_API_TOKEN --repo euyuil/packetrove
+```
+
+The second command prompts for the token without putting it in shell history.
+Do not put the API token or local OAuth credentials in Git. Rotate the repository
+secret when its token expires or is revoked. Missing deployment settings fail
+the deployment step with a configuration error.
 
 ## Permissions and maintenance
 
@@ -71,10 +143,12 @@ run as well.
 ## Cost controls
 
 The workflow uses one standard Linux runner, a dependency cache, a timeout, and
-cancellation of superseded runs to limit execution time. It does not upload
-build artifacts. The project uses the repository owner's included GitHub Actions
+skips deployments of superseded commits. It does not upload build artifacts to
+GitHub. The project uses the repository owner's included GitHub Actions
 allowance for private repositories. This is separate from Cloudflare's Workers
-request and build quotas.
+request and build quotas. Builds happen on the GitHub runner and do not use
+Cloudflare Workers Builds minutes. Production smoke checks make a small number
+of dynamic requests against the account's Workers request quota.
 
 Included minutes depend on the GitHub plan; usage beyond the included allowance
 can be billed according to the account's billing settings. Check account usage
