@@ -48,3 +48,35 @@ Git history, GitHub Actions logs, and uploaded artifacts as public material.
   force pushes, and deletion of workflow records must be within the owner's
   explicit authorization. Preserve local recovery data unless its removal is
   also authorized.
+
+## Review by change type
+
+Apply the checks relevant to the requested change. Read the corresponding user
+story, API contract, or integration guide when its behavior is affected.
+
+- Before editing, inspect the working tree, branch, and upstream main revision.
+  Synchronize with main while preserving existing local work.
+- For calculation changes, verify full input-range coverage, the largest valid
+  prefix length, canonical addresses, overlap handling, and exact IPv6 counts.
+  Keep the explanation of additional allowlist or blocklist coverage accurate.
+- For interface changes, keep the Web API, MCP, CLI, and skill aligned with the
+  shared contracts. Preserve structured errors, decimal-string address counts,
+  and machine-readable CLI output. Regenerate OpenAPI from its source.
+- For web changes, preserve browser-local calculation where the operation can
+  run locally. Review new network requests and logging for accidental disclosure
+  of user inputs.
+- For configuration or deployment changes, inspect credential handling and
+  workflow output. Keep private identifiers out of tracked examples and check
+  rules; use neutral examples and GitHub Secrets where appropriate.
+- For dependency, packaging, or infrastructure changes, review necessity,
+  licenses, bundled third-party notices, and additional services or costs.
+- For behavior or documentation changes, compare the implementation, examples,
+  and user story. Describe capabilities according to their verified status and
+  consider compatibility with existing callers.
+- Before committing, review the staged diff and run checks appropriate to the
+  change. Pure documentation edits usually need a diff check; behavior changes
+  need relevant tests. Enable the repository-local hooks described in
+  docs/git-checks.md and resolve failed checks before retrying a commit. Report
+  what was verified and any remaining limitations.
+- After an authorized push to main, verify the GitHub Actions result, including
+  deployment and production checks when the workflow publishes the revision.
