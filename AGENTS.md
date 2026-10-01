@@ -37,6 +37,14 @@
 - Merge a pull request only when the owner explicitly authorizes that pull
   request and all applicable repository requirements are satisfied. Permission
   to open or update a pull request is not permission to merge it.
+- Use squash merging by default. Use a regular merge commit only when the owner
+  explicitly selects that method for the pull request. Rebase merging is disabled
+  in both the repository settings and the `main` ruleset. Squash merge commit
+  titles default to the pull request title.
+- For an authorized GitHub CLI merge, pass `--squash` explicitly by default, or
+  `--merge` when the owner has selected a regular merge commit. GitHub's web
+  interface can remember the user's last merge method, so verify the selected
+  method before confirming a merge.
 - The ruleset requires zero approving reviews so a sole maintainer can merge
   through a pull request. GitHub Actions currently validates and deploys only
   after `main` is updated; it does not provide a required pre-merge check.
