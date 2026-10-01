@@ -43,10 +43,10 @@ export function PublicIpTool() {
 
   return <Stack gap="xl">
     <Stack component="section" aria-labelledby="tool-title" gap="sm">
-      <Text size="xs" c="teal" fw={700}>IP ADDRESS TOOLS</Text>
+      <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>IP ADDRESS TOOLS</Text>
       <Title order={1} id="tool-title">My Public IP</Title>
       <Text c="dimmed">See the public IP address used by your current connection to Packetrove.</Text>
-      <Text size="sm" c="teal">Checked online · Not stored by the application</Text>
+      <Text size="sm" c="var(--mantine-primary-color-filled)">Checked online · Not stored by the application</Text>
     </Stack>
     <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} maw={780}
       aria-labelledby="ip-result-heading" aria-busy={loading}>
@@ -64,7 +64,7 @@ export function PublicIpTool() {
           {result && <>
             <Text size="xs" c="dimmed">PUBLIC IP ADDRESS</Text>
             <Group justify="space-between">
-              <Text component="code" className="network-value" size="xl" fw={600} c="teal">{result.ip}</Text>
+              <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.ip}</Text>
               <Button type="button" variant="default" size="xs" onClick={copyIp}>Copy IP</Button>
             </Group>
           </>}

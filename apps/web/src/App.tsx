@@ -38,7 +38,7 @@ export function App() {
       </Group>
       <Box component="main">
         {ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool /> : <Stack component="section" py="xl">
-          <Text size="sm" c="teal" fw={600}>404</Text>
+          <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>Page not found</Title>
           <Text c="dimmed">The page you requested does not exist.</Text>
           <Anchor href="/">Return to home</Anchor>
