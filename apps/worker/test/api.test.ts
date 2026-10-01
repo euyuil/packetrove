@@ -79,11 +79,41 @@ describe('API in the Workers runtime', () => {
     expect(javascript.status).toBe(200);
     expect(javascript.headers.get('content-type')).toContain('javascript');
   });
-  it('serves a direct public IP page navigation through static assets', async () => {
-    const response = await exports.default.fetch('http://localhost/ip');
+  it.each(['/', '/ip'])('serves direct navigation to %s through static assets', async path => {
+    const response = await exports.default.fetch(`http://localhost${path}`, {
+      headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
+    });
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/html');
-    expect(await response.text()).toContain('Packetrove');
+    expect(await response.text()).toContain(path === '/ip'
+      ? '<title>My Public IP — Packetrove</title>' : '<title>Smallest Covering CIDR — Packetrove</title>');
+  });
+  it('preserves trailing-slash public IP links and their query strings', async () => {
+    const response = await exports.default.fetch('http://localhost/ip/?source=example', {
+      headers: { 'sec-fetch-mode': 'navigate' }, redirect: 'manual',
+    });
+    expect(response.status).toBe(307);
+    const location = new URL(response.headers.get('location')!, 'http://localhost');
+    expect(location.pathname).toBe('/ip');
+    expect(location.search).toBe('?source=example');
+    const destination = await exports.default.fetch(location.href);
+    expect(destination.status).toBe(200);
+    expect(await destination.text()).toContain('<title>My Public IP — Packetrove</title>');
+  });
+  it.each(['/missing-page', '/missing-page/', '/ip/missing-page', '/assets/missing.js', '/assets/missing.css'])('returns a real static 404 for %s', async path => {
+    for (const headers of [{}, { 'sec-fetch-mode': 'navigate', accept: 'text/html' }]) {
+      const response = await exports.default.fetch(`http://localhost${path}`, { headers });
+      expect(response.status).toBe(404);
+      expect(response.headers.get('content-type')).toContain('text/html');
+      const html = await response.text();
+      expect(html).toContain('<h1>Page not found</h1>');
+      expect(html).toContain('<a href="/">Return to home</a>');
+    }
+  });
+  it('preserves the missing-page status for HEAD without returning its body', async () => {
+    const response = await exports.default.fetch('http://localhost/missing-page', { method: 'HEAD' });
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe('');
   });
   it('supports API preflight', async () => {
     const response = await exports.default.fetch(`http://localhost${CIDR_COVER_PATH}`, {
@@ -93,7 +123,12 @@ describe('API in the Workers runtime', () => {
     expect(response.headers.get('access-control-allow-origin')).toBe('*');
   });
   it('returns JSON for unknown routes and unsupported methods', async () => {
-    expect((await exports.default.fetch('http://localhost/api/unknown')).status).toBe(404);
+    for (const headers of [{}, { 'sec-fetch-mode': 'navigate', accept: 'text/html' }]) {
+      const unknown = await exports.default.fetch('http://localhost/api/unknown', { headers });
+      expect(unknown.status).toBe(404);
+      expect(unknown.headers.get('content-type')).toContain('application/json');
+      expect(ErrorResponseSchema.parse(await unknown.json()).error.code).toBe('NOT_FOUND');
+    }
     const response = await exports.default.fetch(`http://localhost${CIDR_COVER_PATH}`);
     expect(response.status).toBe(405);
     expect(response.headers.get('allow')).toBe('POST');

@@ -116,6 +116,11 @@ The web app accepts one address or CIDR per line, displays normalized inputs
 and exact address counts, and clears stale results when inputs change. All code
 and styles are bundled locally, without fonts or scripts from external CDNs.
 
+The built website serves `/` and `/ip` as static pages. Unknown page paths
+return HTTP 404 with a page-not-found message and a homepage link; missing
+static resources also return 404. The Vite development server retains its HTML
+fallback for hot reload; use the local Worker to verify HTTP routing.
+
 The shared footer links to GitHub. GitHub Actions supplies `VITE_GITHUB_REPOSITORY`
 and `VITE_GIT_COMMIT` at build time so the link opens the deployed commit's source
 tree and displays its seven-character hash. Without a build commit, local builds

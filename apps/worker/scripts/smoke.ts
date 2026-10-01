@@ -4,7 +4,7 @@ import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.j
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
-  CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, MCP_TOOL_NAME,
+  CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
 
@@ -35,11 +35,31 @@ const website = await timedFetch(`${origin}/`);
 assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
 const html = await website.text();
-assert.match(html, /<title>Packetrove — Network tools<\/title>/);
-const ipPage = await timedFetch(`${origin}/ip`, { headers: { accept: 'text/html' } });
-assert.equal(ipPage.status, 200, 'Public IP page status');
-assert.match(ipPage.headers.get('content-type') ?? '', /text\/html/);
-assert.match(await ipPage.text(), /Packetrove/);
+assert.match(html, /<title>Smallest Covering CIDR — Packetrove<\/title>/);
+for (const path of ['/ip', '/ip/']) {
+  const ipPage = await timedFetch(`${origin}${path}`, {
+    headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
+  });
+  assert.equal(ipPage.status, 200, `Public IP page status: ${path}`);
+  assert.match(ipPage.headers.get('content-type') ?? '', /text\/html/);
+  assert.match(await ipPage.text(), /<title>My Public IP — Packetrove<\/title>/);
+}
+const missingPage = await timedFetch(`${origin}/missing-page`, {
+  headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
+});
+assert.equal(missingPage.status, 404, 'Missing page status');
+assert.match(missingPage.headers.get('content-type') ?? '', /text\/html/);
+const missingHtml = await missingPage.text();
+assert.match(missingHtml, /<h1>Page not found<\/h1>/);
+assert.match(missingHtml, /<a href="\/">Return to home<\/a>/);
+const missingAsset = await timedFetch(`${origin}/assets/missing.js`);
+assert.equal(missingAsset.status, 404, 'Missing asset status');
+const unknownApi = await timedFetch(`${origin}/api/unknown`, {
+  headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
+});
+assert.equal(unknownApi.status, 404, 'Unknown API status');
+assert.equal(ErrorResponseSchema.parse(await unknownApi.json()).error.code, 'NOT_FOUND');
+console.log('PASS direct page navigation, page and asset 404s, and JSON API errors');
 const assets = Array.from(html.matchAll(/(?:src|href)="(\/assets\/[^\"]+\.(?:js|css))"/g), match => match[1]!);
 assert(assets.some(path => path.endsWith('.js')), 'Missing bundled JavaScript.');
 assert(assets.some(path => path.endsWith('.css')), 'Missing bundled stylesheet.');

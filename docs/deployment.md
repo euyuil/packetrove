@@ -56,6 +56,12 @@ Static files are served through Workers Static Assets. Only `/api/*`, `/health`,
 and `/mcp` run the Worker before assets are considered. This keeps ordinary
 website and asset requests on the static serving path.
 
+Vite builds `index.html`, `ip.html`, and `404.html` with shared JavaScript and
+styles. Cloudflare serves `/` and `/ip` directly and uses `404-page` handling
+for unknown paths. `/ip/` redirects to the canonical `/ip` path. API routes
+continue to return structured JSON errors, including for browser navigation.
+See [Cloudflare's static HTML routing guide](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).
+
 The MCP handler explicitly allows localhost and `packetrove.com` for Host and
 browser Origin validation. If the custom domain changes, update the exact
 hostnames in
@@ -100,7 +106,8 @@ pnpm smoke https://packetrove.com
 
 The smoke command performs read-only HTTP calculations using documentation
 addresses. It checks IPv4 and IPv6 results, errors, API metadata, stateless MCP
-behavior, and browser Origin validation. It can also target the local Worker:
+behavior, browser Origin validation, direct page navigation, and page and asset
+404 responses. It can also target the local Worker:
 `pnpm smoke http://localhost:8787`.
 
 ## Custom domain
