@@ -5,6 +5,9 @@
   "compatibility_date": "2026-08-04",
   "workers_dev": true,
   "preview_urls": false,
+  "routes": [
+    { "pattern": "packetrove.com", "custom_domain": true }
+  ],
   "assets": {
     "directory": "../web/dist",
     "binding": "ASSETS",
