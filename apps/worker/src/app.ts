@@ -7,12 +7,12 @@ import { readJsonBody } from './body';
 import { mcpHandler } from './mcp';
 import { getPublicIp } from './ip';
 
-export type WorkerBindings = { ASSETS?: Fetcher };
-
 export function createApp() {
-  const app = new Hono<{ Bindings: WorkerBindings }>();
+  const app = new Hono();
   const specification = createOpenApiDocument();
-  app.use('/api/*', cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
+  for (const path of ['/v1/*', '/openapi.json']) {
+    app.use(path, cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
+  }
   app.use(PUBLIC_IP_PATH, async (context, next) => {
     context.header('Cache-Control', 'no-store');
     await next();
@@ -34,7 +34,7 @@ export function createApp() {
   });
   app.get(PUBLIC_IP_PATH, context => context.json(getPublicIp(context.req.raw.headers)));
   app.get('/health', context => context.json({ status: 'ok' }));
-  app.get('/api/openapi.json', context => context.json(specification));
+  app.get('/openapi.json', context => context.json(specification));
   app.use('/mcp', async (context, next) => {
     await next();
     context.header('Cache-Control', 'no-store, no-transform');
@@ -46,7 +46,7 @@ export function createApp() {
     }
     return mcpHandler.fetch(context.req.raw);
   });
-  for (const [path, allowed] of [[CIDR_COVER_PATH, 'POST'], [PUBLIC_IP_PATH, 'GET, HEAD'], ['/health', 'GET, HEAD'], ['/api/openapi.json', 'GET, HEAD']]) {
+  for (const [path, allowed] of [[CIDR_COVER_PATH, 'POST'], [PUBLIC_IP_PATH, 'GET, HEAD'], ['/health', 'GET, HEAD'], ['/openapi.json', 'GET, HEAD']]) {
     app.all(path!, context => {
       context.header('Allow', allowed!);
       return context.json({ error: {
@@ -55,9 +55,6 @@ export function createApp() {
     });
   }
   app.notFound(context => {
-    if (!context.req.path.startsWith('/api/') && context.env?.ASSETS) {
-      return context.env.ASSETS.fetch(context.req.raw);
-    }
     return context.json({ error: {
       code: 'NOT_FOUND', message: 'Endpoint not found.',
     } } satisfies ErrorResponse, 404);

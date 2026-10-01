@@ -17,6 +17,12 @@ function enter(value: string) {
 }
 
 describe('web page routing', () => {
+  it('links API documentation to the separate API origin', () => {
+    render(<App />);
+    expect(screen.getByRole('link', { name: /API specification/ }).getAttribute('href'))
+      .toBe('https://api.packetrove.com/openapi.json');
+  });
+
   it.each(['/missing-page', '/ip/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {
     window.history.replaceState({}, '', path);
     const fetch = vi.fn();

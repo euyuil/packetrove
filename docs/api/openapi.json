@@ -246,7 +246,7 @@
     "parameters": {}
   },
   "paths": {
-    "/api/v1/cidr/cover": {
+    "/v1/cidr/cover": {
       "post": {
         "operationId": "smallestCoveringCidr",
         "tags": [
@@ -416,7 +416,7 @@
         }
       }
     },
-    "/api/v1/ip": {
+    "/v1/ip": {
       "get": {
         "operationId": "getPublicIp",
         "tags": [
@@ -534,7 +534,7 @@
         }
       }
     },
-    "/api/openapi.json": {
+    "/openapi.json": {
       "get": {
         "operationId": "getOpenApiSpecification",
         "tags": [

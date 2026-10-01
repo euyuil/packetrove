@@ -139,10 +139,10 @@ async function close(server: Server) {
   await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
 }
 
-async function smoke(target: string) {
+async function smoke(target: string, apiTarget: string) {
   const script = fileURLToPath(new URL('../apps/worker/scripts/smoke.ts', import.meta.url));
   return new Promise<{ status: number | null; stdout: string; stderr: string }>((resolve, reject) => {
-    const child = spawn(process.execPath, ['--import', 'tsx', script, target], {
+    const child = spawn(process.execPath, ['--import', 'tsx', script, target, apiTarget], {
       env: { ...process.env, VITE_GIT_COMMIT: commit }, timeout: 15_000,
     });
     let stdout = '';
@@ -154,62 +154,70 @@ async function smoke(target: string) {
   });
 }
 
-describe('readiness followed by the existing production smoke check', () => {
+describe('readiness followed by the production smoke check across separate origins', () => {
   it.each(['API', 'MCP'])('still fails for a functional %s error after the version is ready', async failed => {
     const requested: string[] = [];
+    const apiRequested: string[] = [];
+    const send = (response: import('node:http').ServerResponse, type: string, body: string, status = 200) => {
+      response.writeHead(status, { 'content-type': type });
+      response.end(body);
+    };
     const server = createServer((request, response) => {
       const path = request.url!;
       requested.push(path);
-      const send = (type: string, body: string, status = 200) => {
-        response.writeHead(status, { 'content-type': type });
-        response.end(body);
-      };
+      if (request.method === 'POST') return send(response, 'text/plain', '', 405);
       const mainHtml = '<title>Smallest Covering CIDR — Packetrove</title>'
         + '<script src="/assets/main.js"></script><link href="/assets/main.css">';
-      if (path === '/') return send('text/html', mainHtml);
-      if (path === '/assets/main.js') return send('application/javascript', `const sourceCommit = "${commit}";`);
-      if (path === '/assets/main.css') return send('text/css', 'body { margin: 0; }');
-      if (path === '/ip' || path === '/ip/') return send('text/html', '<title>My Public IP — Packetrove</title>');
-      if (path === '/missing-page') return send('text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
-      if (path === '/assets/missing.js') return send('text/html', '', 404);
-      if (path === '/api/unknown') return send('application/json', JSON.stringify({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } }), 404);
-      if (path === '/health') return send('application/json', JSON.stringify({ status: failed === 'API' ? 'broken' : 'ok' }));
-      if (path === '/api/openapi.json') return send('application/json', JSON.stringify({
-        openapi: '3.1.0', paths: { '/api/v1/cidr/cover': {}, '/api/v1/ip': {} },
+      if (path === '/') return send(response, 'text/html', mainHtml);
+      if (path === '/assets/main.js') return send(response, 'application/javascript', `const sourceCommit = "${commit}";`);
+      if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
+      if (path === '/ip' || path === '/ip/') return send(response, 'text/html', '<title>My Public IP — Packetrove</title>');
+      send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
+    });
+    const apiServer = createServer((request, response) => {
+      const path = request.url!;
+      apiRequested.push(path);
+      if (path.startsWith('/v1/')) response.setHeader('access-control-allow-origin', '*');
+      if (path === '/health') return send(response, 'application/json', JSON.stringify({ status: failed === 'API' ? 'broken' : 'ok' }));
+      if (path === '/openapi.json') return send(response, 'application/json', JSON.stringify({
+        openapi: '3.1.0', paths: { '/v1/cidr/cover': {}, '/v1/ip': {} },
       }));
-      if (path === '/api/v1/ip') {
+      if (path === '/v1/ip') {
         response.setHeader('cache-control', 'no-store');
-        return send('application/json', JSON.stringify({ ip: '203.0.113.1', family: 'ipv4' }));
+        return send(response, 'application/json', JSON.stringify({ ip: '203.0.113.1', family: 'ipv4' }));
       }
-      if (path === '/api/v1/cidr/cover') {
+      if (path === '/v1/cidr/cover') {
         let body = '';
         request.on('data', chunk => { body += chunk; });
         request.on('end', () => {
           const value = JSON.parse(body) as { inputs: string[] };
           const example = CIDR_COVER_EXAMPLES.find(example => JSON.stringify(example.request) === JSON.stringify(value));
-          if (example) send('application/json', JSON.stringify(example.result));
-          else send('application/json', JSON.stringify({ error: { code: 'MIXED_ADDRESS_FAMILIES' } }), 400);
+          if (example) send(response, 'application/json', JSON.stringify(example.result));
+          else send(response, 'application/json', JSON.stringify({ error: { code: 'MIXED_ADDRESS_FAMILIES' } }), 400);
         });
         return;
       }
       if (path === '/mcp') {
         response.setHeader('cache-control', 'no-store');
-        return send('application/json', JSON.stringify({ error: 'Unavailable' }), 500);
+        return send(response, 'application/json', JSON.stringify({ error: 'Unavailable' }), 500);
       }
-      send('text/plain', '', 404);
+      send(response, 'application/json', JSON.stringify({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } }), 404);
     });
     const target = await listen(server);
+    const apiTarget = await listen(apiServer);
     try {
       await waitForDeployment(target, commit);
       expect(requested).toEqual(['/', '/assets/main.js']);
-      const execution = await smoke(target);
+      expect(apiRequested).toEqual([]);
+      const execution = await smoke(target, apiTarget);
       expect(execution.status).toBe(1);
       expect(execution.stdout).toContain('PASS website build commit matches the deployment');
+      expect(execution.stdout).toContain('PASS website and API origin separation');
       expect(execution.stderr).toContain(failed === 'API' ? 'broken' : '500');
-      expect(requested).toContain(failed === 'API' ? '/health' : '/mcp');
-      expect(execution.stdout).not.toContain('Verified ');
+      expect(apiRequested).toContain(failed === 'API' ? '/health' : '/mcp');
+      expect(execution.stdout).not.toContain('Verified website');
     } finally {
-      await close(server);
+      await Promise.all([close(server), close(apiServer)]);
     }
   });
 });

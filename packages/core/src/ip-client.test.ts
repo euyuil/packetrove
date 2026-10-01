@@ -10,8 +10,8 @@ describe('shared public IP HTTP client', () => {
   ])('requests uncached anonymous JSON and validates $family', async result => {
     const fetch = vi.fn(async () => Response.json(result));
     vi.stubGlobal('fetch', fetch);
-    expect(await lookupPublicIp('/api/v1/ip')).toEqual(result);
-    expect(fetch).toHaveBeenCalledWith('/api/v1/ip', expect.objectContaining({
+    expect(await lookupPublicIp('/v1/ip')).toEqual(result);
+    expect(fetch).toHaveBeenCalledWith('/v1/ip', expect.objectContaining({
       cache: 'no-store', credentials: 'omit', redirect: 'error', headers: { accept: 'application/json' },
       signal: expect.any(AbortSignal),
     }));
@@ -20,18 +20,18 @@ describe('shared public IP HTTP client', () => {
     vi.stubGlobal('fetch', async () => Response.json({
       error: { code: 'CLIENT_IP_UNAVAILABLE', message: 'Connection metadata is unavailable.' },
     }, { status: 503 }));
-    await expect(lookupPublicIp('/api/v1/ip')).rejects.toMatchObject({ code: 'CLIENT_IP_UNAVAILABLE' });
+    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({ code: 'CLIENT_IP_UNAVAILABLE' });
   });
   it.each([
     Response.json({ ip: '2001:db8::1', family: 'ipv4' }),
     new Response('<html>Unavailable</html>'),
   ])('rejects malformed JSON or a mismatched IP family', async response => {
     vi.stubGlobal('fetch', async () => response);
-    await expect(lookupPublicIp('/api/v1/ip')).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
   });
   it('reports network failures without leaking exception details', async () => {
     vi.stubGlobal('fetch', async () => { throw new Error('private network detail'); });
-    await expect(lookupPublicIp('/api/v1/ip')).rejects.toMatchObject({
+    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({
       code: 'NETWORK_ERROR', message: 'Unable to reach the IP lookup service. Check your connection and try again.',
     });
   });
@@ -39,7 +39,7 @@ describe('shared public IP HTTP client', () => {
     vi.stubGlobal('fetch', async () => new Response(new ReadableStream({
       start(controller) { controller.error(new Error('private transfer detail')); },
     })));
-    await expect(lookupPublicIp('/api/v1/ip')).rejects.toMatchObject({
+    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({
       code: 'NETWORK_ERROR', message: 'Unable to reach the IP lookup service. Check your connection and try again.',
     });
   });
@@ -60,7 +60,7 @@ describe('shared public IP HTTP client', () => {
         },
       }));
     });
-    const pending = lookupPublicIp('/api/v1/ip');
+    const pending = lookupPublicIp('/v1/ip');
     timeout.abort(new DOMException('Timed out', 'TimeoutError'));
     await expect(pending).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
     expect(timeoutFactory).toHaveBeenCalledExactlyOnceWith(10_000);
@@ -72,7 +72,7 @@ describe('shared public IP HTTP client', () => {
         options.signal!.addEventListener('abort', () => controller.error(options.signal!.reason), { once: true });
       },
     })));
-    const pending = lookupPublicIp('/api/v1/ip', caller.signal);
+    const pending = lookupPublicIp('/v1/ip', caller.signal);
     caller.abort();
     await expect(pending).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
   });
@@ -84,6 +84,6 @@ describe('shared public IP HTTP client', () => {
     });
     vi.stubGlobal('fetch', fetch);
     controller.abort();
-    await expect(lookupPublicIp('/api/v1/ip', controller.signal)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
+    await expect(lookupPublicIp('/v1/ip', controller.signal)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
   });
 });

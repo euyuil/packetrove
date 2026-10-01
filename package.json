@@ -21,7 +21,7 @@
     "test": "pnpm build && vitest run",
     "build": "pnpm spec:check && pnpm -r --if-present build",
     "check": "pnpm typecheck && pnpm test",
-    "deploy": "pnpm build && pnpm --filter @packetrove/worker run deploy",
+    "deploy": "pnpm build && pnpm --filter @packetrove/worker run deploy && pnpm --filter @packetrove/worker run deploy:website",
     "smoke": "pnpm --filter @packetrove/worker smoke",
     "wait:deployment": "tsx scripts/wait-for-deployment.ts"
   },

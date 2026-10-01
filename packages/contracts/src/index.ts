@@ -3,11 +3,11 @@ import { z } from 'zod';
 export const MAX_INPUTS = 1_000;
 export const MAX_INPUT_LENGTH = 64;
 export const MAX_REQUEST_BYTES = 64 * 1_024;
-export const CIDR_COVER_PATH = '/api/v1/cidr/cover';
+export const CIDR_COVER_PATH = '/v1/cidr/cover';
 export const MCP_TOOL_NAME = 'smallest_covering_cidr';
-export const PUBLIC_IP_PATH = '/api/v1/ip';
+export const PUBLIC_IP_PATH = '/v1/ip';
 export const PUBLIC_IP_TOOL_NAME = 'get_public_ip';
-export const PUBLIC_API_ORIGIN = 'https://packetrove.com';
+export const PUBLIC_API_ORIGIN = 'https://api.packetrove.com';
 
 export const PublicIpRequestSchema = z.strictObject({});
 export const PublicIpResultSchema = z.discriminatedUnion('family', [

@@ -47,11 +47,11 @@ export function createMcpServer(context: McpRequestContext) {
 // Keep these exact hostnames aligned with the production domain.
 const allowedHostnames = [
   'localhost', '127.0.0.1', '[::1]',
-  'packetrove.com',
+  'api.packetrove.com',
 ];
 
 export const mcpHandler = createMcpHandler(createMcpServer, {
   route: '/mcp', responseMode: 'json',
   allowedHostnames,
-  allowedOriginHostnames: allowedHostnames,
+  allowedOriginHostnames: [...allowedHostnames, 'packetrove.com'],
 });

@@ -19,7 +19,7 @@ Provide one working calculation interface:
   local CLI artifact.
 - A Packetrove checkout path with dependencies installed and the CLI built.
   The agent can run `node /path/to/packetrove/packages/cli/dist/cli.js`.
-- A configured remote MCP connection to `https://packetrove.com/mcp`, following
+- A configured remote MCP connection to `https://api.packetrove.com/mcp`, following
   the [MCP guide](mcp.md).
 
 The CLI option is offline after the build. MCP requires the configured Worker
