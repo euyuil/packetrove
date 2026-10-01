@@ -68,6 +68,8 @@ Errors use `{ "error": { "code": "...", "message": "...", "issues": [] } }`.
 The optional `issues` array contains messages and, when applicable, a zero-based
 `index` into `inputs`. An invalid entry makes the whole calculation fail;
 entries are never silently skipped.
+For a structurally valid calculation request, all invalid addresses or CIDRs
+are reported together in input order, so they can be corrected in one pass.
 
 Invalid JSON, invalid inputs, and mixed address families return `400`. Oversized
 request bodies return `413`, unsupported media types return `415`, and unexpected
