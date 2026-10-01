@@ -48,12 +48,12 @@ Run local validation before publishing:
 
 ```sh
 pnpm check
-pnpm deploy
+pnpm run deploy
 ```
 
 `pnpm check` type-checks all workspaces, validates the OpenAPI document, builds
 the website and CLI, performs a Wrangler deployment dry run, and runs the test
-suite. It does not publish anything. `pnpm deploy` builds the project and
+suite. It does not publish anything. `pnpm run deploy` builds the project and
 publishes the Worker and static assets using the existing Wrangler login.
 
 For the first deployment, publish to `workers.dev` before configuring the
@@ -117,7 +117,7 @@ Cloudflare Builds. Domain registration and renewal remain separate expenses.
 
 ## Later deployments and rollback
 
-After the custom domain is configured, `pnpm deploy` updates both hostnames.
+After the custom domain is configured, `pnpm run deploy` updates both hostnames.
 Run `pnpm check` before publishing and the smoke command against each hostname
 afterward. Builds and deployments remain manual.
 
