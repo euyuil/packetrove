@@ -7,10 +7,10 @@ network administrators. It aims to help users inspect network information,
 investigate connectivity problems, and understand diagnostic results, including
 connectivity from mainland China.
 
-The goal is to support interactive use through a website and programmatic access
-for scripts, applications, and AI agents. Planned integration directions include
-web APIs, a command-line interface (CLI), Model Context Protocol (MCP) servers,
-reusable skills, and agent workflows.
+The first calculator supports interactive use through a website and programmatic
+access through a web API, command-line interface (CLI), Model Context Protocol
+(MCP) server, and reusable agent skill. Additional diagnostic tools and agent
+workflows are planned.
 
 ## Status
 
@@ -19,8 +19,8 @@ and blocklists. Its [user story](docs/user-stories/001-smallest-covering-cidr.md
 and [API contract](docs/api/README.md) are defined. The shared IPv4/IPv6 calculation
 and Hono API are implemented and verified locally in the Workers runtime. The
 React web calculator is also implemented and calculates entirely in the browser.
-The stateless MCP server is implemented. The command-line interface and agent
-skill are not implemented yet.
+The stateless MCP server, offline command-line interface, and reusable agent
+skill are implemented as well.
 
 The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
 Vite. IPv4 and IPv6 are supported by the contract. Deployment is a later step.
@@ -70,3 +70,22 @@ The same local Worker serves Streamable HTTP at `http://localhost:8787/mcp`.
 It exposes `smallest_covering_cidr` with shared input and output schemas, exact
 address counts, and read-only tool annotations. See the
 [MCP connection guide](docs/integrations/mcp.md) for client setup and examples.
+
+## CLI and agent skill
+
+After `pnpm build`, run the CLI locally:
+
+```sh
+pnpm cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6
+node packages/cli/dist/cli.js cidr cover --stdin --json < addresses.txt
+```
+
+The CLI bundles its runtime dependencies and calculates offline. JSON success
+goes to stdout, errors to stderr, with exit status `0` or `1`. See the
+[CLI guide](docs/integrations/cli.md) for piping, packaging, and exact result
+semantics.
+
+The [CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) helps agents use
+an available CLI or MCP connection and explain additional address coverage.
+See the [skill setup guide](docs/integrations/skill.md). The skill is supplied
+in this repository; no global installation or npm publication is performed.

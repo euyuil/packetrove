@@ -2,7 +2,8 @@
 
 This document records a user story for Packetrove. The calculation described
 below and the first implementation choices are agreed. The shared calculation,
-API, web app, and MCP are implemented; the remaining interfaces are tracked in the README.
+API, web app, MCP, CLI, and agent skill are implemented and documented in the
+README.
 
 ## User story
 

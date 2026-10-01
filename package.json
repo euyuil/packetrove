@@ -8,6 +8,7 @@
   "scripts": {
     "dev:api": "pnpm --filter @packetrove/web build && pnpm --filter @packetrove/worker dev",
     "dev:web": "pnpm --filter @packetrove/web dev",
+    "cli": "node packages/cli/dist/cli.js",
     "spec:generate": "tsx scripts/openapi.ts",
     "spec:check": "tsx scripts/openapi.ts --check && redocly lint docs/api/openapi.json",
     "typecheck": "pnpm -r --if-present typecheck && tsc --noEmit -p tsconfig.scripts.json",
