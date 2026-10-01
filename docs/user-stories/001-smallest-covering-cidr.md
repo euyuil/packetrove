@@ -73,6 +73,12 @@ they do not subtract subnet network or broadcast addresses.
 The web app performs the calculation locally. The API returns a structured
 result with exact counts represented as decimal strings; MCP uses the same result.
 
+Switching between the calculator and My Public IP in the same tab preserves the
+calculator's input and its result or validation error. This draft stays in the
+current page session's memory; reloading or closing the tab clears it. Clear
+removes the input, result, and error. Drafts are not saved to browser storage or
+URLs, or uploaded to the service.
+
 ## Implementation decisions
 
 - Support both IPv4 and IPv6, rejecting mixed address families in one calculation.

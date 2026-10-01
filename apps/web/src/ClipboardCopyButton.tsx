@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { Button, CloseButton, Group, Popover, Text, VisuallyHidden } from '@mantine/core';
+import { Button, CloseButton, darken, Group, Popover, Text, useMantineTheme, VisuallyHidden } from '@mantine/core';
 import type { ClipboardFeedback } from './useClipboardFeedback';
 
 interface ClipboardCopyButtonProps {
@@ -10,6 +10,8 @@ interface ClipboardCopyButtonProps {
 }
 
 export function ClipboardCopyButton({ label, feedback, onCopy, onDismiss }: ClipboardCopyButtonProps) {
+  const theme = useMantineTheme();
+  const failureBackground = darken(theme.colors.orange[9], 0.08);
   const button = useRef<HTMLButtonElement>(null);
   const copied = feedback.status === 'success';
 
@@ -29,11 +31,11 @@ export function ClipboardCopyButton({ label, feedback, onCopy, onDismiss }: Clip
           {copied ? <><span aria-hidden="true">✓</span> Copied</> : label}
         </Button>
       </Popover.Target>
-      <Popover.Dropdown bg="orange.4" c="dark.9"
-        style={{ '--popover-border-color': 'var(--mantine-color-orange-6)' }}>
+      <Popover.Dropdown bg={failureBackground} c="white"
+        style={{ '--popover-border-color': failureBackground }}>
         <Group gap="xs" wrap="nowrap" align="flex-start">
           <Text size="sm" flex={1}>{feedback.message}</Text>
-          <CloseButton size="sm" c="dark.9" variant="transparent"
+          <CloseButton size="sm" c="white" variant="transparent"
             aria-label="Dismiss copy error" onClick={dismiss} />
         </Group>
       </Popover.Dropdown>
