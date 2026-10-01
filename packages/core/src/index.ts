@@ -101,7 +101,19 @@ export function smallestCoveringCidr(value: unknown): CidrCoverResult {
       return { ...(index === undefined ? {} : { index }), message: issue.message };
     }));
   }
-  const parsed = request.data.inputs.map(parseInput);
+  const parsed: ParsedInput[] = [];
+  const issues: InputIssue[] = [];
+  for (const [index, input] of request.data.inputs.entries()) {
+    try {
+      parsed.push(parseInput(input, index));
+    } catch (error) {
+      if (!(error instanceof ToolError) || error.code !== 'INVALID_INPUT' || !error.issues?.length) throw error;
+      issues.push(...error.issues);
+    }
+  }
+  if (issues.length) {
+    throw new ToolError('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', issues);
+  }
   const { family, width } = parsed[0]!;
   const differentFamily = parsed.findIndex(entry => entry.family !== family);
   if (differentFamily !== -1) {

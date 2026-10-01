@@ -75,6 +75,15 @@ describe('API in the Workers runtime', () => {
     const response = await post(JSON.stringify({ inputs: ['::1', 'bad'] }));
     expect(await response.json()).toMatchObject({ error: { issues: [{ index: 1 }] } });
   });
+  it('returns all invalid entry indices in one shared error response', async () => {
+    const response = await post(JSON.stringify({ inputs: ['203.0.113.1', 'bad', '203.0.113.2', '::/129'] }));
+    expect(response.status).toBe(400);
+    const error = ErrorResponseSchema.parse(await response.json()).error;
+    expect(error.code).toBe('INVALID_INPUT');
+    expect(error.message).toBe('Expected valid IP addresses or CIDRs.');
+    expect(error.issues?.map(issue => issue.index)).toEqual([1, 3]);
+    expect(error.issues?.every(issue => issue.message.length > 0)).toBe(true);
+  });
   it('serves health and the exact generated specification', async () => {
     expect(await (await exports.default.fetch('http://localhost/health')).json()).toEqual({ status: 'ok' });
     expect(await (await exports.default.fetch('http://localhost/api/openapi.json')).json()).toEqual(createOpenApiDocument());

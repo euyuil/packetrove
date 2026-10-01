@@ -82,6 +82,22 @@ describe('stateless MCP in the Workers runtime', () => {
       expect(ErrorResponseSchema.parse(JSON.parse(text.text)).error.code).toBe('MIXED_ADDRESS_FAMILIES');
     } finally { await client.close(); }
   });
+  it('returns all invalid entry indices in the shared tool error structure', async () => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: MCP_TOOL_NAME,
+        arguments: { inputs: ['203.0.113.1', 'bad', '203.0.113.2', '::/129'] } });
+      expect(response.isError).toBe(true);
+      expect(response.structuredContent).toBeUndefined();
+      const text = response.content?.find(content => content.type === 'text');
+      if (text?.type !== 'text') throw new Error('Missing error content');
+      const error = ErrorResponseSchema.parse(JSON.parse(text.text)).error;
+      expect(error.code).toBe('INVALID_INPUT');
+      expect(error.message).toBe('Expected valid IP addresses or CIDRs.');
+      expect(error.issues?.map(issue => issue.index)).toEqual([1, 3]);
+      expect(error.issues?.every(issue => issue.message.length > 0)).toBe(true);
+    } finally { await client.close(); }
+  });
   it('supports legacy Streamable HTTP initialization, discovery, and calls without sessions', async () => {
     const client = new LegacyClient({ name: 'legacy-packetrove-tests', version: '0.1.0' });
     const transport = new LegacyTransport(new URL('http://localhost/mcp'), { fetch: workerFetch });
