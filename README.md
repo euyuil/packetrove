@@ -23,7 +23,8 @@ The stateless MCP server, offline command-line interface, and reusable agent
 skill are implemented as well.
 
 The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
-Vite. IPv4 and IPv6 are supported by the contract. Deployment is a later step.
+Vite. IPv4 and IPv6 are supported by the contract. Deployment preparation is
+documented in the [Cloudflare deployment guide](docs/deployment.md).
 
 ## Development
 

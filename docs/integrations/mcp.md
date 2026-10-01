@@ -69,8 +69,8 @@ The implementation uses Cloudflare's `createMcpHandler` with a fresh SDK v2
 server factory per request. It needs no Durable Objects or database. The
 compatible SDK versions are pinned in the Worker package and lockfile.
 
-The handler retains its default Host and browser Origin checks for localhost
-and `workers.dev`. When deploying to a custom domain or supporting browser
-clients on another domain, configure the SDK's hostname and Origin allowlists
-for those actual domains. Non-browser clients without an Origin header work
-without login. Actual Cloudflare deployment is outside the current delivery.
+The handler explicitly validates Host and browser Origin hostnames against
+localhost, `packetrove.example.workers.dev`, and `packetrove.com`. Update the exact
+allowlists when adding another hostname. Non-browser clients without an Origin
+header work without login. Deployment steps and live verification are described
+in the [Cloudflare deployment guide](../deployment.md).

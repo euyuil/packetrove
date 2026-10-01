@@ -24,4 +24,14 @@ export function createMcpServer() {
   return server;
 }
 
-export const mcpHandler = createMcpHandler(createMcpServer, { route: '/mcp', responseMode: 'json' });
+// Keep these exact hostnames aligned with the deployment account and domain.
+const allowedHostnames = [
+  'localhost', '127.0.0.1', '[::1]',
+  'packetrove.example.workers.dev', 'packetrove.com',
+];
+
+export const mcpHandler = createMcpHandler(createMcpServer, {
+  route: '/mcp', responseMode: 'json',
+  allowedHostnames,
+  allowedOriginHostnames: allowedHostnames,
+});

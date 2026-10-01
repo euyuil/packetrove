@@ -18,11 +18,14 @@ const workerFetch: typeof fetch = async (input, init) => {
   return response;
 };
 
-async function connectedClient() {
+async function connectedClient(url = 'http://localhost/mcp', origin?: string) {
   const client = new Client({ name: 'packetrove-tests', version: '0.1.0' }, {
     versionNegotiation: { mode: 'auto' },
   });
-  await client.connect(new StreamableHTTPClientTransport(new URL('http://localhost/mcp'), { fetch: workerFetch }));
+  await client.connect(new StreamableHTTPClientTransport(new URL(url), {
+    fetch: workerFetch,
+    ...(origin ? { requestInit: { headers: { origin } } } : {}),
+  }));
   return client;
 }
 
@@ -80,9 +83,31 @@ describe('stateless MCP in the Workers runtime', () => {
     });
     expect(response.status).toBe(413);
   });
-  it('keeps default browser Origin validation', async () => {
-    const response = await exports.default.fetch('http://localhost/mcp', {
-      method: 'POST', headers: { 'content-type': 'application/json', host: 'localhost', origin: 'https://unrelated.example' },
+  it.each(['https://packetrove.com', 'https://packetrove.example.workers.dev'])(
+    'supports browser clients from %s', async origin => {
+      const client = await connectedClient(`${origin}/mcp`, origin);
+      try {
+        expect((await client.listTools()).tools[0]?.name).toBe(MCP_TOOL_NAME);
+        const example = CIDR_COVER_EXAMPLES[1]!;
+        const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
+        expect(response.structuredContent).toEqual(example.result);
+      } finally { await client.close(); }
+    },
+  );
+  it.each(['http://localhost', 'https://packetrove.com', 'https://packetrove.example.workers.dev'])(
+    'rejects unrelated browser Origins on %s', async origin => {
+      const response = await exports.default.fetch(`${origin}/mcp`, {
+        method: 'POST', headers: {
+          'content-type': 'application/json', host: new URL(origin).host, origin: 'https://unrelated.example',
+        },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+      });
+      expect(response.status).toBe(403);
+    },
+  );
+  it('rejects an unrecognized Host on the production endpoint', async () => {
+    const response = await exports.default.fetch('https://packetrove.com/mcp', {
+      method: 'POST', headers: { 'content-type': 'application/json', host: 'unrelated.example' },
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
     });
     expect(response.status).toBe(403);
