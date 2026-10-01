@@ -74,6 +74,10 @@ jobs:
             --tag "$GITHUB_SHA" \
             --message "GitHub Actions run $GITHUB_RUN_ID"
 
+      - name: Wait for deployed website version
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
+        run: pnpm wait:deployment https://packetrove.com
+
       - name: Verify production website, API, and MCP
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
         run: |
