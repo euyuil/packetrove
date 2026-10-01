@@ -20,6 +20,8 @@
   capabilities as available.
 - Keep optional repository features disabled unless they are needed for work
   the user has requested.
+- Build web interfaces with Mantine components and the shared theme. Prefer
+  component props and layout components before adding custom CSS.
 
 ## Pull request workflow
 

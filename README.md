@@ -111,6 +111,10 @@ JSON errors, and packaging.
 
 ## Development
 
+The web interface uses React, Vite, and Mantine. Prefer Mantine components and
+layout props, with shared visual settings in `apps/web/src/theme.ts`. Custom CSS
+handles the page background and wrapping long network values.
+
 Use Node.js 24.21.0 LTS, pinned in `.node-version`, and pnpm 12.8.1, pinned in
 `package.json`.
 
@@ -156,4 +160,5 @@ development, checks, and pull requests.
 
 Packetrove is licensed under the [MIT License](LICENSE).
 Third-party components retain their own licenses and copyright notices. The
-bundled CLI includes [third-party notices](packages/cli/THIRD_PARTY_NOTICES).
+website includes [third-party notices](apps/web/public/third-party-notices.txt),
+and the bundled CLI includes [third-party notices](packages/cli/THIRD_PARTY_NOTICES).
