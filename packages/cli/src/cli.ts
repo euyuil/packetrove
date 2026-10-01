@@ -15,7 +15,7 @@ Options:
   --stdin    Append one IP address or CIDR per nonblank standard-input line.
   --json     Write the shared result JSON to stdout, or error JSON to stderr.
   -h, --help Show this help and exit.
-  --api-origin  IP lookup service origin (default: https://packetrove.com).
+  --api-origin  IP lookup service origin (default: https://api.packetrove.com).
 
 Use 1 to 1,000 IPv4 entries or IPv6 entries per calculation. Mixed families
 are rejected. CIDR host bits are normalized. Address counts include every

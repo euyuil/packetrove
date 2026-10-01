@@ -52,7 +52,7 @@ describe('bundled public IP CLI', () => {
       expect(execution.stderr).toBe('');
       expect(PublicIpResultSchema.parse(JSON.parse(execution.stdout))).toEqual(result);
     });
-    expect(requestedPath).toBe('/api/v1/ip');
+    expect(requestedPath).toBe('/v1/ip');
     expect(accept).toBe('application/json');
   });
 

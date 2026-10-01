@@ -6,17 +6,17 @@ that the committed document matches its source and validates OpenAPI semantics.
 
 ## Smallest covering CIDR
 
-The production base URL is `https://packetrove.com`. The deployed specification
-is available at [api/openapi.json](https://packetrove.com/api/openapi.json).
+The configured production base URL is `https://api.packetrove.com`. The
+specification is served at [openapi.json](https://api.packetrove.com/openapi.json).
 For example:
 
 ```sh
-curl https://packetrove.com/api/v1/cidr/cover \
+curl https://api.packetrove.com/v1/cidr/cover \
   -H 'Content-Type: application/json' \
   -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
 ```
 
-`POST /api/v1/cidr/cover` accepts an object with an `inputs` array containing
+`POST /v1/cidr/cover` accepts an object with an `inputs` array containing
 1 to 1,000 IP addresses or CIDRs. Each string can contain at most 64 characters.
 Use `Content-Type: application/json`; the request body limit is 64 KiB.
 
@@ -42,7 +42,7 @@ addresses. The tool calculates a result and does not edit firewall rules.
 
 ## Current public IP
 
-`GET /api/v1/ip` takes no request body and returns the address observed for the
+`GET /v1/ip` takes no request body and returns the address observed for the
 current request, for example:
 
 ```json
@@ -80,7 +80,14 @@ methods on known endpoints return `405` with an `Allow` header.
 ## Service metadata
 
 `GET /health` returns `{ "status": "ok" }`.
-`GET /api/openapi.json` returns the generated specification.
+`GET /openapi.json` returns the generated specification.
 
 The contract specifies anonymous access. Implementation and deployment status
 are tracked in the repository README.
+
+The website at `https://packetrove.com` does not serve API endpoints. The former
+`/api/v1/*` and `/api/openapi.json` addresses on that host no longer serve the API
+after this revision is deployed (GET returns 404; POST returns 405).
+Public API calls require no cookies; browser callers should
+use `credentials: 'omit'`. The API allows anonymous cross-origin calls and does
+not enable credentialed CORS or set application cookies.

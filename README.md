@@ -61,7 +61,7 @@ the returned address, and lookup results and errors are not cached.
 | Interface | Get started |
 | --- | --- |
 | Website | [CIDR calculator](https://packetrove.com) · [My Public IP](https://packetrove.com/ip) |
-| Web API | [API guide](docs/api/README.md) · [OpenAPI specification](https://packetrove.com/api/openapi.json) |
+| Web API | [API guide](docs/api/README.md) · [OpenAPI specification](https://api.packetrove.com/openapi.json) |
 | Command-line interface (CLI) | [CLI guide](docs/integrations/cli.md), with offline CIDR calculations and JSON output |
 | AI agents | [MCP connection guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
 
@@ -70,19 +70,19 @@ the returned address, and lookup results and errors are not cached.
 Calculate a covering CIDR with a single request:
 
 ```sh
-curl https://packetrove.com/api/v1/cidr/cover \
+curl https://api.packetrove.com/v1/cidr/cover \
   -H 'Content-Type: application/json' \
   -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
 ```
 
 The result includes `cidr: "203.0.113.0/29"` and
 `additionalAddressCount: "5"`. Address counts are decimal strings to preserve
-exact IPv6 values. Use `GET https://packetrove.com/api/v1/ip` to check the
+exact IPv6 values. Use `GET https://api.packetrove.com/v1/ip` to check the
 connection making the request.
 
 ### Connect an AI agent
 
-Add `https://packetrove.com/mcp` to a client that supports Streamable HTTP.
+Add `https://api.packetrove.com/mcp` to a client that supports Streamable HTTP.
 The server provides `smallest_covering_cidr` and `get_public_ip` without
 authentication. The repository also includes a
 [CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) for calculating ranges
@@ -125,10 +125,12 @@ pnpm check
 pnpm dev:api
 ```
 
-`pnpm dev:api` serves the website and API at `http://localhost:8787`. For React
-development with hot reload, run `pnpm dev:web` and open `http://localhost:5173`.
-CIDR calculation works with the web development server alone; API calls use
-the local Worker.
+`pnpm dev:api` serves the API and MCP at `http://localhost:8787`. In another
+terminal, run `pnpm dev:web` and open `http://localhost:5173` for the website with
+hot reload. Its IP lookup calls the local API without cookies. CIDR calculation
+works with the web development server alone. Production builds use
+`https://api.packetrove.com`; set `VITE_API_ORIGIN` when building a self-hosted copy
+with a different API origin.
 
 `pnpm install` automatically enables repository-local Git hooks. Install
 Gitleaks once (`brew install gitleaks` on macOS) for credential scanning and
@@ -137,13 +139,18 @@ commits. See the [local Git checks guide](docs/git-checks.md) for setup and
 troubleshooting.
 
 Local development and tests need no Cloudflare account or production credentials.
-`pnpm build` validates the API specification and performs a deployment dry run.
+`pnpm build` validates the API specification and performs deployment dry runs
+for both the API and website Workers.
 Local public IP lookup depends on Cloudflare connection metadata; without it,
 the API returns `CLIENT_IP_UNAVAILABLE`.
 
 ## Self-hosting
 
-The hosted website, Web API, and MCP server run on Cloudflare Workers. Follow
+The website uses `packetrove.com`; the Web API and MCP use
+`api.packetrove.com` on a separate Worker. The former root-domain API and MCP
+addresses no longer serve interfaces after the split; update configured clients
+to the new URLs. GET requests return 404 and POST requests return 405.
+The services run on Cloudflare Workers. Follow
 the [deployment guide](docs/deployment.md) to deploy your own copy, configure
 credentials, and verify it.
 

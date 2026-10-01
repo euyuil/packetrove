@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Badge, Button, Group, Loader, Paper, Stack, Text, Title } from '@mantine/core';
 import { PUBLIC_IP_PATH, type PublicIpResult } from '@packetrove/contracts';
 import { lookupPublicIp, ToolError } from '@packetrove/core';
+import { getApiUrl } from './api';
 import { useClipboardFeedback } from './useClipboardFeedback';
 
 export function PublicIpTool() {
@@ -20,7 +21,7 @@ export function PublicIpTool() {
     setError('');
     clearCopyMessage();
     try {
-      const current = await lookupPublicIp(PUBLIC_IP_PATH, request.signal);
+      const current = await lookupPublicIp(getApiUrl(PUBLIC_IP_PATH), request.signal);
       if (!request.signal.aborted) setResult(current);
     } catch (failure) {
       if (!request.signal.aborted) {

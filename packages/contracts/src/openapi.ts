@@ -71,7 +71,7 @@ export function createOpenApiDocument() {
       500: errorResponse('Unexpected internal failure.') },
   });
   registry.registerPath({
-    method: 'get', path: '/api/openapi.json', operationId: 'getOpenApiSpecification', tags: ['Platform'],
+    method: 'get', path: '/openapi.json', operationId: 'getOpenApiSpecification', tags: ['Platform'],
     summary: 'Read the OpenAPI specification', security: [],
     responses: { 200: { description: 'The OpenAPI 3.1.0 document.', content: { 'application/json': {
       schema: { type: 'object', additionalProperties: true },

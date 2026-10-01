@@ -6,8 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev --local",
-    "build": "wrangler deploy --dry-run --outdir dist",
+    "build": "wrangler deploy --dry-run --outdir dist/api && wrangler deploy --config wrangler.website.jsonc --dry-run --outdir dist/website",
     "deploy": "wrangler deploy",
+    "deploy:website": "wrangler deploy --config wrangler.website.jsonc",
     "smoke": "tsx scripts/smoke.ts",
     "typecheck": "tsc --noEmit"
   },
