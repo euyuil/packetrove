@@ -60,6 +60,7 @@ export function createOpenApiDocument() {
   return new OpenApiGeneratorV31(registry.definitions).generateDocument({
     openapi: '3.1.0',
     info: { title: 'Packetrove API', version: '0.1.0',
+      license: { name: 'MIT', url: 'https://opensource.org/license/mit/' },
       description: 'Deterministic network tools for humans and agents. Address counts are decimal strings for exact IPv6 representation.' },
     servers: [{ url: '/', description: 'The host serving this specification' }],
     tags: [{ name: 'CIDR', description: 'IP address and CIDR calculations.' },

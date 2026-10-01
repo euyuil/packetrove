@@ -121,3 +121,9 @@ The [CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) helps agents us
 an available CLI or MCP connection and explain additional address coverage.
 See the [skill setup guide](docs/integrations/skill.md). The skill is supplied
 in this repository; no global installation or npm publication is performed.
+
+## License
+
+Packetrove is licensed under the [MIT License](LICENSE).
+Third-party components retain their own licenses and copyright notices. The
+bundled CLI includes [third-party notices](packages/cli/THIRD_PARTY_NOTICES).

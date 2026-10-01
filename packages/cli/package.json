@@ -1,12 +1,13 @@
 {
   "name": "@packetrove/cli",
   "version": "0.1.0",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "description": "Offline Packetrove network calculations for scripts and agents.",
   "engines": { "node": "^22.22.2 || ^24.15.0 || >=26.0.0" },
   "bin": { "packetrove": "./dist/cli.js" },
-  "files": ["dist"],
+  "files": ["dist", "THIRD_PARTY_NOTICES"],
   "scripts": {
     "build": "node build.mjs",
     "prepack": "pnpm build",

@@ -3,6 +3,10 @@
   "info": {
     "title": "Packetrove API",
     "version": "0.1.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit/"
+    },
     "description": "Deterministic network tools for humans and agents. Address counts are decimal strings for exact IPv6 representation."
   },
   "servers": [
