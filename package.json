@@ -6,6 +6,7 @@
   "packageManager": "pnpm@10.19.0",
   "engines": { "node": "^22.22.2 || ^24.15.0 || >=26.0.0" },
   "scripts": {
+    "dev:api": "pnpm --filter @packetrove/worker dev",
     "spec:generate": "tsx scripts/openapi.ts",
     "spec:check": "tsx scripts/openapi.ts --check && redocly lint docs/api/openapi.json",
     "typecheck": "pnpm -r --if-present typecheck && tsc --noEmit -p tsconfig.scripts.json",

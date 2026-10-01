@@ -1,8 +1,8 @@
 # Smallest covering CIDR for firewall IP lists
 
 This document records a user story for Packetrove. The calculation described
-below and the first implementation choices are agreed. The tool has not been
-implemented yet.
+below and the first implementation choices are agreed. The shared calculation
+and API are implemented; the remaining interfaces are tracked in the README.
 
 ## User story
 

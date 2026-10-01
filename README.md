@@ -16,7 +16,8 @@ reusable skills, and agent workflows.
 
 The first tool is a smallest covering CIDR calculator for firewall IP allowlists
 and blocklists. Its [user story](docs/user-stories/001-smallest-covering-cidr.md)
-and [API contract](docs/api/README.md) are defined. The calculation, API server,
+and [API contract](docs/api/README.md) are defined. The shared IPv4/IPv6 calculation
+and Hono API are implemented and verified locally in the Workers runtime. The
 web application, MCP server, and command-line interface are not implemented yet.
 
 The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
@@ -31,7 +32,20 @@ is verified with Node.js 26.10.0.
 pnpm install
 pnpm spec:generate
 pnpm check
+pnpm dev:api
 ```
 
 The shared Zod schemas are the source of truth for request and response types.
 The generated OpenAPI 3.1.0 document is committed for consumers to read directly.
+
+The local API runs at `http://localhost:8787`. For example:
+
+```sh
+curl http://localhost:8787/api/v1/cidr/cover \
+  -H 'Content-Type: application/json' \
+  -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
+```
+
+`pnpm build` validates the specification and performs a Wrangler deployment dry
+run. It does not deploy a live service. No Cloudflare account is needed for local
+development and tests.
