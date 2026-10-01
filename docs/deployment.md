@@ -14,8 +14,8 @@ checks for static assets, the Web API, and modern and legacy MCP clients.
 The [GitHub Actions workflow](../.github/workflows/ci.yml) validates updates to
 `main`, publishes the current successful revision, and checks
 `https://packetrove.com`. A manual workflow run on `main` uses the same process.
-Configure the dedicated `CLOUDFLARE_API_TOKEN` repository secret and the
-`CLOUDFLARE_ACCOUNT_ID` repository variable as described in the
+Configure the dedicated `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
+repository secrets as described in the
 [continuous integration and deployment guide](continuous-integration.md).
 
 Deployments are serialized. New pushes can supersede pending runs but do not

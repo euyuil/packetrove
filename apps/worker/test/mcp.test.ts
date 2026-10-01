@@ -93,7 +93,7 @@ describe('stateless MCP in the Workers runtime', () => {
       expect(response.structuredContent).toEqual(example.result);
     } finally { await client.close(); }
   });
-  it('rejects the disabled workers.dev hostname', async () => {
+  it('rejects a workers.dev hostname', async () => {
     const response = await exports.default.fetch('https://packetrove.example.workers.dev/mcp', {
       method: 'POST', headers: {
         'content-type': 'application/json', host: 'packetrove.example.workers.dev',

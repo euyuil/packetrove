@@ -80,7 +80,7 @@ Configure these repository settings in GitHub Actions before the first run:
 | Setting | Storage | Purpose |
 | --- | --- | --- |
 | `CLOUDFLARE_API_TOKEN` | Repository secret | Dedicated Cloudflare token for publishing the Worker. |
-| `CLOUDFLARE_ACCOUNT_ID` | Repository variable | Cloudflare account containing the Worker and production zone. |
+| `CLOUDFLARE_ACCOUNT_ID` | Repository secret | Cloudflare account containing the Worker and production zone, masked in workflow logs. |
 
 Create a dedicated account-owned API token named `packetrove-github-actions`.
 Cloudflare's **Edit Cloudflare Workers** template is a starting point; retain only
@@ -96,19 +96,20 @@ need permissions for KV, R2, Pages, databases, hosted builds, containers, or
 observability. The Worker uses a custom domain, rather than a zone route that
 requires `Workers Routes Write`.
 
-Store the token directly in GitHub Secrets. The token is exposed only to the
+Store both values directly in GitHub Secrets. Keeping the account identifier in
+a secret also masks it in workflow logs. The token is exposed only to the
 deployment step, not dependency installation, validation, or smoke checks. An
 interactive local OAuth login does not authenticate the GitHub runner. See
 [Cloudflare's GitHub Actions authentication guide](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
 
-Set the account variable and the secret with GitHub CLI if preferred:
+Set both secrets with GitHub CLI if preferred:
 
 ```sh
-gh variable set CLOUDFLARE_ACCOUNT_ID --repo euyuil/packetrove --body <account-id>
+gh secret set CLOUDFLARE_ACCOUNT_ID --repo euyuil/packetrove
 gh secret set CLOUDFLARE_API_TOKEN --repo euyuil/packetrove
 ```
 
-The second command prompts for the token without putting it in shell history.
+Both commands prompt for their values without putting them in shell history.
 Do not put the API token or local OAuth credentials in Git. Rotate the repository
 secret when its token expires or is revoked. Missing deployment settings fail
 the deployment step with a configuration error.
