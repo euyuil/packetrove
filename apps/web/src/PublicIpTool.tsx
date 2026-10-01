@@ -3,13 +3,14 @@ import { Alert, Badge, Button, Group, Loader, Paper, Stack, Text, Title } from '
 import { PUBLIC_IP_PATH, type PublicIpResult } from '@packetrove/contracts';
 import { lookupPublicIp, ToolError } from '@packetrove/core';
 import { getApiUrl } from './api';
+import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 
 export function PublicIpTool() {
   const [result, setResult] = useState<PublicIpResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const { copyMessage, clearCopyMessage, copyText } = useClipboardFeedback();
+  const { copyFeedback, clearCopyFeedback, copyText } = useClipboardFeedback();
   const activeRequest = useRef<AbortController | null>(null);
 
   const lookup = useCallback(async () => {
@@ -19,7 +20,7 @@ export function PublicIpTool() {
     setLoading(true);
     setResult(null);
     setError('');
-    clearCopyMessage();
+    clearCopyFeedback();
     try {
       const current = await lookupPublicIp(getApiUrl(PUBLIC_IP_PATH), request.signal);
       if (!request.signal.aborted) setResult(current);
@@ -30,7 +31,7 @@ export function PublicIpTool() {
     } finally {
       if (!request.signal.aborted) setLoading(false);
     }
-  }, [clearCopyMessage]);
+  }, [clearCopyFeedback]);
 
   useEffect(() => {
     void lookup();
@@ -66,11 +67,11 @@ export function PublicIpTool() {
             <Text size="xs" c="dimmed">PUBLIC IP ADDRESS</Text>
             <Group justify="space-between">
               <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.ip}</Text>
-              <Button type="button" variant="default" size="xs" onClick={copyIp}>Copy IP</Button>
+              <ClipboardCopyButton label="Copy IP" feedback={copyFeedback}
+                onCopy={copyIp} onDismiss={clearCopyFeedback} />
             </Group>
           </>}
         </Stack>
-        <Text size="xs" c="dimmed" role="status">{copyMessage}</Text>
         <Button type="button" fullWidth loading={loading} disabled={loading} onClick={() => void lookup()}>
           {loading ? 'Checking…' : error ? 'Try again' : 'Refresh IP'}
         </Button>
