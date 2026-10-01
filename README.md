@@ -164,6 +164,11 @@ an available CLI or MCP connection and explain additional address coverage.
 See the [skill setup guide](docs/integrations/skill.md). The skill is supplied
 in this repository; no global installation or npm publication is performed.
 
+## Contributing
+
+See the [contribution guide](CONTRIBUTING.md) for discussing changes, local
+development, checks, and pull requests.
+
 ## License
 
 Packetrove is licensed under the [MIT License](LICENSE).
