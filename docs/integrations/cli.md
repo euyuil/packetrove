@@ -108,3 +108,8 @@ pnpm --filter @packetrove/cli pack --pack-destination /tmp/packetrove-artifacts
 The package declares a `packetrove` executable for clients that install the
 tarball. No package has been published to npm, and this delivery does not
 install it globally.
+
+`pnpm check` also packs the CLI in a temporary workspace, installs that archive
+offline in an isolated consumer, and runs the installed `packetrove` command.
+It checks the executable, package metadata, license notices, and structured
+success and error output without publishing or installing anything globally.
