@@ -68,6 +68,21 @@ describe('bundled offline CLI', () => {
     expect(execution.status).toBe(1);
     expect(execution.stderr).toContain('Input 2:');
   });
+  it('returns every invalid entry in one machine-readable error with a failure status', () => {
+    const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin', '--json'], '\n bad\n\n203.0.113.2\n::/129\n');
+    expect(execution.status).toBe(1);
+    expect(execution.stdout).toBe('');
+    const response = ErrorResponseSchema.parse(JSON.parse(execution.stderr));
+    expect(response.error.code).toBe('INVALID_INPUT');
+    expect(response.error.issues?.map(issue => issue.index)).toEqual([1, 3]);
+    expect(response.error.issues?.every(issue => issue.message.length > 0)).toBe(true);
+  });
+  it('reports all one-based input numbers in readable errors', () => {
+    const execution = run(['cidr', 'cover', '203.0.113.1', 'bad', '203.0.113.2', '::/129']);
+    expect(execution.status).toBe(1);
+    expect(execution.stdout).toBe('');
+    expect(execution.stderr.match(/^Input \d+:/gm)).toEqual(['Input 2:', 'Input 4:']);
+  });
   it('rejects too many piped entries instead of silently truncating them', () => {
     const execution = run(['cidr', 'cover', '--stdin', '--json'], '203.0.113.1\n'.repeat(1_001));
     expect(execution.status).toBe(1);

@@ -137,6 +137,21 @@ describe('browser calculator', () => {
     enter('\n::1\n\nbad');
     expect(within(screen.getByRole('alert')).getByText(/^Line 4:/)).toBeDefined();
   });
+  it.each(['\n', '\r\n'])('shows all invalid physical lines with %j separators without uploading inputs', separator => {
+    const calculation = vi.spyOn(core, 'smallestCoveringCidr');
+    const fetch = vi.fn(() => { throw new Error('Unexpected API request'); });
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    enter(['', '203.0.113.1', 'bad', '  ', '203.0.113.2', '::/129', ''].join(separator));
+    expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', 'bad', '203.0.113.2', '::/129'] });
+    const alert = within(screen.getByRole('alert'));
+    const issues = alert.getAllByRole('listitem');
+    expect(issues).toHaveLength(2);
+    expect(issues[0]?.textContent).toMatch(/^Line 3:/);
+    expect(issues[1]?.textContent).toMatch(/^Line 6:/);
+    expect(screen.queryByText('203.0.113.0/30')).toBeNull();
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it('rejects an empty list and a mixed address family', () => {
     render(<App />);
     enter('\n  \n');

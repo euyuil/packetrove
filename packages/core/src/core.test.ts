@@ -44,12 +44,63 @@ describe('smallest covering CIDR', () => {
     expect(() => smallestCoveringCidr({ inputs: ['192.0.2.1', '::ffff:192.0.2.1'] }))
       .toThrowError(expect.objectContaining({ code: 'MIXED_ADDRESS_FAMILIES' }));
   });
+  it('reports every invalid entry in input order without returning a partial calculation', () => {
+    expect(() => smallestCoveringCidr({ inputs: ['203.0.113.1', 'bad', '203.0.113.2', '::/129'] }))
+      .toThrowError(expect.objectContaining({
+        code: 'INVALID_INPUT', message: 'Expected valid IP addresses or CIDRs.',
+        issues: [{ index: 1, message: expect.any(String) }, { index: 3, message: expect.any(String) }],
+      }));
+  });
+  it('keeps parse errors ahead of the existing mixed-family check', () => {
+    expect(() => smallestCoveringCidr({ inputs: ['::1', 'bad', '203.0.113.1', '::/129'] }))
+      .toThrowError(expect.objectContaining({
+        code: 'INVALID_INPUT',
+        issues: [{ index: 1, message: expect.any(String) }, { index: 3, message: expect.any(String) }],
+      }));
+    expect(() => smallestCoveringCidr({ inputs: ['::1', '203.0.113.1', '203.0.113.2'] }))
+      .toThrowError(expect.objectContaining({
+        code: 'MIXED_ADDRESS_FAMILIES', issues: [{ index: 1, message: expect.any(String) }],
+      }));
+  });
+  it('preserves request validation before parsing entries', () => {
+    expect(() => smallestCoveringCidr({ inputs: ['bad', ''] }))
+      .toThrowError(expect.objectContaining({
+        code: 'INVALID_INPUT', message: 'Invalid calculation input.',
+        issues: [{ index: 1, message: expect.any(String) }],
+      }));
+    expect(() => smallestCoveringCidr({ inputs: new Array(1001).fill('bad') }))
+      .toThrowError(expect.objectContaining({
+        code: 'INVALID_INPUT', message: 'Invalid calculation input.',
+        issues: [{ message: expect.any(String) }],
+      }));
+  });
+  it('reports all invalid entries at the maximum input count', () => {
+    try {
+      smallestCoveringCidr({ inputs: new Array(1000).fill('bad') });
+      expect.fail('Expected invalid input');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ToolError);
+      expect((error as ToolError).code).toBe('INVALID_INPUT');
+      expect((error as ToolError).issues?.map(issue => issue.index))
+        .toEqual(Array.from({ length: 1000 }, (_, index) => index));
+    }
+  });
   it.each([{}, { inputs: [] }, { inputs: [42] }, { inputs: ['::1'], extra: true },
     { inputs: new Array(1001).fill('::1') }])('rejects malformed requests %j', request => {
     expect(() => smallestCoveringCidr(request)).toThrow(ToolError);
   });
   it('accepts the maximum input count', () => {
     expect(smallestCoveringCidr({ inputs: new Array(1000).fill('::1') }).inputAddressCount).toBe('1');
+  });
+  it('keeps exact IPv6 counts and dotted-tail values at the maximum input count', () => {
+    const inputs = ['::/0', ...new Array<string>(999).fill('::192.0.2.1')];
+    const result = smallestCoveringCidr({ inputs });
+    expect(result.normalizedInputs).toHaveLength(1000);
+    expect(result.normalizedInputs.slice(0, 2)).toEqual(['::/0', '::c000:201/128']);
+    expect(result.cidr).toBe('::/0');
+    expect(result.inputAddressCount).toBe('340282366920938463463374607431768211456');
+    expect(result.coveredAddressCount).toBe(result.inputAddressCount);
+    expect(result.additionalAddressCount).toBe('0');
   });
 });
 
