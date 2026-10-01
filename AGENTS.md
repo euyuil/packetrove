@@ -21,6 +21,34 @@
 - Keep optional repository features disabled unless they are needed for work
   the user has requested.
 
+## Local development and commit checks
+
+- Use the Node.js version in .node-version and the pnpm version in package.json.
+  Read docs/git-checks.md when preparing a development checkout.
+- Gitleaks is installed globally. Check `gitleaks version` and reuse the existing
+  installation across clones. On a Mac without Gitleaks, the installation command
+  is `brew install gitleaks`. Do not download it on each commit.
+- Current setup is explicit: run `pnpm install`, then `pnpm hooks:install` for a
+  fresh clone. Inspect `git config --local --get core.hooksPath`; this repository
+  uses .githooks. An already configured checkout does not need repeated setup.
+  Preserve existing custom hooks and report configuration conflicts.
+- The hooks scan staged changes and commit messages for credentials and validate
+  Conventional Commit headers. Resolve failed checks before committing; do not
+  bypass them or expose credentials in output. Run `pnpm test:git-checks` when
+  changing the hooks, their scripts, or the installed Gitleaks version.
+- GitHub Actions currently validates and deploys the application without running
+  Gitleaks. Credential scanning in continuous integration is deferred by the
+  owner; do not add it as part of unrelated work.
+
+The recommended setup improvement is not implemented yet: enable hooks through
+the package.json prepare script during `pnpm install`, skip setup in continuous
+integration and production environments, preserve custom hooks, and allow
+dependency installation without Gitleaks while requiring it at commit time.
+Gitleaks would remain a globally installed tool. Until that change is implemented,
+use the explicit setup above. When implementing it, update this file, README.md,
+and docs/git-checks.md together and verify both a fresh clone and the skipped
+continuous integration path.
+
 ## Open source practices
 
 Packetrove is being prepared for open source release. Treat repository files,
