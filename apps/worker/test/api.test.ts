@@ -2,6 +2,7 @@ import { exports } from 'cloudflare:workers';
 import { describe, expect, it, vi } from 'vitest';
 import { CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, ErrorResponseSchema, MAX_REQUEST_BYTES } from '@packetrove/contracts';
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
+import { smallestCoveringCidr } from '@packetrove/core';
 import { createApp } from '../src/app';
 
 function post(body: string, headers: Record<string, string> = { 'content-type': 'application/json' }) {
@@ -13,6 +14,16 @@ describe('API in the Workers runtime', () => {
     const response = await post(JSON.stringify(request));
     expect(response.status).toBe(200);
     expect(response.headers.get('access-control-allow-origin')).toBe('*');
+    expect(await response.json()).toEqual(result);
+  });
+  it('returns the same shared-core result as the browser for equivalent dotted-tail IPv6 inputs', async () => {
+    const request = { inputs: ['::192.0.2.1', '::c000:201'] };
+    const result = smallestCoveringCidr(request);
+    expect(result).toMatchObject({
+      cidr: '::c000:201/128', inputAddressCount: '1', coveredAddressCount: '1', additionalAddressCount: '0',
+    });
+    const response = await post(JSON.stringify(request));
+    expect(response.status).toBe(200);
     expect(await response.json()).toEqual(result);
   });
   it.each([

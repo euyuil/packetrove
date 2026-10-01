@@ -25,6 +25,9 @@ Use one address family per request. Individual IPv4 and IPv6 addresses represent
 their network address. Surrounding whitespace is ignored during parsing.
 IPv4 must use four decimal octets without leading zeros. IPv6 zone identifiers
 are not supported. IPv4-mapped IPv6 addresses retain the IPv6 address family.
+IPv6 addresses with dotted IPv4 tails preserve their original 128-bit value:
+`::192.0.2.1` and `::c000:201` represent the same address; `::ffff:192.0.2.1`
+represents a different address.
 
 The response returns a canonical covering CIDR, normalized inputs in the
 original order, the covered address range, and exact address counts. Normalized

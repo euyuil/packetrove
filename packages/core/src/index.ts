@@ -56,7 +56,10 @@ function parseInput(input: string, index: number): ParsedInput {
   if (!text.includes(':') && !text.includes('.')) throw fail();
   let address: ipaddr.IPv4 | ipaddr.IPv6;
   try {
-    address = ipaddr.parse(text);
+    // ipaddr.js rewrites ::d.d.d.d to ::ffff:d.d.d.d. Expand only this
+    // spelling so parsing preserves the original 128-bit address instead.
+    const addressText = /^::\d+\./.test(text) ? `0:0:0:0:0:0:${text.slice(2)}` : text;
+    address = ipaddr.parse(addressText);
   } catch {
     throw fail();
   }
