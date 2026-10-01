@@ -24,7 +24,7 @@ skill are implemented as well.
 
 The selected stack is TypeScript, Cloudflare Workers with Hono, and React with
 Vite. The website, Web API, and MCP server are deployed on Cloudflare Workers
-with Static Assets and verified on both public hostnames.
+with Static Assets and verified at `https://packetrove.com`.
 
 | Interface | Public address |
 | --- | --- |
@@ -33,7 +33,6 @@ with Static Assets and verified on both public hostnames.
 | OpenAPI document | [API specification](https://packetrove.com/api/openapi.json) |
 | MCP server | `https://packetrove.com/mcp` (Streamable HTTP) |
 | Health | [Service health](https://packetrove.com/health) |
-| Verification hostname | [packetrove.example.workers.dev](https://packetrove.example.workers.dev) |
 
 Deployments use the project-local Wrangler and local builds. See the
 [Cloudflare deployment guide](docs/deployment.md) for login, publishing, costs,

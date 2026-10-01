@@ -83,18 +83,26 @@ describe('stateless MCP in the Workers runtime', () => {
     });
     expect(response.status).toBe(413);
   });
-  it.each(['https://packetrove.com', 'https://packetrove.example.workers.dev'])(
-    'supports browser clients from %s', async origin => {
-      const client = await connectedClient(`${origin}/mcp`, origin);
-      try {
-        expect((await client.listTools()).tools[0]?.name).toBe(MCP_TOOL_NAME);
-        const example = CIDR_COVER_EXAMPLES[1]!;
-        const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
-        expect(response.structuredContent).toEqual(example.result);
-      } finally { await client.close(); }
-    },
-  );
-  it.each(['http://localhost', 'https://packetrove.com', 'https://packetrove.example.workers.dev'])(
+  it('supports browser clients from the production domain', async () => {
+    const origin = 'https://packetrove.com';
+    const client = await connectedClient(`${origin}/mcp`, origin);
+    try {
+      expect((await client.listTools()).tools[0]?.name).toBe(MCP_TOOL_NAME);
+      const example = CIDR_COVER_EXAMPLES[1]!;
+      const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
+      expect(response.structuredContent).toEqual(example.result);
+    } finally { await client.close(); }
+  });
+  it('rejects the disabled workers.dev hostname', async () => {
+    const response = await exports.default.fetch('https://packetrove.example.workers.dev/mcp', {
+      method: 'POST', headers: {
+        'content-type': 'application/json', host: 'packetrove.example.workers.dev',
+      },
+      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
+    });
+    expect(response.status).toBe(403);
+  });
+  it.each(['http://localhost', 'https://packetrove.com'])(
     'rejects unrelated browser Origins on %s', async origin => {
       const response = await exports.default.fetch(`${origin}/mcp`, {
         method: 'POST', headers: {

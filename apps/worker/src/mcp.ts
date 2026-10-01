@@ -24,10 +24,10 @@ export function createMcpServer() {
   return server;
 }
 
-// Keep these exact hostnames aligned with the deployment account and domain.
+// Keep these exact hostnames aligned with the production domain.
 const allowedHostnames = [
   'localhost', '127.0.0.1', '[::1]',
-  'packetrove.example.workers.dev', 'packetrove.com',
+  'packetrove.com',
 ];
 
 export const mcpHandler = createMcpHandler(createMcpServer, {

@@ -7,15 +7,14 @@ Worker with `pnpm dev:api`.
 | Setting | Value |
 | --- | --- |
 | Production URL | `https://packetrove.com/mcp` |
-| Verification URL | `https://packetrove.example.workers.dev/mcp` |
 | Local URL | `http://localhost:8787/mcp` |
 | Transport | Streamable HTTP |
 | Authentication | None |
 | Tool | `smallest_covering_cidr` |
 
 Use your client's remote HTTP server configuration and set the production URL
-above. Configuration keys vary by client. Both public hostnames are deployed and
-verified. The server supports modern stateless requests and legacy
+above. Configuration keys vary by client. The production endpoint is deployed
+and verified. The server supports modern stateless requests and legacy
 Streamable HTTP initialization, tool discovery, and tool calls. It does not
 provide persistent MCP sessions or standalone server event streams.
 
@@ -75,7 +74,7 @@ server factory per request. It needs no Durable Objects or database. The
 compatible SDK versions are pinned in the Worker package and lockfile.
 
 The handler explicitly validates Host and browser Origin hostnames against
-localhost, `packetrove.example.workers.dev`, and `packetrove.com`. Update the exact
-allowlists when adding another hostname. Non-browser clients without an Origin
+localhost and `packetrove.com`. Update the exact allowlists when adding another
+hostname. Non-browser clients without an Origin
 header work without login. Deployment steps and live verification are described
 in the [Cloudflare deployment guide](../deployment.md).

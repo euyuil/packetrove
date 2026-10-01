@@ -3,7 +3,7 @@
   "name": "packetrove",
   "main": "src/index.ts",
   "compatibility_date": "2026-08-04",
-  "workers_dev": true,
+  "workers_dev": false,
   "preview_urls": false,
   "routes": [
     { "pattern": "packetrove.com", "custom_domain": true }

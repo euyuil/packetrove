@@ -4,8 +4,7 @@ Packetrove uses one Cloudflare Worker for its static website, Web API, and
 stateless MCP endpoint. The website calculates in the browser; it does not call
 the API for calculations. Builds run locally and Wrangler uploads the output.
 
-The service is live at `https://packetrove.com` and
-`https://packetrove.example.workers.dev`. Both hostnames have passed the live smoke
+The service is live at `https://packetrove.com` and has passed the live smoke
 checks for static assets, the Web API, and modern and legacy MCP clients.
 
 ## Prerequisites
@@ -31,18 +30,19 @@ directories. Do not put tokens, refresh tokens, or credential files in Git.
 ## Configuration
 
 [`apps/worker/wrangler.jsonc`](../apps/worker/wrangler.jsonc) is the deployment
-configuration. The Worker name is `packetrove`. In the selected Cloudflare
-account, its development hostname is `packetrove.example.workers.dev`.
-Per-version preview URLs are disabled; the stable `workers.dev` hostname is
-enabled for verification.
+configuration. The Worker name is `packetrove` and its public hostname is
+`packetrove.com`. The `workers.dev` route and per-version preview URLs are both
+disabled with `workers_dev: false` and `preview_urls: false`. Keep these settings
+in the configuration so future deployments do not restore those public URLs.
+See the [Cloudflare workers.dev guide](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/).
 
 Static files are served through Workers Static Assets. Only `/api/*`, `/health`,
 and `/mcp` run the Worker before assets are considered. This keeps ordinary
 website and asset requests on the static serving path.
 
-The MCP handler explicitly allows localhost, the account's exact `workers.dev`
-hostname, and `packetrove.com` for Host and browser Origin validation. If the
-account, Worker name, or custom domain changes, update those exact hostnames in
+The MCP handler explicitly allows localhost and `packetrove.com` for Host and
+browser Origin validation. If the custom domain changes, update the exact
+hostnames in
 [`apps/worker/src/mcp.ts`](../apps/worker/src/mcp.ts) and rerun checks. Clients
 without an Origin header are supported. Unrelated browser Origins are rejected.
 
@@ -60,12 +60,11 @@ the website and CLI, performs a Wrangler deployment dry run, and runs the test
 suite. It does not publish anything. `pnpm run deploy` builds the project and
 publishes the Worker and static assets using the existing Wrangler login.
 
-The configuration already includes the production custom domain. Each deployment
-updates both hostnames. Verify the website, assets, API, and both modern and legacy
-MCP clients after publishing:
+The configuration includes the production custom domain. Each deployment updates
+the service at `packetrove.com`. Verify the website, assets, API, and both modern
+and legacy MCP clients after publishing:
 
 ```sh
-pnpm smoke https://packetrove.example.workers.dev
 pnpm smoke https://packetrove.com
 ```
 
@@ -85,14 +84,9 @@ route:
 ]
 ```
 
-To deploy into a different account, first update the MCP hostname allowlists and
-verify its `workers.dev` endpoint with the custom domain route temporarily
-omitted. Add the route after that check passes.
-
 The domain must be an active zone in the same Cloudflare account. Check existing
 DNS records before binding a hostname. Cloudflare provisions the DNS record and
-TLS certificate for a Worker custom domain. Keep `workers_dev: true` to retain
-the verification hostname. See the
+TLS certificate for a Worker custom domain. See the
 [Cloudflare custom domain guide](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
 
 After DNS and certificate provisioning, run:
@@ -100,8 +94,6 @@ After DNS and certificate provisioning, run:
 ```sh
 pnpm smoke https://packetrove.com
 ```
-
-The Web API and MCP URL paths are identical on both hostnames.
 
 ## Costs and limits
 
@@ -125,8 +117,8 @@ Cloudflare Builds. Domain registration and renewal remain separate expenses.
 
 ## Later deployments and rollback
 
-`pnpm run deploy` updates both configured hostnames.
-Run `pnpm check` before publishing and the smoke command against each hostname
+`pnpm run deploy` updates the service on the configured custom domain.
+Run `pnpm check` before publishing and `pnpm smoke https://packetrove.com`
 afterward. Builds and deployments remain manual.
 
 To inspect previous deployments or roll back to a known version, use the
