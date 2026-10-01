@@ -70,10 +70,12 @@ JSON 404 errors for website paths and unknown endpoints, including browser
 navigation. Separating deployments prevents website scripts from being served
 from the API origin.
 
-Vite builds `index.html`, `ip.html`, and `404.html` with shared JavaScript and
-styles. Cloudflare serves `/` and `/ip` directly and uses `404-page` handling
-for unknown paths. `/ip/` redirects to the canonical `/ip` path. API routes
-continue to return structured JSON errors, including for browser navigation.
+Vite builds `index.html`, `cidr.html`, `ip.html`, and `404.html` with shared
+JavaScript and styles. Cloudflare serves the project homepage at `/`, the CIDR
+calculator at `/cidr`, and My Public IP at `/ip` directly, and uses `404-page`
+handling for unknown paths. `/cidr/` and `/ip/` redirect to their canonical
+paths without the trailing slash. API routes continue to return structured
+JSON errors, including for browser navigation.
 See [Cloudflare's static HTML routing guide](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).
 
 The MCP handler allows local hostnames and `api.packetrove.com` for Host

@@ -166,11 +166,12 @@ describe('readiness followed by the production smoke check across separate origi
       const path = request.url!;
       requested.push(path);
       if (request.method === 'POST') return send(response, 'text/plain', '', 405);
-      const mainHtml = '<title>Smallest Covering CIDR — Packetrove</title>'
+      const mainHtml = '<title>Packetrove — Network tools for humans and agents</title>'
         + '<script src="/assets/main.js"></script><link href="/assets/main.css">';
       if (path === '/') return send(response, 'text/html', mainHtml);
       if (path === '/assets/main.js') return send(response, 'application/javascript', `const sourceCommit = "${commit}";`);
       if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
+      if (path === '/cidr' || path === '/cidr/') return send(response, 'text/html', '<title>Smallest Covering CIDR — Packetrove</title>');
       if (path === '/ip' || path === '/ip/') return send(response, 'text/html', '<title>My Public IP — Packetrove</title>');
       send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
     });
