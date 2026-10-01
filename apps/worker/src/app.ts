@@ -1,10 +1,11 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { CIDR_COVER_PATH, type ErrorResponse } from '@packetrove/contracts';
+import { CIDR_COVER_PATH, PUBLIC_IP_PATH, type ErrorResponse } from '@packetrove/contracts';
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
 import { mcpHandler } from './mcp';
+import { getPublicIp } from './ip';
 
 export type WorkerBindings = { ASSETS?: Fetcher };
 
@@ -12,9 +13,13 @@ export function createApp() {
   const app = new Hono<{ Bindings: WorkerBindings }>();
   const specification = createOpenApiDocument();
   app.use('/api/*', cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
+  app.use(PUBLIC_IP_PATH, async (context, next) => {
+    context.header('Cache-Control', 'no-store');
+    await next();
+  });
   app.onError((error, context) => {
     if (error instanceof ToolError) {
-      const status = error.code === 'PAYLOAD_TOO_LARGE' ? 413
+      const status = error.code === 'CLIENT_IP_UNAVAILABLE' ? 503 : error.code === 'PAYLOAD_TOO_LARGE' ? 413
         : error.code === 'UNSUPPORTED_MEDIA_TYPE' ? 415 : 400;
       return context.json(error.toResponse(), status);
     }
@@ -27,6 +32,7 @@ export function createApp() {
     const body = await readJsonBody(context.req.raw);
     return context.json(smallestCoveringCidr(body));
   });
+  app.get(PUBLIC_IP_PATH, context => context.json(getPublicIp(context.req.raw.headers)));
   app.get('/health', context => context.json({ status: 'ok' }));
   app.get('/api/openapi.json', context => context.json(specification));
   app.all('/mcp', async context => {
@@ -36,7 +42,7 @@ export function createApp() {
     }
     return mcpHandler.fetch(context.req.raw);
   });
-  for (const [path, allowed] of [[CIDR_COVER_PATH, 'POST'], ['/health', 'GET, HEAD'], ['/api/openapi.json', 'GET, HEAD']]) {
+  for (const [path, allowed] of [[CIDR_COVER_PATH, 'POST'], [PUBLIC_IP_PATH, 'GET, HEAD'], ['/health', 'GET, HEAD'], ['/api/openapi.json', 'GET, HEAD']]) {
     app.all(path!, context => {
       context.header('Allow', allowed!);
       return context.json({ error: {
