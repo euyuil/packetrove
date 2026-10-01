@@ -94,8 +94,11 @@ development and tests.
 
 ## Continuous integration and deployment
 
-GitHub Actions runs `pnpm check` on pushes to `main`, deploys successful current
-revisions, and verifies production. It also supports manual runs on `main`.
+GitHub Actions runs `pnpm check` on pull requests targeting `main` and on updates
+to `main`. The `Validate project` check must pass before a pull request can merge,
+and its branch must be up to date with `main`. Pull request runs only validate;
+successful current updates to `main` deploy and verify production. Manual runs
+on `main` use the same validation and deployment process.
 The workflow uses one Ubuntu 26.04 runner, the Node.js LTS version in
 `.node-version`, the project's pnpm version, and locked dependencies. See the
 [CI guide](docs/continuous-integration.md) for validation coverage, credentials,

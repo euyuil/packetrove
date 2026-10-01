@@ -44,8 +44,13 @@
 - For an authorized GitHub CLI merge, pass `--squash` explicitly. In GitHub's web
   interface, use Squash and merge.
 - The ruleset requires zero approving reviews so a sole maintainer can merge
-  through a pull request. GitHub Actions currently validates and deploys only
-  after `main` is updated; it does not provide a required pre-merge check.
+  through a pull request. The `Validate project` check from GitHub Actions must
+  pass before merging, and the pull request must be up to date with `main`.
+  Wait for the required check on the latest revision; an earlier successful run
+  does not satisfy the requirement.
+- GitHub Actions validates pull requests targeting `main` with `pnpm check`.
+  Production deployment and live checks run only after `main` is updated or
+  through a manual workflow run on `main`.
 
 ## Local development and commit checks
 

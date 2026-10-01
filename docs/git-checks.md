@@ -2,8 +2,8 @@
 
 Packetrove provides repository-local Git hooks for credential scanning and
 Conventional Commit headers. These checks run locally before a commit is
-created. GitHub Actions continues to validate and deploy the application; it
-does not install Gitleaks or run these local checks.
+created. GitHub Actions validates pull requests before merging and validates and
+deploys updates to `main`; it does not install Gitleaks or run these local checks.
 
 ## Setup
 
