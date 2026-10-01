@@ -8,7 +8,12 @@
     "build": "wrangler deploy --dry-run --outdir dist",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": { "@packetrove/contracts": "workspace:*", "@packetrove/core": "workspace:*", "hono": "4.13.12" },
+  "dependencies": {
+    "@packetrove/contracts": "workspace:*", "@packetrove/core": "workspace:*", "hono": "4.13.12",
+    "agents": "0.24.0", "@modelcontextprotocol/server": "2.0.0",
+    "@modelcontextprotocol/client": "2.0.0", "@modelcontextprotocol/sdk": "1.30.0",
+    "zod": "4.6.5"
+  },
   "devDependencies": {
     "@packetrove/web": "workspace:*",
     "@cloudflare/vitest-pool-workers": "0.22.0",

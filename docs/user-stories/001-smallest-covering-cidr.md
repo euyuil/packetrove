@@ -2,7 +2,7 @@
 
 This document records a user story for Packetrove. The calculation described
 below and the first implementation choices are agreed. The shared calculation,
-API, and web app are implemented; the remaining interfaces are tracked in the README.
+API, web app, and MCP are implemented; the remaining interfaces are tracked in the README.
 
 ## User story
 
@@ -68,7 +68,7 @@ inputs once. These counts describe all addresses covered by firewall rules;
 they do not subtract subnet network or broadcast addresses.
 
 The web app performs the calculation locally. The API returns a structured
-result with exact counts represented as decimal strings; MCP will use the same result.
+result with exact counts represented as decimal strings; MCP uses the same result.
 
 ## Implementation decisions
 

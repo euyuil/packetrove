@@ -4,6 +4,7 @@ import { CIDR_COVER_PATH, type ErrorResponse } from '@packetrove/contracts';
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
+import { mcpHandler } from './mcp';
 
 export type WorkerBindings = { ASSETS?: Fetcher };
 
@@ -28,6 +29,13 @@ export function createApp() {
   });
   app.get('/health', context => context.json({ status: 'ok' }));
   app.get('/api/openapi.json', context => context.json(specification));
+  app.all('/mcp', async context => {
+    if (context.req.method === 'POST') {
+      const parsedBody = await readJsonBody(context.req.raw);
+      return mcpHandler.fetch(context.req.raw, { parsedBody });
+    }
+    return mcpHandler.fetch(context.req.raw);
+  });
   for (const [path, allowed] of [[CIDR_COVER_PATH, 'POST'], ['/health', 'GET, HEAD'], ['/api/openapi.json', 'GET, HEAD']]) {
     app.all(path!, context => {
       context.header('Allow', allowed!);
