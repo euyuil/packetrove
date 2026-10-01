@@ -6,7 +6,7 @@ import { PublicIpTool } from './PublicIpTool';
 import { render } from './test-utils';
 
 afterEach(() => {
-  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
+  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
   window.history.replaceState({}, '', '/');
 });
 
@@ -22,7 +22,18 @@ describe('public IP web tool', () => {
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
     expect(screen.getByText('IPv4')).toBeDefined();
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith('/api/v1/ip', expect.objectContaining({ cache: 'no-store' }));
+    expect(fetch).toHaveBeenCalledWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+      cache: 'no-store', credentials: 'omit', redirect: 'error',
+    }));
+  });
+
+  it('queries a contributor-configured API origin without browser credentials', async () => {
+    vi.stubEnv('VITE_API_ORIGIN', 'https://api.example.com');
+    const fetch = vi.fn().mockResolvedValue(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    vi.stubGlobal('fetch', fetch);
+    render(<PublicIpTool />);
+    await screen.findByText('203.0.113.1');
+    expect(fetch).toHaveBeenCalledWith('https://api.example.com/v1/ip', expect.objectContaining({ credentials: 'omit' }));
   });
 
   it('clears an old address while refreshing and accepts a changed address family', async () => {

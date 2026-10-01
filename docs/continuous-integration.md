@@ -23,9 +23,9 @@ The workflow runs `pnpm check`, which includes:
 - Type checks for every workspace and repository scripts.
 - Generated OpenAPI consistency and specification validation.
 - Production builds for the website and offline CLI.
-- A Wrangler deployment dry run for the Worker.
-- Shared calculation, CLI, web application, API, and MCP tests. Worker tests
-  execute in the local Workers runtime on the GitHub runner.
+- Wrangler deployment dry runs for the API and website Workers.
+- Shared calculation, CLI, web application, website isolation, API, and MCP tests.
+  Worker tests execute in the local Workers runtime on the GitHub runner.
 
 The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
@@ -49,12 +49,15 @@ workflow reads the current `main` revision through
 the GitHub API. It only deploys if that revision still matches the run's commit.
 Superseded commits retain their validation result and skip publishing.
 
-The deployment step uses the workspace's pinned Wrangler through
-`pnpm --filter @packetrove/worker run deploy`. The website is already built by
-`pnpm check`, so the root `pnpm run deploy` command is unnecessary in CI.
-Wrangler publishes the Worker and its static assets together using the committed
-configuration. It tags the Worker version with the full Git commit SHA and records
-the GitHub Actions run ID in the version message.
+The deployment steps use the workspace's pinned Wrangler.
+`pnpm --filter @packetrove/worker run deploy` publishes `packetrove-api` at
+`api.packetrove.com` first, followed by `deploy:website`, which publishes
+`packetrove` and its static assets at `packetrove.com`. The website is already
+built by `pnpm check`, so the root `pnpm run deploy` command is unnecessary in CI.
+Both Worker versions are tagged with the full Git commit SHA and record the
+GitHub Actions run ID in the version message. The two deployments are not atomic;
+a website deployment failure may leave the new API alongside the previous
+website. Review both Workers before a manual recovery.
 
 After deployment, `pnpm wait:deployment https://packetrove.com` waits up to
 90 seconds for the homepage to reference JavaScript containing the expected
@@ -66,10 +69,11 @@ time remains. This budget is not a guarantee of Cloudflare propagation time.
 If the expected version is still unavailable at the deadline, the run fails
 with a version-readiness error before running the functional checks.
 
-Once the version is ready, `pnpm smoke https://packetrove.com` verifies the website,
-bundled assets, API results, OpenAPI document, modern and legacy MCP clients, and
-Origin validation. With `VITE_GIT_COMMIT` set, it also checks that the deployed
-JavaScript contains the expected build commit. It makes up to three attempts,
+Once the version is ready,
+`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies the website,
+bundled assets, API results, OpenAPI document, modern and legacy MCP clients,
+Origin validation, anonymous browser CORS, and origin isolation. With
+`VITE_GIT_COMMIT` set, it also checks that the deployed JavaScript contains the expected build commit. It makes up to three attempts,
 waiting five seconds between failures to allow for temporary network errors.
 Version readiness does not count as a successful smoke check: API, MCP, public
 IP `no-store`, Origin validation, page routing, and 404 checks must still pass.
@@ -115,12 +119,12 @@ Configure these repository settings in GitHub Actions before the first run:
 
 | Setting | Storage | Purpose |
 | --- | --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Repository secret | Dedicated Cloudflare token for publishing the Worker. |
-| `CLOUDFLARE_ACCOUNT_ID` | Repository secret | Cloudflare account containing the Worker and production zone, masked in workflow logs. |
+| `CLOUDFLARE_API_TOKEN` | Repository secret | Dedicated Cloudflare token for publishing both Workers and their custom domains. |
+| `CLOUDFLARE_ACCOUNT_ID` | Repository secret | Cloudflare account containing both Workers and the production zone, masked in workflow logs. |
 
 Create a dedicated account-owned API token named `packetrove-github-actions`.
 Cloudflare's **Edit Cloudflare Workers** template is a starting point; retain only
-the permissions required by the current Worker and custom domain configuration:
+the permissions required by both Workers and their custom domains:
 
 | API permission | Resource scope | Dashboard selection |
 | --- | --- | --- |
@@ -129,8 +133,9 @@ the permissions required by the current Worker and custom domain configuration:
 
 The script permission is account-wide in this configuration. The token does not
 need permissions for KV, R2, Pages, databases, hosted builds, containers, or
-observability. The Worker uses a custom domain, rather than a zone route that
-requires `Workers Routes Write`.
+observability. Both Workers use custom domains in the same zone, rather than zone
+routes that require `Workers Routes Write`. The same secrets cover both deployments; an
+interactive `cf` or Wrangler login is not needed by GitHub Actions.
 
 Store both values directly in GitHub Secrets. Keeping the account identifier in
 a secret also masks it in workflow logs. The token is exposed only to the

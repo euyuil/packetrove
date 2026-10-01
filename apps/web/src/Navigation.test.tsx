@@ -61,7 +61,9 @@ describe('tool navigation in one page session', () => {
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe(input);
     expect(screen.getByText('203.0.113.0/30')).toBeDefined();
     expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', '203.0.113.2'] });
-    expect(fetch).toHaveBeenCalledExactlyOnceWith('/api/v1/ip', expect.objectContaining({ cache: 'no-store' }));
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+      cache: 'no-store', credentials: 'omit',
+    }));
   });
   it('preserves an unfinished input without calculating it', async () => {
     const calculation = vi.spyOn(core, 'smallestCoveringCidr');

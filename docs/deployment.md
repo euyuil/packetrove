@@ -1,19 +1,26 @@
 # Cloudflare deployment
 
-Packetrove uses one Cloudflare Worker for its static website, Web API, and
-stateless MCP endpoint. The website calculates in the browser; it does not call
-the API for calculations. GitHub Actions builds and publishes updates to `main`
+Packetrove uses two Cloudflare Workers: `packetrove` serves the static website at
+`https://packetrove.com`, and `packetrove-api` serves the Web API and stateless MCP
+endpoint at `https://api.packetrove.com`. The website calculates in the browser;
+it does not call the API for calculations. GitHub Actions builds and publishes updates to `main`
 after validation succeeds, then runs production smoke checks. Local publishing
 with Wrangler is also available.
 
-The service is live at `https://packetrove.com` and has passed the live smoke
-checks for static assets, the Web API, and modern and legacy MCP clients.
+This revision migrates the API and MCP to their separate origin. New production
+URLs become available after deployment and domain provisioning; local validation
+alone does not establish that they are live. Existing clients must update their
+URLs: the website no longer serves `/api/v1/*`, `/api/openapi.json`, `/health`, or
+`/mcp`, and does not proxy or redirect them.
 
 ## Automatic deployment
 
 The [GitHub Actions workflow](../.github/workflows/ci.yml) validates updates to
 `main`, publishes the current successful revision, and checks
-`https://packetrove.com`. A manual workflow run on `main` uses the same process.
+both `https://packetrove.com` and `https://api.packetrove.com`. A manual workflow
+run on `main` uses the same process. The API deploys before the website so the
+new website does not point to an interface that has not been published. These
+are separate deployments: a website failure can leave only the API updated.
 Configure the dedicated `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`
 repository secrets as described in the
 [continuous integration and deployment guide](continuous-integration.md).
@@ -45,16 +52,23 @@ directories. Do not put tokens, refresh tokens, or credential files in Git.
 
 ## Configuration
 
-[`apps/worker/wrangler.jsonc`](../apps/worker/wrangler.jsonc) is the deployment
-configuration. The Worker name is `packetrove` and its public hostname is
-`packetrove.com`. The `workers.dev` route and per-version preview URLs are both
-disabled with `workers_dev: false` and `preview_urls: false`. Keep these settings
-in the configuration so future deployments do not restore those public URLs.
-See the [Cloudflare workers.dev guide](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/).
+The deployment configurations are:
 
-Static files are served through Workers Static Assets. Only `/api/*`, `/health`,
-and `/mcp` run the Worker before assets are considered. This keeps ordinary
-website and asset requests on the static serving path.
+| Configuration | Worker | Hostname | Content |
+| --- | --- | --- | --- |
+| [`wrangler.jsonc`](../apps/worker/wrangler.jsonc) | `packetrove-api` | `api.packetrove.com` | `/v1/*`, `/openapi.json`, `/health`, and `/mcp` |
+| [`wrangler.website.jsonc`](../apps/worker/wrangler.website.jsonc) | `packetrove` | `packetrove.com` | Static website and assets |
+
+Both configurations disable the `workers.dev` route and per-version preview URLs
+with `workers_dev: false` and `preview_urls: false`. Keep those settings so future
+deployments do not restore alternative public URLs. See the
+[Cloudflare workers.dev guide](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/).
+
+The website keeps Cloudflare's static asset serving path. Its fallback handler
+only fetches assets. The API Worker has no asset binding and returns structured
+JSON 404 errors for website paths and unknown endpoints, including browser
+navigation. Separating deployments prevents website scripts from being served
+from the API origin.
 
 Vite builds `index.html`, `ip.html`, and `404.html` with shared JavaScript and
 styles. Cloudflare serves `/` and `/ip` directly and uses `404-page` handling
@@ -62,9 +76,9 @@ for unknown paths. `/ip/` redirects to the canonical `/ip` path. API routes
 continue to return structured JSON errors, including for browser navigation.
 See [Cloudflare's static HTML routing guide](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).
 
-The MCP handler explicitly allows localhost and `packetrove.com` for Host and
-browser Origin validation. If the custom domain changes, update the exact
-hostnames in
+The MCP handler allows local hostnames and `api.packetrove.com` for Host
+validation. Browser Origin validation additionally allows `packetrove.com`. If a
+custom domain changes, update the separate exact hostname allowlists in
 [`apps/worker/src/mcp.ts`](../apps/worker/src/mcp.ts) and rerun checks. Clients
 without an Origin header are supported. Unrelated browser Origins are rejected.
 
@@ -78,9 +92,10 @@ pnpm run deploy
 ```
 
 `pnpm check` type-checks all workspaces, validates the OpenAPI document, builds
-the website and CLI, performs a Wrangler deployment dry run, and runs the test
-suite. It does not publish anything. `pnpm run deploy` builds the project and
-publishes the Worker and static assets using the existing Wrangler login.
+the website and CLI, performs deployment dry runs for both Workers, and runs the
+test suite. It does not publish anything. `pnpm run deploy` builds the project and
+publishes the API Worker followed by the website Worker and static assets using
+the existing Wrangler login.
 
 GitHub Actions automatically embeds the deployed commit in the website's GitHub
 footer link. For a manual deployment from a clean committed checkout, provide
@@ -88,7 +103,7 @@ the same public build metadata:
 
 ```sh
 VITE_GITHUB_REPOSITORY=euyuil/packetrove VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm run deploy
-VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm smoke https://packetrove.com
+VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm smoke https://packetrove.com https://api.packetrove.com
 ```
 
 Use your own GitHub repository name when deploying a fork. Without
@@ -96,26 +111,28 @@ Use your own GitHub repository name when deploying a fork. Without
 command skips the build-commit check. Uncommitted changes are not represented
 by a commit link; validate and commit changes before using it for a deployment.
 
-The configuration includes the production custom domain. Each deployment updates
-the service at `packetrove.com`. Verify the website, assets, API, and both modern
+The configurations include both production custom domains. Each deployment
+updates those services. Verify the website, assets, API, and both modern
 and legacy MCP clients after publishing:
 
 ```sh
-pnpm smoke https://packetrove.com
+pnpm smoke https://packetrove.com https://api.packetrove.com
 ```
 
 The smoke command performs read-only HTTP calculations using documentation
 addresses. It checks IPv4 and IPv6 results, errors, API metadata, stateless MCP
 behavior, browser Origin validation, direct page navigation, and page and asset
-404 responses. It can also target the local Worker:
-`pnpm smoke http://localhost:8787`.
+404 responses. It verifies that the website does not expose API or MCP endpoints
+and that the API does not serve website assets. Pass both origins explicitly.
+Full smoke checks require trusted connection metadata for public IP results; use
+`pnpm check` for local tests, which supply documentation addresses.
 
 After a manual deployment, optionally wait for the expected webpage version
 before running the full smoke check:
 
 ```sh
 VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm wait:deployment https://packetrove.com
-VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm smoke https://packetrove.com
+VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm smoke https://packetrove.com https://api.packetrove.com
 ```
 
 The wait checks the homepage and its bundled JavaScript for that commit, with
@@ -126,32 +143,55 @@ wait, not a guarantee of platform propagation time.
 
 ## Custom domain
 
-The Wrangler configuration binds the production hostname using a custom domain
-route:
+Each Wrangler configuration binds its production hostname using a custom domain
+route. The API configuration uses:
 
 ```json
 "routes": [
-  { "pattern": "packetrove.com", "custom_domain": true }
+  { "pattern": "api.packetrove.com", "custom_domain": true }
 ]
 ```
 
 The domain must be an active zone in the same Cloudflare account. Check existing
 DNS records before binding a hostname. Cloudflare provisions the DNS record and
-TLS certificate for a Worker custom domain. See the
+TLS certificate for each Worker custom domain. Both hostnames use the same
+Cloudflare zone, so the existing deployment token scopes cover this split. See the
 [Cloudflare custom domain guide](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
 
 After DNS and certificate provisioning, run:
 
 ```sh
-pnpm smoke https://packetrove.com
+pnpm smoke https://packetrove.com https://api.packetrove.com
 ```
+
+## Browser state and self-hosting
+
+The production website calls `https://api.packetrove.com/v1/ip` directly with
+`credentials: 'omit'` and `cache: 'no-store'`. API CORS permits anonymous calls
+without enabling browser credentials. CIDR calculations continue to run locally.
+MCP has its own exact Host and browser Origin allowlists.
+
+When adding website cookies, omit `Domain` to keep them host-only. Setting
+`Domain=packetrove.com` would also send them to subdomains when requests include
+credentials. Future login cookies should use the `__Host-` prefix with `Secure`,
+`HttpOnly`, `Path=/`, and an appropriate `SameSite` value. HTTPS subdomains remain
+same-site, so `SameSite` does not replace host-only scoping or request validation.
+Browser local storage is separate per origin and is not sent with API requests.
+
+For your own deployment, change the custom domains in both configuration files
+and the separate MCP Host and Origin allowlists. Build the website with
+`VITE_API_ORIGIN=https://api.example.com`, using your actual API origin. The CLI
+can use `ip --api-origin https://api.example.com`. OpenAPI uses a relative server
+URL so it resolves against the host serving the specification. Local Vite
+serves the website separately and points IP requests to `http://localhost:8787`.
 
 ## Costs and limits
 
 Use the Workers Free plan without activating a paid subscription. Under
 Cloudflare's current pricing, requests for static assets are free and unlimited.
-Dynamic API, health, and MCP requests use the account's Workers quota. The Free
-plan allows 100,000 Worker requests per day across the account and 10 ms of CPU
+Dynamic API, health, and MCP requests use the same account's Workers quota.
+The additional Worker does not enable a paid plan or new platform integration.
+The Free plan allows 100,000 Worker requests per day across the account and 10 ms of CPU
 time per HTTP request. Dynamic requests can fail after the free limit is reached;
 ordinary static asset requests remain on their separate serving path.
 
@@ -172,8 +212,8 @@ allowance. Domain registration and renewal remain separate expenses.
 ## Later deployments and rollback
 
 Successful current updates to `main` publish automatically. For manual local
-publishing, `pnpm run deploy` updates the configured custom domain; run
-`pnpm check` beforehand and `pnpm smoke https://packetrove.com` afterward.
+publishing, `pnpm run deploy` updates both configured custom domains; run
+`pnpm check` beforehand and `pnpm smoke https://packetrove.com https://api.packetrove.com` afterward.
 Coordinate manual deployments and rollbacks with any active GitHub Actions run,
 because the workflow's concurrency group does not serialize local commands.
 
@@ -187,9 +227,15 @@ project's Wrangler:
 
 ```sh
 pnpm --filter @packetrove/worker exec wrangler deployments list
-pnpm --filter @packetrove/worker exec wrangler rollback <version-id>
+pnpm --filter @packetrove/worker exec wrangler deployments list --config wrangler.website.jsonc
+pnpm --filter @packetrove/worker exec wrangler rollback <api-version-id>
+pnpm --filter @packetrove/worker exec wrangler rollback <website-version-id> --config wrangler.website.jsonc
 ```
 
-A rollback changes the Worker version and associated static assets. Review the
-target version before running it. DNS and custom domain configuration are managed
+Rollbacks apply to one Worker at a time. The website rollback also restores its
+associated static assets. Review both versions and keep the website API origin
+compatible with the restored API. For the first split, a pre-split website version
+includes the original root-domain API and MCP. Restoring that version does not
+remove the newly created API Worker; do not delete recovery resources without
+explicit authorization. DNS and custom domain configuration are managed
 separately and are not undone by a Worker version rollback.

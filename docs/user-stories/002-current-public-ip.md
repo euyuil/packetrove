@@ -27,12 +27,14 @@ so that I can diagnose my network path or copy the address into a firewall list.
 
 ## API and infrastructure
 
-`GET /api/v1/ip` takes no body and returns the shared JSON result. The CLI uses
+`GET /v1/ip` takes no body and returns the shared JSON result. The CLI uses
 this endpoint; the MCP tool is named `get_public_ip` and takes an empty object.
 Each interface reports missing or invalid connection information explicitly.
 
-Reuse the existing Cloudflare Worker without a database, new subdomains, or
-third-party IP lookup service. The deployment uses Cloudflare's connection
+The API and MCP use the `packetrove-api` Cloudflare Worker at
+`api.packetrove.com`, separately from the static website Worker at
+`packetrove.com`. No database or third-party IP lookup service is required.
+The browser calls the API directly with `credentials: 'omit'`. The deployment uses Cloudflare's connection
 headers, handles preserved IPv6 with Pseudo IPv4, and does not substitute an
 arbitrary `X-Forwarded-For`, `X-Real-IP`, or user-supplied IP.
 
@@ -51,7 +53,7 @@ See [Cloudflare's header documentation](https://developers.cloudflare.com/fundam
   analytics, or log the IP in application logs or production verification.
   Cloudflare still processes the request under the operator's platform settings.
 - Set a request timeout and provide useful loading, error, and retry behavior.
-- Perform no background polling. Each lookup invokes the existing Worker and
+- Perform no background polling. Each lookup invokes the API Worker and
   counts toward its request allowance; the static page uses static asset hosting.
   See [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).
 

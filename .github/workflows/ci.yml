@@ -60,7 +60,7 @@ jobs:
             echo "Deployment skipped: $GITHUB_SHA has been superseded by $latest_sha on main." >> "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Deploy Worker and static assets
+      - name: Deploy API and MCP Worker
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -74,6 +74,16 @@ jobs:
             --tag "$GITHUB_SHA" \
             --message "GitHub Actions run $GITHUB_RUN_ID"
 
+      - name: Deploy website and static assets
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          pnpm --filter @packetrove/worker run deploy:website \
+            --tag "$GITHUB_SHA" \
+            --message "GitHub Actions run $GITHUB_RUN_ID"
+
       - name: Wait for deployed website version
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
         run: pnpm wait:deployment https://packetrove.com
@@ -83,8 +93,8 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             echo "Production smoke check attempt $attempt of 3"
-            if pnpm smoke https://packetrove.com; then
-              echo "Deployed and verified $GITHUB_SHA at https://packetrove.com." >> "$GITHUB_STEP_SUMMARY"
+            if pnpm smoke https://packetrove.com https://api.packetrove.com; then
+              echo "Deployed and verified $GITHUB_SHA at https://packetrove.com and https://api.packetrove.com." >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
             if [[ "$attempt" -lt 3 ]]; then

@@ -6,16 +6,17 @@ Worker with `pnpm dev:api`.
 
 | Setting | Value |
 | --- | --- |
-| Production URL | `https://packetrove.com/mcp` |
+| Production URL | `https://api.packetrove.com/mcp` |
 | Local URL | `http://localhost:8787/mcp` |
 | Transport | Streamable HTTP |
 | Authentication | None |
 | Tools | `smallest_covering_cidr`, `get_public_ip` |
 
 Use your client's remote HTTP server configuration and set the production URL
-above. Configuration keys vary by client. The production endpoint is deployed
-and verified. The server supports modern stateless requests and legacy
-Streamable HTTP initialization, tool discovery, and tool calls. It does not
+above. Configuration keys vary by client. GitHub Actions publishes the configured
+production endpoint when changes reach `main`; verify the deployment with the
+smoke check in the deployment guide. The server supports modern stateless
+requests and legacy Streamable HTTP initialization, tool discovery, and tool calls. It does not
 provide persistent MCP sessions or standalone server event streams.
 
 ## Tool input and result
@@ -53,7 +54,7 @@ const client = new Client(
   { versionNegotiation: { mode: 'auto' } },
 );
 try {
-  await client.connect(new StreamableHTTPClientTransport(new URL('https://packetrove.com/mcp')));
+  await client.connect(new StreamableHTTPClientTransport(new URL('https://api.packetrove.com/mcp')));
   const { tools } = await client.listTools();
   const result = await client.callTool({
     name: 'smallest_covering_cidr',
@@ -99,8 +100,13 @@ The implementation uses Cloudflare's `createMcpHandler` with a fresh SDK v2
 server factory per request. It needs no Durable Objects or database. The
 compatible SDK versions are pinned in the Worker package and lockfile.
 
-The handler explicitly validates Host and browser Origin hostnames against
-localhost and `packetrove.com`. Update the exact allowlists when adding another
-hostname. Non-browser clients without an Origin
-header work without login. Deployment steps and live verification are described
+The handler validates Host against the local hostnames and `api.packetrove.com`.
+Browser Origin validation additionally allows `packetrove.com`. Update these
+separate exact allowlists when adding another hostname. Non-browser clients
+without an Origin header work without login. Deployment steps and live verification are described
 in the [Cloudflare deployment guide](../deployment.md).
+
+After this revision is deployed, `https://packetrove.com/mcp` no longer serves MCP:
+GET returns 404 and POST returns 405.
+Update existing MCP client configurations to `https://api.packetrove.com/mcp`;
+the website does not proxy or redirect tool calls to the API Worker.

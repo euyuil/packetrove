@@ -3,6 +3,7 @@ import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } fr
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
+import { getApiUrl } from './api';
 
 export function App() {
   const [pathname, setPathname] = useState(() => window.location.pathname);
@@ -42,7 +43,7 @@ export function App() {
             <Text component="span" size="xl" fw={700}>Packetrove</Text>
           </Group>
         </Anchor>
-        <Anchor size="sm" href="/api/openapi.json">
+        <Anchor size="sm" href={getApiUrl('/openapi.json')}>
           API specification <span aria-hidden="true">↗</span>
         </Anchor>
       </Group>

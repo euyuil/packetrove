@@ -69,7 +69,7 @@ use. With `--json`, stdout contains the shared result, for example
 `{ "ip": "203.0.113.1", "family": "ipv4" }`. Errors follow the same stderr and
 exit-status convention as the calculator.
 
-The command queries `https://packetrove.com/api/v1/ip` without authentication,
+The command queries `https://api.packetrove.com/v1/ip` without authentication,
 with a 10-second timeout, no cache, and no redirects. It rejects invalid or
 inconsistent result JSON. It does not read standard input or take address
 arguments. For a self-hosted deployment or local integration test:
