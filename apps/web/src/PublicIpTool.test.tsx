@@ -78,7 +78,7 @@ describe('public IP web tool', () => {
     expect(writeText).toHaveBeenCalledWith('2001:db8::7');
     expect(screen.getByRole('status').textContent).toBe('IP address copied.');
     writeText.mockRejectedValueOnce(new Error('Denied'));
-    await user.click(screen.getByRole('button', { name: 'Copy IP' }));
+    await user.click(screen.getByRole('button', { name: 'Copied' }));
     expect(screen.getByRole('status').textContent).toContain('Select and copy');
   });
 

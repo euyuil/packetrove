@@ -10,6 +10,7 @@ afterEach(() => {
   cleanup();
   if (originalClipboard) Object.defineProperty(navigator, 'clipboard', originalClipboard);
   else Reflect.deleteProperty(navigator, 'clipboard');
+  vi.useRealTimers();
   vi.restoreAllMocks(); vi.unstubAllGlobals();
 });
 
@@ -119,7 +120,7 @@ describe.each(tools)('$name copy feedback', tool => {
     await finishCopy(oldCopy, 'success');
     expect(screen.getByRole('status').textContent).toBe(tool.success);
 
-    fireEvent.click(screen.getByRole('button', { name: tool.button }));
+    fireEvent.click(screen.getByRole('button', { name: 'Copied' }));
     expect(screen.getByRole('status').textContent).toBe('');
     await finishCopy(latestCopy, 'failure');
     expect(screen.getByRole('status').textContent).toContain('Select and copy');
@@ -136,6 +137,52 @@ describe.each(tools)('$name copy feedback', tool => {
     expect(screen.getByRole('status').textContent).toBe('');
 
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
+    expect(screen.getByRole('status').textContent).toBe(tool.success);
+  });
+
+  it('restores the button two seconds after the latest successful copy', async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    clipboard(writeText);
+    await openTool(tool);
+    vi.useFakeTimers();
+
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
+    expect(screen.getByRole('button', { name: 'Copied' })).toBeDefined();
+    act(() => { vi.advanceTimersByTime(1_500); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Copied' })); });
+    act(() => { vi.advanceTimersByTime(500); });
+    expect(screen.getByRole('button', { name: 'Copied' })).toBeDefined();
+    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    act(() => { vi.advanceTimersByTime(1_500); });
+    expect(screen.getByRole('button', { name: tool.button })).toBeDefined();
+    expect(screen.getByRole('status').textContent).toBe('');
+    expect(writeText).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['close button', 'Escape', 'outside click'])('keeps failures visible until dismissed with %s', async method => {
+    clipboard(vi.fn().mockRejectedValue(new Error('Denied')));
+    await openTool(tool);
+    vi.useFakeTimers();
+
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
+    act(() => { vi.advanceTimersByTime(10_000); });
+    expect(screen.getByRole('dialog').textContent).toContain('Select and copy');
+    expect(screen.getByRole('status').textContent).toContain('Select and copy');
+    if (method === 'close button') fireEvent.click(screen.getByRole('button', { name: 'Dismiss copy error' }));
+    else if (method === 'Escape') fireEvent.keyDown(screen.getByRole('button', { name: tool.button }), { key: 'Escape' });
+    else fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('');
+  });
+
+  it('can retry after a failure without clearing the successful feedback', async () => {
+    clipboard(vi.fn().mockRejectedValueOnce(new Error('Denied')).mockResolvedValue(undefined));
+    await openTool(tool);
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
+    expect(screen.getByRole('dialog')).toBeDefined();
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Copied' })).toBeDefined();
     expect(screen.getByRole('status').textContent).toBe(tool.success);
   });
 });

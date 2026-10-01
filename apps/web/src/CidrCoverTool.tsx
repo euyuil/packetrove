@@ -4,6 +4,7 @@ import {
 } from '@mantine/core';
 import { CIDR_COVER_EXAMPLES, MAX_INPUTS, type CidrCoverResult, type ErrorResponse } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
+import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 
 function inputRows(text: string) {
@@ -19,19 +20,19 @@ export function CidrCoverTool() {
   const [input, setInput] = useState('');
   const [result, setResult] = useState<CidrCoverResult | null>(null);
   const [error, setError] = useState<ErrorResponse['error'] | null>(null);
-  const { copyMessage, clearCopyMessage, copyText } = useClipboardFeedback();
+  const { copyFeedback, clearCopyFeedback, copyText } = useClipboardFeedback();
   const rows = inputRows(input);
 
   function replaceInput(value: string) {
     setInput(value);
     setResult(null);
     setError(null);
-    clearCopyMessage();
+    clearCopyFeedback();
   }
 
   function calculate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    clearCopyMessage();
+    clearCopyFeedback();
     try {
       setResult(smallestCoveringCidr({ inputs: rows.map(row => row.value) }));
       setError(null);
@@ -105,9 +106,9 @@ export function CidrCoverTool() {
                 <Text size="xs" c="dimmed">SMALLEST COVERING CIDR</Text>
                 <Group justify="space-between">
                   <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.cidr}</Text>
-                  <Button type="button" variant="default" size="xs" onClick={copyCidr}>Copy CIDR</Button>
+                  <ClipboardCopyButton label="Copy CIDR" feedback={copyFeedback}
+                    onCopy={copyCidr} onDismiss={clearCopyFeedback} />
                 </Group>
-                <Text size="xs" c="dimmed" role="status">{copyMessage}</Text>
                 <DataList orientation="vertical" withDivider>
                   <DataList.Item>
                     <DataList.ItemLabel>First address</DataList.ItemLabel>
