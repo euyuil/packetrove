@@ -21,6 +21,32 @@
 - Keep optional repository features disabled unless they are needed for work
   the user has requested.
 
+## Pull request workflow
+
+- Make all repository changes on a dedicated branch based on the latest
+  `origin/main`. Push that branch and open a pull request targeting `main`.
+  This applies to documentation, small fixes, and automated changes as well.
+- Never push directly to `main`. Its active repository ruleset requires a pull
+  request, blocks force pushes and deletion, and has no bypass actors, including
+  repository administrators.
+- Do not bypass, weaken, or disable the protection rules unless the owner
+  explicitly authorizes that configuration change.
+- Run checks appropriate to the change before requesting a merge, and report
+  their results and any limitations in the pull request. Use a Conventional
+  Commit title so it can also serve as a squash merge commit title.
+- Merge a pull request only when the owner explicitly authorizes that pull
+  request and all applicable repository requirements are satisfied. Permission
+  to open or update a pull request is not permission to merge it.
+- Use squash merging for every pull request. Squash and merge is the only
+  permitted method in both the repository settings and the `main` ruleset;
+  regular merge commits and rebase merging are disabled. Squash merge commit
+  titles default to the pull request title.
+- For an authorized GitHub CLI merge, pass `--squash` explicitly. In GitHub's web
+  interface, use Squash and merge.
+- The ruleset requires zero approving reviews so a sole maintainer can merge
+  through a pull request. GitHub Actions currently validates and deploys only
+  after `main` is updated; it does not provide a required pre-merge check.
+
 ## Local development and commit checks
 
 - Use the Node.js version in .node-version and the pnpm version in package.json.
@@ -69,8 +95,9 @@ Git history, GitHub Actions logs, and uploaded artifacts as public material.
   Do not claim the project is licensed before a license has been selected.
 - Local installation, builds, and tests must work without production credentials.
   Document the configuration contributors need to run and deploy their own copy.
-- Use Conventional Commits. Updates to main deploy to production after automated
-  validation, so run checks appropriate to the change before pushing.
+- Use Conventional Commits. Pull requests merged into `main` deploy to production
+  after automated validation, so run checks appropriate to the change before
+  requesting a merge.
 - Changes to repository visibility or licensing, published-history rewrites,
   force pushes, and deletion of workflow records must be within the owner's
   explicit authorization. Preserve local recovery data unless its removal is
@@ -109,5 +136,6 @@ story, API contract, or integration guide when its behavior is affected.
   need relevant tests. Enable the repository-local hooks described in
   docs/git-checks.md and resolve failed checks before retrying a commit. Report
   what was verified and any remaining limitations.
-- After an authorized push to main, verify the GitHub Actions result, including
-  deployment and production checks when the workflow publishes the revision.
+- After an authorized pull request merge into `main`, verify the GitHub Actions
+  result, including deployment and production checks when the workflow publishes
+  the revision.
