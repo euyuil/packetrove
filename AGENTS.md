@@ -50,7 +50,7 @@ continuous integration path.
 
 ## Open source practices
 
-Packetrove is being prepared for open source release. Treat repository files,
+Packetrove is an open source project. Treat repository files,
 Git history, GitHub Actions logs, and uploaded artifacts as public material.
 
 - Keep credentials, private account identifiers, private infrastructure details,
