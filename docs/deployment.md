@@ -110,6 +110,20 @@ behavior, browser Origin validation, direct page navigation, and page and asset
 404 responses. It can also target the local Worker:
 `pnpm smoke http://localhost:8787`.
 
+After a manual deployment, optionally wait for the expected webpage version
+before running the full smoke check:
+
+```sh
+VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm wait:deployment https://packetrove.com
+VITE_GIT_COMMIT="$(git rev-parse HEAD)" pnpm smoke https://packetrove.com
+```
+
+The wait checks the homepage and its bundled JavaScript for that commit, with
+a 90-second total budget and a five-second delay between unsuccessful checks.
+It does not query IP, API, or MCP endpoints. Readiness failure exits with status
+1; success still requires the subsequent full smoke check. This is a bounded
+wait, not a guarantee of platform propagation time.
+
 ## Custom domain
 
 The Wrangler configuration binds the production hostname using a custom domain

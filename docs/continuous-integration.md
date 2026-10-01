@@ -56,12 +56,23 @@ Wrangler publishes the Worker and its static assets together using the committed
 configuration. It tags the Worker version with the full Git commit SHA and records
 the GitHub Actions run ID in the version message.
 
-The workflow then runs `pnpm smoke https://packetrove.com` to verify the website,
+After deployment, `pnpm wait:deployment https://packetrove.com` waits up to
+90 seconds for the homepage to reference JavaScript containing the expected
+`VITE_GIT_COMMIT`. It checks only static assets, waits five seconds after an
+unsuccessful check, and keeps requests and response-body reads within the same
+total budget. Each individual request also has a 15-second timeout. A stale
+version, a transient network failure, or missing assets can be retried while
+time remains. This budget is not a guarantee of Cloudflare propagation time.
+If the expected version is still unavailable at the deadline, the run fails
+with a version-readiness error before running the functional checks.
+
+Once the version is ready, `pnpm smoke https://packetrove.com` verifies the website,
 bundled assets, API results, OpenAPI document, modern and legacy MCP clients, and
 Origin validation. With `VITE_GIT_COMMIT` set, it also checks that the deployed
 JavaScript contains the expected build commit. It makes up to three attempts,
-waiting five seconds between failures to allow for temporary network or
-deployment propagation delays.
+waiting five seconds between failures to allow for temporary network errors.
+Version readiness does not count as a successful smoke check: API, MCP, public
+IP `no-store`, Origin validation, page routing, and 404 checks must still pass.
 
 A failed validation prevents publishing. A failed smoke check marks the run as
 failed after publishing; it does not automatically undo the deployment. Inspect
@@ -177,6 +188,6 @@ use their owner's included allowance and billing settings. See
 
 GitHub Actions usage is separate from Cloudflare's Workers request and build
 quotas. Builds happen on the GitHub runner and do not use Cloudflare Workers
-Builds minutes. Pull request validation makes no production smoke-check requests;
-production smoke checks make a small number of dynamic requests against the
-account's Workers request quota.
+Builds minutes. Pull request validation makes no production smoke-check requests.
+Version readiness makes only static-asset requests; production smoke checks make
+a small number of dynamic requests against the account's Workers request quota.
