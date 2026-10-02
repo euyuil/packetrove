@@ -77,10 +77,16 @@ export function App() {
       <Divider />
       <Group component="footer" justify="space-between">
         <Text size="xs" c="dimmed">Packetrove · Network tools for humans and agents</Text>
-        <Anchor size="xs" href={sourceUrl} target="_blank" rel="noopener noreferrer"
-          title={commit ? `View source for commit ${commit} on GitHub` : 'View Packetrove on GitHub'}>
-          GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
-        </Anchor>
+        <Group gap="xs">
+          <Anchor size="xs" href={sourceUrl} target="_blank" rel="noopener noreferrer"
+            title={commit ? `View source for commit ${commit} on GitHub` : 'View Packetrove on GitHub'}>
+            GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
+          </Anchor>
+          <Text component="span" size="xs" c="dimmed" aria-hidden="true">·</Text>
+          <Anchor size="xs" href={`${documentationUrl}/LICENSE`} target="_blank" rel="noopener noreferrer">
+            Source code: MIT
+          </Anchor>
+        </Group>
       </Group>
     </Stack>
   </Container>;
