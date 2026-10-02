@@ -22,13 +22,15 @@ The owner's approval to squash-merge that release pull request authorizes its
 npm release. Complete the public-material and package review required by
 [AGENTS.md](../AGENTS.md) before approving it; there is no second publishing
 prompt after the release pull request is merged. After the merged revision passes CI, release-please creates
-`cli-v<version>` and a GitHub Release. The release event triggers
+`cli-<version>` and a GitHub Release. The release event triggers
 [`publish-cli.yml`](../.github/workflows/publish-cli.yml), which validates, packs,
 publishes through npm trusted publishing, and verifies the exact npm version.
 Ordinary feature merges continue to deploy the services; they do not themselves
 publish npm.
 
 ### Versions and release scope
+
+Version numbers, Git tags, and GitHub release names omit the `v` prefix.
 
 Use Conventional Commit titles for squash-merged pull requests:
 
@@ -148,7 +150,7 @@ ordinary validation and service deployment still run.
    initial GitHub Release at the exact commit used for the npm archive:
 
    ```sh
-   gh release create cli-v0.1.0 --repo euyuil/packetrove --target <release-commit> --title "CLI 0.1.0" --notes "Initial public CLI release."
+   gh release create cli-0.1.0 --repo euyuil/packetrove --target <release-commit> --title "CLI 0.1.0" --notes "Initial public CLI release."
    ```
 
    Replace `<release-commit>` with the recorded SHA. Do not tag a later commit
@@ -156,7 +158,7 @@ ordinary validation and service deployment still run.
    it detects the identical existing npm archive and verifies without uploading
    it again. Review the workflow result.
 
-The initial `cli-v0.1.0` GitHub Release is release-please's baseline. Preparation
+The initial `cli-0.1.0` GitHub Release is release-please's baseline. Preparation
 skips until it exists, so installing this automation does not silently publish
 the first npm package. Once setup is complete, the next successful `main` run
 maintains the next release pull request. To prepare immediately, run:
@@ -214,7 +216,7 @@ public. Inspect the registry and workflow logs, then rerun the failed job or
 request recovery of the existing GitHub Release:
 
 ```sh
-gh workflow run publish-cli.yml --repo euyuil/packetrove --ref main -f tag=cli-v0.1.1
+gh workflow run publish-cli.yml --repo euyuil/packetrove --ref main -f tag=cli-0.1.1
 ```
 
 Recovery uses the original tag, runs all publication checks, and never bumps a

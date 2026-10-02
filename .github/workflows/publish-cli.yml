@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing stable GitHub release tag to recover (for example cli-v0.1.1)
+        description: Existing stable GitHub release tag to recover (for example cli-0.1.1)
         required: true
         type: string
 
@@ -23,7 +23,7 @@ jobs:
     name: Validate and publish CLI
     if: >-
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'cli-v') &&
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'cli-') &&
       !github.event.release.draft && !github.event.release.prerelease)
     runs-on: ubuntu-26.04
     timeout-minutes: 15
@@ -44,7 +44,7 @@ jobs:
 
       - name: Require a stable CLI tag on main before running repository code
         run: |
-          if [[ ! "$RELEASE_TAG" =~ ^cli-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+          if [[ ! "$RELEASE_TAG" =~ ^cli-(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
             echo "::error::A stable CLI release tag is required."
             exit 1
           fi

@@ -21,18 +21,18 @@ const job: WorkflowJob = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('CLI release validation', () => {
-  it.each(['cli-v0.1.0', 'cli-v0.1.1', 'cli-v0.2.0', 'cli-v1.0.0'])('accepts stable CLI tag %s', tag => {
-    expect(releaseVersion(tag)).toBe(tag.slice(5));
+  it.each(['cli-0.1.0', 'cli-0.1.1', 'cli-0.2.0', 'cli-1.0.0'])('accepts stable CLI tag %s', tag => {
+    expect(releaseVersion(tag)).toBe(tag.slice(4));
   });
-  it.each(['v0.1.0', 'web-v0.1.0', 'cli-v01.1.0', 'cli-v0.1', 'cli-v0.1.0-beta.1', 'cli-v0.1.0+build', 'cli-v0.1.0\n'])(
+  it.each(['v0.1.0', 'cli-v0.1.0', 'web-0.1.0', 'cli-01.1.0', 'cli-0.1', 'cli-0.1.0-beta.1', 'cli-0.1.0+build', 'cli-0.1.0\n'])(
     'rejects malformed or unrelated release tag %s', tag => {
       expect(() => releaseVersion(tag)).toThrow();
     },
   );
   it('requires matching versions in every release file', () => {
-    expect(assertReleaseVersions('cli-v0.2.0', '0.2.0', '0.2.0', '0.2.0')).toBe('0.2.0');
+    expect(assertReleaseVersions('cli-0.2.0', '0.2.0', '0.2.0', '0.2.0')).toBe('0.2.0');
     for (const versions of [['0.1.0', '0.2.0', '0.2.0'], ['0.2.0', '0.1.0', '0.2.0'], ['0.2.0', '0.2.0', '0.1.0']]) {
-      expect(() => assertReleaseVersions('cli-v0.2.0', versions[0]!, versions[1]!, versions[2]!)).toThrow();
+      expect(() => assertReleaseVersions('cli-0.2.0', versions[0]!, versions[1]!, versions[2]!)).toThrow();
     }
   });
   it('accepts completed validation and deployment of the exact main revision', () => {

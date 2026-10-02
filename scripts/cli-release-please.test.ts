@@ -19,7 +19,7 @@ function fixtureGithub(commits: Commit[], version = '0.1.0', merged: PullRequest
       return { parsedContent: readFileSync(path, 'utf8') };
     },
     async *releaseIterator() {
-      yield { tagName: `cli-v${version}`, sha: baselineSha, notes: 'Initial CLI release.' };
+      yield { tagName: `cli-${version}`, sha: baselineSha, notes: 'Initial CLI release.' };
     },
     async *mergeCommitIterator() {
       yield* commits;
@@ -97,7 +97,8 @@ describe('release-please CLI component', () => {
     const manifest = await Manifest.fromManifest(github, 'main');
     const releases = await manifest.buildReleases();
     expect(releases).toHaveLength(1);
-    expect(releases[0]?.tag.toString()).toBe('cli-v0.1.1');
+    expect(releases[0]?.tag.toString()).toBe('cli-0.1.1');
+    expect(releases[0]?.name).toBe('cli: 0.1.1');
     expect(releases[0]?.sha).toBe(releaseSha);
     expect(await (await Manifest.fromManifest(fixtureGithub([]), 'main')).buildReleases()).toEqual([]);
   });

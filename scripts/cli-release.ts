@@ -31,9 +31,9 @@ export interface WorkflowJob {
 }
 
 export function releaseVersion(tag: string): string {
-  const version = tag.startsWith('cli-v') ? tag.slice(5) : '';
+  const version = tag.startsWith('cli-') ? tag.slice(4) : '';
   if (!stableVersion.test(version)) {
-    throw new Error('A stable CLI release tag such as cli-v0.1.1 is required.');
+    throw new Error('A stable CLI release tag such as cli-0.1.1 is required.');
   }
   return version;
 }
@@ -145,10 +145,10 @@ async function prepare(): Promise<void> {
     return;
   }
   await requireValidatedRun(sha, event.workflow_run?.id, true);
-  const baseline = await github<{ draft: boolean; prerelease: boolean }>('releases/tags/cli-v0.1.0', true);
+  const baseline = await github<{ draft: boolean; prerelease: boolean }>('releases/tags/cli-0.1.0', true);
   if (!baseline || baseline.draft || baseline.prerelease) {
     output('ready', 'false');
-    summary('CLI release preparation awaits the initial cli-v0.1.0 GitHub release. See docs/cli-publishing.md.');
+    summary('CLI release preparation awaits the initial cli-0.1.0 GitHub release. See docs/cli-publishing.md.');
     return;
   }
   output('ready', 'true');
