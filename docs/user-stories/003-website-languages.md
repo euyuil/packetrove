@@ -34,6 +34,11 @@ and share a link in my preferred language.
   arrow-key navigation, selection, and Escape to close and return focus.
 - Switch the current page in place, preserving calculator input, results, and
   validation errors. Retranslate stored errors and clipboard feedback.
+- After navigating to a different page in the same tab, including browser back
+  and forward, focus the named main content region with the shared Mantine focus
+  outline. Keep it outside the sequential tab order and preserve browser scroll
+  behavior. Initial rendering and hydration, same-page language or URL suffix
+  changes, input editing, and IP lookup updates do not move focus to this region.
 - Keep an ongoing or completed public IP lookup when switching languages.
   Only opening the tool or explicitly refreshing it initiates a lookup.
 - Keep CIDR calculations local. Do not upload or persist calculator input or

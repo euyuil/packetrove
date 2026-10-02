@@ -84,6 +84,7 @@ describe('localized MCP guide navigation', () => {
     expect(guide.getAttribute('href')).toBe(localizedPath(pagePaths.mcp, locale));
     fireEvent.click(guide);
     expect(screen.getByRole('heading', { level: 1, name: text.mcp.title })).toBeDefined();
+    expect(document.activeElement).toBe(screen.getByRole('main', { name: text.mcp.title }));
     expect(document.title).toBe(text.meta.mcp.title);
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href'))
       .toBe('https://packetrove.com' + localizedPath(pagePaths.mcp, locale));
@@ -96,6 +97,7 @@ describe('localized MCP guide navigation', () => {
     expect(apiGuide.getAttribute('href')).toBe(localizedPath(pagePaths.mcp, locale));
     fireEvent.click(apiGuide);
     expect(screen.getByRole('heading', { level: 1, name: text.mcp.title })).toBeDefined();
+    expect(document.activeElement).toBe(screen.getByRole('main', { name: text.mcp.title }));
     expect(fetch).not.toHaveBeenCalled();
   });
 
