@@ -1,6 +1,5 @@
 name: Feature request
 description: Suggest an improvement to Packetrove.
-title: "[Feature]: "
 labels: [enhancement]
 body:
   - type: markdown
