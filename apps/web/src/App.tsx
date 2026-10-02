@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
@@ -18,6 +18,8 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const [urlSuffix, setUrlSuffix] = useState('');
   const [draft, setDraft] = useState<CidrCoverDraft>({ input: '', result: null, error: null });
   const { locale, page, path } = resolveRoute(pathname);
+  const main = useRef<HTMLElement>(null);
+  const previousPath = useRef(path);
   const homePage = page === 'home';
   const ipPage = page === 'ip';
   const cidrPage = page === 'cidr';
@@ -30,6 +32,12 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const newIssueUrl = `https://github.com/${repository}/issues/new`;
   useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [i18n, locale]);
   useEffect(() => { updatePageMetadata(locale, page, path); }, [locale, page, path]);
+  useEffect(() => {
+    // Canonical paths identify content independently of language and URL fragments.
+    if (previousPath.current === path) return;
+    previousPath.current = path;
+    main.current?.focus({ preventScroll: true });
+  }, [path]);
   useEffect(() => {
     const updatePath = () => {
       setPathname(window.location.pathname);
@@ -76,7 +84,9 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
-      <Box component="main">
+      <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-always"
+        aria-label={homePage ? t($ => $.common.home) : ipPage ? t($ => $.ip.title)
+          : cidrPage ? t($ => $.cidr.title) : apiPage ? t($ => $.api.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
           : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
           : apiPage ? <ApiDocumentationBoundary fallback={

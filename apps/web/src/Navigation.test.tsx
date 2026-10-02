@@ -200,6 +200,8 @@ describe('tool navigation in one page session', () => {
       const fetch = lookup();
       const push = vi.spyOn(window.history, 'pushState');
       render(<App />);
+      const input = screen.getByLabelText('IP addresses or CIDR ranges');
+      input.focus();
       const click = new MouseEvent('click', { bubbles: true, cancelable: true, ...options });
       // Suppress jsdom's unsupported document navigation after React handles it.
       document.addEventListener('click', event => {
@@ -209,6 +211,7 @@ describe('tool navigation in one page session', () => {
       fireEvent(screen.getByRole('link', { name: 'My Public IP' }), click);
       expect(push).not.toHaveBeenCalled();
       expect(window.location.pathname).toBe('/cidr');
+      expect(document.activeElement).toBe(input);
       expect(fetch).not.toHaveBeenCalled();
     },
   );
