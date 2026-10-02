@@ -102,7 +102,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
         aria-label={homePage ? t($ => $.common.home) : isToolPage(page) ? t($ => $[page].title)
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
-        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
+        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} />
           : isToolPage(page) ? toolPages[page]
           : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : apiPage ? <ApiDocumentationBoundary fallback={

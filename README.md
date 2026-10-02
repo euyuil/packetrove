@@ -30,6 +30,9 @@ All three tools are available through the website, Web API, and MCP. The CLI
 provides covering-CIDR calculations and public IP lookup; the agent skill provides
 covering-CIDR calculations.
 
+Browse example results in the homepage gallery, then open a tool to enter your
+own inputs. Gallery previews use documentation addresses and make no live lookups.
+
 ## Quick start
 
 Open the [CIDR calculator](https://packetrove.com/cidr), or call the API:
