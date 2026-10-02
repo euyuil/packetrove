@@ -64,12 +64,20 @@ node packages/cli/dist/cli.js cidr cover --stdin --json < addresses.txt
 Without `--json`, output includes the CIDR, range, exact counts, normalized
 inputs, and an explanation when the result covers additional addresses.
 
-With `--json`, success writes the shared result object to stdout. Failure writes
-the shared error object to stderr and leaves stdout empty. JSON error issue
+With `--json`, success writes the shared result object to stdout. Failures before
+output begins write the shared error object to stderr and leave stdout empty.
+JSON error issue
 indexes are zero-based positions in the combined input list. Readable errors
 display one-based input numbers. Address counts remain decimal strings, including
 IPv6 counts larger than JavaScript's safe integer limit. Exit status is `0` for
 success or help and `1` for errors. Use `packetrove --help` for usage.
+
+If stdout cannot be written, including when a pipe receiver closes early, the
+CLI reports `INTERNAL_ERROR` to stderr in the selected JSON or readable format
+and exits with status `1`. Already written stdout bytes cannot be withdrawn, so
+a failed write may leave partial output. A receiver closing after the output has
+been accepted can still complete successfully. If stderr is also unavailable,
+the error cannot be delivered; the CLI retains status `1` without a native stack.
 
 For the three IPv4 addresses above, the result is `203.0.113.0/29`, with
 `inputAddressCount: "3"`, `coveredAddressCount: "8"`, and
