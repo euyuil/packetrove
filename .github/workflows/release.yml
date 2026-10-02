@@ -1,0 +1,87 @@
+name: Prepare Packetrove release
+
+on:
+  workflow_run:
+    workflows: [CI and deployment]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: packetrove-release-preparation
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Maintain Packetrove release pull request
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch'))
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    steps:
+      - name: Check release automation configuration
+        id: configuration
+        env:
+          RELEASE_APP_CLIENT_ID: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+        run: |
+          if [[ -n "$RELEASE_APP_CLIENT_ID" && -n "$RELEASE_APP_PRIVATE_KEY" ]]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Packetrove release preparation awaits GitHub App secrets. See docs/cli-publishing.md." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Check out validated main revision
+        if: steps.configuration.outputs.configured == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up Node.js
+        if: steps.configuration.outputs.configured == 'true'
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Set up pnpm from package.json
+        if: steps.configuration.outputs.configured == 'true'
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Install locked release tooling
+        if: steps.configuration.outputs.configured == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Require current main validation and first release baseline
+        if: steps.configuration.outputs.configured == 'true'
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/cli-release.ts prepare
+
+      - name: Create repository release App token
+        if: steps.gate.outputs.ready == 'true'
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+
+      - name: Update release PR or release an owner-merged PR
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          RELEASE_TOKEN: ${{ steps.app.outputs.token }}
+        run: node scripts/release-please.ts

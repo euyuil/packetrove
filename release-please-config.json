@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "always-update": true,
+  "separate-pull-requests": true,
+  "packages": {
+    ".": {
+      "release-type": "packetrove",
+      "package-name": "packetrove",
+      "component": "packetrove",
+      "include-component-in-tag": false,
+      "include-v-in-tag": false,
+      "include-v-in-release-name": false,
+      "bump-minor-pre-major": true,
+      "bump-patch-for-minor-pre-major": false,
+      "changelog-path": "CHANGELOG.md",
+      "pull-request-title-pattern": "chore: release ${version}",
+      "extra-files": [
+        { "type": "json", "path": "packages/cli/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/core/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "packages/contracts/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "apps/web/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "apps/worker/package.json", "jsonpath": "$.version" },
+        { "type": "json", "path": "docs/api/openapi.json", "jsonpath": "$.info.version" }
+      ]
+    }
+  }
+}
