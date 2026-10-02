@@ -41,7 +41,7 @@ function openLanguageMenu() {
   fireEvent.click(screen.getByRole('button', {
     name: resources[locale].translation.common.language + ': ' + locales[locale].name,
   }));
-  return screen.getByRole('menuitem', { name: '简体中文' });
+  return screen.getByRole('menuitem', { name: '中文' });
 }
 
 function updateWhileOpen() {

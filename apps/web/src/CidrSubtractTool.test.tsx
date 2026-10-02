@@ -139,7 +139,7 @@ describe('browser-local CIDR subtraction', () => {
       Array.from({ length: 126 }, (_, index) => `2001:db8:${(index * 2).toString(16)}::1/128`).join('\n'));
     expect(screen.getByRole('alert').textContent).toContain('No partial result is returned.');
     expect(screen.queryByLabelText('Remaining CIDRs')).toBeNull();
-    await chooseLanguage('简体中文');
+    await chooseLanguage(locales['zh-Hans'].name);
     expect(screen.getByRole('alert').textContent).toContain('不会返回部分结果');
     expect(screen.queryByRole('button', { name: '复制列表' })).toBeNull();
   });
@@ -171,7 +171,7 @@ describe('browser-local CIDR subtraction', () => {
 });
 
 describe('copy formats and retained subtraction state', () => {
-  it.each(['es', 'de', 'ja'] as const)('retains the exact result, formats counts and translates list errors in %s', async (locale: Locale) => {
+  it.each(['es', 'de', 'ja', 'fr', 'pt-BR'] as const)('retains the exact result, formats counts and translates list errors in %s', async (locale: Locale) => {
     const calculation = vi.spyOn(core, 'subtractCidrs');
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
@@ -181,7 +181,8 @@ describe('copy formats and retained subtraction state', () => {
     await chooseLanguage(locales[locale].name);
     const text = resources[locale].translation;
     expect((screen.getByLabelText(text.subtract.output) as HTMLTextAreaElement).value).toBe(result);
-    expect(screen.getByText(new Intl.NumberFormat(locale).format(340282366920938463463374607431768211455n))).toBeDefined();
+    expect(screen.getByText(text.subtract.remaining).nextElementSibling?.textContent)
+      .toBe(new Intl.NumberFormat(locale).format(340282366920938463463374607431768211455n));
     expect(window.location.pathname).toBe(locales[locale].prefix + '/cidr/subtract');
     expect(calculation).toHaveBeenCalledTimes(1);
     fireEvent.change(screen.getByLabelText(text.subtract.excludeLabel), { target: { value: '\n\nbad' } });
@@ -228,7 +229,7 @@ describe('copy formats and retained subtraction state', () => {
     enter('::/0', '::1');
     const input = screen.getByLabelText(includeLabel);
     const result = output();
-    await chooseLanguage('简体中文');
+    await chooseLanguage(locales['zh-Hans'].name);
     expect(screen.getByLabelText('包含的 IP 地址或 CIDR 网段')).toBe(input);
     expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value).toBe(result);
     expect(screen.getByText('340,282,366,920,938,463,463,374,607,431,768,211,455')).toBeDefined();
@@ -250,7 +251,7 @@ describe('copy formats and retained subtraction state', () => {
     enter('\n203.0.113.1\nbad', '\n\n::/129');
     fireEvent.click(screen.getByRole('link', { name: 'Home' }));
     fireEvent.click(screen.getByRole('link', { name: 'CIDR Subtraction' }));
-    await chooseLanguage('简体中文');
+    await chooseLanguage(locales['zh-Hans'].name);
     expect(screen.getByRole('alert').textContent).toContain('包含列表第 3 行');
     expect(screen.getByRole('alert').textContent).toContain('排除列表第 3 行');
     expect(calculation).toHaveBeenCalledTimes(1);
