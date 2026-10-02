@@ -5,6 +5,7 @@ import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
 import { HomePage } from './HomePage';
+import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
 import { localizedPath, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 
@@ -72,9 +73,17 @@ export function App() {
       <Box component="main">
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
           : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
-          : apiPage ? <Suspense fallback={<Group role="status"><Loader size="sm" /><Text>{t($ => $.api.loading)}</Text></Group>}>
-            <ApiDocumentation />
-          </Suspense> : <Stack component="section" py="xl">
+          : apiPage ? <ApiDocumentationBoundary fallback={
+            <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
+              <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>
+              <Text c="dimmed">{t($ => $.api.unavailableDescription)}</Text>
+              <Anchor href={href('/cidr')} onClick={navigate}>{t($ => $.api.returnToCalculator)}</Anchor>
+            </Stack>
+          }>
+            <Suspense fallback={<Group role="status"><Loader size="sm" /><Text>{t($ => $.api.loading)}</Text></Group>}>
+              <ApiDocumentation />
+            </Suspense>
+          </ApiDocumentationBoundary> : <Stack component="section" py="xl">
           <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>{t($ => $.common.notFound)}</Title>
           <Text c="dimmed">{t($ => $.common.notFoundDescription)}</Text>
