@@ -9,6 +9,7 @@ export const es = {
     feedbackPrompt: '¿Encontraste un problema o tienes una idea? Cuéntanos en GitHub.', reportBug: 'Informar de un problema', requestFeature: 'Sugerir una función',
     notFound: 'Página no encontrada', notFoundDescription: 'La página solicitada no existe.', returnHome: 'Volver al inicio',
   },
+  footer: { project: 'Proyecto', contact: 'Contacto y sugerencias', sendEmail: 'Enviar un correo' },
   home: {
     description: 'Herramientas de red de código abierto para tu navegador, terminal y agentes de IA. Abre una herramienta desde la navegación o conecta Packetrove a tu flujo de trabajo con las instrucciones siguientes.',
     openSource: 'Código abierto', anonymous: 'No requiere cuenta ni clave de API',
