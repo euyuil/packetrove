@@ -15,7 +15,7 @@ export function HomePage({ documentationUrl, onNavigate }: {
 
   return <Stack gap="xl">
     <Stack component="section" aria-labelledby="project-title" gap="md" py={{ base: 'md', sm: 'xl' }}>
-      <Title order={1} id="project-title" maw={760}>{t($ => $.common.tagline)}</Title>
+      <Title order={1} id="project-title" maw={760} style={{ overflowWrap: 'anywhere' }}>{t($ => $.common.tagline)}</Title>
       <Text size="lg" c="dimmed" maw={760}>{t($ => $.home.description)}</Text>
       <Group gap="sm">
         <Badge variant="light">{t($ => $.home.openSource)}</Badge>

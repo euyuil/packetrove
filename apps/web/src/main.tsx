@@ -1,6 +1,7 @@
 import { createRoot, hydrateRoot } from 'react-dom/client';
 import { Application, IDENTIFIER_PREFIX } from './Application';
 import '@mantine/core/styles.css';
+import '@mantine/carousel/styles.css';
 import './styles.css';
 
 const root = document.getElementById('root')!;
