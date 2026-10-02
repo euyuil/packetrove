@@ -84,7 +84,7 @@ export function CidrCoverTool({ draft, onDraftChange }: {
                   onChange={event => replaceInput(event.currentTarget.value)} />
                 <Group justify="space-between">
                   <Text size="xs" c="dimmed">{t($ => $.cidr.entryCount, { count: rows.length, total: formatCount(rows.length) })}</Text>
-                  <Button type="button" variant="subtle" size="xs" onClick={() => replaceInput('')}
+                  <Button type="button" variant="default" size="xs" onClick={() => replaceInput('')}
                     disabled={!input && !result && !error}>{t($ => $.cidr.clear)}</Button>
                 </Group>
                 <Group gap="sm">
