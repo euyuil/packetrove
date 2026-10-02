@@ -82,6 +82,20 @@ See the [API contract](docs/api/README.md) for schema and reference details.
 Development, build, and deployment commands automatically prepare the API's
 static `/openapi.json` asset.
 
+The website's MCP guide and the repository's English
+[MCP integration guide](docs/integrations/mcp.md) share localized text and client
+commands maintained in [mcp-guide.ts](apps/web/src/mcp-guide.ts) and the shared
+language resources. Tool names, paths, and examples come from the catalog.
+After changing this content or the catalog, regenerate the
+repository guide:
+
+```sh
+pnpm docs:mcp:generate
+```
+
+`pnpm docs:mcp:check` rejects stale or manually edited output and runs as part
+of `pnpm build` and `pnpm check`.
+
 Run checks appropriate to your change. Pure documentation changes usually need
 `git diff --check`; behavior changes need relevant tests and the full check:
 
@@ -90,8 +104,8 @@ pnpm check
 ```
 
 This command type-checks the workspaces and scripts, validates the generated API
-specification, builds the application and CLI, performs deployment dry runs for
-both Workers, and runs the tests. It publishes nothing. See
+specification and MCP guide, builds the application and CLI, performs deployment
+dry runs for both Workers, and runs the tests. It publishes nothing. See
 [continuous integration](docs/continuous-integration.md#validation) for coverage.
 
 ## Pull requests

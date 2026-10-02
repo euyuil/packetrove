@@ -16,17 +16,40 @@ import { locales, supportedLocales } from './i18n/locales';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { en, resources } from './i18n/resources';
 import { createI18n } from './i18n';
+import { getMcpGuide } from './mcp-guide';
 import { languageSuggestionStorageKey } from './useLanguageSuggestion';
 
 vi.mock('./ApiReference', () => ({ default: () => <div>Interactive API reference</div> }));
 
 afterEach(() => {
-  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
+  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
   window.history.replaceState({}, '', '/');
   document.documentElement.lang = 'en';
 });
 
 describe('MCP examples in production HTML', () => {
+  it('publishes the same English prose, client commands, and SDK example in the website and repository guide', async () => {
+    const sourceDirectory = dirname(fileURLToPath(import.meta.url));
+    const markdown = await readFile(resolve(sourceDirectory, '../../../docs/integrations/mcp.md'), 'utf8');
+    const html = await readFile(resolve(sourceDirectory, '../dist/docs/mcp.html'), 'utf8');
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    const normalize = (text: string) => text.replace(/\s+/g, ' ').trim();
+    const plainMarkdown = normalize(markdown.replace(/`/g, ''));
+    for (const paragraph of document.querySelectorAll('main p')) {
+      expect(plainMarkdown, paragraph.textContent!).toContain(normalize(paragraph.textContent!));
+    }
+    const guide = getMcpGuide('en', 'https://api.packetrove.com/mcp');
+    expect(markdown).toContain('# ' + document.querySelector('main h1')!.textContent);
+    for (const client of guide.clients) {
+      expect(markdown).toContain('```sh\n' + client.command + '\n```');
+      expect(Array.from(document.querySelectorAll('main pre'), node => node.textContent)).toContain(client.command);
+      expect(client.command).not.toMatch(/^\+/m);
+    }
+    expect(document.querySelector('[data-mcp-sdk-example]')!.textContent).toBe(guide.sdk.code);
+    expect(markdown).toContain('```js\n' + guide.sdk.code + '\n```');
+    expect(markdown).not.toMatch(/\{\{|<\/?code>/);
+  });
+
   it.each(websitePages.filter(page => page.page === 'mcp' || catalogTools.some(tool => tool.page === page.page)))(
     'publishes executable arguments and contract-valid results at $pathname', async page => {
       const html = await readFile(resolve(dirname(fileURLToPath(import.meta.url)), '../dist', page.entry), 'utf8');
@@ -64,6 +87,35 @@ describe('MCP examples in production HTML', () => {
 });
 
 describe('localized MCP guide navigation', () => {
+  it.each(supportedLocales)('opens the %s guide and API reference from shared navigation while preserving a calculator error', async locale => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
+    vi.stubEnv('VITE_GIT_COMMIT', '0123456789abcdef0123456789abcdef01234567');
+    const text = resources[locale].translation;
+    window.history.replaceState({}, '', localizedPath(pagePaths.cidr, locale));
+    render(<App />);
+    fireEvent.change(screen.getByLabelText(text.cidr.inputLabel), { target: { value: 'bad' } });
+    fireEvent.click(screen.getByRole('button', { name: text.cidr.calculate }));
+    const guideLink = within(screen.getByRole('navigation')).getByRole('link', { name: text.mcp.navigation });
+    expect(guideLink.getAttribute('href')).toBe(localizedPath(pagePaths.mcp, locale));
+    fireEvent.click(guideLink);
+    expect(guideLink.getAttribute('aria-current')).toBe('page');
+    const main = screen.getByRole('main', { name: text.mcp.title });
+    expect(document.activeElement).toBe(main);
+    expect(within(main).getByRole('link', { name: text.common.source }).getAttribute('href'))
+      .toBe('https://github.com/example-owner/packetrove/tree/0123456789abcdef0123456789abcdef01234567');
+    const apiLink = within(main).getByRole('link', { name: text.home.apiGuide });
+    expect(apiLink.getAttribute('href')).toBe(localizedPath(pagePaths.api, locale));
+    fireEvent.click(apiLink);
+    expect(await screen.findByText('Interactive API reference')).toBeDefined();
+    expect(document.activeElement).toBe(screen.getByRole('main', { name: text.api.title }));
+    fireEvent.click(within(screen.getByRole('navigation')).getByRole('link', { name: text.cidr.title }));
+    expect((screen.getByLabelText(text.cidr.inputLabel) as HTMLTextAreaElement).value).toBe('bad');
+    expect(screen.getByRole('alert')).toBeDefined();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it.each(supportedLocales)('keeps both subtraction lists and the exact result when visiting the %s guide', locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);

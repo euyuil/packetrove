@@ -18,13 +18,19 @@ so existing imports remain compatible.
 | Website API documentation | Endpoint summaries and example requests and results |
 | Generated OpenAPI | Paths, methods, schemas, metadata, and examples |
 | API and MCP | Catalog-driven registration and the same request-scoped handler map |
-| MCP guide and tool pages | Catalog-derived examples rendered by `ToolMcpSection` |
+| MCP guide and tool pages | Catalog-derived examples rendered by `ToolMcpSection` and the generated repository guide |
 | Tests and production smoke checks | Actual endpoint, discovery, and documentation coverage against the catalog |
 
 Localized prose remains in `apps/web/src/i18n/resources.ts` and the language
 files, indexed by the catalog's page keys. The catalog contains no React
 components or browser state. Tool-specific views can choose an appropriate
 presentation while consuming shared facts and examples.
+
+The website MCP guide and `docs/integrations/mcp.md` consume the shared content
+model in `apps/web/src/mcp-guide.ts`. It combines catalog entries and examples
+with localized prose and client commands. Generate the English repository
+guide with `pnpm docs:mcp:generate`; do not edit that output manually.
+`pnpm docs:mcp:check` rejects drift during builds and the full project check.
 
 ## Adding or changing a tool
 
@@ -39,10 +45,13 @@ presentation while consuming shared facts and examples.
 4. Add the title, homepage description and link, API summary, and MCP guidance
    for every supported locale. Descriptions must match the actual semantics
    and explain local versus remote input processing.
-5. Update the user story and integration documentation. Homepage selection may
-   reference catalog identifiers without copying definitions or examples.
-6. Run `pnpm spec:generate` and `pnpm check`. Verify actual API responses, MCP
-   discovery and calls, localized prerendered content, and example correctness.
+5. Update the user story and integration guidance at their maintained sources.
+   Change shared MCP guide content and translations rather than generated
+   Markdown. Homepage selection may reference catalog identifiers without
+   copying definitions or examples.
+6. Run `pnpm spec:generate`, `pnpm docs:mcp:generate`, and `pnpm check`. Verify
+   actual API responses, MCP discovery and calls, localized prerendered content,
+   and example correctness.
 
 Documentation and homepage previews use documentation address ranges. They
 must not make live lookups or upload user inputs. Remote API and MCP calls are

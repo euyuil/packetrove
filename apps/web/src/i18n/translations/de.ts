@@ -207,6 +207,17 @@ export const de = {
     }
   },
   mcp: {
+    navigation: "MCP-Anleitung",
+    sdkTitle: "Ein Node.js-Beispiel ausführen",
+    sdkDescription: "Speichere den folgenden Code in einem neuen Verzeichnis als <code>packetrove-example.mjs</code> und führe dann die Befehle aus. Das Beispiel verwendet <code>@modelcontextprotocol/client@{{version}}</code>, ermittelt Werkzeuge und ruft das CIDR-Werkzeug mit Dokumentationsadressen auf.",
+    sdkLocal: "Starte für lokale Entwicklung <code>pnpm dev:api</code> und ersetze die Server-URL im Beispiel durch <code>{{localUrl}}</code>.",
+    httpErrors: "Fachliche Fehler verwenden das gemeinsame Fehler-JSON. Das MCP SDK prüft das Protokoll. Ungültiges JSON, nicht unterstützte Medientypen und zu große Anfragen werden auf HTTP-Ebene abgewiesen.",
+    deploymentTitle: "Bereitstellung und Verbindungsgrenzen",
+    serverBehavior: "Der Server unterstützt moderne zustandslose Anfragen sowie Initialisierung, Erkennung und Aufrufe über älteres Streamable HTTP. Er bietet keine dauerhaften Sitzungen oder eigenständigen Server-Ereignisströme.",
+    connectionPrivacy: "Die öffentliche IP wird für jede Werkzeuganfrage aus den Verbindungsmetadaten gelesen. Gleichzeitige Clients verwenden getrennte Serverinstanzen. MCP-Ergebnisse und Fehler nutzen Cache-Control: no-store, no-transform. Die Anwendung speichert oder protokolliert keine abgefragten Adressen.",
+    toolMigration: "Der frühere Werkzeugname <code>get_public_ip</code> hat keinen Kompatibilitätsalias. Aktualisiere die Werkzeugerkennung und verwende <code>{{ipTool}}</code> in gespeicherten Aufrufen.",
+    endpointMigration: "Der Website-Pfad <code>/mcp</code> ist kein Dienstendpunkt: GET liefert 404 und POST 405, ohne Werkzeugaufrufe weiterzuleiten. Konfiguriere Clients mit <code>{{serverUrl}}</code>. Passe bei eigener Bereitstellung Domains sowie die getrennten exakten Host- und Browser-Origin-Freigaben an. Clients ohne Origin-Header werden unterstützt.",
+    deploymentGuide: "Bereitstellung, Selbsthosting und Produktionsprüfung",
     title: "Packetrove mit einem KI-Agenten verbinden",
     explanation: "Verbinde einen kompatiblen MCP-Client, um die Netzwerkwerkzeuge von Packetrove zu verwenden. Beginne mit der Einrichtung und nutze anschließend die Beispiele.",
     connection: "Streamable HTTP · Kein Konto oder API-Schlüssel erforderlich",

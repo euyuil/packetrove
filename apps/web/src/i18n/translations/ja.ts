@@ -207,6 +207,17 @@ export const ja = {
     }
   },
   mcp: {
+    navigation: "MCP ガイド",
+    sdkTitle: "Node.js の例を実行する",
+    sdkDescription: "新しいディレクトリで、下のコードを <code>packetrove-example.mjs</code> として保存し、コマンドを実行します。例は <code>@modelcontextprotocol/client@{{version}}</code> を使い、ツールを検出して文書用アドレスで CIDR ツールを呼び出します。",
+    sdkLocal: "ローカル開発では <code>pnpm dev:api</code> を起動し、例のサーバー URL を <code>{{localUrl}}</code> に置き換えてください。",
+    httpErrors: "業務エラーは共通のエラー JSON を返します。MCP SDK がプロトコルを検証します。不正な JSON、未対応のメディア形式、過大な本文は HTTP 層で拒否されます。",
+    deploymentTitle: "デプロイと接続の制限",
+    serverBehavior: "サーバーは新しいステートレス要求と、従来の Streamable HTTP の初期化、検出、呼び出しに対応します。永続セッションや独立したサーバーイベントストリームは提供しません。",
+    connectionPrivacy: "公開 IP の接続情報は呼び出しごとに読み取られ、同時接続するクライアントのサーバーインスタンスは分離されます。MCP の結果とエラーは Cache-Control: no-store, no-transform を使用します。アプリは照会アドレスを保存・記録しません。",
+    toolMigration: "旧ツール名 <code>get_public_ip</code> に互換エイリアスはありません。ツール検出を更新し、保存済みの呼び出しでは <code>{{ipTool}}</code> を使ってください。",
+    endpointMigration: "ウェブサイトの <code>/mcp</code> はサービスではなく、GET は 404、POST は 405 を返し、呼び出しを転送しません。クライアントには <code>{{serverUrl}}</code> を設定してください。独自デプロイではドメインと、Host およびブラウザー Origin の個別の完全一致許可リストを更新します。Origin ヘッダーのないクライアントも対応します。",
+    deploymentGuide: "デプロイ、セルフホスティング、本番確認",
     title: "Packetrove を AI エージェントに接続する",
     explanation: "互換性のある MCP クライアントを接続して Packetrove のネットワークツールを利用します。以下の設定を済ませてから、ツールの例を参照してください。",
     connection: "Streamable HTTP · アカウントや API キーは不要",

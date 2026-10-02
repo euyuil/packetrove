@@ -71,6 +71,8 @@ for (const page of websitePages) {
     assert.equal(Array.from(pageHtml.matchAll(/<h1\b/g)).length, 1, `Single page heading: ${path}`);
     assert(new RegExp('<h1[^>]*>' + escapeHtml(heading) + '</h1>').test(pageHtml), `Prerendered heading: ${path}`);
     assert(pageHtml.includes('data-prerendered-path="' + page.pathname + '"'), `Prerendered page: ${path}`);
+    const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(pageHtml)?.[1] ?? '';
+    assert(navigation.includes('href="' + localizedPath(pagePaths.mcp, page.locale) + '"'), `Shared MCP navigation: ${path}`);
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
       ? text.api.cidrSummary : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
@@ -86,6 +88,9 @@ for (const page of websitePages) {
       assert(pageHtml.includes('claude mcp add --transport http --scope user packetrove'), `Claude Code setup: ${path}`);
       assert(pageHtml.includes('codex mcp add packetrove'), `Codex setup: ${path}`);
       assert(pageHtml.includes('structuredContent') && pageHtml.includes('CLIENT_IP_UNAVAILABLE'), `MCP result and error guide: ${path}`);
+      assert(pageHtml.includes('href="' + localizedPath(pagePaths.api, page.locale) + '"'), `MCP API reference link: ${path}`);
+      assert(pageHtml.includes('data-mcp-sdk-example') && pageHtml.includes('client.listTools()')
+        && pageHtml.includes('client.callTool('), `MCP SDK connection example: ${path}`);
     }
     const documentedTools = catalogTools.filter(tool => page.page === 'mcp' || page.page === tool.page);
     assert.deepEqual(Array.from(pageHtml.matchAll(/data-mcp-tool="([^"]+)"/g), match => match[1]),
