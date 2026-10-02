@@ -1,10 +1,17 @@
 {
   "name": "@packetrove/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "typecheck": "tsc --noEmit" },
-  "dependencies": { "@packetrove/contracts": "workspace:*", "ipaddr.js": "2.5.0" }
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@packetrove/contracts": "workspace:*",
+    "ipaddr.js": "2.5.0"
+  }
 }

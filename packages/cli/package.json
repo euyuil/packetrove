@@ -1,6 +1,6 @@
 {
   "name": "@packetrove/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "type": "module",
   "description": "Packetrove network calculations and IP diagnostics for scripts and agents.",
@@ -10,12 +10,31 @@
     "url": "git+https://github.com/euyuil/packetrove.git",
     "directory": "packages/cli"
   },
-  "bugs": { "url": "https://github.com/euyuil/packetrove/issues" },
-  "keywords": ["cli", "cidr", "ipv4", "ipv6", "network", "ip"],
-  "publishConfig": { "access": "public", "registry": "https://registry.npmjs.org/" },
-  "engines": { "node": "^22.22.2 || ^24.15.0 || >=26.0.0" },
-  "bin": { "packetrove": "./dist/cli.js" },
-  "files": ["dist", "THIRD_PARTY_NOTICES"],
+  "bugs": {
+    "url": "https://github.com/euyuil/packetrove/issues"
+  },
+  "keywords": [
+    "cli",
+    "cidr",
+    "ipv4",
+    "ipv6",
+    "network",
+    "ip"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "bin": {
+    "packetrove": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "THIRD_PARTY_NOTICES"
+  ],
   "scripts": {
     "build": "node build.mjs",
     "prepack": "pnpm build",

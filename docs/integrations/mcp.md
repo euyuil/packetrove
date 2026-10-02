@@ -186,7 +186,7 @@ In a new directory, save the code below as `packetrove-example.mjs`, then run th
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
 const client = new Client(
-  { name: 'packetrove-example', version: "0.1.0" },
+  { name: 'packetrove-example', version: "0.2.0" },
   { versionNegotiation: { mode: 'auto' } },
 );
 try {
