@@ -1,52 +1,72 @@
 import type { MouseEventHandler } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Anchor, Code, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Anchor, Code, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { MCP_PATH } from '@packetrove/contracts';
 import { getApiUrl } from './api';
 import { ToolMcpSection } from './ToolMcpSection';
-import { mcpExamples } from './mcp-examples';
+import { getMcpGuide } from './mcp-guide';
+import { resolveLocale } from './i18n/locales';
+import { localizedPath, pagePaths } from './i18n/routes';
 
-export function McpDocumentation({ onNavigate, documentationUrl }: {
+function InlineCode({ text }: { text: string }) {
+  return <Trans defaults={text} components={{ code: <Code /> }} />;
+}
+
+export function McpDocumentation({ onNavigate, documentationUrl, sourceUrl }: {
   onNavigate: MouseEventHandler<HTMLAnchorElement>;
   documentationUrl: string;
+  sourceUrl: string;
 }) {
-  const { t } = useTranslation();
-  const serverUrl = getApiUrl(MCP_PATH);
+  const { i18n } = useTranslation();
+  const locale = resolveLocale(i18n.resolvedLanguage);
+  const guide = getMcpGuide(locale, getApiUrl(MCP_PATH));
   return <Stack component="section" gap="xl" aria-labelledby="mcp-documentation-heading">
     <Stack gap="sm">
-      <Title order={1} id="mcp-documentation-heading">{t($ => $.mcp.title)}</Title>
-      <Text c="dimmed">{t($ => $.mcp.explanation)}</Text>
-      <Text>{t($ => $.mcp.connection)}</Text>
-      <Code block>{serverUrl}</Code>
+      <Title order={1} id="mcp-documentation-heading">{guide.title}</Title>
+      <Text c="dimmed">{guide.explanation}</Text>
+      <Text>{guide.connection}</Text>
+      <Code block>{guide.serverUrl}</Code>
+      <Group gap="md">
+        <Anchor href={localizedPath(pagePaths.api, locale)} onClick={onNavigate}>{guide.labels.api}</Anchor>
+        <Anchor href={sourceUrl} target="_blank" rel="noopener noreferrer">{guide.labels.source}</Anchor>
+      </Group>
     </Stack>
     <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="mcp-connect-heading">
       <Stack gap="md">
-        <Title order={2} size="h3" id="mcp-connect-heading">{t($ => $.mcp.connectTitle)}</Title>
-        <Text>{t($ => $.mcp.connectDescription)}</Text>
+        <Title order={2} size="h3" id="mcp-connect-heading">{guide.connectTitle}</Title>
+        <Text>{guide.connectDescription}</Text>
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-          <Stack gap="sm" miw={0}>
-            <Title order={3} size="h4">Claude Code</Title>
-            <Code block>{`claude mcp add --transport http --scope user packetrove \\\n  ${serverUrl}`}</Code>
-            <Anchor size="sm" href="https://code.claude.com/docs/en/mcp">{t($ => $.mcp.clientGuide, { client: 'Claude Code' })}</Anchor>
-          </Stack>
-          <Stack gap="sm" miw={0}>
-            <Title order={3} size="h4">Codex</Title>
-            <Code block>{`codex mcp add packetrove \\\n  --url ${serverUrl}`}</Code>
-            <Anchor size="sm" href="https://developers.openai.com/codex/mcp/">{t($ => $.mcp.clientGuide, { client: 'Codex' })}</Anchor>
-          </Stack>
+          {guide.clients.map(client => <Stack gap="sm" miw={0} key={client.name}>
+            <Title order={3} size="h4">{client.name}</Title>
+            <Code block>{client.command}</Code>
+            <Anchor size="sm" href={client.url}>{client.label}</Anchor>
+          </Stack>)}
         </SimpleGrid>
-        <Text><Trans i18nKey={$ => $.mcp.check} values={{ cidrTool: mcpExamples.cidr.name, ipTool: mcpExamples.ip.name }}
-          components={{ code: <Code /> }} /></Text>
-        <Text size="sm" c="dimmed">{t($ => $.mcp.discovery)}</Text>
+        <Text><InlineCode text={guide.check} /></Text>
+        <Text size="sm" c="dimmed">{guide.discovery}</Text>
       </Stack>
     </Paper>
-    <ToolMcpSection tool="cidr" onNavigate={onNavigate} guide />
-    <ToolMcpSection tool="ip" onNavigate={onNavigate} guide />
+    {guide.tools.map(tool => <ToolMcpSection key={tool.tool} tool={tool.tool} onNavigate={onNavigate} guide />)}
     <Stack component="section" gap="sm" aria-labelledby="mcp-errors-heading">
-      <Title order={2} size="h3" id="mcp-errors-heading">{t($ => $.mcp.errorsTitle)}</Title>
-      <Text><Trans i18nKey={$ => $.mcp.results} components={{ code: <Code /> }} /></Text>
-      <Text><Trans i18nKey={$ => $.mcp.errors} components={{ code: <Code /> }} /></Text>
-      <Anchor href={`${documentationUrl}/docs/integrations/mcp.md`}>{t($ => $.mcp.technicalGuide)}</Anchor>
+      <Title order={2} size="h3" id="mcp-errors-heading">{guide.errorsTitle}</Title>
+      <Text><InlineCode text={guide.results} /></Text>
+      <Text><InlineCode text={guide.errors} /></Text>
+      <Text size="sm" c="dimmed">{guide.httpErrors}</Text>
+    </Stack>
+    <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="mcp-sdk-heading">
+      <Stack gap="md">
+        <Title order={2} size="h3" id="mcp-sdk-heading">{guide.sdk.title}</Title>
+        <Text><InlineCode text={guide.sdk.description} /></Text>
+        <Code block data-mcp-sdk-example>{guide.sdk.code}</Code>
+        <Code block>{guide.sdk.command}</Code>
+        <Text size="sm" c="dimmed"><InlineCode text={guide.sdk.local} /></Text>
+      </Stack>
+    </Paper>
+    <Stack component="section" gap="sm" aria-labelledby="mcp-deployment-heading">
+      <Title order={2} size="h3" id="mcp-deployment-heading">{guide.deployment.title}</Title>
+      {guide.deployment.paragraphs.map(text => <Text size="sm" c="dimmed" key={text}><InlineCode text={text} /></Text>)}
+      <Anchor href={`${documentationUrl}/docs/deployment.md`}>{guide.deployment.label}</Anchor>
+      <Anchor href={`${documentationUrl}/docs/integrations/mcp.md`}>{guide.labels.technicalGuide}</Anchor>
     </Stack>
   </Stack>;
 }

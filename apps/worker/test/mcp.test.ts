@@ -6,7 +6,8 @@ import type { Transport as LegacyTransportContract } from '@modelcontextprotocol
 import { describe, expect, it } from 'vitest';
 import { smallestCoveringCidr } from '@packetrove/core';
 import {
-  CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema,
+  CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, CIDR_SUBTRACT_TOOL_NAME, CidrSubtractResultSchema,
+  CidrCoverResultSchema, ErrorResponseSchema, tools as catalogTools,
   MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_VERSION,
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
@@ -39,7 +40,13 @@ describe('stateless MCP in the Workers runtime', () => {
     try {
       expect(client.getServerVersion()).toMatchObject({ name: 'Packetrove', version: PACKETROVE_VERSION });
       const { tools } = await client.listTools();
-      expect(tools).toHaveLength(2);
+      expect(tools.map(tool => tool.name).sort()).toEqual(catalogTools.map(tool => tool.mcp.name).sort());
+      for (const definition of catalogTools) {
+        expect(tools.find(tool => tool.name === definition.mcp.name)).toMatchObject({
+          title: definition.title, description: definition.mcp.description, annotations: definition.mcp.annotations,
+          inputSchema: { type: 'object' }, outputSchema: { type: 'object' },
+        });
+      }
       expect(tools[0]).toMatchObject({
         name: MCP_TOOL_NAME, annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
         inputSchema: { type: 'object', required: ['inputs'] },
@@ -60,6 +67,60 @@ describe('stateless MCP in the Workers runtime', () => {
       expect(response.isError).not.toBe(true);
       expect(CidrCoverResultSchema.parse(response.structuredContent)).toEqual(result);
       expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+    } finally { await client.close(); }
+  });
+  it.each(CIDR_SUBTRACT_EXAMPLES)('returns the exact subtraction $name result', async ({ request, result }) => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: request });
+      expect(response.isError).not.toBe(true);
+      expect(CidrSubtractResultSchema.parse(response.structuredContent)).toEqual(result);
+      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+    } finally { await client.close(); }
+  });
+  it.each([
+    { include: ['::/0'], exclude: [] },
+    { include: ['203.0.113.0/24'], exclude: ['203.0.113.0/24'] },
+  ])('preserves subtraction empty results and full IPv6 counts', async request => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: request });
+      expect(response.isError).not.toBe(true);
+      const result = CidrSubtractResultSchema.parse(response.structuredContent);
+      expect(result.remainingAddressCount).toBe(request.include[0] === '::/0'
+        ? '340282366920938463463374607431768211456' : '0');
+      expect(result.cidrs).toEqual(request.include[0] === '::/0' ? ['::/0'] : []);
+    } finally { await client.close(); }
+  });
+  it('reports subtraction list names and indices in shared tool errors', async () => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: { include: ['bad'], exclude: ['::/129'] } });
+      expect(response.isError).toBe(true);
+      expect(response.structuredContent).toBeUndefined();
+      const content = response.content?.[0];
+      if (content?.type !== 'text') throw new Error('Missing error content');
+      expect(ErrorResponseSchema.parse(JSON.parse(content.text)).error).toMatchObject({
+        code: 'INVALID_INPUT', issues: [{ list: 'include', index: 0 }, { list: 'exclude', index: 0 }],
+      });
+    } finally { await client.close(); }
+  });
+  it.each([
+    { include: ['::/0'], exclude: ['203.0.113.1'] },
+    { include: new Array(501).fill('::1'), exclude: new Array(500).fill('::2') },
+    {
+      include: Array.from({ length: 126 }, (_, i) => `2001:db8:${(i * 2).toString(16)}::/48`),
+      exclude: Array.from({ length: 126 }, (_, i) => `2001:db8:${(i * 2).toString(16)}::1/128`),
+    },
+  ])('returns subtraction validation errors without a partial result', async request => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: request });
+      expect(response.isError).toBe(true);
+      expect(response.structuredContent).toBeUndefined();
+      const content = response.content?.[0];
+      if (content?.type !== 'text') throw new Error('Missing error content');
+      expect(ErrorResponseSchema.safeParse(JSON.parse(content.text)).success).toBe(true);
     } finally { await client.close(); }
   });
   it.each(Object.values(mcpExamples))('executes the website guide example for $name', async example => {
@@ -126,6 +187,9 @@ describe('stateless MCP in the Workers runtime', () => {
       const example = CIDR_COVER_EXAMPLES[1]!;
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
       expect(response.structuredContent).toEqual(example.result);
+      const subtraction = CIDR_SUBTRACT_EXAMPLES[0]!;
+      const subtractResponse = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: subtraction.request });
+      expect(CidrSubtractResultSchema.parse(subtractResponse.structuredContent)).toEqual(subtraction.result);
     } finally { await client.close(); }
   });
   it('enforces the shared HTTP body limit', async () => {

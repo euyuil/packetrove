@@ -67,7 +67,8 @@ export function subtractCidrs(value: unknown): CidrSubtractResult {
     });
     throw new ToolError('INVALID_INPUT', 'Invalid calculation input.', request.error.issues.map(issue => {
       const index = typeof issue.path[1] === 'number' ? issue.path[1] : undefined;
-      return { ...(index === undefined ? {} : { index }), message: issue.message };
+      const list = issue.path[0] === 'include' || issue.path[0] === 'exclude' ? issue.path[0] : undefined;
+      return { ...(index === undefined ? {} : { index }), ...(list ? { list } : {}), message: issue.message };
     }), details);
   }
   if (request.data.include.length + request.data.exclude.length > MAX_SUBTRACTION_INPUTS) {
@@ -84,7 +85,7 @@ export function subtractCidrs(value: unknown): CidrSubtractResult {
         parsed[list].push(parseInput(input, index));
       } catch (error) {
         if (!(error instanceof ToolError) || !error.issues?.length) throw error;
-        issues.push(...error.issues);
+        issues.push(...error.issues.map(issue => ({ ...issue, list })));
         details.push(...error.issues.map((_, issueIndex) => ({
           ...(error.details?.[issueIndex] || { reason: 'INVALID_INPUT' as const }), list,
         })));
@@ -98,7 +99,7 @@ export function subtractCidrs(value: unknown): CidrSubtractResult {
   for (const list of ['include', 'exclude'] as const) {
     for (const [index, entry] of parsed[list].entries()) {
       if (entry.family !== family) {
-        issues.push({ index, message: `Expected ${family === 'ipv4' ? 'IPv4' : 'IPv6'} to match the first included entry.` });
+        issues.push({ list, index, message: `Expected ${family === 'ipv4' ? 'IPv4' : 'IPv6'} to match the first included entry.` });
         details.push({ reason: 'EXPECTED_FAMILY', family, list });
       }
     }

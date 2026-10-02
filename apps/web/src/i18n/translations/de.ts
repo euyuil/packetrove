@@ -9,6 +9,10 @@ export const de = {
     feedbackPrompt: 'Einen Fehler gefunden oder eine Idee? Schreiben Sie uns auf GitHub.', reportBug: 'Fehler melden', requestFeature: 'Funktion vorschlagen',
     notFound: 'Seite nicht gefunden', notFoundDescription: 'Die angeforderte Seite existiert nicht.', returnHome: 'Zur Startseite',
   },
+  languageSuggestion: {
+    title: 'Möchten Sie diese Seite auf Deutsch lesen?',
+    switch: 'Zu Deutsch wechseln', dismiss: 'Jetzt nicht',
+  },
   footer: { project: 'Projekt', contact: 'Kontakt und Feedback', sendEmail: 'E-Mail senden' },
   home: {
     description: 'Open-Source-Netzwerkwerkzeuge für Ihren Browser, Ihr Terminal und Ihre KI-Agenten. Öffnen Sie ein Werkzeug über die Navigation oder integrieren Sie Packetrove mithilfe der folgenden Anleitungen in Ihren Arbeitsablauf.',
@@ -104,10 +108,18 @@ export const de = {
     cidrSummary: 'Senden Sie IPv4- oder IPv6-Adressen und CIDR-Netze als JSON. Die Antwort enthält das kleinste umfassende CIDR-Netz, normalisierte Eingaben und exakte Adresszahlen als dezimale Zeichenfolgen. Diese API-Anfrage sendet Ihre Eingaben an den Server.',
     cidrResponse: 'Dieses Beispiel liefert {{cidr}} mit {{additional}} zusätzlichen Adressen. Prüfen Sie additionalAddressCount, bevor Sie das Ergebnis in einer Liste erlaubter oder gesperrter Adressen verwenden.',
     ipSummary: 'Liefert die öffentliche IP-Adresse dieser HTTP-Verbindung. Fordern Sie text/plain für eine Adresse mit anschließendem Zeilenumbruch oder application/json für Adresse und Adressfamilie an. Antworten werden nicht zwischengespeichert. Ein VPN oder Proxy verändert die beobachtete Ausgangsadresse.',
+    subtractSummary: "Ziehe exclude exakt von include ab. Das Ergebnis enthält eine minimale kanonische CIDR-Liste und exakte Adresszahlen als Dezimalzeichenfolgen. Diese Anfrage sendet Eingaben an den Server.",
+    subtractResponse: "Dieses Beispiel liefert {{cidrs}} mit {{remaining}} verbleibenden Adressen und ohne zusätzliche Abdeckung.",
   },
   discovery: {
     subtract: {
       title: "Fragen zur CIDR-Subtraktion",
+      mcpTitle: "CIDR-Subtraktion über MCP verwenden",
+      purpose: "Lass einen KI-Agenten ausgeschlossene Netze vom eingeschlossenen Adressraum abziehen und die exakten verbleibenden CIDRs zurückgeben.",
+      inputs: "Übergib include und exclude als Arrays einer Adressfamilie. include darf nicht leer sein; exclude darf leer sein. Insgesamt höchstens {{maximumInputs}} Einträge mit je {{maximumLength}} Zeichen.",
+      result: "Lies cidrs sowie includedAddressCount, removedAddressCount und remainingAddressCount als exakte Dezimalzeichenfolgen. Vollständige Entfernung liefert eine leere Liste. Mehr als {{maximumOutputs}} CIDRs führt zu einem Fehler ohne Teilliste.",
+      boundary: "Remote-API- und MCP-Aufrufe senden Eingaben an den Server; der Browser rechnet lokal. Verbleibende Bereiche beziehen sich auf deine Eingaben und belegen keine tatsächliche Verfügbarkeit. WireGuard und Firewallregeln werden nicht verändert.",
+      openTool: "Subtraktion im Browser öffnen",
       questions: {
         wireguard: {
           question: "Wie erstelle ich WireGuard-Ausnahmen für AllowedIPs?",
@@ -127,7 +139,7 @@ export const de = {
         },
         access: {
           question: "Kann ich Subtraktion über MCP, Web-API oder CLI aufrufen?",
-          answer: "Subtraktion läuft derzeit im Browser und im gemeinsamen Berechnungskern. Browsereingaben bleiben lokal. MCP, Web-API und CLI bieten CIDR-Abdeckung und öffentliche IP-Abfragen an, aber keine Subtraktion. Die MCP-Anleitung beschreibt diese verfügbaren Operationen."
+          answer: "Subtraktion ist auf der Website, über die Web-API und MCP verfügbar. Browsereingaben bleiben lokal; API und MCP senden sie an den Server. Die CLI bietet derzeit keine Subtraktion."
         }
       }
     },
@@ -195,13 +207,24 @@ export const de = {
     }
   },
   mcp: {
+    navigation: "MCP-Anleitung",
+    sdkTitle: "Ein Node.js-Beispiel ausführen",
+    sdkDescription: "Speichere den folgenden Code in einem neuen Verzeichnis als <code>packetrove-example.mjs</code> und führe dann die Befehle aus. Das Beispiel verwendet <code>@modelcontextprotocol/client@{{version}}</code>, ermittelt Werkzeuge und ruft das CIDR-Werkzeug mit Dokumentationsadressen auf.",
+    sdkLocal: "Starte für lokale Entwicklung <code>pnpm dev:api</code> und ersetze die Server-URL im Beispiel durch <code>{{localUrl}}</code>.",
+    httpErrors: "Fachliche Fehler verwenden das gemeinsame Fehler-JSON. Das MCP SDK prüft das Protokoll. Ungültiges JSON, nicht unterstützte Medientypen und zu große Anfragen werden auf HTTP-Ebene abgewiesen.",
+    deploymentTitle: "Bereitstellung und Verbindungsgrenzen",
+    serverBehavior: "Der Server unterstützt moderne zustandslose Anfragen sowie Initialisierung, Erkennung und Aufrufe über älteres Streamable HTTP. Er bietet keine dauerhaften Sitzungen oder eigenständigen Server-Ereignisströme.",
+    connectionPrivacy: "Die öffentliche IP wird für jede Werkzeuganfrage aus den Verbindungsmetadaten gelesen. Gleichzeitige Clients verwenden getrennte Serverinstanzen. MCP-Ergebnisse und Fehler nutzen Cache-Control: no-store, no-transform. Die Anwendung speichert oder protokolliert keine abgefragten Adressen.",
+    toolMigration: "Der frühere Werkzeugname <code>get_public_ip</code> hat keinen Kompatibilitätsalias. Aktualisiere die Werkzeugerkennung und verwende <code>{{ipTool}}</code> in gespeicherten Aufrufen.",
+    endpointMigration: "Der Website-Pfad <code>/mcp</code> ist kein Dienstendpunkt: GET liefert 404 und POST 405, ohne Werkzeugaufrufe weiterzuleiten. Konfiguriere Clients mit <code>{{serverUrl}}</code>. Passe bei eigener Bereitstellung Domains sowie die getrennten exakten Host- und Browser-Origin-Freigaben an. Clients ohne Origin-Header werden unterstützt.",
+    deploymentGuide: "Bereitstellung, Selbsthosting und Produktionsprüfung",
     title: "Packetrove mit einem KI-Agenten verbinden",
-    explanation: "Verbinden Sie einen kompatiblen MCP-Client, um abdeckende CIDR-Netze zu berechnen oder seine Verbindung zu prüfen. Richten Sie den Client ein und verwenden Sie dann die Werkzeugbeispiele.",
+    explanation: "Verbinde einen kompatiblen MCP-Client, um die Netzwerkwerkzeuge von Packetrove zu verwenden. Beginne mit der Einrichtung und nutze anschließend die Beispiele.",
     connection: "Streamable HTTP · Kein Konto oder API-Schlüssel erforderlich",
     connectTitle: "Ihren Client verbinden",
     connectDescription: "Wenn Claude Code oder Codex installiert ist, fügen Sie diesen entfernten Server hinzu. Die Befehle konfigurieren den Client und installieren keinen lokalen Packetrove-Server.",
     clientGuide: "MCP-Dokumentation für {{client}}",
-    check: "Prüfen Sie die Verbindung im Client mit <code>/mcp</code>. Stellen Sie sicher, dass <code>{{cidrTool}}</code> und <code>{{ipTool}}</code> verfügbar sind.",
+    check: "Prüfe die Verbindung im Client mit <code>/mcp</code>. Diese Werkzeuge müssen verfügbar sein: <code>{{tools}}</code>.",
     discovery: "Nach der Konfiguration entdeckt der Client Werkzeuge über tools/list. Beschreibungen und Schemas helfen bei Auswahl und Argumenten. Das Lesen einer Webseite konfiguriert keinen Client und gewährt keinen Werkzeugzugriff.",
     toolName: "Werkzeugname",
     arguments: "Beispielargumente",

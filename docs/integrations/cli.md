@@ -6,8 +6,7 @@ command queries the current connection through an IP lookup API.
 
 ## Install from npm
 
-The public [`@packetrove/cli`](https://www.npmjs.com/package/@packetrove/cli)
-package is available on npm, starting with `0.1.0`. Users need only a supported
+The package is published to npm as `@packetrove/cli`. Users need only a supported
 Node.js version and npm:
 
 ```sh

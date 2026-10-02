@@ -22,12 +22,60 @@
   the user has requested.
 - Build web interfaces with Mantine components and the shared theme. Prefer
   component props and layout components before adding custom CSS.
+- Give buttons a visible background or border in their default state. Use
+  Mantine Button variants such as `filled`, `light`, `outline`, or `default`.
+  Avoid `subtle` and equivalent text-only button styles; users must be able to
+  recognize buttons without hovering over them.
 - Accept common pasted forms in multi-value text inputs. When individual values
   cannot contain commas or whitespace, accept commas, spaces, tabs, line breaks,
   and mixtures of these as separators; ignore empty entries. Share parsing rules
   across related tools and keep localized help, user stories, entry counts, and
   error locations accurate. If values can contain separators, use an unambiguous
   parser appropriate to that format.
+
+## Tool catalog and interface coverage
+
+- Every product tool must have a website page, a Web API endpoint, and an MCP
+  tool in the same delivery. A tool is incomplete until all three interfaces
+  share the same calculation or lookup implementation, contracts, examples,
+  and error semantics. CLI and skill coverage must describe their actual scope.
+- Maintain `packages/contracts/src/tools.ts` as the single source of truth for
+  tool identities, website paths, API methods and paths, MCP names and metadata,
+  schemas, and example references. Interface handlers must cover every catalog
+  entry; do not maintain independent lists of tools in the website or server.
+- Generate tool navigation, homepage gallery content, localized tool paths,
+  API documentation, and MCP discovery and examples from the catalog. Keep
+  localized prose in the translation resources, indexed by the catalog's page
+  keys. Presentation components may specialize a preview without duplicating
+  tool identities, paths, or example inputs and results.
+- Homepage selection and ordering may reference catalog entries by their
+  identifiers. Use shared documentation examples for previews; do not perform
+  live lookups or send user inputs merely to render a gallery or documentation.
+- Adding or changing a tool requires parity checks across website, API, MCP,
+  generated OpenAPI, translations, documentation, and production smoke checks.
+
+## README and documentation
+
+- Keep the root README focused on first-time users and contributors: a short
+  project description, primary capabilities, one representative working example,
+  interface links, minimal local startup, and help, contribution, and license links.
+- Keep capability descriptions brief. Preserve information needed to choose a
+  workflow, including interface availability, installation status, privacy
+  boundaries, and significant calculation or connection limitations.
+- Update the README when a change affects primary capabilities, public entry
+  points, installation, quick-start steps, or those essential limitations.
+  Record detailed implementation changes, acceptance criteria, and release
+  history in their corresponding documents rather than accumulating README sections.
+- Put detailed usage and interface examples in the API and integration guides,
+  behavior and acceptance requirements in user stories, complete development
+  instructions in CONTRIBUTING.md and docs/git-checks.md, and deployment and
+  publishing procedures in their existing guides.
+- Give each detailed explanation one primary maintenance location and link to
+  it from other documents. Reuse existing guides before adding new documents;
+  remove redundant descriptions when their authoritative documentation exists.
+- When moving or removing content, update incoming links, heading anchors, and
+  references to the old documentation responsibility. Keep toolchain versions
+  sourced from .node-version and package.json rather than duplicating version pins.
 
 ## Website URL names
 
@@ -111,7 +159,8 @@
   Gitleaks. Credential scanning in continuous integration is deferred by the
   owner; do not add it as part of unrelated work.
 
-When changing setup, update this file, README.md, and docs/git-checks.md together.
+When changing setup, update this file, README.md, CONTRIBUTING.md, and
+docs/git-checks.md together.
 Verify a fresh clone, missing Gitleaks, preserved custom hooks, and the skipped
 continuous integration path.
 

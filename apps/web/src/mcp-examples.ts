@@ -1,11 +1,14 @@
-import { CIDR_COVER_EXAMPLES, MCP_TOOL_NAME, PUBLIC_IP_TOOL_NAME, type PublicIpResult } from '@packetrove/contracts';
+import { tools, toolCatalog, type ToolPage } from '@packetrove/contracts';
 
-const cidr = CIDR_COVER_EXAMPLES[1]!;
-
-export const mcpExamples = {
-  cidr: { name: MCP_TOOL_NAME, arguments: cidr.request, result: cidr.result },
-  ip: { name: PUBLIC_IP_TOOL_NAME, arguments: {},
-    result: { ip: '203.0.113.1', family: 'ipv4' } satisfies PublicIpResult },
+type McpExamples = {
+  [Page in ToolPage]: {
+    name: (typeof toolCatalog)[Page]['mcp']['name'];
+    arguments: (typeof toolCatalog)[Page]['example']['request'];
+    result: (typeof toolCatalog)[Page]['example']['result'];
+  };
 };
+export const mcpExamples = Object.fromEntries(tools.map(tool => [tool.page, {
+  name: tool.mcp.name, arguments: tool.example.request, result: tool.example.result,
+}])) as McpExamples;
 
-export type McpExampleTool = keyof typeof mcpExamples;
+export type McpExampleTool = ToolPage;

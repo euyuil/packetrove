@@ -1,10 +1,10 @@
 # Publishing the CLI to npm
 
-The CLI is published as [`@packetrove/cli`](https://www.npmjs.com/package/@packetrove/cli),
-with the `packetrove` executable. The initial `0.1.0` npm package was published
-interactively, and its [GitHub Release](https://github.com/euyuil/packetrove/releases/tag/0.1.0)
-establishes the release-please baseline. Only the CLI is published; it bundles
-the core, contracts, and runtime dependencies.
+The CLI is published as `@packetrove/cli`, with the `packetrove` executable.
+The initial `0.1.0` release is available on
+[npm](https://www.npmjs.com/package/@packetrove/cli) and
+[GitHub](https://github.com/euyuil/packetrove/releases/tag/0.1.0). Only the CLI is
+published; it bundles the core, contracts, and runtime dependencies.
 
 ## Release policy
 
@@ -113,6 +113,10 @@ ordinary validation and service deployment still run.
 
 ## First release and baseline
 
+The steps below document the initial distribution setup. The project's `0.1.0`
+package and GitHub Release already exist; subsequent releases follow the
+release policy above and still require publication verification.
+
 1. Sign in to an npm account with verified email, interactive publishing 2FA,
    and permission to publish public packages under the `packetrove`
    organization.
@@ -179,6 +183,10 @@ maintains the next release pull request. To prepare immediately, run:
 gh workflow run release.yml --repo euyuil/packetrove --ref main
 ```
 
+After npm publication is verified, keep installation and availability wording
+in the README, package README, and integration guides consistent with the
+published package through a follow-up pull request.
+
 ## Configure npm trusted publishing
 
 After the initial npm publication, open the package's settings on npmjs.com,
@@ -199,7 +207,8 @@ restriction does not prevent trusted publishing through OIDC.
 
 Staged publication alone does not permit this workflow's direct command. npm
 does not validate this configuration when it is saved; a later workflow upload
-is the live test of the trusted-publisher setup.
+is the live test of the trusted-publisher setup. Recovery of an identical
+existing archive skips upload and does not test OIDC publication.
 
 The workflow uses a GitHub-hosted runner, npm CLI 11.5.1 or later, and
 `id-token: write`. No long-lived npm token is needed. Trusted publication from

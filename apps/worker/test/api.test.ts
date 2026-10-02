@@ -1,8 +1,11 @@
 import { exports } from 'cloudflare:workers';
 import { describe, expect, it, vi } from 'vitest';
-import { CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, ErrorResponseSchema, MAX_REQUEST_BYTES } from '@packetrove/contracts';
+import {
+  CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CIDR_SUBTRACT_EXAMPLES, CIDR_SUBTRACT_PATH,
+  CidrSubtractResultSchema, ErrorResponseSchema, MAX_REQUEST_BYTES, tools,
+} from '@packetrove/contracts';
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
-import { smallestCoveringCidr } from '@packetrove/core';
+import { smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { createApp } from '../src/app';
 
 function post(body: string, headers: Record<string, string> = { 'content-type': 'application/json' }) {
@@ -10,6 +13,16 @@ function post(body: string, headers: Record<string, string> = { 'content-type': 
 }
 
 describe('API in the Workers runtime', () => {
+  it.each(tools)('serves every catalog entry: $id', async tool => {
+    const response = await exports.default.fetch(`http://localhost${tool.api.path}`, {
+      method: tool.api.method.toUpperCase(),
+      headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.1' },
+      ...(tool.api.method === 'post' ? { body: JSON.stringify(tool.example.request) } : {}),
+    });
+    expect(response.status).toBe(200);
+    expect(tool.outputSchema.parse(await response.json())).toEqual(tool.example.result);
+    expect(Object.keys(createOpenApiDocument().paths!)).toContain(tool.api.path);
+  });
   it.each(CIDR_COVER_EXAMPLES)('serves $name', async ({ request, result }) => {
     const response = await post(JSON.stringify(request));
     expect(response.status).toBe(200);
@@ -162,5 +175,80 @@ describe('API in the Workers runtime', () => {
     } finally {
       spy.mockRestore();
     }
+  });
+});
+
+function subtractPost(value: unknown) {
+  return exports.default.fetch(`http://localhost${CIDR_SUBTRACT_PATH}`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(value),
+  });
+}
+
+describe('CIDR subtraction over API', () => {
+  it.each(CIDR_SUBTRACT_EXAMPLES)('returns the shared exact $name result', async ({ request, result }) => {
+    const response = await subtractPost(request);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('access-control-allow-origin')).toBe('*');
+    expect(CidrSubtractResultSchema.parse(await response.json())).toEqual(result);
+    expect(result).toEqual(subtractCidrs(request));
+  });
+  it.each([
+    { include: ['::/0'], exclude: [] },
+    { include: ['203.0.113.7/24', '203.0.113.0/25'], exclude: ['203.0.113.64/26', '203.0.113.64/27'] },
+    { include: ['203.0.113.0/24'], exclude: ['203.0.113.0/24'] },
+    { include: new Array(500).fill('::/128'), exclude: new Array(500).fill('::1/128') },
+  ])('preserves exact counts, overlap handling, and empty results', async request => {
+    const response = await subtractPost(request);
+    expect(response.status).toBe(200);
+    expect(CidrSubtractResultSchema.parse(await response.json())).toEqual(subtractCidrs(request));
+  });
+  it('identifies the list and entry for every invalid address', async () => {
+    const response = await subtractPost({ include: ['bad'], exclude: ['::/129'] });
+    expect(response.status).toBe(400);
+    expect(ErrorResponseSchema.parse(await response.json()).error).toMatchObject({
+      code: 'INVALID_INPUT', issues: [{ list: 'include', index: 0 }, { list: 'exclude', index: 0 }],
+    });
+  });
+  it.each([
+    [{ include: [], exclude: [] }, 'INVALID_INPUT'],
+    [{ include: ['::/0'], exclude: ['203.0.113.1'] }, 'MIXED_ADDRESS_FAMILIES'],
+    [{ include: new Array(501).fill('::1'), exclude: new Array(500).fill('::2') }, 'INVALID_INPUT'],
+    [{ include: ['::1'], exclude: [], extra: true }, 'INVALID_INPUT'],
+  ])('rejects malformed or excessive input', async (request, code) => {
+    const response = await subtractPost(request);
+    expect(response.status).toBe(400);
+    expect(ErrorResponseSchema.parse(await response.json()).error.code).toBe(code);
+  });
+  it('rejects excessive output without a partial list', async () => {
+    const response = await subtractPost({
+      include: Array.from({ length: 126 }, (_, i) => `2001:db8:${(i * 2).toString(16)}::/48`),
+      exclude: Array.from({ length: 126 }, (_, i) => `2001:db8:${(i * 2).toString(16)}::1/128`),
+    });
+    expect(response.status).toBe(400);
+    const result = await response.json();
+    expect(ErrorResponseSchema.parse(result).error.code).toBe('INVALID_INPUT');
+    expect(result).not.toHaveProperty('cidrs');
+  });
+  it.each([
+    { body: '{', type: 'application/json', status: 400, code: 'INVALID_JSON' },
+    { body: '{}', type: 'text/plain', status: 415, code: 'UNSUPPORTED_MEDIA_TYPE' },
+    { body: ' '.repeat(MAX_REQUEST_BYTES + 1), type: 'application/json', status: 413, code: 'PAYLOAD_TOO_LARGE' },
+  ])('enforces the shared HTTP boundary: $code', async ({ body, type, status, code }) => {
+    const response = await exports.default.fetch(`http://localhost${CIDR_SUBTRACT_PATH}`, {
+      method: 'POST', headers: { 'content-type': type }, body,
+    });
+    expect(response.status).toBe(status);
+    expect(ErrorResponseSchema.parse(await response.json()).error.code).toBe(code);
+  });
+  it('supports anonymous preflight and structured method errors', async () => {
+    const preflight = await exports.default.fetch(`http://localhost${CIDR_SUBTRACT_PATH}`, {
+      method: 'OPTIONS', headers: { origin: 'https://client.example', 'access-control-request-method': 'POST' },
+    });
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get('access-control-allow-origin')).toBe('*');
+    const response = await exports.default.fetch(`http://localhost${CIDR_SUBTRACT_PATH}`);
+    expect(response.status).toBe(405);
+    expect(response.headers.get('allow')).toBe('POST');
+    expect(ErrorResponseSchema.parse(await response.json()).error.code).toBe('METHOD_NOT_ALLOWED');
   });
 });

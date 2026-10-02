@@ -17,6 +17,10 @@ export const en = {
     feedbackPrompt: 'Found a bug or have an idea? Tell us on GitHub.', reportBug: 'Report a bug', requestFeature: 'Request a feature',
     notFound: 'Page not found', notFoundDescription: 'The page you requested does not exist.', returnHome: 'Return to home',
   },
+  languageSuggestion: {
+    title: 'Would you like to read this page in English?',
+    switch: 'Switch to English', dismiss: 'Not now',
+  },
   footer: { project: 'Project', contact: 'Contact & feedback', sendEmail: 'Send an email' },
   home: {
     description: 'Open source network utilities for your browser, terminal, and AI agents. Use the navigation to open a tool, or connect Packetrove to your own workflow below.',
@@ -96,10 +100,18 @@ export const en = {
     cidrSummary: 'Submit IPv4 or IPv6 addresses and CIDR ranges as JSON. The response includes the smallest covering CIDR, normalized inputs, and exact address counts as decimal strings. This API request sends your inputs to the server.',
     cidrResponse: 'This example returns {{cidr}} with {{additional}} additional addresses. Check additionalAddressCount before using the result in an allowlist or blocklist.',
     ipSummary: 'Return the public IP observed for this HTTP connection. Request text/plain for a single address followed by a newline, or application/json for an address and family. Responses are not cached. A VPN or proxy changes the observed exit address.',
+    subtractSummary: "Subtract the exclude list from the include list exactly. Return a minimal canonical CIDR list and exact decimal-string address counts. This API request sends your inputs to the server.",
+    subtractResponse: "This example returns {{cidrs}}, with {{remaining}} remaining addresses and no additional coverage.",
   },
   discovery: {
     subtract: {
       title: "Questions about CIDR subtraction",
+      mcpTitle: "Use subtraction through MCP",
+      purpose: "Ask an AI agent to subtract excluded networks from included address space and return the exact remaining CIDRs.",
+      inputs: "Pass include and exclude arrays from one address family. Include must be nonempty; exclude may be empty. Use at most {{maximumInputs}} entries across both lists, with at most {{maximumLength}} characters each.",
+      result: "Read cidrs and the exact decimal-string includedAddressCount, removedAddressCount, and remainingAddressCount. Complete removal returns an empty list. Results exceeding {{maximumOutputs}} CIDRs fail without a partial list.",
+      boundary: "Remote API and MCP calls send inputs to the server; the browser calculates locally. Remaining ranges are relative to your inputs and do not prove live availability. The tool does not configure WireGuard or change firewall rules.",
+      openTool: "Open browser subtraction",
       questions: {
         wireguard: {
           question: "How do I prepare WireGuard AllowedIPs exceptions?",
@@ -119,7 +131,7 @@ export const en = {
         },
         access: {
           question: "Can I call subtraction through MCP, the Web API, or CLI?",
-          answer: "Subtraction currently runs in the browser and shared calculation core. Browser inputs stay local. MCP, Web API, and CLI offer the covering-CIDR and public-IP operations; they do not expose subtraction. The MCP guide documents those available operations."
+          answer: "Subtraction is available on the website, Web API, and MCP. Browser inputs stay local; API and MCP calls send inputs to the server. The CLI does not currently expose subtraction."
         }
       }
     },
@@ -187,13 +199,24 @@ export const en = {
     }
   },
   mcp: {
+    navigation: "MCP guide",
+    sdkTitle: "Run a Node.js example",
+    sdkDescription: "In a new directory, save the code below as <code>packetrove-example.mjs</code>, then run the commands. The example uses <code>@modelcontextprotocol/client@{{version}}</code>, discovers tools, and calls the covering-CIDR tool with documentation addresses.",
+    sdkLocal: "For local development, start <code>pnpm dev:api</code> and replace the server URL in the example with <code>{{localUrl}}</code>.",
+    httpErrors: "Business errors use the shared error JSON. The MCP SDK handles protocol validation errors. Invalid JSON, unsupported media types, and oversized bodies are rejected at the HTTP boundary.",
+    deploymentTitle: "Deployment and connection limits",
+    serverBehavior: "The server supports modern stateless requests and legacy Streamable HTTP initialization, discovery, and calls. It does not provide persistent sessions or standalone server event streams.",
+    connectionPrivacy: "Public IP metadata is read for each tool-call request, with isolated server instances for concurrent clients. MCP results and errors use Cache-Control: no-store, no-transform. The application does not retain or log lookup addresses.",
+    toolMigration: "The former <code>get_public_ip</code> tool name has no compatibility alias. Refresh tool discovery and use <code>{{ipTool}}</code> in saved calls.",
+    endpointMigration: "The website’s <code>/mcp</code> path is not the service endpoint: GET returns 404 and POST returns 405, without proxying or redirecting tool calls. Configure clients with <code>{{serverUrl}}</code>. For your own deployment, update the domains and separate exact Host and browser Origin allowlists; non-browser clients without an Origin header are supported.",
+    deploymentGuide: "Deployment, self-hosting, and production verification",
     title: "Connect Packetrove to an AI agent",
-    explanation: "Connect a compatible MCP client to calculate covering CIDRs or inspect the connection used by that client. Start with the setup below, then use the tool examples.",
+    explanation: "Connect a compatible MCP client to use Packetrove network tools. Start with the setup below, then use the tool examples.",
     connection: "Streamable HTTP · No account or API key required",
     connectTitle: "Connect your client",
     connectDescription: "With Claude Code or Codex installed, add this remote server. These commands configure the client; they do not install a local Packetrove server.",
     clientGuide: "{{client}} MCP documentation",
-    check: "Use <code>/mcp</code> in your client to inspect the connection. Confirm that <code>{{cidrTool}}</code> and <code>{{ipTool}}</code> are available.",
+    check: "Use <code>/mcp</code> in your client to inspect the connection. Confirm that these tools are available: <code>{{tools}}</code>.",
     discovery: "After configuration, the client discovers available tools with tools/list. Tool descriptions and schemas guide selection and arguments. Reading a web page does not configure a client or grant it tool access.",
     toolName: "Tool name",
     arguments: "Example arguments",
@@ -237,6 +260,9 @@ export const zhHans = {
     source: '在 GitHub 查看 Packetrove', sourceCommit: '在 GitHub 查看提交 {{commit}} 的源代码', sourceLicense: '源代码：MIT',
     feedbackPrompt: '发现问题或有新想法？欢迎在 GitHub 告诉我们。', reportBug: '报告问题', requestFeature: '功能建议',
     notFound: '页面不存在', notFoundDescription: '你访问的页面不存在。', returnHome: '返回首页',
+  },
+  languageSuggestion: {
+    title: '想使用中文浏览吗？', switch: '切换为中文', dismiss: '暂不切换',
   },
   footer: { project: '项目资源', contact: '联系与反馈', sendEmail: '发送邮件' },
   home: {
@@ -317,10 +343,18 @@ export const zhHans = {
     cidrSummary: '通过 JSON 提交 IPv4 或 IPv6 地址及 CIDR 网段。响应包含最小覆盖 CIDR、规范化输入和以十进制字符串表示的精确地址数。调用此 API 会将输入发送到服务器。',
     cidrResponse: '此示例返回 {{cidr}}，额外覆盖 {{additional}} 个地址。将结果用于允许列表或拦截列表之前，请检查 additionalAddressCount。',
     ipSummary: '返回本次 HTTP 连接所使用的公网 IP。请求 text/plain 可获得地址及一个换行符，请求 application/json 可获得地址和地址族。响应不缓存；使用 VPN 或代理会改变观察到的出口地址。',
+    subtractSummary: "从包含列表中精确扣除排除列表，返回最少规范 CIDR 列表和以十进制字符串表示的精确地址数。调用此 API 会将输入发送到服务器。",
+    subtractResponse: "此示例返回 {{cidrs}}，剩余 {{remaining}} 个地址，不增加额外覆盖。",
   },
   discovery: {
     subtract: {
       title: "关于 CIDR 扣除的常见问题",
+      mcpTitle: "通过 MCP 使用 CIDR 相减",
+      purpose: "让 AI 智能体从包含的地址空间中扣除排除网段，返回精确的剩余 CIDR 列表。",
+      inputs: "传入同一种地址族的 include 和 exclude 数组。include 必须非空，exclude 可以为空。两侧合计最多 {{maximumInputs}} 项，每项最多 {{maximumLength}} 个字符。",
+      result: "读取 cidrs 和以十进制字符串表示的 includedAddressCount、removedAddressCount、remainingAddressCount。全部扣除返回空列表；结果超过 {{maximumOutputs}} 个 CIDR 时返回错误，不返回部分列表。",
+      boundary: "远程 API 和 MCP 调用会将输入发送到服务器；网页在浏览器内计算。剩余范围只相对于输入，不证明实际网络中地址未被使用。工具不会配置 WireGuard 或修改防火墙规则。",
+      openTool: "打开浏览器相减工具",
       questions: {
         wireguard: {
           question: "如何生成 WireGuard AllowedIPs 的例外列表？",
@@ -340,7 +374,7 @@ export const zhHans = {
         },
         access: {
           question: "能通过 MCP、Web API 或 CLI 调用扣除吗？",
-          answer: "扣除目前在浏览器和共享计算核心中运行，浏览器输入保留在本地。MCP、Web API 和 CLI 提供覆盖 CIDR 与公网 IP 操作，尚未开放扣除。MCP 指南介绍这些已提供的操作。"
+          answer: "网页、Web API 和 MCP 均提供相减操作。浏览器输入保留在本地；API 和 MCP 调用会将输入发送到服务器。CLI 目前不提供相减操作。"
         }
       }
     },
@@ -408,13 +442,24 @@ export const zhHans = {
     }
   },
   mcp: {
+    navigation: "MCP 指南",
+    sdkTitle: "运行 Node.js 示例",
+    sdkDescription: "在新目录中，将下方代码保存为 <code>packetrove-example.mjs</code>，再运行命令。示例使用 <code>@modelcontextprotocol/client@{{version}}</code>，发现工具，并用文档专用地址调用覆盖 CIDR 工具。",
+    sdkLocal: "本地开发时，启动 <code>pnpm dev:api</code>，并将示例中的服务器地址改为 <code>{{localUrl}}</code>。",
+    httpErrors: "业务错误使用共享的错误 JSON。MCP SDK 处理协议校验错误。无效 JSON、不支持的媒体类型和过大的请求体会在 HTTP 层被拒绝。",
+    deploymentTitle: "部署与连接限制",
+    serverBehavior: "服务器支持现代无状态请求，以及旧版 Streamable HTTP 的初始化、工具发现和调用；不提供持久会话或独立的服务器事件流。",
+    connectionPrivacy: "每次工具调用分别读取公网 IP 连接信息，并为并发客户端隔离服务器实例。MCP 结果和错误使用 Cache-Control: no-store, no-transform。应用不保存或记录查询地址。",
+    toolMigration: "旧工具名称 <code>get_public_ip</code> 没有兼容别名。请刷新工具发现，并在已保存的调用中使用 <code>{{ipTool}}</code>。",
+    endpointMigration: "网站的 <code>/mcp</code> 路径不是服务端点：GET 返回 404，POST 返回 405，不会代理或重定向工具调用。请将客户端配置为 <code>{{serverUrl}}</code>。自建部署需更新域名及各自的 Host 与浏览器 Origin 精确允许列表；支持不带 Origin 请求头的非浏览器客户端。",
+    deploymentGuide: "部署、自托管与生产验证",
     title: "将 Packetrove 接入 AI 智能体",
-    explanation: "连接兼容 MCP 的客户端，计算覆盖 CIDR 或查看该客户端连接的公网地址。先按下方步骤接入，再参考工具示例。",
+    explanation: "连接兼容 MCP 的客户端来使用 Packetrove 网络工具。先按下方步骤接入，再参考工具示例。",
     connection: "Streamable HTTP · 无需账户或 API 密钥",
     connectTitle: "连接客户端",
     connectDescription: "安装 Claude Code 或 Codex 后，添加这个远程服务器。以下命令配置客户端，不会安装本地 Packetrove 服务器。",
     clientGuide: "{{client}} MCP 官方文档",
-    check: "在客户端中使用 <code>/mcp</code> 检查连接，确认 <code>{{cidrTool}}</code> 和 <code>{{ipTool}}</code> 已可用。",
+    check: "在客户端中使用 <code>/mcp</code> 检查连接。确认以下工具可用：<code>{{tools}}</code>。",
     discovery: "完成配置后，客户端通过 tools/list 发现工具，并根据工具描述和参数结构选择调用。阅读网页不会自动配置客户端或授予工具访问权限。",
     toolName: "工具名称",
     arguments: "示例参数",

@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextp
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
-  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
+  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
 } from '@packetrove/contracts';
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
@@ -53,6 +53,7 @@ for (const page of websitePages) {
     assert.equal(response.status, 200, `Page status: ${path}`);
     assert.match(response.headers.get('content-type') ?? '', /text\/html/);
     const pageHtml = await response.text();
+    assert(!/\{\{[^{}]*\}\}/.test(pageHtml), `Unresolved translation placeholder: ${path}`);
     const metadata = getPageMetadata(page.locale, page.page, page.path);
     assert(pageHtml.includes('<html lang="' + metadata.lang + '"'), `Page language: ${path}`);
     assert(pageHtml.includes('<title>' + escapeHtml(metadata.title) + '</title>'), `Page title: ${path}`);
@@ -70,6 +71,8 @@ for (const page of websitePages) {
     assert.equal(Array.from(pageHtml.matchAll(/<h1\b/g)).length, 1, `Single page heading: ${path}`);
     assert(new RegExp('<h1[^>]*>' + escapeHtml(heading) + '</h1>').test(pageHtml), `Prerendered heading: ${path}`);
     assert(pageHtml.includes('data-prerendered-path="' + page.pathname + '"'), `Prerendered page: ${path}`);
+    const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(pageHtml)?.[1] ?? '';
+    assert(navigation.includes('href="' + localizedPath(pagePaths.mcp, page.locale) + '"'), `Shared MCP navigation: ${path}`);
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
       ? text.api.cidrSummary : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
@@ -79,19 +82,27 @@ for (const page of websitePages) {
         assert(pageHtml.includes(escapeHtml(question.answer)), `Tool answer: ${path}`);
       }
     }
-    if (page.page === 'subtract') assert(!pageHtml.includes('data-mcp-tool='), `Subtraction remains browser-only: ${path}`);
     if (page.page !== 'mcp') {
       assert(pageHtml.includes('href="' + localizedPath(pagePaths.mcp, page.locale) + '"'), `MCP guide link: ${path}`);
     } else {
       assert(pageHtml.includes('claude mcp add --transport http --scope user packetrove'), `Claude Code setup: ${path}`);
       assert(pageHtml.includes('codex mcp add packetrove'), `Codex setup: ${path}`);
       assert(pageHtml.includes('structuredContent') && pageHtml.includes('CLIENT_IP_UNAVAILABLE'), `MCP result and error guide: ${path}`);
+      assert(pageHtml.includes('href="' + localizedPath(pagePaths.api, page.locale) + '"'), `MCP API reference link: ${path}`);
+      assert(pageHtml.includes('data-mcp-sdk-example') && pageHtml.includes('client.listTools()')
+        && pageHtml.includes('client.callTool('), `MCP SDK connection example: ${path}`);
     }
-    for (const tool of page.page === 'mcp' ? ['cidr', 'ip'] as const : page.page === 'cidr' || page.page === 'ip' ? [page.page] : []) {
+    const documentedTools = catalogTools.filter(tool => page.page === 'mcp' || page.page === tool.page);
+    assert.deepEqual(Array.from(pageHtml.matchAll(/data-mcp-tool="([^"]+)"/g), match => match[1]),
+      documentedTools.map(tool => tool.mcp.name), `MCP documentation catalog coverage: ${path}`);
+    for (const { page: tool } of documentedTools) {
       const example = mcpExamples[tool];
       assert(pageHtml.includes('data-mcp-tool="' + example.name + '"'), `MCP tool name: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.arguments, null, 2))), `MCP example arguments: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.result, null, 2))), `MCP example result: ${path}`);
+      const guidance = text.discovery[tool].result
+        .replaceAll('{{maximumOutputs}}', new Intl.NumberFormat(page.locale).format(MAX_SUBTRACTION_OUTPUTS));
+      assert(pageHtml.includes(escapeHtml(guidance)), `MCP result guidance: ${path}`);
       assert(pageHtml.includes(escapeHtml(text.discovery[tool].boundary)), `MCP tool limitations: ${path}`);
     }
   }
@@ -187,8 +198,9 @@ assert(specification.headers.get('etag'), 'Static specification must have an ETa
 assert.match(specification.headers.get('cache-control') ?? '', /\bmust-revalidate\b/);
 const document = await specification.json() as { openapi: string; paths: Record<string, unknown> };
 assert.equal(document.openapi, '3.1.0');
-assert(document.paths[CIDR_COVER_PATH], 'Missing calculator endpoint in the specification.');
-assert(document.paths[PUBLIC_IP_PATH], 'Missing public IP endpoint in the specification.');
+for (const tool of catalogTools) {
+  assert(document.paths[tool.api.path], `Missing tool endpoint in the specification: ${tool.id}`);
+}
 const publicIpResponse = await timedFetch(`${apiOrigin}${PUBLIC_IP_PATH}`, { cache: 'no-store', headers: { origin } });
 assert.equal(publicIpResponse.status, 200, 'Public IP API status');
 assert.equal(publicIpResponse.headers.get('access-control-allow-origin'), '*', 'Public IP must allow credential-free browser access.');
@@ -226,6 +238,14 @@ const invalid = await timedFetch(`${apiOrigin}${CIDR_COVER_PATH}`, {
 });
 assert.equal(invalid.status, 400);
 assert.equal((await invalid.json() as { error: { code: string } }).error.code, 'MIXED_ADDRESS_FAMILIES');
+for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
+  const response = await timedFetch(`${apiOrigin}${tool.api.path}`, {
+    method: tool.api.method.toUpperCase(), headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(tool.example.request),
+  });
+  assert.equal(response.status, 200, `API calculation status: ${tool.id}`);
+  assert.deepEqual(tool.outputSchema.parse(await response.json()), tool.example.result);
+}
 console.log('PASS health, OpenAPI, IPv4/IPv6 API results, and invalid input');
 
 const example = CIDR_COVER_EXAMPLES[1]!;
@@ -236,11 +256,15 @@ try {
   await client.connect(new StreamableHTTPClientTransport(new URL(`${apiOrigin}/mcp`), { fetch: mcpFetch }));
   assert.equal(client.getServerVersion()?.version, PACKETROVE_VERSION);
   const tools = (await client.listTools()).tools;
-  assert(tools.some(tool => tool.name === MCP_TOOL_NAME), 'Missing CIDR tool.');
-  assert(tools.some(tool => tool.name === PUBLIC_IP_TOOL_NAME), 'Missing public IP tool.');
+  assert.deepEqual(tools.map(tool => tool.name).sort(), catalogTools.map(tool => tool.mcp.name).sort(), 'MCP catalog coverage');
   const result = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
+  for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
+    const response = await client.callTool({ name: tool.mcp.name, arguments: tool.example.request });
+    assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
+    assert.deepEqual(response.structuredContent, tool.example.result);
+  }
   const publicIp = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
   assert.notEqual(publicIp.isError, true, 'Public IP tool failed.');
   assert(PublicIpResultSchema.safeParse(publicIp.structuredContent).success, 'Invalid public IP tool result.');
@@ -256,10 +280,16 @@ try {
   await legacyClient.connect(transport as LegacyTransportContract);
   assert.equal(legacyClient.getServerVersion()?.name, 'Packetrove');
   assert.equal(legacyClient.getServerVersion()?.version, PACKETROVE_VERSION);
-  assert.equal((await legacyClient.listTools()).tools[0]?.name, MCP_TOOL_NAME);
+  assert.deepEqual((await legacyClient.listTools()).tools.map(tool => tool.name).sort(),
+    catalogTools.map(tool => tool.mcp.name).sort(), 'Legacy MCP catalog coverage');
   const result = await legacyClient.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
+  for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
+    const response = await legacyClient.callTool({ name: tool.mcp.name, arguments: tool.example.request });
+    assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
+    assert.deepEqual(response.structuredContent, tool.example.result);
+  }
   const publicIp = await legacyClient.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
   assert.notEqual(publicIp.isError, true, 'Legacy public IP tool failed.');
   assert(PublicIpResultSchema.safeParse(publicIp.structuredContent).success, 'Invalid legacy public IP tool result.');

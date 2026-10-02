@@ -12,8 +12,9 @@ also deploy and verify production.
 
 ## Validation
 
-One standard Ubuntu 26.04 runner installs Node.js 24.21.0 LTS from
-`.node-version` and the pnpm version declared in the root `package.json`.
+One standard Ubuntu 26.04 runner installs Node.js from
+[.node-version](../.node-version) and the pnpm version declared in the root
+[package.json](../package.json).
 Dependencies are installed from the committed lockfile with
 `pnpm install --frozen-lockfile`. The pnpm package store is cached using that
 lockfile's hash.
@@ -22,6 +23,7 @@ The workflow runs `pnpm check`, which includes:
 
 - Type checks for every workspace and repository scripts.
 - Generated OpenAPI consistency and specification validation.
+- Generated MCP integration guide consistency with shared website content.
 - Production builds for the website and offline CLI.
 - Wrangler deployment dry runs for the API and website Workers.
 - Shared calculation, CLI, web application, website isolation, API, and MCP tests.
@@ -142,14 +144,11 @@ The release pull request is never automatically merged. Leaving it open holds
 npm publication while ordinary feature merges continue to deploy the services.
 
 The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
-write token in repository secrets. The initial `0.1.0` package is published,
-and its GitHub Release baseline and npm trusted-publisher configuration are
-established. GitHub App release preparation has been verified; the first new
-version upload will verify OIDC publication. See the
-[CLI publishing guide](cli-publishing.md) for GitHub App secrets, first-release
-setup, trusted-publisher fields, version rules, and recovery. Recovery skips
-publication preview and upload for an identical existing npm archive, verifies
-it independently, and rejects a collision with different package contents.
+write token in repository secrets. See the [CLI publishing guide](cli-publishing.md)
+for the GitHub App secrets, first-release baseline, trusted-publisher fields, version
+rules, and recovery. Recovery skips publication preview and upload for an identical
+existing npm archive, verifies it independently, and rejects a collision with
+different package contents.
 
 ## Cloudflare credentials
 
@@ -200,9 +199,11 @@ credentials are not persisted for subsequent build and test commands. Actions
 are pinned to full commit hashes, with release versions recorded in comments.
 When updating an action, verify its release and replace the pinned commit.
 
-Keep `.node-version` aligned with the Node.js LTS version verified in the README
-and the matching major version of `@types/node`. Update pnpm through the root
-`packageManager` field and regenerate the lockfile when changing dependencies.
+Keep [.node-version](../.node-version) aligned with the supported Node.js LTS
+release and the matching major version of `@types/node`. The
+[development setup](../CONTRIBUTING.md#getting-started) reads its toolchain pins
+from that file and the root `packageManager` field. Update pnpm through that field
+and regenerate the lockfile when changing dependencies.
 
 Prefer the default stable release channel and versions that satisfy the
 dependencies' declared peer requirements. Vitest stays on 4.1.11 while
