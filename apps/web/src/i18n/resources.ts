@@ -4,6 +4,7 @@ export const en = {
     language: 'Language', tools: 'IP ADDRESS TOOLS', copied: 'Copied', dismissCopy: 'Dismiss copy error',
     tagline: 'Network tools for humans and agents',
     source: 'View Packetrove on GitHub', sourceCommit: 'View source for commit {{commit}} on GitHub', sourceLicense: 'Source code: MIT',
+    feedbackPrompt: 'Found a bug or have an idea? Tell us on GitHub.', reportBug: 'Report a bug', requestFeature: 'Request a feature',
     notFound: 'Page not found', notFoundDescription: 'The page you requested does not exist.', returnHome: 'Return to home',
   },
   home: {
@@ -80,6 +81,7 @@ export const zhHans = {
     language: '语言', tools: 'IP 地址工具', copied: '已复制', dismissCopy: '关闭复制错误提示',
     tagline: '面向用户与智能体的网络工具',
     source: '在 GitHub 查看 Packetrove', sourceCommit: '在 GitHub 查看提交 {{commit}} 的源代码', sourceLicense: '源代码：MIT',
+    feedbackPrompt: '发现问题或有新想法？欢迎在 GitHub 告诉我们。', reportBug: '报告问题', requestFeature: '功能建议',
     notFound: '页面不存在', notFoundDescription: '你访问的页面不存在。', returnHome: '返回首页',
   },
   home: {

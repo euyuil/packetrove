@@ -1,5 +1,10 @@
 # Contributing
 
+Use the [bug report](https://github.com/euyuil/packetrove/issues/new?template=bug-report.yml)
+or [feature request](https://github.com/euyuil/packetrove/issues/new?template=feature-request.yml)
+form to share feedback in English or Simplified Chinese. The website footer
+links directly to these forms without attaching calculator inputs or IP results.
+
 For substantial changes, discuss the scope in a GitHub issue. For bugs, include
 reproduction steps, expected and actual results, and your environment. Use
 documentation IP addresses and keep credentials and private network data out
