@@ -93,6 +93,8 @@ describe('bundled offline CLI', () => {
     const execution = run(['--help']);
     expect(execution.status).toBe(0);
     expect(execution.stdout).toContain('packetrove cidr cover');
+    expect(execution.stdout).toContain('packetrove public-ip');
+    expect(execution.stdout).not.toContain('packetrove ip');
     expect(execution.stderr).toBe('');
   });
   it('runs from outside the workspace without installed dependencies or network access', () => {

@@ -36,7 +36,7 @@ describe('web internationalization', () => {
     render(<App />);
     expect(screen.getByRole('heading', { level: 1, name: '面向用户与智能体的网络工具' })).toBeDefined();
     expect(screen.getByRole('link', { name: '最小覆盖 CIDR' }).getAttribute('href')).toBe('/zh/cidr');
-    expect(screen.getByRole('link', { name: '我的公网 IP' }).getAttribute('href')).toBe('/zh/ip');
+    expect(screen.getByRole('link', { name: '我的公网 IP' }).getAttribute('href')).toBe('/zh/public-ip');
     expect(screen.getByRole('link', { name: '阅读 API 指南' }).getAttribute('href')).toBe('/zh/docs/api');
     expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'API 文档' })).toBeNull();
     expect(screen.getByRole('link', { name: '源代码：MIT' }).getAttribute('href')).toContain('/LICENSE');
@@ -197,7 +197,7 @@ describe('web internationalization', () => {
   });
 
   it('retains a pending IP lookup across a language change and does not query again', async () => {
-    window.history.replaceState({}, '', '/ip');
+    window.history.replaceState({}, '', '/public-ip');
     let resolve!: (response: Response) => void;
     let signal!: AbortSignal;
     const fetch = vi.fn((_url: string, options: RequestInit) => {
@@ -218,7 +218,7 @@ describe('web internationalization', () => {
   });
 
   it('retranslates stored IP errors and retries only on request', async () => {
-    window.history.replaceState({}, '', '/ip');
+    window.history.replaceState({}, '', '/public-ip');
     const fetch = vi.fn().mockRejectedValueOnce(new Error('Private connection detail'))
       .mockResolvedValueOnce(Response.json({ ip: '2001:db8::1', family: 'ipv6' }));
     vi.stubGlobal('fetch', fetch);

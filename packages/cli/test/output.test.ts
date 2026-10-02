@@ -74,11 +74,11 @@ describe('bundled CLI output streams', () => {
     const address = server.address();
     if (!address || typeof address === 'string') throw new Error('Missing local test server address');
     try {
-      const execution = await closeOutput(['ip', '--api-origin', `http://127.0.0.1:${address.port}`, '--json']);
+      const execution = await closeOutput(['public-ip', '--api-origin', `http://127.0.0.1:${address.port}`, '--json']);
       expect(execution.status).toBe(1);
       expect(execution.signal).toBeNull();
       expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error).toEqual(outputError);
-      expect(requestedPath).toBe('/v1/ip');
+      expect(requestedPath).toBe('/v1/public-ip');
     } finally {
       server.closeAllConnections();
       await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));

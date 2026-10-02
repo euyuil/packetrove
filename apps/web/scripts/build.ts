@@ -2,7 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'vite';
-import { escapeHtml, renderSitemap, robotsText, websitePages } from '../src/seo';
+import { escapeHtml, renderSitemap, robotsText, websitePages, websiteRedirects } from '../src/seo';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 await build({ root });
@@ -38,7 +38,9 @@ try {
   }
   await writeFile(join(root, 'dist/sitemap.xml'), renderSitemap());
   await writeFile(join(root, 'dist/robots.txt'), robotsText);
-  console.log('Prerendered ' + websitePages.length + ' localized pages and generated sitemap.xml and robots.txt.');
+  await writeFile(join(root, 'dist/_redirects'), websiteRedirects
+    .map(({ from, to }) => from + ' ' + to + ' 301').join('\n') + '\n');
+  console.log('Prerendered ' + websitePages.length + ' localized pages and generated sitemap.xml, robots.txt, and _redirects.');
 } finally {
   await rm(renderDirectory, { recursive: true, force: true });
 }
