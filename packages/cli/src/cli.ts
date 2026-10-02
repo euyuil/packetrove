@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createInterface } from 'node:readline';
 import { parseArgs } from 'node:util';
-import { MAX_INPUTS, PUBLIC_API_ORIGIN, PUBLIC_IP_PATH, type CidrCoverResult } from '@packetrove/contracts';
+import { MAX_INPUTS, PUBLIC_API_ORIGIN, PUBLIC_IP_NAME, PUBLIC_IP_PATH, type CidrCoverResult } from '@packetrove/contracts';
 import { lookupPublicIp, smallestCoveringCidr, ToolError } from '@packetrove/core';
 
 const help = `Packetrove: network tools for humans and agents.
@@ -9,7 +9,7 @@ const help = `Packetrove: network tools for humans and agents.
 Usage:
   packetrove cidr cover <IP-or-CIDR>... [--stdin] [--json]
   packetrove cidr cover --stdin [--json]
-  packetrove ip [--json] [--api-origin <origin>]
+  packetrove ${PUBLIC_IP_NAME} [--json] [--api-origin <origin>]
 
 Options:
   --stdin    Append one IP address or CIDR per nonblank standard-input line.
@@ -22,15 +22,15 @@ are rejected. CIDR host bits are normalized. Address counts include every
 address, with overlapping inputs counted once. A covering CIDR can include
 additional addresses; this command calculates a range without changing rules.
 
-CIDR calculations are offline. The ip command needs a network connection and
+CIDR calculations are offline. The public-ip command needs a network connection and
 prints this machine's observed exit address. A VPN or proxy can change it. One
 request observes IPv4 or IPv6; it does not separately probe both families.
 
 Examples:
   packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
   packetrove cidr cover --stdin --json < addresses.txt
-  packetrove ip
-  packetrove ip --json
+  packetrove public-ip
+  packetrove public-ip --json
 
 Exit status: 0 for success or help, 1 for errors.
 `;
@@ -106,9 +106,9 @@ async function main(): Promise<void> {
       return;
     }
     const [tool, command, ...inputs] = parsed.positionals;
-    if (tool === 'ip') {
+    if (tool === PUBLIC_IP_NAME) {
       if (command !== undefined || parsed.values.stdin) {
-        throw new ToolError('INVALID_INPUT', 'Use "packetrove ip" without positional inputs or --stdin.');
+        throw new ToolError('INVALID_INPUT', 'Use "packetrove public-ip" without positional inputs or --stdin.');
       }
       let origin: URL;
       const invalidOrigin = () => new ToolError('INVALID_INPUT', 'Use an HTTP or HTTPS API origin without credentials, a path, query, or fragment.');
@@ -120,10 +120,10 @@ async function main(): Promise<void> {
       return;
     }
     if (parsed.values['api-origin'] !== undefined) {
-      throw new ToolError('INVALID_INPUT', '--api-origin is only supported by "packetrove ip".');
+      throw new ToolError('INVALID_INPUT', '--api-origin is only supported by "packetrove public-ip".');
     }
     if (tool !== 'cidr' || command !== 'cover') {
-      throw new ToolError('INVALID_INPUT', 'Use "packetrove cidr cover" or "packetrove ip". Run "packetrove --help" for usage.');
+      throw new ToolError('INVALID_INPUT', 'Use "packetrove cidr cover" or "packetrove public-ip". Run "packetrove --help" for usage.');
     }
     if (parsed.values.stdin) await appendStandardInput(inputs);
     const result = smallestCoveringCidr({ inputs });

@@ -30,7 +30,7 @@ describe('public IP web tool', () => {
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
     expect(screen.getByText('IPv4')).toBeDefined();
     expect(fetch).toHaveBeenCalledTimes(1);
-    expect(fetch).toHaveBeenCalledWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith('https://api.packetrove.com/v1/public-ip', expect.objectContaining({
       cache: 'no-store', credentials: 'omit', redirect: 'error',
     }));
   });
@@ -41,7 +41,7 @@ describe('public IP web tool', () => {
     vi.stubGlobal('fetch', fetch);
     render(<PublicIpTool />);
     await screen.findByText('203.0.113.1');
-    expect(fetch).toHaveBeenCalledWith('https://api.example.com/v1/ip', expect.objectContaining({ credentials: 'omit' }));
+    expect(fetch).toHaveBeenCalledWith('https://api.example.com/v1/public-ip', expect.objectContaining({ credentials: 'omit' }));
   });
 
   it('queries and displays an IP without static AbortSignal helpers', async () => {
@@ -51,7 +51,7 @@ describe('public IP web tool', () => {
     render(<PublicIpTool />);
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
     expect(screen.queryByRole('alert')).toBeNull();
-    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/public-ip', expect.objectContaining({
       cache: 'no-store', credentials: 'omit', redirect: 'error',
     }));
   });
@@ -168,7 +168,7 @@ describe('public IP web tool', () => {
   });
 
   it('selects the IP page from its URL and provides navigation to the calculator', async () => {
-    window.history.replaceState({}, '', '/ip');
+    window.history.replaceState({}, '', '/public-ip');
     vi.stubGlobal('fetch', async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
     render(<App />);
     expect(screen.getByRole('heading', { name: 'My Public IP', level: 1 })).toBeDefined();

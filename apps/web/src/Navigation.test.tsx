@@ -58,7 +58,7 @@ describe('tool navigation in one page session', () => {
     expect(screen.getByText('203.0.113.0/30')).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
     openTool('My Public IP');
-    expect(window.location.pathname).toBe('/ip');
+    expect(window.location.pathname).toBe('/public-ip');
     expect(await screen.findByText('198.51.100.2')).toBeDefined();
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
     openTool('Smallest Covering CIDR');
@@ -66,7 +66,7 @@ describe('tool navigation in one page session', () => {
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe(input);
     expect(screen.getByText('203.0.113.0/30')).toBeDefined();
     expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', '203.0.113.2'] });
-    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/public-ip', expect.objectContaining({
       cache: 'no-store', credentials: 'omit',
     }));
   });
@@ -226,7 +226,7 @@ describe('navigation request and clipboard lifetimes', () => {
     render(<App />);
     expect(fetch).not.toHaveBeenCalled();
     openTool('My Public IP');
-    expect(window.location.pathname).toBe('/ip');
+    expect(window.location.pathname).toBe('/public-ip');
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(signal.aborted).toBe(false);
     fireEvent.click(screen.getByRole('link', { name: 'Home' }));

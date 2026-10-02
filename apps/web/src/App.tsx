@@ -7,7 +7,7 @@ import { PublicIpTool } from './PublicIpTool';
 import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
 import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
-import { localizedPath, resolveRoute } from './i18n/routes';
+import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 import ApiDocumentation from './ApiDocumentation';
 
@@ -72,7 +72,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
         <Button component="a" href={href('/cidr')} onClick={navigate} variant={cidrPage ? 'light' : 'subtle'}
           aria-current={cidrPage ? 'page' : undefined}>{t($ => $.cidr.title)}</Button>
-        <Button component="a" href={href('/ip')} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
+        <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
       <Box component="main">

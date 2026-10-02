@@ -23,6 +23,31 @@
 - Build web interfaces with Mantine components and the shared theme. Prefer
   component props and layout components before adding custom CSS.
 
+## Website URL names
+
+- English website pages have no language prefix, so the first path segment of
+  every canonical tool URL shares a namespace with locale prefixes. Use
+  descriptive lowercase names such as `/public-ip` and keep `/cidr`.
+- Reserve one-, two-, and three-letter names for languages, including codes for
+  languages not currently supported. Do not use tool names such as `/ip`, `/en`,
+  or `/fil`. The first hyphen-separated part of a tool's first path segment must
+  contain at least four characters.
+- Do not use language-tag names such as `/zh-CN`, `/zh-Hans`, `/en-US`, or
+  `/es-419`, regardless of case. Check longer names against registered language
+  tags and the locale registry in `apps/web/src/i18n/locales.ts`; length alone
+  is not a guarantee against a collision.
+- The locale-collision rule applies to website URL names. Keep the public IP
+  identifier consistent across interfaces: website `/public-ip`, API
+  `/v1/public-ip`, MCP tool `public-ip`, and CLI command `packetrove public-ip`.
+  API, MCP, and CLI use only these canonical names; do not add legacy aliases
+  unless explicitly requested. Response fields such as `ip` retain their shared
+  contract names.
+- When renaming a website URL, update navigation, localized static entries,
+  canonical and alternate links, the sitemap, tests, and documentation together.
+  Keep old URLs only as explicit compatibility aliases with permanent redirects;
+  exclude them from canonical links and the sitemap. Remove a conflicting alias
+  before introducing a locale prefix that would claim it.
+
 ## Pull request workflow
 
 - Make all repository changes on a dedicated branch based on the latest

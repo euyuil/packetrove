@@ -13,12 +13,12 @@ vi.mock('./ApiReference', () => ({ default: () => <>
   {(['pushState', 'replaceState'] as const).map(method => <button key={method} onClick={() => {
     const url = new URL(window.location.href);
     url.search = '?source=selected&mode=one';
-    url.hash = '#tag/Current-public-IP/get/v1/ip';
+    url.hash = '#tag/Current-public-IP/get/v1/public-ip';
     window.history[method](null, '', url);
   }}>Select API operation with {method}</button>)}
 </> }));
 
-const selectedSuffix = '?source=selected&mode=one#tag/Current-public-IP/get/v1/ip';
+const selectedSuffix = '?source=selected&mode=one#tag/Current-public-IP/get/v1/public-ip';
 const laterSuffix = '?source=later#tag/CIDR-cover/post/v1/cidr/cover';
 
 afterEach(() => {
