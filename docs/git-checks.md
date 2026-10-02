@@ -29,6 +29,11 @@ Node.js, Git, and Gitleaks must be available on `PATH` when committing, includin
 from a graphical Git client. Other operating systems can use a Gitleaks binary
 from the [official installation instructions](https://github.com/gitleaks/gitleaks#installing).
 
+Dependency installation runs only the reviewed scripts listed under
+`allowBuilds` in `pnpm-workspace.yaml`. Scalar's `vue-demi` installation script
+selects a local adapter for the installed Vue version. This dependency policy
+does not change the Git-hook setup or scanning requirements below.
+
 Setup writes `core.hooksPath = .githooks` to this repository's Git configuration.
 It does not change global Git settings or automatically replace existing custom
 hooks. Repeated installs are safe. Custom hooks or an unsuccessful automatic

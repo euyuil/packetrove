@@ -173,6 +173,7 @@ describe('readiness followed by the production smoke check across separate origi
       if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
       if (path === '/cidr' || path === '/cidr/') return send(response, 'text/html', '<title>Smallest Covering CIDR — Packetrove</title>');
       if (path === '/ip' || path === '/ip/') return send(response, 'text/html', '<title>My Public IP — Packetrove</title>');
+      if (path === '/docs/api' || path === '/docs/api/') return send(response, 'text/html', '<title>API documentation — Packetrove</title>');
       send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
     });
     const apiServer = createServer((request, response) => {
@@ -180,9 +181,14 @@ describe('readiness followed by the production smoke check across separate origi
       apiRequested.push(path);
       if (path.startsWith('/v1/')) response.setHeader('access-control-allow-origin', '*');
       if (path === '/health') return send(response, 'application/json', JSON.stringify({ status: failed === 'API' ? 'broken' : 'ok' }));
-      if (path === '/openapi.json') return send(response, 'application/json', JSON.stringify({
-        openapi: '3.1.0', paths: { '/v1/cidr/cover': {}, '/v1/ip': {} },
-      }));
+      if (path === '/openapi.json') {
+        response.setHeader('access-control-allow-origin', '*');
+        response.setHeader('etag', '"specification"');
+        response.setHeader('cache-control', 'public, max-age=0, must-revalidate');
+        return send(response, 'application/json', JSON.stringify({
+          openapi: '3.1.0', paths: { '/v1/cidr/cover': {}, '/v1/ip': {} },
+        }));
+      }
       if (path === '/v1/ip') {
         response.setHeader('cache-control', 'no-store');
         return send(response, 'application/json', JSON.stringify({ ip: '203.0.113.1', family: 'ipv4' }));

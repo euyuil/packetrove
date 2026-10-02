@@ -58,7 +58,7 @@ export function HomePage({ onNavigate, documentationUrl }: {
         <Stack gap="xs">
           <Title order={3} size="h4">Web API</Title>
           <Text size="sm" c="dimmed">Call the hosted tools and receive structured JSON results without an API key.</Text>
-          <Anchor size="sm" href={`${documentationUrl}/docs/api/README.md`}>Read the API guide</Anchor>
+          <Anchor size="sm" href="/docs/api" onClick={onNavigate}>Read the API guide</Anchor>
         </Stack>
         <Stack gap="xs">
           <Title order={3} size="h4">Command-line interface</Title>

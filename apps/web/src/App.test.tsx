@@ -35,10 +35,10 @@ describe('web page routing', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('links API documentation to the separate API origin', () => {
+  it('links to the API documentation page', () => {
     render(<App />);
-    expect(screen.getByRole('link', { name: /API specification/ }).getAttribute('href'))
-      .toBe('https://api.packetrove.com/openapi.json');
+    expect(screen.getByRole('link', { name: 'API documentation' }).getAttribute('href'))
+      .toBe('/docs/api');
   });
 
   it.each(['/missing-page', '/ip/missing-page', '/cidr/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {
@@ -101,7 +101,7 @@ describe('GitHub source link', () => {
     expect(within(link).getByText('0123456')).toBeDefined();
     expect(link.getAttribute('title')).toContain(commit);
     expect(screen.getByRole('link', { name: 'Read the API guide' }).getAttribute('href'))
-      .toBe(`https://github.com/example-owner/packetrove/blob/${commit}/docs/api/README.md`);
+      .toBe('/docs/api');
   });
 });
 

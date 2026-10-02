@@ -88,7 +88,43 @@ describe('API in the Workers runtime', () => {
     expect(await (await exports.default.fetch('http://localhost/health')).json()).toEqual({ status: 'ok' });
     expect(await (await exports.default.fetch('http://localhost/openapi.json')).json()).toEqual(createOpenApiDocument());
   });
-  it.each(['/', '/cidr', '/ip', '/assets/main.js', '/api/v1/ip', '/api/openapi.json'])('does not serve website assets or old API paths at %s', async path => {
+  it('serves the specification with anonymous CORS, a content ETag, and no application cookies', async () => {
+    const response = await exports.default.fetch('http://localhost/openapi.json', {
+      headers: { origin: 'https://client.example' },
+    });
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('application/json');
+    expect(response.headers.get('access-control-allow-origin')).toBe('*');
+    expect(response.headers.get('access-control-allow-credentials')).toBeNull();
+    expect(response.headers.get('set-cookie')).toBeNull();
+    expect(response.headers.get('cache-control')).toBe('public, max-age=0, must-revalidate');
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    const etag = response.headers.get('etag');
+    expect(etag).toBeTruthy();
+    const unchanged = await exports.default.fetch('http://localhost/openapi.json', {
+      headers: { 'if-none-match': etag! },
+    });
+    expect(unchanged.status).toBe(304);
+    expect(await unchanged.text()).toBe('');
+    const head = await exports.default.fetch('http://localhost/openapi.json', { method: 'HEAD' });
+    expect(head.status).toBe(200);
+    expect(head.headers.get('etag')).toBe(etag);
+    expect(await head.text()).toBe('');
+  });
+  it('allows browser access to every documented endpoint and preserves structured specification method errors', async () => {
+    const health = await exports.default.fetch('http://localhost/health', { headers: { origin: 'https://client.example' } });
+    expect(health.headers.get('access-control-allow-origin')).toBe('*');
+    const preflight = await exports.default.fetch('http://localhost/openapi.json', {
+      method: 'OPTIONS', headers: { origin: 'https://client.example', 'access-control-request-method': 'GET' },
+    });
+    expect(preflight.status).toBe(204);
+    expect(preflight.headers.get('access-control-allow-origin')).toBe('*');
+    const unsupported = await exports.default.fetch('http://localhost/openapi.json', { method: 'POST' });
+    expect(unsupported.status).toBe(405);
+    expect(unsupported.headers.get('allow')).toBe('GET, HEAD');
+    expect(ErrorResponseSchema.parse(await unsupported.json()).error.code).toBe('METHOD_NOT_ALLOWED');
+  });
+  it.each(['/', '/cidr', '/ip', '/docs/api', '/assets/main.js', '/_headers', '/api/v1/ip', '/api/openapi.json'])('does not serve website assets or old API paths at %s', async path => {
     const response = await exports.default.fetch(`http://localhost${path}`, {
       headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
     });
