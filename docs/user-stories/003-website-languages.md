@@ -38,9 +38,11 @@ network results and share a link in my preferred language.
 - Switch the current page in place, preserving calculator input, results, and
   validation errors. Retranslate stored errors and clipboard feedback.
 - After navigating to a different page in the same tab, including browser back
-  and forward, focus the named main content region with the shared Mantine focus
-  outline. Keep it outside the sequential tab order and preserve browser scroll
-  behavior. Initial rendering and hydration, same-page language or URL suffix
+  and forward, focus the named main content region without drawing an outline
+  around the entire region. Keep it outside the sequential tab order and preserve
+  browser scroll behavior. Tab continues to the first interactive control in the
+  region; buttons, links, and inputs retain their own visible keyboard focus
+  indicators. Initial rendering and hydration, same-page language or URL suffix
   changes, input editing, and IP lookup updates do not move focus to this region.
 - Keep an ongoing or completed public IP lookup when switching languages.
   Only opening the tool or explicitly refreshing it initiates a lookup.
