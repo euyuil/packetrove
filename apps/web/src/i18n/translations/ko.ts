@@ -16,7 +16,7 @@ export const ko = {
   footer: { project: '프로젝트', contact: '문의 및 의견', sendEmail: '이메일 보내기' },
   home: {
     galleryTitle: "도구 둘러보기",
-    galleryDescription: "도구 이름을 선택하거나 카드를 스와이프해 예제를 살펴본 다음 필요한 도구를 여세요.",
+    galleryDescription: "좌우 화살표를 누르거나 카드를 스와이프해 예제를 살펴본 다음 필요한 도구를 여세요.",
     galleryPrevious: "이전 도구",
     galleryNext: "다음 도구",
     galleryPosition: "{{total}}개 중 {{current}}번째",
