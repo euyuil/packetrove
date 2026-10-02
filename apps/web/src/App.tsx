@@ -1,10 +1,11 @@
-import { useEffect, useState, type MouseEvent } from 'react';
-import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
+import { lazy, Suspense, useEffect, useState, type MouseEvent } from 'react';
+import { Anchor, Box, Button, Container, Divider, Group, Loader, Stack, Text, Title } from '@mantine/core';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
 import { HomePage } from './HomePage';
-import { getApiUrl } from './api';
+
+const ApiDocumentation = lazy(() => import('./ApiDocumentation'));
 
 export function App() {
   const [pathname, setPathname] = useState(() => window.location.pathname);
@@ -13,8 +14,9 @@ export function App() {
   const homePage = path === '/' || path === '/index.html';
   const ipPage = path === '/ip' || path === '/ip.html';
   const cidrPage = path === '/cidr' || path === '/cidr.html';
+  const apiPage = path === '/docs/api' || path === '/docs/api.html';
   const pageTitle = homePage ? 'Packetrove — Network tools for humans and agents'
-    : `${ipPage ? 'My Public IP' : cidrPage ? 'Smallest Covering CIDR' : 'Page not found'} — Packetrove`;
+    : `${ipPage ? 'My Public IP' : cidrPage ? 'Smallest Covering CIDR' : apiPage ? 'API documentation' : 'Page not found'} — Packetrove`;
   const repository = import.meta.env.VITE_GITHUB_REPOSITORY || 'euyuil/packetrove';
   const commit = import.meta.env.VITE_GIT_COMMIT;
   const sourceUrl = `https://github.com/${repository}${commit ? `/tree/${commit}` : ''}`;
@@ -38,7 +40,7 @@ export function App() {
     setPathname(window.location.pathname);
   }
 
-  return <Container size="lg" px={{ base: 'md', sm: 'xl' }} py="xl">
+  return <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py="xl">
     <Stack gap="xl">
       <Group component="header" justify="space-between">
         <Anchor href="/" onClick={navigate} aria-label="Packetrove home" underline="never" c="var(--mantine-color-text)">
@@ -47,8 +49,8 @@ export function App() {
             <Text component="span" size="xl" fw={700}>Packetrove</Text>
           </Group>
         </Anchor>
-        <Anchor size="sm" href={getApiUrl('/openapi.json')}>
-          API specification <span aria-hidden="true">↗</span>
+        <Anchor size="sm" href="/docs/api" onClick={navigate} aria-current={apiPage ? 'page' : undefined}>
+          API documentation
         </Anchor>
       </Group>
       <Divider />
@@ -61,8 +63,11 @@ export function App() {
           aria-current={ipPage ? 'page' : undefined}>My Public IP</Button>
       </Group>
       <Box component="main">
-        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} />
-          : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} /> : <Stack component="section" py="xl">
+        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
+          : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
+          : apiPage ? <Suspense fallback={<Group role="status"><Loader size="sm" /><Text>Loading API documentation…</Text></Group>}>
+            <ApiDocumentation />
+          </Suspense> : <Stack component="section" py="xl">
           <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>Page not found</Title>
           <Text c="dimmed">The page you requested does not exist.</Text>

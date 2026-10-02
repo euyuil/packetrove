@@ -4,6 +4,25 @@ The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
 locally without a Worker, Cloudflare account, or network connection. The `ip`
 command queries the current connection through an IP lookup API.
 
+## Install from source
+
+The CLI is not published to npm. With Git, Node.js, and pnpm installed, clone
+the repository, build a package, and install that local archive:
+
+```sh
+git clone https://github.com/euyuil/packetrove.git
+cd packetrove
+pnpm install
+pnpm --filter @packetrove/cli pack --pack-destination "$PWD"
+npm install --global ./packetrove-cli-0.1.0.tgz
+packetrove ip
+```
+
+Use the Node.js version in `.node-version` and the pnpm version in `package.json`.
+The pack command builds the bundled executable before creating the archive.
+`packetrove ip` prints the current public IP and a newline; `packetrove ip --json`
+prints the shared JSON result.
+
 ## Run from the repository
 
 Install dependencies and build once using a supported Node.js version:
@@ -45,12 +64,20 @@ node packages/cli/dist/cli.js cidr cover --stdin --json < addresses.txt
 Without `--json`, output includes the CIDR, range, exact counts, normalized
 inputs, and an explanation when the result covers additional addresses.
 
-With `--json`, success writes the shared result object to stdout. Failure writes
-the shared error object to stderr and leaves stdout empty. JSON error issue
+With `--json`, success writes the shared result object to stdout. Failures before
+output begins write the shared error object to stderr and leave stdout empty.
+JSON error issue
 indexes are zero-based positions in the combined input list. Readable errors
 display one-based input numbers. Address counts remain decimal strings, including
 IPv6 counts larger than JavaScript's safe integer limit. Exit status is `0` for
 success or help and `1` for errors. Use `packetrove --help` for usage.
+
+If stdout cannot be written, including when a pipe receiver closes early, the
+CLI reports `INTERNAL_ERROR` to stderr in the selected JSON or readable format
+and exits with status `1`. Already written stdout bytes cannot be withdrawn, so
+a failed write may leave partial output. A receiver closing after the output has
+been accepted can still complete successfully. If stderr is also unavailable,
+the error cannot be delivered; the CLI retains status `1` without a native stack.
 
 For the three IPv4 addresses above, the result is `203.0.113.0/29`, with
 `inputAddressCount: "3"`, `coveredAddressCount: "8"`, and
@@ -106,8 +133,8 @@ pnpm --filter @packetrove/cli pack --pack-destination /tmp/packetrove-artifacts
 ```
 
 The package declares a `packetrove` executable for clients that install the
-tarball. No package has been published to npm, and this delivery does not
-install it globally.
+tarball. Packing alone does not install it; the source-install commands above
+install the archive globally. No package has been published to npm.
 
 `pnpm check` also packs the CLI in a temporary workspace, installs that archive
 offline in an isolated consumer, and runs the installed `packetrove` command.

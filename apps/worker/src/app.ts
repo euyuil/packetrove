@@ -1,20 +1,20 @@
 import { Hono } from 'hono';
+import { accepts } from 'hono/accepts';
 import { cors } from 'hono/cors';
 import { CIDR_COVER_PATH, PUBLIC_IP_PATH, type ErrorResponse } from '@packetrove/contracts';
-import { createOpenApiDocument } from '@packetrove/contracts/openapi';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
 import { mcpHandler } from './mcp';
 import { getPublicIp } from './ip';
 
 export function createApp() {
-  const app = new Hono();
-  const specification = createOpenApiDocument();
-  for (const path of ['/v1/*', '/openapi.json']) {
+  const app = new Hono<{ Bindings: Cloudflare.Env }>();
+  for (const path of ['/v1/*', '/health', '/openapi.json']) {
     app.use(path, cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
   }
   app.use(PUBLIC_IP_PATH, async (context, next) => {
     context.header('Cache-Control', 'no-store');
+    context.header('Vary', 'Accept', { append: true });
     await next();
   });
   app.onError((error, context) => {
@@ -32,9 +32,16 @@ export function createApp() {
     const body = await readJsonBody(context.req.raw);
     return context.json(smallestCoveringCidr(body));
   });
-  app.get(PUBLIC_IP_PATH, context => context.json(getPublicIp(context.req.raw.headers)));
+  app.get(PUBLIC_IP_PATH, context => {
+    const result = getPublicIp(context.req.raw.headers);
+    const format = accepts(context, {
+      header: 'Accept', supports: ['application/json', 'text/plain'], default: 'application/json',
+    });
+    return format === 'text/plain' ? context.text(`${result.ip}\n`) : context.json(result);
+  });
   app.get('/health', context => context.json({ status: 'ok' }));
-  app.get('/openapi.json', context => context.json(specification));
+  // Asset-first routing serves normal requests without invoking this handler.
+  app.get('/openapi.json', context => context.env.OPENAPI_ASSETS.fetch(context.req.raw));
   app.use('/mcp', async (context, next) => {
     await next();
     context.header('Cache-Control', 'no-store, no-transform');

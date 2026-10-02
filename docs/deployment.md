@@ -7,6 +7,11 @@ it does not call the API for calculations. GitHub Actions builds and publishes u
 after validation succeeds, then runs production smoke checks. Local publishing
 with Wrangler is also available.
 
+The website's `/docs/api` page provides a Scalar API reference. The API serves
+`/openapi.json` through Static Assets; test calls to dynamic endpoints execute
+the API Worker. These changes become live after this revision is deployed.
+Workers Cache is not required or enabled by the repository.
+
 This revision migrates the API and MCP to their separate origin. New production
 URLs become available after deployment and domain provisioning; local validation
 alone does not establish that they are live. Existing clients must update their
@@ -56,7 +61,7 @@ The deployment configurations are:
 
 | Configuration | Worker | Hostname | Content |
 | --- | --- | --- | --- |
-| [`wrangler.jsonc`](../apps/worker/wrangler.jsonc) | `packetrove-api` | `api.packetrove.com` | `/v1/*`, `/openapi.json`, `/health`, and `/mcp` |
+| [`wrangler.jsonc`](../apps/worker/wrangler.jsonc) | `packetrove-api` | `api.packetrove.com` | Static `/openapi.json`; dynamic `/v1/*`, `/health`, and `/mcp` |
 | [`wrangler.website.jsonc`](../apps/worker/wrangler.website.jsonc) | `packetrove` | `packetrove.com` | Static website and assets |
 
 Both configurations disable the `workers.dev` route and per-version preview URLs
@@ -65,15 +70,23 @@ deployments do not restore alternative public URLs. See the
 [Cloudflare workers.dev guide](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/).
 
 The website keeps Cloudflare's static asset serving path. Its fallback handler
-only fetches assets. The API Worker has no asset binding and returns structured
-JSON 404 errors for website paths and unknown endpoints, including browser
-navigation. Separating deployments prevents website scripts from being served
-from the API origin.
+only fetches assets. The API Worker publishes a separate static directory
+containing only the generated `openapi.json` and its `_headers` configuration.
+Asset-first routing serves the specification without invoking the Worker
+script; `_headers` allows anonymous cross-origin reads. Default ETags and
+browser revalidation keep the document current across deployments. The asset
+binding provides a fallback for direct Worker calls, while ordinary requests
+use the asset-first path. Unknown paths still invoke the Worker and return
+structured JSON 404 errors, including browser navigation. Website scripts are
+not published to the API origin. Keep Workers Cache disabled and do not enable
+Worker-first routing for `/openapi.json` when free static-asset requests are
+desired.
 
-Vite builds `index.html`, `cidr.html`, `ip.html`, and `404.html` with shared
+Vite builds `index.html`, `cidr.html`, `ip.html`, `docs/api.html`, and `404.html` with shared
 JavaScript and styles. Cloudflare serves the project homepage at `/`, the CIDR
-calculator at `/cidr`, and My Public IP at `/ip` directly, and uses `404-page`
-handling for unknown paths. `/cidr/` and `/ip/` redirect to their canonical
+calculator at `/cidr`, My Public IP at `/ip`, and API documentation at
+`/docs/api` directly, and uses `404-page`
+handling for unknown paths. `/cidr/`, `/ip/`, and `/docs/api/` redirect to their canonical
 paths without the trailing slash. API routes continue to return structured
 JSON errors, including for browser navigation.
 See [Cloudflare's static HTML routing guide](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).

@@ -4,6 +4,13 @@
 schemas and generator, then run `pnpm spec:generate`. `pnpm spec:check` verifies
 that the committed document matches its source and validates OpenAPI semantics.
 
+The [interactive API documentation](https://packetrove.com/docs/api) renders
+this specification with Scalar and supports request examples and browser-based
+test calls. Test requests go directly to the configured API without cookies or
+a third-party proxy. Calculation inputs entered into the documentation's test
+client are sent to the API; the website's CIDR calculator continues to run
+locally in the browser.
+
 ## Smallest covering CIDR
 
 The configured production base URL is `https://api.packetrove.com`. The
@@ -43,7 +50,16 @@ addresses. The tool calculates a result and does not edit firewall rules.
 ## Current public IP
 
 `GET /v1/ip` takes no request body and returns the address observed for the
-current request, for example:
+current request. For a plain-text address suitable for shell commands:
+
+```sh
+curl -fsS https://api.packetrove.com/v1/ip \
+  -H 'Accept: text/plain'
+```
+
+This success response has `Content-Type: text/plain; charset=UTF-8` and contains
+only the IPv4 or IPv6 address followed by a newline. With no `Accept` header or
+with `Accept: application/json`, the response remains JSON, for example:
 
 ```json
 { "ip": "203.0.113.1", "family": "ipv4" }
@@ -54,7 +70,9 @@ observes one address family; it does not separately discover both addresses.
 With a VPN or proxy this is the exit address. A hosted client observes its own
 connection, which may differ from a user's browser or computer.
 
-Responses use `Cache-Control: no-store`. The application does not retain or log
+IP responses include `Vary: Accept`. Errors remain structured JSON, including
+when plain text is requested. Results and errors use `Cache-Control: no-store`.
+The application does not retain or log
 the result. Cloudflare connection headers supply the address in the production
 deployment; arbitrary forwarded headers, query parameters, or request bodies
 cannot supply a substitute. Missing or invalid connection metadata returns
@@ -80,7 +98,10 @@ methods on known endpoints return `405` with an `Allow` header.
 ## Service metadata
 
 `GET /health` returns `{ "status": "ok" }`.
-`GET /openapi.json` returns the generated specification.
+`GET /openapi.json` serves the generated specification through Cloudflare
+Static Assets, ahead of the Worker script. It supports `HEAD`, ETag-based
+revalidation, and anonymous cross-origin access. Each deployment publishes the
+validated specification from the same source as the API contracts.
 
 The contract specifies anonymous access. Implementation and deployment status
 are tracked in the repository README.

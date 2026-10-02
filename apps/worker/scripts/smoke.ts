@@ -41,14 +41,16 @@ assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
 const html = await website.text();
 assert.match(html, /<title>Packetrove — Network tools for humans and agents<\/title>/);
-for (const path of ['/cidr', '/cidr/', '/ip', '/ip/']) {
+for (const path of ['/cidr', '/cidr/', '/ip', '/ip/', '/docs/api', '/docs/api/']) {
   const toolPage = await timedFetch(`${origin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });
   assert.equal(toolPage.status, 200, `Tool page status: ${path}`);
   assert.match(toolPage.headers.get('content-type') ?? '', /text\/html/);
   assert.match(await toolPage.text(), path.startsWith('/cidr')
-    ? /<title>Smallest Covering CIDR — Packetrove<\/title>/ : /<title>My Public IP — Packetrove<\/title>/);
+    ? /<title>Smallest Covering CIDR — Packetrove<\/title>/
+    : path.startsWith('/docs/api') ? /<title>API documentation — Packetrove<\/title>/
+    : /<title>My Public IP — Packetrove<\/title>/);
 }
 const missingPage = await timedFetch(`${origin}/missing-page`, {
   headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
@@ -72,7 +74,7 @@ for (const path of ['/api/v1/cidr/cover', '/mcp']) {
   assert.equal(response.status, 405, `Website must reject tool-call POST requests: ${path}`);
   await response.body?.cancel();
 }
-for (const path of ['/', '/cidr', '/ip', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
+for (const path of ['/', '/cidr', '/ip', '/docs/api', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
   const response = await timedFetch(`${apiOrigin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });
@@ -110,8 +112,13 @@ if (expectedCommit) {
 const health = await timedFetch(`${apiOrigin}/health`);
 assert.equal(health.status, 200, 'Health status');
 assert.deepEqual(await health.json(), { status: 'ok' });
-const specification = await timedFetch(`${apiOrigin}/openapi.json`);
+const specification = await timedFetch(`${apiOrigin}/openapi.json`, { headers: { origin } });
 assert.equal(specification.status, 200, 'Specification status');
+assert.equal(specification.headers.get('access-control-allow-origin'), '*', 'Specification must allow browser access.');
+assert.equal(specification.headers.get('access-control-allow-credentials'), null);
+assert.equal(specification.headers.get('set-cookie'), null);
+assert(specification.headers.get('etag'), 'Static specification must have an ETag.');
+assert.match(specification.headers.get('cache-control') ?? '', /\bmust-revalidate\b/);
 const document = await specification.json() as { openapi: string; paths: Record<string, unknown> };
 assert.equal(document.openapi, '3.1.0');
 assert(document.paths[CIDR_COVER_PATH], 'Missing calculator endpoint in the specification.');
@@ -125,6 +132,21 @@ assert.equal(publicIpResponse.headers.get('cache-control'), 'no-store', 'Public 
 // Validate without printing the address into public deployment logs.
 assert(PublicIpResultSchema.safeParse(await publicIpResponse.json()).success, 'Invalid public IP result.');
 console.log('PASS public IP API result and no-store header');
+const plainIpResponse = await timedFetch(`${apiOrigin}${PUBLIC_IP_PATH}`, {
+  cache: 'no-store', headers: { accept: 'text/plain' },
+});
+assert.equal(plainIpResponse.status, 200, 'Plain-text public IP API status');
+assert.match(plainIpResponse.headers.get('content-type') ?? '', /^text\/plain(?:;|$)/);
+assert.equal(plainIpResponse.headers.get('cache-control'), 'no-store', 'Plain-text IP results must not be stored.');
+assert(plainIpResponse.headers.get('vary')?.split(',').some(value => value.trim().toLowerCase() === 'accept'),
+  'Public IP response format must vary by Accept.');
+const plainIp = await plainIpResponse.text();
+assert(plainIp.endsWith('\n'), 'Plain-text IP result must end with a newline.');
+const ip = plainIp.slice(0, -1);
+// Keep actual lookup addresses out of assertion output and deployment logs.
+assert(PublicIpResultSchema.safeParse({ ip, family: ip.includes(':') ? 'ipv6' : 'ipv4' }).success,
+  'Invalid plain-text public IP result.');
+console.log('PASS plain-text public IP API result and no-store header');
 for (const example of CIDR_COVER_EXAMPLES) {
   const response = await timedFetch(`${apiOrigin}${CIDR_COVER_PATH}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(example.request),

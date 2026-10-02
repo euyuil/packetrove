@@ -47,16 +47,25 @@ export function createOpenApiDocument() {
   registry.registerPath({
     method: 'get', path: PUBLIC_IP_PATH, operationId: 'getPublicIp', tags: ['IP'],
     summary: 'Get the IP address observed for the current request',
-    description: 'Returns one IPv4 or IPv6 address from the current connection to Packetrove. With a VPN or proxy this is its exit address. A hosted caller observes its own connection, not a user device behind it. It does not discover local addresses or separately probe both address families. The Cloudflare deployment reads edge-provided connection headers, including preserved IPv6 when Pseudo IPv4 overwrites headers. Results and errors are not cached; the application does not store or log the returned IP address.',
+    description: 'Returns one IPv4 or IPv6 address from the current connection to Packetrove. Request Accept: text/plain for the address followed by a newline; JSON is the default. Errors remain structured JSON in either format. With a VPN or proxy this is its exit address. A hosted caller observes its own connection, not a user device behind it. It does not discover local addresses or separately probe both address families. The Cloudflare deployment reads edge-provided connection headers, including preserved IPv6 when Pseudo IPv4 overwrites headers. Results and errors are not cached; the application does not store or log the returned IP address.',
     security: [],
     responses: {
       200: {
-        description: 'The IP address and matching address family observed for this request.',
-        headers: { 'Cache-Control': { description: 'Do not store this per-request result.', schema: { type: 'string', const: 'no-store' } } },
-        content: { 'application/json': { schema: publicIp, examples: {
-          ipv4: { value: { ip: '203.0.113.1', family: 'ipv4' } },
-          ipv6: { value: { ip: '2001:db8::1', family: 'ipv6' } },
-        } } },
+        description: 'The observed address as JSON with its address family, or as plain text when requested.',
+        headers: {
+          'Cache-Control': { description: 'Do not store this per-request result.', schema: { type: 'string', const: 'no-store' } },
+          Vary: { description: 'The response format depends on the Accept header.', schema: { type: 'string', const: 'Accept' } },
+        },
+        content: {
+          'application/json': { schema: publicIp, examples: {
+            ipv4: { value: { ip: '203.0.113.1', family: 'ipv4' } },
+            ipv6: { value: { ip: '2001:db8::1', family: 'ipv6' } },
+          } },
+          'text/plain': {
+            schema: { type: 'string', description: 'One IPv4 or IPv6 address followed by a newline.' },
+            examples: { ipv4: { value: '203.0.113.1\n' }, ipv6: { value: '2001:db8::1\n' } },
+          },
+        },
       },
       503: errorResponse('CLIENT_IP_UNAVAILABLE: edge connection information is missing or invalid. No guessed or caller-supplied forwarded address is returned.'),
       405: errorResponse('Method is not supported for this endpoint.'),

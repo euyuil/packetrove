@@ -2,6 +2,10 @@ packages:
   - packages/*
   - apps/*
 minimumReleaseAge: 1440
+overrides:
+  # Scalar's pinned transitive versions precede these security fixes.
+  'undici@7.29.0': '7.29.1'
+  '@ai-sdk/provider-utils@4.0.5': '4.0.33'
 minimumReleaseAgeExclude:
   # The test plugin adopts the patched local runtime used by Wrangler.
   - '@cloudflare/vitest-plugin@1.3.4'
@@ -12,5 +16,7 @@ minimumReleaseAgeExclude:
 allowBuilds:
   esbuild: true
   workerd: true
+  # Scalar uses Vue 3; this script selects vue-demi's matching local adapter.
+  vue-demi: true
   # This postinstall only displays a funding message.
   core-js-pure: false
