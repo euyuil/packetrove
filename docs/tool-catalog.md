@@ -32,6 +32,13 @@ files, indexed by the catalog's page keys. The catalog contains no React
 components or browser state. Tool-specific views can choose an appropriate
 presentation while consuming shared facts and examples.
 
+Tool pages share `ToolPageHeader` for catalog-indexed titles and descriptions,
+and `ToolPanel` for labelled input and result sections. Pass the tool's localized
+processing notice to the header and its fields or result content to the panel.
+`ToolExamples` and `ToolExampleCard` provide the shared example layout; keep
+example inputs and results sourced from the catalog. Calculation, lookup,
+validation, draft, and result state belong to each tool's view.
+
 The website MCP guide and `docs/integrations/mcp.md` consume the shared content
 model in `apps/web/src/mcp-guide.ts`. It combines catalog entries and examples
 with localized prose and client commands. Generate the English repository
@@ -46,8 +53,9 @@ guide with `pnpm docs:mcp:generate`; do not edit that output manually.
    identifiers and check website paths against locale names.
 3. Implement the shared calculation or lookup. Add the server handler to the
    exhaustive `ToolPage` map in `apps/worker/src/tools.ts`, and the website view
-   to the exhaustive map in `apps/web/src/App.tsx`. Use only current-request
-   connection metadata for lookups.
+   to the exhaustive map in `apps/web/src/App.tsx`. Reuse the shared page header,
+   panels, and example components. Use only current-request connection metadata
+   for lookups.
 4. Add the title, homepage description and link, API summary, and MCP guidance
    for every supported locale. Descriptions must match the actual semantics
    and explain local versus remote input processing.
