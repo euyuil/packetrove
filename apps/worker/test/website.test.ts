@@ -26,9 +26,11 @@ describe('website in the Workers runtime', () => {
     expect(html).toMatch(new RegExp('<h1[^>]*>' + heading + '</h1>'));
     expect(html).toContain('<main');
     expect(html).toContain('href="' + localizedPath('/cidr', locale) + '"');
+    expect(html).toContain('href="' + localizedPath('/cidr/subtract', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
+      expect(html).toContain(text.home.subtractDescription);
       expect(html).toContain(text.home.ipDescription);
     } else if (page === 'cidr') {
       expect(html).toContain(text.cidr.explanation);
@@ -36,6 +38,14 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('2001:db8::/63');
       expect(html).toContain(new Intl.NumberFormat(locale).format(36_893_488_147_419_103_232n));
       expect(html).toContain('<textarea');
+      expect(html).not.toMatch(/<textarea[^>]*>[^<]+<\/textarea>/);
+    } else if (page === 'subtract') {
+      expect(html).toContain(text.subtract.explanation);
+      expect(html).toContain(text.subtract.review);
+      expect(html).toContain(text.subtract.examplesTitle);
+      expect(html).toContain('203.0.113.128/25');
+      expect(html).toContain('2001:db8::8/125');
+      expect(html.match(/<textarea\b/g)).toHaveLength(2);
       expect(html).not.toMatch(/<textarea[^>]*>[^<]+<\/textarea>/);
     } else if (page === 'ip') {
       expect(html).toContain(text.ip.explanation);
@@ -59,14 +69,14 @@ describe('website in the Workers runtime', () => {
     expect(logo).toBeDefined();
     expect((await exports.default.fetch('http://localhost' + logo)).status).toBe(200);
   });
-  it('publishes a sitemap of only the 40 canonical pages and an allow-all robots policy', async () => {
+  it('publishes a sitemap of only the 50 canonical pages and an allow-all robots policy', async () => {
     const sitemap = await exports.default.fetch('http://localhost/sitemap.xml');
     expect(sitemap.status).toBe(200);
     expect(sitemap.headers.get('content-type')).toContain('xml');
     const xml = await sitemap.text();
     expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
     const urls = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]);
-    expect(urls).toHaveLength(40);
+    expect(urls).toHaveLength(50);
     expect(urls).toEqual(supportedLocales.flatMap(locale => Object.values(pagePaths)
       .map(path => 'https://packetrove.com' + localizedPath(path, locale))));
     expect(xml).not.toMatch(/\.html|api\.packetrove|<lastmod>/);
