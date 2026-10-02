@@ -4,6 +4,13 @@
 schemas and generator, then run `pnpm spec:generate`. `pnpm spec:check` verifies
 that the committed document matches its source and validates OpenAPI semantics.
 
+The [interactive API documentation](https://packetrove.com/docs/api) renders
+this specification with Scalar and supports request examples and browser-based
+test calls. Test requests go directly to the configured API without cookies or
+a third-party proxy. Calculation inputs entered into the documentation's test
+client are sent to the API; the website's CIDR calculator continues to run
+locally in the browser.
+
 ## Smallest covering CIDR
 
 The configured production base URL is `https://api.packetrove.com`. The
@@ -91,7 +98,10 @@ methods on known endpoints return `405` with an `Allow` header.
 ## Service metadata
 
 `GET /health` returns `{ "status": "ok" }`.
-`GET /openapi.json` returns the generated specification.
+`GET /openapi.json` serves the generated specification through Cloudflare
+Static Assets, ahead of the Worker script. It supports `HEAD`, ETag-based
+revalidation, and anonymous cross-origin access. Each deployment publishes the
+validated specification from the same source as the API contracts.
 
 The contract specifies anonymous access. Implementation and deployment status
 are tracked in the repository README.

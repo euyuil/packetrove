@@ -62,7 +62,7 @@ the returned address, and lookup results and errors are not cached.
 | Interface | Get started |
 | --- | --- |
 | Website | [Project overview](https://packetrove.com) · [CIDR calculator](https://packetrove.com/cidr) · [My Public IP](https://packetrove.com/ip) |
-| Web API | [API guide](docs/api/README.md) · [OpenAPI specification](https://api.packetrove.com/openapi.json) |
+| Web API | [Interactive API documentation](https://packetrove.com/docs/api) · [API guide](docs/api/README.md) · [OpenAPI specification](https://api.packetrove.com/openapi.json) |
 | Command-line interface (CLI) | [CLI guide](docs/integrations/cli.md), with offline CIDR calculations and JSON output |
 | AI agents | [MCP connection guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
 
@@ -142,8 +142,17 @@ troubleshooting.
 Local development and tests need no Cloudflare account or production credentials.
 `pnpm build` validates the API specification and performs deployment dry runs
 for both the API and website Workers.
+The API publishes the generated specification as a static asset at
+`/openapi.json`; development, build, and deployment commands prepare this asset
+automatically. The website's `/docs/api` page loads Scalar only when opened and
+sends test requests directly to the configured API origin without cookies.
+Scalar's AI features, telemetry, proxy, and external fonts are disabled.
 Local public IP lookup depends on Cloudflare connection metadata; without it,
 the API returns `CLIENT_IP_UNAVAILABLE`.
+
+Dependency build scripts are limited to the reviewed entries in
+`pnpm-workspace.yaml`. Scalar's Vue integration uses `vue-demi`; its approved
+installation script selects the adapter for the installed Vue version.
 
 ## Self-hosting
 

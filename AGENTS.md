@@ -58,6 +58,9 @@
 
 - Use the Node.js version in .node-version and the pnpm version in package.json.
   Read docs/git-checks.md when preparing a development checkout.
+- Keep dependency build scripts limited to reviewed `allowBuilds` entries in
+  pnpm-workspace.yaml. Scalar's vue-demi adapter selection script is approved;
+  review new scripts before enabling them.
 - Gitleaks is installed globally. Check `gitleaks version` and reuse the existing
   installation across clones. On a Mac without Gitleaks, the installation command
   is `brew install gitleaks`. Do not download it on each commit.

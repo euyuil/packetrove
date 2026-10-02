@@ -1,10 +1,11 @@
+import type { MouseEventHandler } from 'react';
 import { Anchor, Badge, Code, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { PUBLIC_IP_PATH } from '@packetrove/contracts';
 import cliPackage from '../../../packages/cli/package.json';
 import { getApiUrl } from './api';
 
-export function HomePage({ documentationUrl, repositoryUrl }: {
-  documentationUrl: string; repositoryUrl: string;
+export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
+  documentationUrl: string; repositoryUrl: string; onNavigate: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const apiExample = `curl -fsS ${getApiUrl(PUBLIC_IP_PATH)} \\
   -H 'Accept: text/plain'`;
@@ -36,7 +37,7 @@ export function HomePage({ documentationUrl, repositoryUrl }: {
           <Text c="dimmed">Call Packetrove from any HTTP client. For example, get your current public IP with curl:</Text>
           <Code block>{apiExample}</Code>
           <Text size="sm" c="dimmed">The response is the IP address followed by a newline, with <Code>Content-Type: text/plain</Code>.</Text>
-          <Anchor size="sm" href={`${documentationUrl}/docs/api/README.md`}>Read the API guide</Anchor>
+          <Anchor size="sm" href="/docs/api" onClick={onNavigate}>Read the API guide</Anchor>
         </Stack>
       </Paper>
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} miw={0} aria-labelledby="cli-heading">
