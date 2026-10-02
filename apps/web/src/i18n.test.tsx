@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MAX_INPUT_LENGTH, MAX_INPUTS } from '@packetrove/contracts';
 import { App } from './App';
@@ -13,6 +13,15 @@ afterEach(() => {
   window.history.replaceState({}, '', '/');
   document.documentElement.lang = 'en';
 });
+
+function openLanguageMenu() {
+  fireEvent.click(screen.getByRole('button', { name: /^(Language|语言):/ }));
+}
+
+function chooseLanguage(name: 'English' | '简体中文') {
+  openLanguageMenu();
+  fireEvent.click(screen.getByRole('menuitem', { name }));
+}
 
 function calculate(input: string, chinese = false) {
   fireEvent.change(screen.getByLabelText(chinese ? 'IP 地址或 CIDR 网段' : 'IP addresses or CIDR ranges'), { target: { value: input } });
@@ -31,7 +40,8 @@ describe('web internationalization', () => {
     expect(screen.getByRole('link', { name: '阅读 API 指南' }).getAttribute('href')).toBe('/zh/docs/api');
     expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'API 文档' })).toBeNull();
     expect(screen.getByRole('link', { name: '源代码：MIT' }).getAttribute('href')).toContain('/LICENSE');
-    expect(screen.getByRole('link', { name: 'English' }).getAttribute('href')).toBe('/');
+    openLanguageMenu();
+    expect(screen.getByRole('menuitem', { name: 'English' }).getAttribute('href')).toBe('/');
     expect(document.documentElement.lang).toBe('zh-Hans');
     expect(document.title).toBe('Packetrove — 面向用户与智能体的网络工具');
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://packetrove.com/zh/');
@@ -46,6 +56,75 @@ describe('web internationalization', () => {
     expect(window.location.pathname).toBe('/');
   });
 
+  it.each([
+    { path: '/cidr?source=example#tool', button: 'Language: English', current: 'English' },
+    { path: '/zh/cidr?source=example#tool', button: '语言: 简体中文', current: '简体中文' },
+  ])('shows the current language and accessible, local flag icons at $path', ({ path, button, current }) => {
+    window.history.replaceState({}, '', path);
+    render(<App />);
+    const trigger = screen.getByRole('button', { name: button, expanded: false });
+    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    expect(trigger.textContent).toBe(current);
+    expect(trigger.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    expect(screen.queryByRole('menu')).toBeNull();
+    fireEvent.click(trigger);
+    const dropdown = screen.getByRole('menu', { name: button });
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    const english = within(dropdown).getByRole('menuitem', { name: 'English' });
+    const chinese = within(dropdown).getByRole('menuitem', { name: '简体中文' });
+    expect(english.tagName).toBe('A');
+    expect(english.getAttribute('href')).toBe('/cidr?source=example#tool');
+    expect(english.getAttribute('lang')).toBe('en');
+    expect(english.getAttribute('hreflang')).toBe('en');
+    expect(chinese.getAttribute('href')).toBe('/zh/cidr?source=example#tool');
+    expect(chinese.getAttribute('lang')).toBe('zh-Hans');
+    expect(chinese.getAttribute('hreflang')).toBe('zh-Hans');
+    for (const item of [english, chinese]) {
+      expect(item.getAttribute('aria-current')).toBe(item.textContent === current ? 'true' : null);
+      expect(item.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+      expect(item.querySelector('img')).toBeNull();
+    }
+  });
+
+  it('opens, navigates, selects, and dismisses the language menu using the keyboard', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const trigger = screen.getByRole('button', { name: 'Language: English' });
+    trigger.focus();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('menu')).toBeDefined();
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'English' }));
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: '简体中文' }));
+    await user.keyboard('{ArrowUp}');
+    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'English' }));
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(trigger));
+    await user.keyboard('{Enter}{ArrowDown}{ArrowDown}{Enter}');
+    expect(window.location.pathname).toBe('/zh/');
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.getByRole('button', { name: '语言: 简体中文', expanded: false })).toBeDefined();
+  });
+
+  it.each(['ctrlKey', 'metaKey', 'shiftKey', 'altKey'])('preserves native link behavior for %s language clicks', modifier => {
+    window.history.replaceState({}, '', '/cidr?source=example#tool');
+    render(<App />);
+    openLanguageMenu();
+    const link = screen.getByRole('menuitem', { name: '简体中文' });
+    let preventedByApp: boolean | undefined;
+    document.addEventListener('click', event => {
+      preventedByApp = event.defaultPrevented;
+      event.preventDefault();
+    }, { once: true });
+    fireEvent.click(link, { [modifier]: true });
+    expect(preventedByApp).toBe(false);
+    expect(window.location.pathname).toBe('/cidr');
+    expect(link.getAttribute('href')).toBe('/zh/cidr?source=example#tool');
+    expect(screen.getByRole('heading', { level: 1, name: 'Smallest Covering CIDR' })).toBeDefined();
+  });
+
   it('preserves drafts, exact IPv6 counts, query strings, and fragments through language and page changes', () => {
     window.history.replaceState({}, '', '/cidr?source=example#tool');
     const fetch = vi.fn();
@@ -53,7 +132,7 @@ describe('web internationalization', () => {
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     render(<App />);
     calculate('::/0');
-    fireEvent.click(screen.getByRole('link', { name: '简体中文' }));
+    chooseLanguage('简体中文');
     expect(window.location.pathname).toBe('/zh/cidr');
     expect(window.location.search).toBe('?source=example');
     expect(window.location.hash).toBe('#tool');
@@ -65,7 +144,7 @@ describe('web internationalization', () => {
     fireEvent.click(screen.getByRole('link', { name: '首页' }));
     fireEvent.click(screen.getByRole('link', { name: '最小覆盖 CIDR' }));
     expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('::/0');
-    fireEvent.click(screen.getByRole('link', { name: 'English' }));
+    chooseLanguage('English');
     expect(screen.getByText('Exact coverage: this CIDR adds no addresses.')).toBeDefined();
     expect(document.documentElement.lang).toBe('en');
     expect(storage).not.toHaveBeenCalled();
@@ -77,12 +156,12 @@ describe('web internationalization', () => {
     render(<App />);
     calculate('\n203.0.113.1\n\nbad\n::/129');
     const english = screen.getByRole('alert').textContent;
-    fireEvent.click(screen.getByRole('link', { name: '简体中文' }));
+    chooseLanguage('简体中文');
     const issues = within(screen.getByRole('alert')).getAllByRole('listitem');
     expect(issues[0]?.textContent).toMatch(/^第 4 行：请输入标准 IPv4 或 IPv6 地址/);
     expect(issues[1]?.textContent).toMatch(/^第 5 行：请输入标准 IPv4 或 IPv6 地址/);
     expect(screen.getByRole('alert').textContent).not.toContain('Expected valid');
-    fireEvent.click(screen.getByRole('link', { name: 'English' }));
+    chooseLanguage('English');
     expect(screen.getByRole('alert').textContent).toBe(english);
   });
 
@@ -105,13 +184,13 @@ describe('web internationalization', () => {
     render(<App />);
     calculate('::1');
     await user.click(screen.getByRole('button', { name: 'Copy CIDR' }));
-    fireEvent.click(screen.getByRole('link', { name: '简体中文' }));
+    chooseLanguage('简体中文');
     expect(screen.getByRole('status').textContent).toBe('已复制 CIDR。');
     expect(write).toHaveBeenCalledExactlyOnceWith('::1/128');
     write.mockRejectedValueOnce(new Error('Denied'));
     await user.click(screen.getByRole('button', { name: /已复制/ }));
     expect(screen.getByRole('status').textContent).toBe('无法使用剪贴板，请选中并复制上方 CIDR。');
-    fireEvent.click(screen.getByRole('link', { name: 'English' }));
+    chooseLanguage('English');
     expect(screen.getByRole('status').textContent).toBe('Copy is unavailable. Select and copy the CIDR above.');
     expect(screen.getByRole('button', { name: 'Dismiss copy error' })).toBeDefined();
     expect(write).toHaveBeenCalledTimes(2);
@@ -127,13 +206,13 @@ describe('web internationalization', () => {
     });
     vi.stubGlobal('fetch', fetch);
     render(<App />);
-    fireEvent.click(screen.getByRole('link', { name: '简体中文' }));
+    chooseLanguage('简体中文');
     expect(screen.getByText('正在查询公网 IP…')).toBeDefined();
     expect(signal.aborted).toBe(false);
     resolve(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
     expect(screen.getByRole('button', { name: '刷新 IP' })).toBeDefined();
-    fireEvent.click(screen.getByRole('link', { name: 'English' }));
+    chooseLanguage('English');
     expect(screen.getByText('203.0.113.1')).toBeDefined();
     expect(fetch).toHaveBeenCalledTimes(1);
   });
@@ -145,7 +224,7 @@ describe('web internationalization', () => {
     vi.stubGlobal('fetch', fetch);
     render(<App />);
     await screen.findByRole('alert');
-    fireEvent.click(screen.getByRole('link', { name: '简体中文' }));
+    chooseLanguage('简体中文');
     expect(screen.getByRole('alert').textContent).toBe('无法连接到 IP 查询服务，请检查网络连接后重试。');
     expect(fetch).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: '重试' }));
