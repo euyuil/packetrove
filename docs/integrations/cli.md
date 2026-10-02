@@ -4,10 +4,9 @@ The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
 locally without a Worker, Cloudflare account, or network connection. The `public-ip`
 command queries the current connection through an IP lookup API.
 
-## Install from npm after the first release
+## Install from npm
 
-The package is prepared for public distribution as `@packetrove/cli`. Its first
-npm release is pending. Once a version is published, users need only a supported
+The package is published to npm as `@packetrove/cli`. Users need only a supported
 Node.js version and npm:
 
 ```sh
@@ -29,8 +28,8 @@ installation. Maintainers should follow the [publishing guide](../cli-publishing
 
 ## Install from source
 
-The CLI is not published to npm. With Git, Node.js, and pnpm installed, clone
-the repository, build a package, and install that local archive:
+With Git, Node.js, and pnpm installed, clone the repository, build a package,
+and install that local archive:
 
 ```sh
 git clone https://github.com/euyuil/packetrove.git
