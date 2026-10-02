@@ -9,7 +9,7 @@ import {
 } from '@packetrove/contracts';
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
-import { escapeHtml, robotsText, websitePages } from '../../web/src/seo';
+import { escapeHtml, robotsText, websitePages, websiteRedirects } from '../../web/src/seo';
 
 const originArguments = process.argv.slice(2);
 if (originArguments.length !== 2) {
@@ -85,6 +85,16 @@ assert.equal(robots.status, 200, 'Robots status');
 assert.match(robots.headers.get('content-type') ?? '', /text\/plain/);
 assert.equal(await robots.text(), robotsText, 'Robots policy and sitemap reference');
 console.log(`PASS ${websitePages.length} prerendered localized pages, metadata, canonical and language links, sitemap, and robots policy`);
+for (const { from, to } of websiteRedirects) {
+  const response = await timedFetch(`${origin}${from}?source=example`, { redirect: 'manual' });
+  assert.equal(response.status, 301, `Legacy website redirect status: ${from}`);
+  const location = new URL(response.headers.get('location')!, origin);
+  assert.equal(location.origin, origin, `Legacy website redirect origin: ${from}`);
+  assert.equal(location.pathname, to, `Legacy website redirect destination: ${from}`);
+  assert.equal(location.search, '?source=example', `Legacy website redirect query: ${from}`);
+  await response.body?.cancel();
+}
+console.log('PASS legacy public IP redirects');
 const missingPage = await timedFetch(`${origin}/missing-page`, {
   headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
 });
@@ -95,7 +105,7 @@ assert.match(missingHtml, /<h1>Page not found<\/h1>/);
 assert.match(missingHtml, /<a href="\/">Return to home<\/a>/);
 const missingAsset = await timedFetch(`${origin}/assets/missing.js`);
 assert.equal(missingAsset.status, 404, 'Missing asset status');
-for (const path of ['/api/v1/ip', '/api/v1/cidr/cover', '/api/openapi.json', '/mcp', '/health', '/v1/ip', '/openapi.json']) {
+for (const path of ['/api/v1/ip', '/api/v1/public-ip', '/api/v1/cidr/cover', '/api/openapi.json', '/mcp', '/health', '/v1/ip', '/v1/public-ip', '/openapi.json']) {
   const response = await timedFetch(`${origin}${path}`);
   assert.equal(response.status, 404, `Website must not serve an interface endpoint: ${path}`);
   await response.body?.cancel();
@@ -107,7 +117,7 @@ for (const path of ['/api/v1/cidr/cover', '/mcp']) {
   assert.equal(response.status, 405, `Website must reject tool-call POST requests: ${path}`);
   await response.body?.cancel();
 }
-for (const path of ['/', '/cidr', '/ip', '/docs/api', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
+for (const path of ['/', '/cidr', '/ip', '/public-ip', '/docs/api', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/v1/public-ip', '/api/openapi.json', '/v1/ip']) {
   const response = await timedFetch(`${apiOrigin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });

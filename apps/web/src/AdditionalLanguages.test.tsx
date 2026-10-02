@@ -57,7 +57,7 @@ describe('additional website languages', () => {
     const translation = resources[locale].translation;
     expect(screen.getByRole('heading', { level: 1, name: heading })).toBeDefined();
     expect(screen.getByRole('link', { name: translation.cidr.title }).getAttribute('href')).toBe(prefix + '/cidr');
-    expect(screen.getByRole('link', { name: translation.ip.title }).getAttribute('href')).toBe(prefix + '/ip');
+    expect(screen.getByRole('link', { name: translation.ip.title }).getAttribute('href')).toBe(prefix + '/public-ip');
     expect(screen.getByRole('link', { name: translation.home.apiGuide }).getAttribute('href')).toBe(prefix + '/docs/api');
     expect(document.documentElement.lang).toBe(locale);
     expect(document.title).toBe(translation.meta.home.title);
@@ -121,7 +121,7 @@ describe('additional website languages', () => {
   });
 
   it.each(additionalLanguages)('keeps a pending IP lookup and its result when switching to $locale', async ({ locale }) => {
-    window.history.replaceState({}, '', '/ip');
+    window.history.replaceState({}, '', '/public-ip');
     let complete!: (response: Response) => void;
     let signal!: AbortSignal;
     const fetch = vi.fn((_url: string, options: RequestInit) => {
@@ -141,7 +141,7 @@ describe('additional website languages', () => {
   });
 
   it.each(additionalLanguages)('retranslates stored IP failures in $locale without another request', async ({ locale }) => {
-    window.history.replaceState({}, '', '/ip');
+    window.history.replaceState({}, '', '/public-ip');
     const fetch = vi.fn().mockRejectedValue(new Error('Example connection failure'));
     vi.stubGlobal('fetch', fetch);
     render(<App />);

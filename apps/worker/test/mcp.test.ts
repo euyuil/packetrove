@@ -44,6 +44,7 @@ describe('stateless MCP in the Workers runtime', () => {
         outputSchema: { type: 'object' },
       });
       expect(tools.find(tool => tool.name === PUBLIC_IP_TOOL_NAME)).toMatchObject({
+        name: 'public-ip',
         annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
         inputSchema: { type: 'object', additionalProperties: false },
       });
@@ -166,6 +167,13 @@ describe('stateless MCP in the Workers runtime', () => {
 });
 
 describe('public IP over MCP', () => {
+  it('rejects the removed get_public_ip tool name', async () => {
+    const client = await connectedClient('http://localhost/mcp', undefined, '203.0.113.1');
+    try {
+      await expect(client.callTool({ name: 'get_public_ip', arguments: {} })).rejects.toThrow(/not found/i);
+    } finally { await client.close(); }
+  });
+
   it.each([
     { ip: '203.0.113.1', family: 'ipv4' },
     { ip: '2001:db8::7', family: 'ipv6' },

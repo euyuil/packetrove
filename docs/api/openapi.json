@@ -416,7 +416,7 @@
         }
       }
     },
-    "/v1/ip": {
+    "/v1/public-ip": {
       "get": {
         "operationId": "getPublicIp",
         "tags": [

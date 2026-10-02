@@ -82,13 +82,19 @@ not published to the API origin. Keep Workers Cache disabled and do not enable
 Worker-first routing for `/openapi.json` when free static-asset requests are
 desired.
 
-Vite builds `index.html`, `cidr.html`, `ip.html`, `docs/api.html`, and `404.html` with shared
+Vite builds `index.html`, `cidr.html`, `public-ip.html`, `docs/api.html`, and `404.html` with shared
 JavaScript and styles. Cloudflare serves the project homepage at `/`, the CIDR
-calculator at `/cidr`, My Public IP at `/ip`, and API documentation at
+calculator at `/cidr`, My Public IP at `/public-ip`, and API documentation at
 `/docs/api` directly, and uses `404-page`
-handling for unknown paths. `/cidr/`, `/ip/`, and `/docs/api/` redirect to their canonical
+handling for unknown paths. `/cidr/`, `/public-ip/`, and `/docs/api/` redirect to their canonical
 paths without the trailing slash. API routes continue to return structured
 JSON errors, including for browser navigation.
+Each supported locale has the same pages. The build generates `_redirects`
+from the shared route and locale registries: legacy `/ip`, `/ip/`, and
+`/ip.html` links return 301 redirects to `/public-ip` in the same locale,
+preserving query strings. These aliases do not have static HTML entries and
+are excluded from canonical metadata and the sitemap. See
+[Cloudflare's redirect rules](https://developers.cloudflare.com/workers/static-assets/redirects/).
 See [Cloudflare's static HTML routing guide](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).
 
 The MCP handler allows local hostnames and `api.packetrove.com` for Host
@@ -181,7 +187,7 @@ pnpm smoke https://packetrove.com https://api.packetrove.com
 
 ## Browser state and self-hosting
 
-The production website calls `https://api.packetrove.com/v1/ip` directly with
+The production website calls `https://api.packetrove.com/v1/public-ip` directly with
 `credentials: 'omit'` and `cache: 'no-store'`. API CORS permits anonymous calls
 without enabling browser credentials. CIDR calculations continue to run locally.
 MCP has its own exact Host and browser Origin allowlists.
@@ -196,7 +202,7 @@ Browser local storage is separate per origin and is not sent with API requests.
 For your own deployment, change the custom domains in both configuration files
 and the separate MCP Host and Origin allowlists. Build the website with
 `VITE_API_ORIGIN=https://api.example.com`, using your actual API origin. The CLI
-can use `ip --api-origin https://api.example.com`. OpenAPI uses a relative server
+can use `public-ip --api-origin https://api.example.com`. OpenAPI uses a relative server
 URL so it resolves against the host serving the specification. Local Vite
 serves the website separately and points IP requests to `http://localhost:8787`.
 

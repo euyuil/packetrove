@@ -201,7 +201,7 @@ describe('API documentation failure isolation', () => {
       return response.promise;
     });
     fireEvent.click(screen.getByRole('link', { name: 'My Public IP' }));
-    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/public-ip', expect.objectContaining({
       cache: 'no-store', credentials: 'omit',
     }));
     expect(signal.aborted).toBe(false);

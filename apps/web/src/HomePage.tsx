@@ -4,7 +4,7 @@ import { Anchor, Badge, Code, Group, Paper, SimpleGrid, Stack, Text, Title } fro
 import { PUBLIC_IP_PATH } from '@packetrove/contracts';
 import cliPackage from '../../../packages/cli/package.json';
 import { getApiUrl } from './api';
-import { localizedPath } from './i18n/routes';
+import { localizedPath, pagePaths } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
 
 export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
@@ -46,7 +46,7 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
         <Stack gap="md">
           <Title order={2} size="h3" id="home-ip-heading">{t($ => $.ip.title)}</Title>
           <Text c="dimmed">{t($ => $.home.ipDescription)}</Text>
-          <Anchor href={localizedPath('/ip', locale)} onClick={onNavigate}>{t($ => $.home.ipLink)}</Anchor>
+          <Anchor href={localizedPath(pagePaths.ip, locale)} onClick={onNavigate}>{t($ => $.home.ipLink)}</Anchor>
         </Stack>
       </Paper>
     </SimpleGrid>
@@ -66,7 +66,7 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
           <Text c="dimmed">{t($ => $.home.cliDescription)}</Text>
           <Code block>{cliInstall}</Code>
           <Text size="sm" c="dimmed">{t($ => $.home.cliExample)}</Text>
-          <Code block>packetrove ip</Code>
+          <Code block>packetrove public-ip</Code>
           <Anchor size="sm" href={`${documentationUrl}/docs/integrations/cli.md`}>{t($ => $.home.cliGuide)}</Anchor>
         </Stack>
       </Paper>

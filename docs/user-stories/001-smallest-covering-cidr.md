@@ -74,7 +74,7 @@ The web app performs the calculation locally. The API returns a structured
 result with exact counts represented as decimal strings; MCP uses the same result.
 
 The homepage introduces Packetrove and links to its tools. The calculator has
-its own page at `/cidr`; My Public IP is at `/ip`.
+its own page at `/cidr`; My Public IP is at `/public-ip`.
 
 Switching between the homepage, calculator, and My Public IP in the same tab
 preserves the calculator's input and its result or validation error. This draft

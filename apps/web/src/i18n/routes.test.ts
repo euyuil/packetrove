@@ -21,6 +21,26 @@ describe('localized website routes', () => {
       .toEqual({ locale, page: 'notFound', path: '/missing-page' });
   });
 
+  it.each(supportedLocales)('resolves legacy public IP links to the canonical page within %s', locale => {
+    for (const suffix of ['', '/', '.html']) {
+      expect(resolveRoute(localizedPath('/ip', locale) + suffix))
+        .toEqual({ locale, page: 'ip', path: '/public-ip' });
+    }
+    expect(resolveRoute(localizedPath('/ip/missing-page', locale)))
+      .toEqual({ locale, page: 'notFound', path: '/ip/missing-page' });
+  });
+
+  it('keeps canonical tool names outside the short language-code namespace', () => {
+    for (const path of [pagePaths.cidr, pagePaths.ip]) {
+      const segment = path.split('/')[1]!;
+      expect(segment).toMatch(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/);
+      expect(segment.split('-')[0]!.length).toBeGreaterThanOrEqual(4);
+      for (const { prefix } of Object.values(locales)) {
+        expect('/' + segment).not.toBe(prefix.toLowerCase());
+      }
+    }
+  });
+
   it.each(['/esoteric', '/deutsch', '/japan', '/zhang', '/french', '/portugal', '/it/', '/es-ES/cidr'])(
     'does not treat %s as a supported locale prefix', pathname => {
       expect(resolveRoute(pathname)).toEqual({ locale: 'en', page: 'notFound', path: pathname.replace(/\/+$/, '') });
