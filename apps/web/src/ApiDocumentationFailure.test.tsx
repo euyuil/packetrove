@@ -129,7 +129,7 @@ describe('API documentation failure isolation', () => {
     act(() => { window.history.back(); });
     await waitFor(() => expect(window.location.pathname).toBe('/cidr'));
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('203.0.113.1');
-    expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
+    await waitFor(() => expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2));
     act(() => { window.history.forward(); });
     await waitFor(() => expect(window.location.pathname).toBe('/'));
     act(() => { window.history.forward(); });

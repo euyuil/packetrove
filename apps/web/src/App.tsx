@@ -102,6 +102,10 @@ export function App() {
         <Group justify="space-between">
           <Text size="xs" c="dimmed">Packetrove · {t($ => $.common.tagline)}</Text>
           <Group gap="xs">
+            <Anchor size="xs" href="mailto:hello@packetrove.com">
+              hello@packetrove.com
+            </Anchor>
+            <Text component="span" size="xs" c="dimmed" aria-hidden="true">·</Text>
             <Anchor size="xs" href={sourceUrl} target="_blank" rel="noopener noreferrer"
               title={commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source)}>
               GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
