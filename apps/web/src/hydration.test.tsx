@@ -134,7 +134,7 @@ describe('hydration of production HTML', () => {
     expect(screen.getByLabelText('排除的 IP 地址或 CIDR 网段')).toBe(exclude);
     expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value)
       .toBe('203.0.113.0/26\n203.0.113.128/25');
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '复制 AllowedIPs' })); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '复制（逗号分隔）' })); });
     expect(writeText).toHaveBeenCalledExactlyOnceWith('203.0.113.0/26, 203.0.113.128/25');
     fireEvent.click(screen.getByRole('link', { name: '首页' }));
     fireEvent.click(screen.getByRole('link', { name: 'CIDR 相减' }));

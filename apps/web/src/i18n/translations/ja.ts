@@ -65,12 +65,12 @@ export const ja = {
     removed: '削除したアドレス数',
     remaining: '残りのアドレス数',
     blocks: '結果の CIDR 数',
-    copyList: 'リストをコピー',
-    copyAllowed: 'AllowedIPs をコピー',
-    copySuccess: 'CIDR リストをコピーしました。',
-    allowedSuccess: 'AllowedIPs の値をコピーしました。',
+    copyList: '改行区切りでコピー',
+    copyAllowed: 'カンマ区切りでコピー',
+    copySuccess: '改行区切りでコピーしました。',
+    allowedSuccess: 'カンマ区切りでコピーしました。',
     copyFailure: 'クリップボードを利用できません。上のリストを選択してコピーしてください。',
-    formats: 'リストのコピーでは CIDR を改行で区切ります。AllowedIPs のコピーでは、WireGuard の設定値として使えるようにカンマで区切ります。',
+    formats: '改行区切りでは CIDR を1行に1つずつ配置します。カンマ区切りでは CIDR の間にカンマとスペース1つを入れます。',
     emptyTitle: '残りのアドレスはありません',
     emptyDescription: '除外リストにより、含めたすべてのアドレスが削除されました。コピーできる CIDR リストはありません。',
     pendingTitle: 'ここに結果が表示されます',
@@ -111,7 +111,7 @@ export const ja = {
       questions: {
         wireguard: {
           question: "WireGuard の AllowedIPs に例外を設けるには？",
-          answer: "トンネルに通したい範囲を包含リストに、例外を除外リストに入力します。AllowedIPs のコピーは、正確な残りの CIDR を設定値としてコピーします。適用前に確認してください。Packetrove は WireGuard の設定やルートの変更を行いません。"
+          answer: "トンネルに通したい範囲を包含リストに、例外を除外リストに入力します。「カンマ区切りでコピー」で、正確な残りの CIDR を WireGuard の AllowedIPs 設定値としてコピーできます。適用前に確認してください。Packetrove は WireGuard の設定やルートの変更を行いません。"
         },
         remaining: {
           question: "残りの範囲はアドレスが未使用であることを証明しますか？",
