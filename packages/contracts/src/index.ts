@@ -4,9 +4,12 @@ import manifest from '../package.json' with { type: 'json' };
 export const PACKETROVE_VERSION = manifest.version;
 export const MAX_INPUTS = 1_000;
 export const MAX_INPUT_LENGTH = 64;
+export const MAX_SUBTRACTION_INPUTS = 1_000;
+export const MAX_SUBTRACTION_OUTPUTS = 10_000;
 export const MAX_REQUEST_BYTES = 64 * 1_024;
 export const CIDR_COVER_PATH = '/v1/cidr/cover';
 export const MCP_TOOL_NAME = 'smallest_covering_cidr';
+export const MCP_PATH = '/mcp';
 export const PUBLIC_IP_NAME = 'public-ip';
 export const PUBLIC_IP_PATH = `/v1/${PUBLIC_IP_NAME}`;
 export const PUBLIC_IP_TOOL_NAME = PUBLIC_IP_NAME;
@@ -27,6 +30,26 @@ export const CidrCoverRequestSchema = z.strictObject({
 
 const AddressCountSchema = z.string().regex(/^(0|[1-9][0-9]*)$/)
   .describe('Exact number of addresses as a base-10 string, including network and broadcast addresses.');
+
+// Shared local calculation types; subtraction is not exposed through the API.
+export const CidrSubtractRequestSchema = z.strictObject({
+  include: z.array(z.string().min(1).max(MAX_INPUT_LENGTH))
+    .min(1, 'Include at least one IP address or CIDR range.').max(MAX_SUBTRACTION_INPUTS),
+  exclude: z.array(z.string().min(1).max(MAX_INPUT_LENGTH)).max(MAX_SUBTRACTION_INPUTS),
+});
+
+export const CidrSubtractResultSchema = z.strictObject({
+  family: z.enum(['ipv4', 'ipv6']),
+  normalizedInclude: z.array(z.string().min(1).max(MAX_INPUT_LENGTH)).min(1).max(MAX_SUBTRACTION_INPUTS),
+  normalizedExclude: z.array(z.string().min(1).max(MAX_INPUT_LENGTH)).max(MAX_SUBTRACTION_INPUTS),
+  cidrs: z.array(z.string().min(1).max(MAX_INPUT_LENGTH)).max(MAX_SUBTRACTION_OUTPUTS),
+  includedAddressCount: AddressCountSchema,
+  removedAddressCount: AddressCountSchema,
+  remainingAddressCount: AddressCountSchema,
+});
+
+export type CidrSubtractRequest = z.infer<typeof CidrSubtractRequestSchema>;
+export type CidrSubtractResult = z.infer<typeof CidrSubtractResultSchema>;
 
 export const CidrCoverResultSchema = z.strictObject({
   family: z.enum(['ipv4', 'ipv6']),

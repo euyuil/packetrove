@@ -15,6 +15,8 @@ export const de = {
     openSource: 'Open Source', anonymous: 'Kein Konto oder API-Schlüssel erforderlich',
     cidrDescription: 'Finden Sie das kleinste einzelne CIDR-Netz, das IPv4- oder IPv6-Adressen und Bereiche abdeckt. Berechnen Sie es lokal im Browser mit exakten Adresszahlen und einer klaren Erklärung zusätzlicher Abdeckung.',
     cidrLink: 'CIDR-Rechner öffnen',
+    subtractDescription: 'Entferne ausgeschlossene Netze aus dem eingeschlossenen Adressraum. Kopiere eine exakte CIDR-Liste für WireGuard-Ausnahmen oder prüfe Lücken nach bekannten Zuweisungen, ohne deine Eingaben hochzuladen.',
+    subtractLink: 'CIDR-Subtraktion öffnen',
     ipDescription: 'Prüfen Sie die öffentliche IP-Adresse Ihrer Verbindung. Bei einem VPN oder Proxy zeigt das Ergebnis dessen Ausgangsadresse; Ihre private lokale Adresse wird nicht angezeigt.',
     ipLink: 'Meine öffentliche IP-Adresse prüfen',
     apiTitle: 'Web-API', apiDescription: 'Rufen Sie Packetrove mit einem beliebigen HTTP-Client auf. Fragen Sie zum Beispiel Ihre aktuelle öffentliche IP-Adresse mit curl ab:',
@@ -23,7 +25,7 @@ export const de = {
     cliExample: 'Geben Sie anschließend Ihre aktuelle öffentliche IP-Adresse aus:', cliGuide: 'CLI-Anleitung lesen (Englisch)',
     mcpTitle: 'Model Context Protocol (MCP)', mcpDescription: 'Verbinden Sie Ihren KI-Agenten über Streamable HTTP mit Packetrove. Eine Authentifizierung oder ein lokaler Server ist nicht erforderlich.',
     serverAddress: 'Serveradresse', mcpExample: 'Fügen Sie nach der Installation Ihres Clients den Server hinzu:',
-    mcpCheck: 'Prüfen Sie die Verbindung mit <code>/mcp</code> in Ihrem Client. Die Abfrage der öffentlichen IP-Adresse zeigt die Verbindung, die der Agent verwendet.', mcpGuide: 'MCP-Anleitung lesen (Englisch)',
+    mcpCheck: 'Prüfen Sie die Verbindung mit <code>/mcp</code> in Ihrem Client. Die Abfrage der öffentlichen IP-Adresse zeigt die Verbindung, die der Agent verwendet.', mcpGuide: "Die MCP-Verbindungsanleitung lesen",
   },
   cidr: {
     title: 'Kleinstes umfassendes CIDR-Netz', description: 'Fassen Sie IPv4- oder IPv6-Adressen und Bereiche im kleinsten einzelnen CIDR-Netz zusammen, das alle Eingaben abdeckt.',
@@ -46,6 +48,43 @@ export const de = {
     exampleResult: '{{cidr}} deckt {{covered}} Adressen ab und fügt {{additional}} hinzu.',
     line: 'Zeile {{line}}: {{message}}',
   },
+  subtract: {
+    title: 'CIDR-Subtraktion',
+    description: 'Ziehe ausgeschlossene IPv4- oder IPv6-Netze vom eingeschlossenen Adressraum ab. Erhalte die kleinste exakte CIDR-Liste, ohne zusätzliche Adressen.',
+    inputs: 'Deine Adresslisten',
+    include: 'Einschließen',
+    exclude: 'Ausschließen',
+    includeLabel: 'Eingeschlossene IP-Adressen oder CIDRs',
+    excludeLabel: 'Ausgeschlossene IP-Adressen oder CIDRs',
+    includeHelp: 'Ein Eintrag pro Zeile. Schließe mindestens eine Adresse oder einen Bereich ein.',
+    excludeHelp: 'Ein Eintrag pro Zeile. Leer lassen, um die eingeschlossene Liste zu vereinfachen, ohne Adressen zu entfernen.',
+    calculate: 'CIDRs subtrahieren',
+    result: 'Verbleibender Adressraum',
+    output: 'Verbleibende CIDRs',
+    included: 'Eingeschlossene Adressen',
+    removed: 'Entfernte Adressen',
+    remaining: 'Verbleibende Adressen',
+    blocks: 'CIDRs im Ergebnis',
+    copyList: 'Liste kopieren',
+    copyAllowed: 'AllowedIPs kopieren',
+    copySuccess: 'CIDR-Liste kopiert.',
+    allowedSuccess: 'AllowedIPs-Wert kopiert.',
+    copyFailure: 'Kopieren ist nicht möglich. Wähle die Liste oben aus und kopiere sie.',
+    formats: 'Liste kopieren trennt CIDRs durch Zeilenumbrüche. AllowedIPs kopieren trennt sie durch Kommas für den Wert der WireGuard-Einstellung.',
+    emptyTitle: 'Keine Adressen verbleiben',
+    emptyDescription: 'Die Ausschlüsse haben alle eingeschlossenen Adressen entfernt. Es gibt keine CIDR-Liste zum Kopieren.',
+    pendingTitle: 'Dein Ergebnis erscheint hier',
+    pendingDescription: 'Gib eine eingeschlossene Liste und optionale Ausschlüsse ein, um den exakten Rest zu berechnen.',
+    explanationTitle: 'Was das Ergebnis bedeutet',
+    explanation: 'Die Berechnung zieht die Vereinigung der Ausschlüsse von der Vereinigung der eingeschlossenen Bereiche ab. Überschneidungen werden einmal gezählt, Host-Bits werden normalisiert und keine Adressen hinzugefügt. Alle Adressen eines Bereichs zählen, einschließlich Netzwerk- und Broadcast-Adressen.',
+    review: 'Nutze das Ergebnis für WireGuard-Ausnahmen oder um Lücken nach bekannten Zuweisungen zu prüfen. Die Lücken beziehen sich auf deine Eingaben; sie beweisen nicht, dass die Adressen im tatsächlichen Netzwerk ungenutzt sind. Prüfe die Liste vor der Anwendung.',
+    limits: 'Verwende eine Adressfamilie und insgesamt höchstens {{inputs}} Einträge in beiden Listen, mit höchstens {{length}} Zeichen pro Eintrag. Ergebnisse dürfen bis zu {{outputs}} CIDRs enthalten; größere Ergebnisse liefern einen Fehler ohne Teilliste.',
+    examplesTitle: 'Subtraktionsbeispiele',
+    example: '{{exclude}} von {{include}} abziehen:',
+    line: '{{list}}, Zeile {{line}}: {{message}}',
+    listIssue: '{{list}}: {{message}}',
+    outputLimitTitle: 'Das Ergebnis enthält zu viele CIDRs.',
+  },
   ip: {
     title: 'Meine öffentliche IP-Adresse', description: 'Sehen Sie die öffentliche IP-Adresse Ihrer aktuellen Verbindung zu Packetrove.',
     online: 'Online-Abfrage · Die Anwendung speichert das Ergebnis nicht', connection: 'Ihre aktuelle Verbindung', checking: 'Öffentliche IP-Adresse wird abgefragt…',
@@ -66,6 +105,112 @@ export const de = {
     cidrResponse: 'Dieses Beispiel liefert {{cidr}} mit {{additional}} zusätzlichen Adressen. Prüfen Sie additionalAddressCount, bevor Sie das Ergebnis in einer Liste erlaubter oder gesperrter Adressen verwenden.',
     ipSummary: 'Liefert die öffentliche IP-Adresse dieser HTTP-Verbindung. Fordern Sie text/plain für eine Adresse mit anschließendem Zeilenumbruch oder application/json für Adresse und Adressfamilie an. Antworten werden nicht zwischengespeichert. Ein VPN oder Proxy verändert die beobachtete Ausgangsadresse.',
   },
+  discovery: {
+    subtract: {
+      title: "Fragen zur CIDR-Subtraktion",
+      questions: {
+        wireguard: {
+          question: "Wie erstelle ich WireGuard-Ausnahmen für AllowedIPs?",
+          answer: "Tragen Sie die gewünschten Tunnelbereiche unter Einschließen und die Ausnahmen unter Ausschließen ein. AllowedIPs kopieren liefert die exakten verbleibenden CIDRs als Einstellungswert. Prüfen Sie ihn vor der Anwendung; Packetrove konfiguriert weder WireGuard noch Routen."
+        },
+        remaining: {
+          question: "Beweisen verbleibende Bereiche, dass Adressen ungenutzt sind?",
+          answer: "Sie zeigen Lücken relativ zu Ihren Einschluss- und Ausschlusslisten. Das Werkzeug prüft keine tatsächliche Netznutzung und sucht keine Subnetze einer bestimmten Größe."
+        },
+        outside: {
+          question: "Was geschieht mit überlappenden oder außerhalb liegenden Ausschlüssen?",
+          answer: "Überschneidungen zählen auf jeder Seite einmal. Entfernt werden nur Adressen, die auch eingeschlossen sind; außerhalb liegende Ausschlüsse entfernen nichts. Vollständige Entfernung ist ein erfolgreiches Ergebnis mit einer leeren CIDR-Liste und null verbleibenden Adressen."
+        },
+        covering: {
+          question: "Wie unterscheidet sich Subtraktion von einem abdeckenden CIDR?",
+          answer: "Subtraktion erhält exakt die Vereinigung der eingeschlossenen Bereiche abzüglich der ausgeschlossenen Bereiche, einschließlich Lücken. Sie liefert eine minimale sortierte Liste kanonischer CIDRs ohne zusätzliche Adressen. Ein einzelnes abdeckendes CIDR kann zusätzliche Adressen enthalten."
+        },
+        access: {
+          question: "Kann ich Subtraktion über MCP, Web-API oder CLI aufrufen?",
+          answer: "Subtraktion läuft derzeit im Browser und im gemeinsamen Berechnungskern. Browsereingaben bleiben lokal. MCP, Web-API und CLI bieten CIDR-Abdeckung und öffentliche IP-Abfragen an, aber keine Subtraktion. Die MCP-Anleitung beschreibt diese verfügbaren Operationen."
+        }
+      }
+    },
+    cidr: {
+      title: "Fragen zu abdeckenden CIDR-Netzen",
+      mcpTitle: "Den Rechner über MCP verwenden",
+      purpose: "Lassen Sie einen KI-Agenten für eine ausgewählte Gruppe erlaubter oder gesperrter Firewall-Einträge ein abdeckendes CIDR-Netz berechnen und die zusätzliche Abdeckung erklären.",
+      inputs: "Akzeptiert 1 bis {{maximumInputs}} IPv4- oder IPv6-Adressen oder CIDR-Bereiche mit höchstens {{maximumLength}} Zeichen pro Eintrag. Verwenden Sie nur eine Adressfamilie pro Aufruf.",
+      result: "cidr und range beschreiben das abgedeckte Netz. Prüfen Sie additionalAddressCount vor der Verwendung in Firewall-Regeln. Alle Adressanzahlen sind Dezimalzeichenfolgen, damit IPv6-Werte exakt bleiben.",
+      boundary: "Entfernte MCP-Aufrufe senden Ihre Eingaben an den Server. Der Webrechner arbeitet lokal. Dieses Werkzeug berechnet ein CIDR-Netz; mehrere Zusammenfassungen für das Eintragslimit einer ganzen Liste erfordern ein gesondertes Ziel. Es ändert keine Firewall-Regeln.",
+      openTool: "Den Browserrechner öffnen",
+      questions: {
+        firewall: {
+          question: "Wie reduziere ich Einträge in einer Firewall-IP-Liste?",
+          answer: "Fassen Sie eine ausgewählte Gruppe zu einem abdeckenden CIDR-Netz zusammen. Prüfen Sie zusätzliche Adressen zuerst: Sie werden in einer Erlaubnisliste ebenfalls erlaubt oder in einer Sperrliste ebenfalls gesperrt."
+        },
+        covering: {
+          question: "Erhält ein einzelnes CIDR-Netz genau die ursprünglichen Adressen?",
+          answer: "Nur wenn die ursprüngliche Vereinigung dieses CIDR-Netz vollständig ausfüllt. Sonst fügt selbst das kleinste einzelne Netz Adressen hinzu. Packetrove zeigt die Erweiterung; es wählt keine optimale Kombination für die gesamte Liste."
+        },
+        overlap: {
+          question: "Wie werden Überschneidungen und doppelte Eingaben gezählt?",
+          answer: "Jede Adresse der ursprünglichen Vereinigung zählt einmal. CIDR-Netze mit Hostbits werden zur Netzadresse normalisiert. normalizedInputs behält doppelte Einträge, ohne die Adressanzahlen zu erhöhen."
+        },
+        counts: {
+          question: "Sind auch sehr große IPv6-Adressanzahlen exakt?",
+          answer: "Ja. Der Browser verwendet exakte Ganzzahlen, API und MCP liefern Dezimalzeichenfolgen. Gezählt werden alle von Regeln abgedeckten Adressen, einschließlich IPv4-Netz- und Broadcast-Adressen. Verwenden Sie eine Adressfamilie pro Berechnung."
+        },
+        privacy: {
+          question: "Wohin gelangen meine Berechnungseingaben?",
+          answer: "Der Webrechner arbeitet im Browser und sendet keine Eingaben an die API. Entwürfe bleiben im Arbeitsspeicher dieses Tabs. Die lokale CLI rechnet offline; Web-API und entferntes MCP senden Eingaben an den Server."
+        }
+      }
+    },
+    ip: {
+      title: "Fragen zu Ihrer öffentlichen IP",
+      mcpTitle: "Eine Verbindung über MCP prüfen",
+      purpose: "Lassen Sie einen KI-Agenten die öffentliche IP prüfen, die für die Verbindung seines MCP-Werkzeugaufrufs beobachtet wird.",
+      inputs: "Übergeben Sie ein leeres Objekt, {}. Das Werkzeug beobachtet die Verbindung der Anfrage und nimmt keine IP-Adresse zur Abfrage entgegen.",
+      result: "Das Beispiel nutzt eine Dokumentationsadresse. Ein echter Aufruf liefert die beobachtete ip und family mit dem Wert ipv4 oder ipv6 für diese Anfrage.",
+      boundary: "Ein gehosteter KI-Client kann seine eigene Ausgangsadresse liefern. Prüfen Sie Ihre Browserverbindung mit diesem Webwerkzeug oder die Terminalverbindung mit der CLI auf Ihrem Rechner. Ein Aufruf findet weder beide Familien noch private lokale Adressen oder die Adresse vor einem Proxy. Das Ergebnis ist kein Identitätsnachweis.",
+      openTool: "Die öffentliche IP des Browsers prüfen",
+      questions: {
+        address: {
+          question: "Welche IP-Adresse zeigt diese Seite?",
+          answer: "Die öffentliche Adresse, die Packetrove für die aktuelle Browseranfrage beobachtet. Sie ist keine private lokale Adresse und identifiziert Ihr Gerät nicht."
+        },
+        vpn: {
+          question: "Was ändert sich bei einem VPN oder Proxy?",
+          answer: "Das Ergebnis zeigt die Ausgangsadresse dieser Verbindung. Aktualisieren Sie nach Änderungen am Netzwerk, VPN oder Proxy. Die Adresse vor dem Proxy wird nicht offengelegt."
+        },
+        family: {
+          question: "Findet eine Abfrage IPv4 und IPv6 gleichzeitig?",
+          answer: "Nein. Eine Anfrage beobachtet eine Adressfamilie. Eine erfolgreiche Abfrage belegt keine Verbindung über beide Familien."
+        },
+        client: {
+          question: "Warum kann ein KI-Agent oder die CLI eine andere IP melden?",
+          answer: "Jede Schnittstelle beobachtet die Verbindung ihrer Anfrage. Ein gehosteter MCP-Client kann ein anderes Netzwerk als Ihr Browser verwenden. Nutzen Sie das Webwerkzeug oder die CLI auf dem Netzwerkpfad, den Sie prüfen möchten."
+        },
+        privacy: {
+          question: "Werden IP-Ergebnisse gespeichert oder zwischengespeichert?",
+          answer: "Die Anwendung hält nur das aktuelle Ergebnis zur Anzeige im Arbeitsspeicher, ohne Abfrageverlauf oder Adressprotokolle. Ergebnisse und Fehler werden nicht zwischengespeichert. Die Hostingplattform verarbeitet die Anfrage weiterhin gemäß ihren Einstellungen."
+        }
+      }
+    }
+  },
+  mcp: {
+    title: "Packetrove mit einem KI-Agenten verbinden",
+    explanation: "Verbinden Sie einen kompatiblen MCP-Client, um abdeckende CIDR-Netze zu berechnen oder seine Verbindung zu prüfen. Richten Sie den Client ein und verwenden Sie dann die Werkzeugbeispiele.",
+    connection: "Streamable HTTP · Kein Konto oder API-Schlüssel erforderlich",
+    connectTitle: "Ihren Client verbinden",
+    connectDescription: "Wenn Claude Code oder Codex installiert ist, fügen Sie diesen entfernten Server hinzu. Die Befehle konfigurieren den Client und installieren keinen lokalen Packetrove-Server.",
+    clientGuide: "MCP-Dokumentation für {{client}}",
+    check: "Prüfen Sie die Verbindung im Client mit <code>/mcp</code>. Stellen Sie sicher, dass <code>{{cidrTool}}</code> und <code>{{ipTool}}</code> verfügbar sind.",
+    discovery: "Nach der Konfiguration entdeckt der Client Werkzeuge über tools/list. Beschreibungen und Schemas helfen bei Auswahl und Argumenten. Das Lesen einer Webseite konfiguriert keinen Client und gewährt keinen Werkzeugzugriff.",
+    toolName: "Werkzeugname",
+    arguments: "Beispielargumente",
+    exampleResult: "Beispielergebnis mit Dokumentationsadressen",
+    errorsTitle: "Ergebnisse lesen und Fehler behandeln",
+    results: "Lesen Sie <code>structuredContent</code> oder das JSON im Textblock. Behalten Sie Adressanzahlen als Dezimalzeichenfolgen oder Ganzzahlen beliebiger Genauigkeit; große IPv6-Anzahlen verlieren bei der Umwandlung in Gleitkommazahlen Genauigkeit.",
+    errors: "Wenn <code>isError</code> true ist, lesen Sie vor einem erneuten Versuch das Fehler-JSON. Korrigieren Sie <code>INVALID_INPUT</code> und <code>MIXED_ADDRESS_FAMILIES</code> anhand der Angaben des Nutzers. <code>CLIENT_IP_UNAVAILABLE</code> bedeutet, dass vertrauenswürdige Verbindungsmetadaten fehlen; erfinden Sie keine Adresse.",
+    technicalGuide: "Die technische MCP-Anleitung im Repository lesen (Englisch)"
+  },
   errors: {
     invalidInput: 'Ungültige Eingaben für die Berechnung.', mixedFamilies: 'Verwenden Sie innerhalb einer Berechnung nur IPv4 oder nur IPv6.',
     invalidJson: 'Die Anfrage muss gültiges JSON enthalten.', payloadTooLarge: 'Die Anfrage ist zu groß.', unsupportedMediaType: 'Der Inhaltstyp der Anfrage wird nicht unterstützt.',
@@ -75,10 +220,13 @@ export const de = {
     invalidAddress: 'Verwenden Sie eine standardmäßige IPv4- oder IPv6-Adresse mit einem optionalen gültigen CIDR-Präfix. Zonenkennungen und führende Nullen in IPv4-Adressen werden nicht unterstützt.',
     emptyInputs: 'Geben Sie mindestens eine IP-Adresse oder ein CIDR-Netz ein.', tooManyInputs: 'Verwenden Sie höchstens {{limit}} Einträge pro Berechnung.',
     inputTooLong: 'Jeder Eintrag darf höchstens {{limit}} Zeichen enthalten.', expectedFamily: 'Verwenden Sie {{family}}, passend zur ersten Eingabe.',
+    tooManyOutputs: 'Das vollständige Ergebnis überschreitet {{limit}} CIDRs. Verwende weniger Ausschlüsse oder kleinere eingeschlossene Bereiche. Es wird kein Teilergebnis zurückgegeben.',
   },
   meta: {
+    mcp: {"title": "Packetrove MCP-Anleitung — CIDR und öffentliche IP", "description": "Verbinde Claude Code oder Codex über MCP mit Packetrove. Erfahre mehr über Argumente, exakte CIDR-Ergebnisse, IP-Verbindungsgrenzen und Fehlerbehandlung ohne API-Schlüssel."},
     home: { title: 'Packetrove — CIDR-Rechner und öffentliche IP-Abfrage', description: 'Berechnen Sie umfassende CIDR-Netze lokal im Browser und prüfen Sie Ihre öffentliche IP-Adresse. Open-Source-Werkzeuge für IPv4 und IPv6 über Web, API, CLI und MCP, ohne Konto.' },
     cidr: { title: 'Rechner für das kleinste umfassende CIDR-Netz — Packetrove', description: 'Finden Sie das kleinste einzelne CIDR-Netz für IPv4- oder IPv6-Adressen und Bereiche. Berechnen Sie es im Browser mit exakten Adresszahlen, zusätzlicher Abdeckung und Beispielen.' },
+    subtract: { title: 'CIDR-Subtraktionsrechner — Packetrove', description: 'Subtrahiere IPv4- oder IPv6-CIDR-Listen lokal im Browser. Kopiere eine exakte minimale Liste für WireGuard AllowedIPs oder prüfe den verbleibenden Adressraum nach bekannten Zuweisungen.' },
     ip: { title: 'Wie lautet meine IP? Öffentliche IP-Abfrage — Packetrove', description: 'Prüfen Sie die öffentliche IPv4- oder IPv6-Adresse Ihrer Verbindung und verstehen Sie VPN- und Proxy-Ausgangsadressen, ohne Konto.' },
     api: { title: 'Packetrove-API — CIDR und öffentliche IP-Adresse', description: 'Berechnen Sie umfassende CIDR-Netze und prüfen Sie öffentliche IP-Adressen mit der Packetrove-API. Kopieren Sie curl-Beispiele und erkunden Sie die OpenAPI-Referenz ohne API-Schlüssel.' },
     notFound: { title: 'Seite nicht gefunden — Packetrove', description: 'Diese Packetrove-Seite existiert nicht. Kehren Sie zur Startseite zurück, um die Netzwerkwerkzeuge zu verwenden.' },

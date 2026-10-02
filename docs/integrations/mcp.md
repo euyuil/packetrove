@@ -4,6 +4,11 @@ Packetrove provides a stateless remote Model Context Protocol (MCP) server using
 Streamable HTTP. Connect to the production endpoint below, or start a local
 Worker with `pnpm dev:api`.
 
+The [website MCP guide](https://packetrove.com/docs/mcp) provides the same
+connection steps and tool examples in every supported website language. Tool
+pages link there for configuration. Reading documentation does not connect a
+client; clients discover tools through `tools/list` after configuration.
+
 | Setting | Value |
 | --- | --- |
 | Production URL | `https://api.packetrove.com/mcp` |
@@ -41,7 +46,14 @@ configure the remote server; they do not install a local Packetrove server.
 See the [Claude Code MCP guide](https://code.claude.com/docs/en/mcp) and
 [Codex MCP guide](https://developers.openai.com/codex/mcp/) for client options.
 
-## Tool input and result
+## Smallest covering CIDR tool
+
+Use `smallest_covering_cidr` for one selected group of firewall allowlist or
+blocklist entries, including questions about extra coverage and normalized
+inputs. It returns one CIDR, not a choice of several merges to meet an entire
+list's entry budget. It does not modify firewall rules. Remote calls send the
+input list to the server; use the browser calculator or built CLI for local
+calculation.
 
 Pass an `inputs` array containing 1 to 1,000 IPv4 addresses or IPv6 addresses,
 including CIDRs. Use one address family throughout. For example:
@@ -62,6 +74,9 @@ change.
 Business errors return `isError: true` and a text block containing the shared
 error JSON. Protocol validation errors are handled by the MCP SDK. Invalid JSON,
 media types, and oversized HTTP bodies are rejected at the HTTP boundary.
+For `INVALID_INPUT` and `MIXED_ADDRESS_FAMILIES`, correct the submitted inputs
+using the caller's information rather than silently dropping entries. Preserve
+IPv6 counts as decimal strings or arbitrary-precision integers.
 
 ## SDK example
 
@@ -92,7 +107,8 @@ For local development, replace the URL with `http://localhost:8787/mcp`.
 
 ## Current public IP tool
 
-Call `public-ip` with an empty arguments object:
+Use `public-ip` to inspect the connection making the MCP request, including
+checks after a network, VPN, or proxy change. Call it with an empty arguments object:
 
 ```ts
 const result = await client.callTool({ name: 'public-ip', arguments: {} });
@@ -105,6 +121,7 @@ Success returns the same result in `structuredContent` and a text JSON block,
 for example `{ "ip": "203.0.113.1", "family": "ipv4" }`. Tool discovery is
 available even when connection metadata is missing; a call then returns an
 `isError: true` result with `CLIENT_IP_UNAVAILABLE` in its text error JSON.
+Do not replace an unavailable result with the sample address.
 
 The address belongs to the connection making this tool call. A hosted AI client
 may report its own exit address, not the user's computer. Use the web page or

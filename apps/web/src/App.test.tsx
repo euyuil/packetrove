@@ -35,9 +35,12 @@ describe('web page routing', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('uses the configured API and repository in homepage quickstart examples', () => {
+  it('uses the configured API and repository in quickstart examples and the linked MCP guide', () => {
     vi.stubEnv('VITE_API_ORIGIN', 'https://api.service.example');
     vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
+    vi.stubEnv('VITE_GIT_COMMIT', '');
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
     render(<App />);
     const api = screen.getByRole('region', { name: 'Web API' });
     expect(api.textContent).toContain('curl -fsS https://api.service.example/v1/public-ip');
@@ -46,9 +49,16 @@ describe('web page routing', () => {
     expect(cli.textContent).toContain('git clone https://github.com/example-owner/packetrove.git');
     expect(within(cli).getByText('packetrove public-ip')).toBeDefined();
     const mcp = screen.getByRole('region', { name: 'Model Context Protocol' });
-    expect(mcp.textContent).toContain('claude mcp add --transport http --scope user packetrove');
-    expect(mcp.textContent).toContain('codex mcp add packetrove');
-    expect(mcp.textContent).toContain('--url https://api.service.example/mcp');
+    expect(mcp.textContent).toContain('https://api.service.example/mcp');
+    const guide = within(mcp).getByRole('link', { name: 'Read the MCP connection guide' });
+    expect(guide.getAttribute('href')).toBe('/docs/mcp');
+    fireEvent.click(guide);
+    const main = screen.getByRole('main');
+    expect(main.textContent).toContain('claude mcp add --transport http --scope user packetrove \\\n  https://api.service.example/mcp');
+    expect(main.textContent).toContain('codex mcp add packetrove \\\n  --url https://api.service.example/mcp');
+    expect(screen.getByRole('link', { name: 'Read the technical MCP guide in the repository (English)' }).getAttribute('href'))
+      .toBe('https://github.com/example-owner/packetrove/blob/main/docs/integrations/mcp.md');
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it.each(['/missing-page', '/public-ip/missing-page', '/cidr/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {

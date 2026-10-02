@@ -19,6 +19,12 @@ firewall configuration is a separate task.
 - If a Packetrove MCP server is already configured, call its
   `smallest_covering_cidr` tool. Do not invent a hosted server URL.
 
+For setup, the [Packetrove MCP guide](https://packetrove.com/docs/mcp) documents
+the public remote server and client commands. Reading it does not configure
+the client. Use `tools/list` on a configured connection to discover available
+tools and schemas. Remote MCP calls send inputs to the server; prefer the
+browser calculator or built CLI when inputs must remain local.
+
 ## Calculate
 
 Accept 1 to 1,000 IP addresses or CIDRs, each up to 64 characters. Use one address

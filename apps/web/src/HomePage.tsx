@@ -1,7 +1,7 @@
 import type { MouseEventHandler } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Anchor, Badge, Code, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { PUBLIC_IP_PATH } from '@packetrove/contracts';
+import { MCP_PATH, PUBLIC_IP_PATH } from '@packetrove/contracts';
 import cliPackage from '../../../packages/cli/package.json';
 import { getApiUrl } from './api';
 import { localizedPath, pagePaths } from './i18n/routes';
@@ -21,7 +21,7 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
     'pnpm --filter @packetrove/cli pack --pack-destination "$PWD"',
     `npm install --global ./packetrove-cli-${cliPackage.version}.tgz`,
   ].join('\n');
-  const mcpUrl = getApiUrl('/mcp');
+  const mcpUrl = getApiUrl(MCP_PATH);
 
   return <Stack gap="xl">
     <Stack component="section" aria-labelledby="project-title" gap="md" py={{ base: 'md', sm: 'xl' }}>
@@ -34,12 +34,19 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
         <Badge variant="light">{t($ => $.home.anonymous)}</Badge>
       </Group>
     </Stack>
-    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+    <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-cidr-heading">
         <Stack gap="md">
           <Title order={2} size="h3" id="home-cidr-heading">{t($ => $.cidr.title)}</Title>
           <Text c="dimmed">{t($ => $.home.cidrDescription)}</Text>
           <Anchor href={localizedPath('/cidr', locale)} onClick={onNavigate}>{t($ => $.home.cidrLink)}</Anchor>
+        </Stack>
+      </Paper>
+      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-subtract-heading">
+        <Stack gap="md">
+          <Title order={2} size="h3" id="home-subtract-heading">{t($ => $.subtract.title)}</Title>
+          <Text c="dimmed">{t($ => $.home.subtractDescription)}</Text>
+          <Anchor href={localizedPath('/cidr/subtract', locale)} onClick={onNavigate}>{t($ => $.home.subtractLink)}</Anchor>
         </Stack>
       </Paper>
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-ip-heading">
@@ -79,21 +86,8 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
           <Text size="sm" fw={600}>{t($ => $.home.serverAddress)}</Text>
           <Code block>{mcpUrl}</Code>
         </Stack>
-        <Text size="sm" c="dimmed">{t($ => $.home.mcpExample)}</Text>
-        <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-          <Stack gap="sm" miw={0}>
-            <Title order={3} size="h4">Claude Code</Title>
-            <Code block>{`claude mcp add --transport http --scope user packetrove \\
-  ${mcpUrl}`}</Code>
-          </Stack>
-          <Stack gap="sm" miw={0}>
-            <Title order={3} size="h4">Codex</Title>
-            <Code block>{`codex mcp add packetrove \\
-  --url ${mcpUrl}`}</Code>
-          </Stack>
-        </SimpleGrid>
-        <Text size="sm" c="dimmed"><Trans i18nKey={$ => $.home.mcpCheck} components={{ code: <Code /> }} /></Text>
-        <Anchor size="sm" href={`${documentationUrl}/docs/integrations/mcp.md`}>{t($ => $.home.mcpGuide)}</Anchor>
+        <Text size="sm" c="dimmed">{t($ => $.mcp.connection)}</Text>
+        <Anchor size="sm" href={localizedPath(pagePaths.mcp, locale)} onClick={onNavigate}>{t($ => $.home.mcpGuide)}</Anchor>
       </Stack>
     </Paper>
   </Stack>;

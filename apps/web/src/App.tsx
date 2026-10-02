@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
+import { CidrSubtractTool, type CidrSubtractDraft } from './CidrSubtractTool';
 import { PublicIpTool } from './PublicIpTool';
 import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
@@ -11,16 +12,21 @@ import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
 import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 import ApiDocumentation from './ApiDocumentation';
+import { McpDocumentation } from './McpDocumentation';
 
 export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
   const [pathname, setPathname] = useState(initialPathname);
   const [urlSuffix, setUrlSuffix] = useState('');
   const [draft, setDraft] = useState<CidrCoverDraft>({ input: '', result: null, error: null });
+  const [subtractDraft, setSubtractDraft] = useState<CidrSubtractDraft>({ include: '', exclude: '', result: null, error: null });
   const { locale, page, path } = resolveRoute(pathname);
+  const main = useRef<HTMLElement>(null);
+  const previousPath = useRef(path);
   const homePage = page === 'home';
   const ipPage = page === 'ip';
   const cidrPage = page === 'cidr';
+  const subtractPage = page === 'subtract';
   const apiPage = page === 'api';
   const href = (destination: string) => localizedPath(destination, locale);
   const repository = import.meta.env.VITE_GITHUB_REPOSITORY || 'euyuil/packetrove';
@@ -30,6 +36,12 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const newIssueUrl = `https://github.com/${repository}/issues/new`;
   useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [i18n, locale]);
   useEffect(() => { updatePageMetadata(locale, page, path); }, [locale, page, path]);
+  useEffect(() => {
+    // Canonical paths identify content independently of language and URL fragments.
+    if (previousPath.current === path) return;
+    previousPath.current = path;
+    main.current?.focus({ preventScroll: true });
+  }, [path]);
   useEffect(() => {
     const updatePath = () => {
       setPathname(window.location.pathname);
@@ -73,12 +85,19 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
         <Button component="a" href={href('/cidr')} onClick={navigate} variant={cidrPage ? 'light' : 'subtle'}
           aria-current={cidrPage ? 'page' : undefined}>{t($ => $.cidr.title)}</Button>
+        <Button component="a" href={href('/cidr/subtract')} onClick={navigate} variant={subtractPage ? 'light' : 'subtle'}
+          aria-current={subtractPage ? 'page' : undefined}>{t($ => $.subtract.title)}</Button>
         <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
-      <Box component="main">
+      <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-always"
+        aria-label={homePage ? t($ => $.common.home) : ipPage ? t($ => $.ip.title)
+          : cidrPage ? t($ => $.cidr.title) : subtractPage ? t($ => $.subtract.title)
+          : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
-          : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
+          : ipPage ? <PublicIpTool onNavigate={navigate} /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} onNavigate={navigate} />
+          : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} />
+          : subtractPage ? <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} onNavigate={navigate} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>
@@ -86,7 +105,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
               <Anchor href={href('/cidr')} onClick={navigate}>{t($ => $.api.returnToCalculator)}</Anchor>
             </Stack>
           }>
-            <ApiDocumentation />
+            <ApiDocumentation onNavigate={navigate} />
           </ApiDocumentationBoundary> : <Stack component="section" py="xl">
           <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>{t($ => $.common.notFound)}</Title>
