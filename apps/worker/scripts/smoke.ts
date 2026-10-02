@@ -10,6 +10,8 @@ import {
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
 import { escapeHtml, robotsText, websitePages } from '../../web/src/seo';
+import { localizedPath, pagePaths } from '../../web/src/i18n/routes';
+import { mcpExamples } from '../../web/src/mcp-examples';
 
 const originArguments = process.argv.slice(2);
 if (originArguments.length !== 2) {
@@ -71,6 +73,26 @@ for (const page of websitePages) {
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
       ? text.api.cidrSummary : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
+    if (page.page === 'cidr' || page.page === 'ip') {
+      for (const question of Object.values(text.discovery[page.page].questions)) {
+        assert(pageHtml.includes(escapeHtml(question.question)), `Tool question: ${path}`);
+        assert(pageHtml.includes(escapeHtml(question.answer)), `Tool answer: ${path}`);
+      }
+    }
+    if (page.page !== 'mcp') {
+      assert(pageHtml.includes('href="' + localizedPath(pagePaths.mcp, page.locale) + '"'), `MCP guide link: ${path}`);
+    } else {
+      assert(pageHtml.includes('claude mcp add --transport http --scope user packetrove'), `Claude Code setup: ${path}`);
+      assert(pageHtml.includes('codex mcp add packetrove'), `Codex setup: ${path}`);
+      assert(pageHtml.includes('structuredContent') && pageHtml.includes('CLIENT_IP_UNAVAILABLE'), `MCP result and error guide: ${path}`);
+    }
+    for (const tool of page.page === 'mcp' ? ['cidr', 'ip'] as const : page.page === 'cidr' || page.page === 'ip' ? [page.page] : []) {
+      const example = mcpExamples[tool];
+      assert(pageHtml.includes('data-mcp-tool="' + example.name + '"'), `MCP tool name: ${path}`);
+      assert(pageHtml.includes(escapeHtml(JSON.stringify(example.arguments, null, 2))), `MCP example arguments: ${path}`);
+      assert(pageHtml.includes(escapeHtml(JSON.stringify(example.result, null, 2))), `MCP example result: ${path}`);
+      assert(pageHtml.includes(escapeHtml(text.discovery[tool].boundary)), `MCP tool limitations: ${path}`);
+    }
   }
 }
 const sitemap = await timedFetch(`${origin}/sitemap.xml`);
@@ -107,7 +129,7 @@ for (const path of ['/api/v1/cidr/cover', '/mcp']) {
   assert.equal(response.status, 405, `Website must reject tool-call POST requests: ${path}`);
   await response.body?.cancel();
 }
-for (const path of ['/', '/cidr', '/ip', '/docs/api', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
+for (const path of ['/', '/cidr', '/ip', '/docs/api', '/docs/mcp', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
   const response = await timedFetch(`${apiOrigin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });

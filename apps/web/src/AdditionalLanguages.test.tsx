@@ -61,14 +61,14 @@ describe('additional website languages', () => {
     expect(document.title).toBe(translation.meta.home.title);
     expect(document.head.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(translation.meta.home.description);
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://packetrove.com' + prefix + '/');
-    expect(document.head.querySelectorAll('link[rel="alternate"][hreflang]')).toHaveLength(6);
+    expect(document.head.querySelectorAll('link[rel="alternate"][hreflang]')).toHaveLength(supportedLocales.length + 1);
     for (const language of supportedLocales) {
       expect(document.head.querySelector(`link[hreflang="${language}"]`)?.getAttribute('href'))
         .toBe('https://packetrove.com' + localizedPath('/', language));
     }
     fireEvent.click(screen.getByRole('button', { name: translation.common.language + ': ' + locales[locale].name }));
     const menu = screen.getByRole('menu');
-    expect(within(menu).getAllByRole('menuitem')).toHaveLength(5);
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(supportedLocales.length);
     for (const language of supportedLocales) {
       const link = within(menu).getByRole('menuitem', { name: locales[language].name });
       expect(link.getAttribute('href')).toBe(localizedPath('/', language));

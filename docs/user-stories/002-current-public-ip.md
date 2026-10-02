@@ -63,3 +63,17 @@ See [Cloudflare's header documentation](https://developers.cloudflare.com/fundam
 
 The tool reports an address. It does not edit firewall rules or automatically
 insert the result into the CIDR calculator.
+
+## Page explanations and agent access
+
+The tool page includes questions about connection addresses, VPN/proxy changes,
+address families, hosted clients, and application storage. Its `get_public_ip`
+section uses an empty arguments object and a clearly labelled documentation
+address for the sample result. The section links to the same-language
+`/docs/mcp` connection guide. Both pages explain that a hosted client may
+observe its own exit address and direct users to their browser or local CLI
+when their device's network path is the intended target.
+
+These explanations and examples are static HTML. Building or reading the MCP
+guide makes no IP lookup. Opening `/ip` in the browser retains the existing
+lookup behavior; language switching does not trigger another request.

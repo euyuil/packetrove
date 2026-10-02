@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react';
+import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Accordion, Alert, Badge, Button, DataList, Group, List, Paper, ScrollArea, SimpleGrid, Stack, Text, Textarea, Title,
@@ -10,6 +10,8 @@ import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage, issueMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
 import { CidrExamples } from './CidrExamples';
+import { ToolQuestions } from './ToolQuestions';
+import { ToolMcpSection } from './ToolMcpSection';
 
 function inputRows(text: string) {
   return text.split(/\r?\n/).map((value, index) => ({ value: value.trim(), line: index + 1 }))
@@ -18,8 +20,9 @@ function inputRows(text: string) {
 
 export type CidrCoverDraft = { input: string; result: CidrCoverResult | null; error: ToolError | null };
 
-export function CidrCoverTool({ draft, onDraftChange }: {
+export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
   draft: CidrCoverDraft; onDraftChange: (draft: CidrCoverDraft) => void;
+  onNavigate?: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const { t, i18n } = useTranslation();
   const locale = resolveLocale(i18n.resolvedLanguage);
@@ -170,6 +173,8 @@ export function CidrCoverTool({ draft, onDraftChange }: {
         <Text size="sm" c="dimmed">{t($ => $.cidr.countExplanation)}</Text>
       </Stack>
       <CidrExamples />
+      <ToolQuestions tool="cidr" />
+      <ToolMcpSection tool="cidr" onNavigate={onNavigate} />
     </Stack>
   );
 }

@@ -1,8 +1,8 @@
 import { locales, supportedLocales, type Locale } from './locales';
 export type { Locale } from './locales';
-export type Page = 'home' | 'cidr' | 'ip' | 'api' | 'notFound';
+export type Page = 'home' | 'cidr' | 'ip' | 'api' | 'mcp' | 'notFound';
 
-export const pagePaths = { home: '/', cidr: '/cidr', ip: '/ip', api: '/docs/api' } as const;
+export const pagePaths = { home: '/', cidr: '/cidr', ip: '/ip', api: '/docs/api', mcp: '/docs/mcp' } as const;
 
 export function localizedPath(path: string, locale: Locale) {
   const prefix = locales[locale].prefix;

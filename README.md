@@ -61,7 +61,7 @@ the returned address, and lookup results and errors are not cached.
 
 The website supports English, Simplified Chinese, Spanish, German, and Japanese.
 English uses the existing URLs. Other languages use a prefix for the homepage,
-CIDR calculator, public IP tool, and API documentation shell:
+CIDR calculator, public IP tool, API documentation shell, and MCP connection guide:
 
 | Language | Homepage | URL prefix |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ CIDR calculator, public IP tool, and API documentation shell:
 | 日本語 | [Japanese homepage](https://packetrove.com/ja/) | `/ja` |
 
 For example, Spanish tools are at `/es/cidr` and `/es/ip`, and API documentation
-is at `/es/docs/api`.
+is at `/es/docs/api`. The Spanish MCP guide is at `/es/docs/mcp`.
 Use the language dropdown in the header to switch the current page. It shows
 the current language, with a British flag for English and a Chinese flag for
 Simplified Chinese, plus Spanish, German, and Japanese flags for their respective
@@ -85,8 +85,8 @@ result or validation error. It also keeps an ongoing public IP check and updates
 its labels without making another request. Drafts and IP results stay in memory.
 Translations ship with the web application and require no translation service.
 
-Production builds prerender all 20 pages in the five languages from the same
-React components used in the browser. Headings, explanations, navigation links,
+Production builds prerender every registered page in every supported language
+from the same React components used in the browser. Headings, explanations, navigation links,
 and examples are present in the HTML before JavaScript runs. The browser then
 hydrates that HTML to enable the tools. CIDR inputs stay empty until entered;
 public IP lookup starts only in the browser, so builds make no lookup requests
@@ -94,11 +94,17 @@ and never embed a visitor's IP address.
 
 Page titles, descriptions, social metadata, canonical URLs, and alternate
 language links share one definition for builds and in-page navigation. Builds
-also generate `sitemap.xml` with the 20 canonical URLs and `robots.txt` with
+also generate `sitemap.xml` with those canonical URLs and `robots.txt` with
 its sitemap location. These URLs use the public `https://packetrove.com` origin;
 change `WEBSITE_ORIGIN` in `apps/web/src/i18n/page-metadata.ts` when self-hosting.
 
-The interactive API reference, OpenAPI specification, linked integration guides,
+The tool pages include localized questions about common tasks and examples for
+their MCP tools. The [MCP connection guide](https://packetrove.com/docs/mcp)
+centralizes Claude Code and Codex setup, arguments, results, errors, and limits.
+These sections are present in the prerendered HTML and use documentation addresses;
+reading the guide makes no tool calls and does not connect an AI client.
+
+The interactive API reference, OpenAPI specification, repository integration guides,
 CLI, MCP descriptions, and repository documentation remain in English. Machine
 response fields, error codes, and decimal-string address counts are unchanged.
 See the [website language story](docs/user-stories/003-website-languages.md) for
@@ -111,7 +117,7 @@ the scope and contributor instructions.
 | Website | [Project overview](https://packetrove.com) · [CIDR calculator](https://packetrove.com/cidr) · [My Public IP](https://packetrove.com/ip) |
 | Web API | [Interactive API documentation](https://packetrove.com/docs/api) · [API guide](docs/api/README.md) · [OpenAPI specification](https://api.packetrove.com/openapi.json) |
 | Command-line interface (CLI) | [CLI guide](docs/integrations/cli.md), with offline CIDR calculations and JSON output |
-| AI agents | [MCP connection guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
+| AI agents | [MCP connection guide](https://packetrove.com/docs/mcp) · [Technical MCP guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
 
 ### Call the API
 
@@ -135,6 +141,11 @@ The server provides `smallest_covering_cidr` and `get_public_ip` without
 authentication. The repository also includes a
 [CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) for calculating ranges
 and explaining additional allowlist or blocklist coverage.
+
+Use the [MCP connection guide](https://packetrove.com/docs/mcp) for Claude Code
+and Codex commands. Once configured, clients discover the two tools through
+`tools/list`, including their input/output schemas and usage limits. Remote CIDR
+calls send inputs to the server; the browser and built CLI calculate locally.
 
 A hosted MCP client checks its own connection, which may differ from your
 computer's. Use the website or run the CLI on your machine to inspect that
@@ -195,6 +206,8 @@ automatically. The website's `/docs/api` page includes static endpoint summaries
 and curl examples, loads Scalar in the browser only when opened, and sends test
 requests directly to the configured API origin without cookies.
 Scalar's AI features, telemetry, proxy, and external fonts are disabled.
+The website's `/docs/mcp` guide uses the same configured API origin and shared
+tool names and examples as the tool pages, and loads no interactive reference.
 Local public IP lookup depends on Cloudflare connection metadata; without it,
 the API returns `CLIENT_IP_UNAVAILABLE`.
 
@@ -220,6 +233,9 @@ deploy after validation and run production checks. See the
 
 See the [contribution guide](CONTRIBUTING.md) for discussing changes, local
 development, checks, and pull requests.
+
+The [AI tool discovery story](docs/user-stories/004-ai-tool-discovery.md)
+records the content scope, tool selection boundaries, and manual prompt checks.
 
 ## License
 

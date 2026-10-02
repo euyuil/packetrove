@@ -89,7 +89,7 @@ describe('hydration of production HTML', () => {
     if (page.page === 'api') expect(await screen.findByText('Interactive API reference')).toBeDefined();
   });
 
-  it.each(['zh-Hans', 'es', 'de', 'ja'] as const)('preserves exact counts and drafts after hydration when switching to %s', async locale => {
+  it.each(supportedLocales.filter(locale => locale !== 'en'))('preserves exact counts and drafts after hydration when switching to %s', async locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
@@ -114,7 +114,7 @@ describe('hydration of production HTML', () => {
     expect(storage).not.toHaveBeenCalled();
   });
 
-  it.each(['zh-Hans', 'es', 'de', 'ja'] as const)('keeps the lookup started after hydration when switching to %s', async locale => {
+  it.each(supportedLocales.filter(locale => locale !== 'en'))('keeps the lookup started after hydration when switching to %s', async locale => {
     const pending: Array<{ resolve: (response: Response) => void; signal: AbortSignal }> = [];
     const fetch = vi.fn((_url: string, options: RequestInit) => new Promise<Response>(resolve => {
       pending.push({ resolve, signal: options.signal! });

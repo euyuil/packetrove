@@ -11,6 +11,7 @@ import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
 import { localizedPath, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 import ApiDocumentation from './ApiDocumentation';
+import { McpDocumentation } from './McpDocumentation';
 
 export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
@@ -78,7 +79,8 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       </Group>
       <Box component="main">
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
-          : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
+          : ipPage ? <PublicIpTool onNavigate={navigate} /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} onNavigate={navigate} />
+          : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>
@@ -86,7 +88,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
               <Anchor href={href('/cidr')} onClick={navigate}>{t($ => $.api.returnToCalculator)}</Anchor>
             </Stack>
           }>
-            <ApiDocumentation />
+            <ApiDocumentation onNavigate={navigate} />
           </ApiDocumentationBoundary> : <Stack component="section" py="xl">
           <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>{t($ => $.common.notFound)}</Title>

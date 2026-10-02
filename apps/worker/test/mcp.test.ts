@@ -10,6 +10,7 @@ import {
   MAX_REQUEST_BYTES, MCP_TOOL_NAME,
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
+import { mcpExamples } from '../../web/src/mcp-examples';
 
 const workerFetch: typeof fetch = async (input, init) => {
   const request = new Request(input, init);
@@ -57,6 +58,19 @@ describe('stateless MCP in the Workers runtime', () => {
       expect(response.isError).not.toBe(true);
       expect(CidrCoverResultSchema.parse(response.structuredContent)).toEqual(result);
       expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+    } finally { await client.close(); }
+  });
+  it.each(Object.values(mcpExamples))('executes the website guide example for $name', async example => {
+    const client = await connectedClient('http://localhost/mcp', undefined, mcpExamples.ip.result.ip);
+    try {
+      expect((await client.listTools()).tools.some(tool => tool.name === example.name)).toBe(true);
+      const response = await client.callTool({ name: example.name, arguments: example.arguments });
+      expect(response.isError).not.toBe(true);
+      expect(response.structuredContent).toEqual(example.result);
+      expect(response.content).toHaveLength(1);
+      const content = response.content?.[0];
+      if (content?.type !== 'text') throw new Error('Missing result content');
+      expect(JSON.parse(content.text)).toEqual(example.result);
     } finally { await client.close(); }
   });
   it('preserves dotted-tail IPv6 values using the shared calculation', async () => {

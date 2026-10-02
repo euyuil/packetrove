@@ -10,11 +10,12 @@ preferred language.
 ## Website scope
 
 - Translate the homepage, navigation, CIDR calculator, public IP tool, API
-  documentation shell, loading states, clipboard feedback, accessible labels,
+  documentation shell, MCP connection guide, tool questions and MCP examples,
+  loading states, clipboard feedback, accessible labels,
   and the application-rendered not-found page.
 - Keep existing English URLs. Use `/zh` for Simplified Chinese (`zh-Hans`),
   `/es` for Spanish (`es`), `/de` for German (`de`), and `/ja` for Japanese (`ja`).
-  Each prefix has a homepage, `/cidr`, `/ip`, and `/docs/api` page.
+  Each prefix has a homepage, `/cidr`, `/ip`, `/docs/api`, and `/docs/mcp` page.
 - Let the URL determine the language. Provide a header dropdown with `English`,
   `简体中文`, `Español`, `Deutsch`, and `日本語` entries, without browser-language
   redirects or persistent storage.
@@ -32,11 +33,11 @@ preferred language.
 - Format displayed counts for the selected language using `Intl.NumberFormat`.
   Parse decimal-string address counts as `BigInt` to retain exact IPv6 values.
 - Include translated titles, descriptions, and social metadata in static HTML
-  entries. Use self-referencing canonical URLs and reciprocal links for all five
-  locales, plus `x-default` pointing to English. Update metadata during in-page
+  entries. Use self-referencing canonical URLs and reciprocal links for all
+  registered locales, plus `x-default` pointing to English. Update metadata during in-page
   navigation.
-- Prerender the 20 localized pages at build time, including their headings,
-  explanations, links, and examples. Hydrate the same React components in the
+- Prerender every registered page in every supported locale at build time,
+  including headings, explanations, links, and examples. Hydrate the same React components in the
   browser without losing page state during navigation or language changes.
 - Generate `sitemap.xml` from the canonical page list and reference it in
   `robots.txt`. Do not include aliases, missing pages, or API origins.
@@ -46,7 +47,7 @@ preferred language.
 - Keep unknown routes as HTTP 404 responses. The shared static fallback is in
   English; application-rendered not-found pages use the selected locale.
 
-The interactive API reference and specification, linked integration guides,
+The interactive API reference and specification, repository integration guides,
 CLI, MCP descriptions, and repository documentation remain in English in this
 phase. API fields, error codes, serialized messages, and address counts retain
 their existing contracts. Browser-language suggestions and further locales
@@ -98,7 +99,9 @@ the Vite HTML transform and browser navigation. Keep the `<!--page-metadata-->`
 and empty root placeholders in the HTML entries; `scripts/build.ts` fills them
 from the metadata and React render. `websitePages` derives the Vite inputs and
 sitemap entries from the locale registry and page paths. The production smoke
-check validates all 20 localized entries.
+check validates every registered localized entry, including the MCP guide and
+tool questions and examples. Complete all new page content for locales merged
+into `main` before merging the feature that introduces it.
 
 Run `pnpm check` before submitting changes. The checks cover language switching,
 retained calculator drafts, physical-line validation errors, clipboard status,
