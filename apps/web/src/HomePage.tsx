@@ -1,12 +1,16 @@
 import type { MouseEventHandler } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
 import { Anchor, Badge, Code, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { PUBLIC_IP_PATH } from '@packetrove/contracts';
 import cliPackage from '../../../packages/cli/package.json';
 import { getApiUrl } from './api';
+import { localizedPath } from './i18n/routes';
 
 export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
   documentationUrl: string; repositoryUrl: string; onNavigate: MouseEventHandler<HTMLAnchorElement>;
 }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage === 'zh-Hans' ? 'zh-Hans' : 'en';
   const apiExample = `curl -fsS ${getApiUrl(PUBLIC_IP_PATH)} \\
   -H 'Accept: text/plain'`;
   const cliInstall = [
@@ -20,46 +24,45 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
 
   return <Stack gap="xl">
     <Stack component="section" aria-labelledby="project-title" gap="md" py={{ base: 'md', sm: 'xl' }}>
-      <Title order={1} id="project-title" maw={760}>Network tools for humans and agents</Title>
+      <Title order={1} id="project-title" maw={760}>{t($ => $.common.tagline)}</Title>
       <Text size="lg" c="dimmed" maw={760}>
-        Open source network utilities for your browser, terminal, and AI agents.
-        Use the navigation to open a tool, or connect Packetrove to your own workflow below.
+        {t($ => $.home.description)}
       </Text>
       <Group gap="sm">
-        <Badge variant="light">Open source</Badge>
-        <Badge variant="light">No account or API key required</Badge>
+        <Badge variant="light">{t($ => $.home.openSource)}</Badge>
+        <Badge variant="light">{t($ => $.home.anonymous)}</Badge>
       </Group>
     </Stack>
     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} miw={0} aria-labelledby="api-heading">
         <Stack gap="md">
-          <Title order={2} size="h3" id="api-heading">Web API</Title>
-          <Text c="dimmed">Call Packetrove from any HTTP client. For example, get your current public IP with curl:</Text>
+          <Title order={2} size="h3" id="api-heading">{t($ => $.home.apiTitle)}</Title>
+          <Text c="dimmed">{t($ => $.home.apiDescription)}</Text>
           <Code block>{apiExample}</Code>
-          <Text size="sm" c="dimmed">The response is the IP address followed by a newline, with <Code>Content-Type: text/plain</Code>.</Text>
-          <Anchor size="sm" href="/docs/api" onClick={onNavigate}>Read the API guide</Anchor>
+          <Text size="sm" c="dimmed"><Trans i18nKey={$ => $.home.apiResponse} components={{ code: <Code /> }} /></Text>
+          <Anchor size="sm" href={localizedPath('/docs/api', locale)} onClick={onNavigate}>{t($ => $.home.apiGuide)}</Anchor>
         </Stack>
       </Paper>
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} miw={0} aria-labelledby="cli-heading">
         <Stack gap="md">
-          <Title order={2} size="h3" id="cli-heading">Command-line interface</Title>
-          <Text c="dimmed">Install from source with Node.js and pnpm:</Text>
+          <Title order={2} size="h3" id="cli-heading">{t($ => $.home.cliTitle)}</Title>
+          <Text c="dimmed">{t($ => $.home.cliDescription)}</Text>
           <Code block>{cliInstall}</Code>
-          <Text size="sm" c="dimmed">Then print your current public IP:</Text>
+          <Text size="sm" c="dimmed">{t($ => $.home.cliExample)}</Text>
           <Code block>packetrove ip</Code>
-          <Anchor size="sm" href={`${documentationUrl}/docs/integrations/cli.md`}>Read the CLI guide</Anchor>
+          <Anchor size="sm" href={`${documentationUrl}/docs/integrations/cli.md`}>{t($ => $.home.cliGuide)}</Anchor>
         </Stack>
       </Paper>
     </SimpleGrid>
     <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="mcp-heading">
       <Stack gap="md">
-        <Title order={2} size="h3" id="mcp-heading">Model Context Protocol</Title>
-        <Text c="dimmed">Connect your AI agent to Packetrove over Streamable HTTP. No authentication or local server is needed.</Text>
+        <Title order={2} size="h3" id="mcp-heading">{t($ => $.home.mcpTitle)}</Title>
+        <Text c="dimmed">{t($ => $.home.mcpDescription)}</Text>
         <Stack gap="xs">
-          <Text size="sm" fw={600}>Server address</Text>
+          <Text size="sm" fw={600}>{t($ => $.home.serverAddress)}</Text>
           <Code block>{mcpUrl}</Code>
         </Stack>
-        <Text size="sm" c="dimmed">With your client installed, add the server:</Text>
+        <Text size="sm" c="dimmed">{t($ => $.home.mcpExample)}</Text>
         <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
           <Stack gap="sm" miw={0}>
             <Title order={3} size="h4">Claude Code</Title>
@@ -72,8 +75,8 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
   --url ${mcpUrl}`}</Code>
           </Stack>
         </SimpleGrid>
-        <Text size="sm" c="dimmed">Use <Code>/mcp</Code> in your client to check the connection. Public IP checks observe the connection used by the agent.</Text>
-        <Anchor size="sm" href={`${documentationUrl}/docs/integrations/mcp.md`}>Read the MCP guide</Anchor>
+        <Text size="sm" c="dimmed"><Trans i18nKey={$ => $.home.mcpCheck} components={{ code: <Code /> }} /></Text>
+        <Anchor size="sm" href={`${documentationUrl}/docs/integrations/mcp.md`}>{t($ => $.home.mcpGuide)}</Anchor>
       </Stack>
     </Paper>
   </Stack>;

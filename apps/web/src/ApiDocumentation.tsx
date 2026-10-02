@@ -1,4 +1,5 @@
 import type { ComponentProps } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Anchor, Group, Stack, Text, Title } from '@mantine/core';
 import { ApiReferenceReact } from '@scalar/api-reference-react';
 import '@scalar/api-reference-react/style.css';
@@ -22,15 +23,16 @@ const configuration: ComponentProps<typeof ApiReferenceReact>['configuration'] =
 };
 
 export default function ApiDocumentation() {
+  const { t, i18n } = useTranslation();
   return <Stack component="section" gap="lg" aria-labelledby="api-documentation-heading">
     <Group justify="space-between" align="center">
-      <Title order={1} size="h2" id="api-documentation-heading">API documentation</Title>
-      <Anchor href={getApiUrl('/openapi.json')} size="sm">OpenAPI specification <span aria-hidden="true">↗</span></Anchor>
+      <Title order={1} size="h2" id="api-documentation-heading">{t($ => $.api.title)}</Title>
+      <Anchor href={getApiUrl('/openapi.json')} size="sm">{t($ => $.api.specification)} <span aria-hidden="true">↗</span></Anchor>
     </Group>
     <Text c="dimmed" size="sm">
-      Explore the endpoints, copy request examples, and try the API without an account or API key.
-      Sending a request submits its inputs to the API. Public IP checks observe your browser&apos;s connection.
+      {t($ => $.api.description)}
     </Text>
+    {i18n.resolvedLanguage === 'zh-Hans' && <Text size="sm" c="dimmed">{t($ => $.api.englishReference)}</Text>}
     <div className="api-reference"><ApiReferenceReact configuration={configuration} /></div>
   </Stack>;
 }
