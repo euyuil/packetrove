@@ -90,7 +90,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
-      <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-always"
+      <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
         aria-label={homePage ? t($ => $.common.home) : ipPage ? t($ => $.ip.title)
           : cidrPage ? t($ => $.cidr.title) : subtractPage ? t($ => $.subtract.title)
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
