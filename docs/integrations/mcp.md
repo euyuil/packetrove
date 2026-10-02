@@ -15,7 +15,7 @@ client; clients discover tools through `tools/list` after configuration.
 | Local URL | `http://localhost:8787/mcp` |
 | Transport | Streamable HTTP |
 | Authentication | None |
-| Tools | `smallest_covering_cidr`, `public-ip` |
+| Tools | `smallest_covering_cidr`, `subtract_cidrs`, `public-ip` |
 
 Use your client's remote HTTP server configuration and set the production URL
 above. Configuration keys vary by client. GitHub Actions publishes the configured
@@ -78,6 +78,33 @@ For `INVALID_INPUT` and `MIXED_ADDRESS_FAMILIES`, correct the submitted inputs
 using the caller's information rather than silently dropping entries. Preserve
 IPv6 counts as decimal strings or arbitrary-precision integers.
 
+## Exact CIDR subtraction tool
+
+Use `subtract_cidrs` to prepare WireGuard exceptions or compute the remaining
+address space relative to supplied include and exclude lists:
+
+```json
+{ "include": ["203.0.113.0/24"], "exclude": ["203.0.113.64/26"] }
+```
+
+Include must be nonempty; exclude may be empty. Use one address family, at most
+1,000 entries across both arrays, and at most 64 characters per entry. The
+result is the minimal sorted canonical CIDR list for the exact set difference;
+overlaps count once and no addresses are added. This example returns
+`203.0.113.0/26` and `203.0.113.128/25`, with 256 included, 64 removed, and 192
+remaining addresses. Address counts are decimal strings, including for IPv6.
+
+The result includes `cidrs`, `normalizedInclude`, `normalizedExclude`,
+`includedAddressCount`, `removedAddressCount`, and `remainingAddressCount`.
+Complete removal returns an empty list successfully. More than 10,000 output
+CIDRs returns an error with no partial list. Invalid-entry error issues identify
+the `include` or `exclude` list and its zero-based entry `index`.
+
+Remote calls send both lists to the server. The website uses the same core
+locally. Remaining ranges do not prove live availability, and the tool does
+not configure WireGuard or change firewall rules. The CLI currently does not
+expose subtraction.
+
 ## SDK example
 
 With `@modelcontextprotocol/client@2.0.0` installed, a Node.js client can connect
@@ -137,6 +164,12 @@ tool is read-only, non-destructive, idempotent, and annotated as open-world
 because its result depends on the current network connection.
 
 ## Deployment configuration
+
+Tool registration, metadata, schemas, and documentation examples are generated
+from the [shared tool catalog](../../packages/contracts/src/tools.ts). The
+localized guide and tool pages use one `ToolMcpSection` template. Tests compare
+the actual discovered tool set with the catalog and verify every documented
+example, including subtraction.
 
 The implementation uses Cloudflare's `createMcpHandler` with a fresh SDK v2
 server factory per request. It needs no Durable Objects or database. The

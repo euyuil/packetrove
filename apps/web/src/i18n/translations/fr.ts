@@ -93,10 +93,18 @@ export const fr = {
     cidrSummary: 'Envoyez des adresses IPv4 ou IPv6 et des plages CIDR en JSON. La réponse contient le CIDR englobant minimal, les entrées normalisées et les nombres exacts d’adresses sous forme de chaînes décimales. Cette requête API envoie vos entrées au serveur.',
     cidrResponse: 'Cet exemple renvoie {{cidr}} avec {{additional}} adresses supplémentaires. Vérifiez additionalAddressCount avant d’utiliser le résultat dans une liste d’adresses autorisées ou bloquées.',
     ipSummary: 'Renvoie l’IP publique observée pour cette connexion HTTP. Demandez text/plain pour une adresse suivie d’un saut de ligne ou application/json pour une adresse et sa famille. Les réponses ne sont pas mises en cache. Un VPN ou un proxy modifie l’adresse de sortie observée.',
+    subtractSummary: "Soustrayez exactement exclude de include. Renvoie une liste minimale de CIDR canoniques et des nombres d’adresses exacts sous forme de chaînes décimales. Cet appel envoie les données au serveur.",
+    subtractResponse: "Cet exemple renvoie {{cidrs}}, avec {{remaining}} adresses restantes et aucune couverture supplémentaire.",
   },
   discovery: {
     subtract: {
       title: "Questions sur la soustraction de CIDR",
+      mcpTitle: "Utiliser la soustraction via MCP",
+      purpose: "Demandez à un agent IA de soustraire les réseaux exclus de l’espace inclus et de renvoyer les CIDR restants exacts.",
+      inputs: "Passez des tableaux include et exclude d’une même famille. include ne peut pas être vide ; exclude peut l’être. Limite totale de {{maximumInputs}} entrées, avec {{maximumLength}} caractères chacune.",
+      result: "Lisez cidrs et les nombres décimaux exacts includedAddressCount, removedAddressCount et remainingAddressCount. Une suppression complète renvoie une liste vide. Au-delà de {{maximumOutputs}} CIDR, une erreur est renvoyée sans liste partielle.",
+      boundary: "Les appels API et MCP distants envoient les données au serveur ; le navigateur calcule localement. Les plages restantes dépendent des entrées et ne prouvent pas leur disponibilité réelle. Aucun réglage WireGuard ni règle de pare-feu n’est modifié.",
+      openTool: "Ouvrir la soustraction dans le navigateur",
       questions: {
         wireguard: {
           question: "Comment préparer les exceptions AllowedIPs de WireGuard ?",
@@ -116,7 +124,7 @@ export const fr = {
         },
         access: {
           question: "Puis-je appeler la soustraction via MCP, l’API web ou la CLI ?",
-          answer: "La soustraction fonctionne actuellement dans le navigateur et le noyau de calcul partagé. Les entrées du navigateur restent locales. MCP, l’API web et la CLI proposent le CIDR englobant et l’IP publique, sans exposer la soustraction. Le guide MCP décrit ces opérations disponibles."
+          answer: "La soustraction est disponible sur le site, via l’API web et MCP. Les données du navigateur restent locales ; API et MCP les envoient au serveur. La CLI ne propose pas encore la soustraction."
         }
       }
     },
@@ -185,12 +193,12 @@ export const fr = {
   },
   mcp: {
     title: "Connecter Packetrove à un agent IA",
-    explanation: "Connectez un client MCP compatible pour calculer des CIDR englobants ou examiner la connexion utilisée par ce client. Configurez-le ci-dessous, puis utilisez les exemples d’outils.",
+    explanation: "Connectez un client MCP compatible pour utiliser les outils réseau Packetrove. Commencez par la configuration ci-dessous, puis consultez les exemples.",
     connection: "Streamable HTTP · Aucun compte ni clé API nécessaire",
     connectTitle: "Connecter votre client",
     connectDescription: "Avec Claude Code ou Codex installé, ajoutez ce serveur distant. Ces commandes configurent le client ; elles n’installent pas de serveur Packetrove local.",
     clientGuide: "Documentation MCP de {{client}}",
-    check: "Utilisez <code>/mcp</code> dans votre client pour examiner la connexion. Vérifiez que <code>{{cidrTool}}</code> et <code>{{ipTool}}</code> sont disponibles.",
+    check: "Utilisez <code>/mcp</code> dans votre client pour vérifier la connexion. Confirmez la disponibilité de ces outils : <code>{{tools}}</code>.",
     discovery: "Après configuration, le client découvre les outils avec tools/list. Les descriptions et les schémas guident le choix et les arguments. Lire une page web ne configure pas un client et ne lui donne pas accès aux outils.",
     toolName: "Nom de l’outil",
     arguments: "Exemple d’arguments",

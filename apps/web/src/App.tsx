@@ -1,6 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
+import { isToolPage, tools, type ToolPage } from '@packetrove/contracts';
 import { IconHome } from '@tabler/icons-react';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
@@ -26,9 +27,6 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const main = useRef<HTMLElement>(null);
   const previousPath = useRef(path);
   const homePage = page === 'home';
-  const ipPage = page === 'ip';
-  const cidrPage = page === 'cidr';
-  const subtractPage = page === 'subtract';
   const apiPage = page === 'api';
   const href = (destination: string) => localizedPath(destination, locale);
   const repository = import.meta.env.VITE_GITHUB_REPOSITORY || 'euyuil/packetrove';
@@ -69,6 +67,12 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
     setUrlSuffix(window.location.search + window.location.hash);
   }
 
+  const toolPages: Record<ToolPage, ReactNode> = {
+    cidr: <CidrCoverTool draft={draft} onDraftChange={setDraft} onNavigate={navigate} />,
+    subtract: <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} onNavigate={navigate} />,
+    ip: <PublicIpTool onNavigate={navigate} />,
+  };
+
   return <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py="xl">
     <Stack gap="xl">
       <Group component="header" justify="space-between">
@@ -86,24 +90,18 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         <Button component="a" href={href('/')} onClick={navigate} variant={homePage ? 'light' : 'subtle'}
           leftSection={<IconHome size={18} stroke={1.75} aria-hidden="true" focusable="false" />}
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
-        <Button component="a" href={href('/cidr')} onClick={navigate} variant={cidrPage ? 'light' : 'subtle'}
-          leftSection={<ToolIcon tool="cidr" size={18} />}
-          aria-current={cidrPage ? 'page' : undefined}>{t($ => $.cidr.title)}</Button>
-        <Button component="a" href={href('/cidr/subtract')} onClick={navigate} variant={subtractPage ? 'light' : 'subtle'}
-          leftSection={<ToolIcon tool="subtract" size={18} />}
-          aria-current={subtractPage ? 'page' : undefined}>{t($ => $.subtract.title)}</Button>
-        <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
-          leftSection={<ToolIcon tool="ip" size={18} />}
-          aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
+        {tools.map(tool => <Button key={tool.id} component="a" href={href(tool.webPath)} onClick={navigate}
+          leftSection={<ToolIcon tool={tool.page} size={18} />}
+          variant={page === tool.page ? 'light' : 'subtle'} aria-current={page === tool.page ? 'page' : undefined}>
+          {t($ => $[tool.page].title)}
+        </Button>)}
       </Group>
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
-        aria-label={homePage ? t($ => $.common.home) : ipPage ? t($ => $.ip.title)
-          : cidrPage ? t($ => $.cidr.title) : subtractPage ? t($ => $.subtract.title)
+        aria-label={homePage ? t($ => $.common.home) : isToolPage(page) ? t($ => $[page].title)
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
-          : ipPage ? <PublicIpTool onNavigate={navigate} /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} onNavigate={navigate} />
+          : isToolPage(page) ? toolPages[page]
           : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} />
-          : subtractPage ? <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} onNavigate={navigate} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>

@@ -5,6 +5,7 @@ import { localizedPath, pagePaths, resolveRoute, type Locale } from '../../web/s
 import { escapeHtml, websitePages } from '../../web/src/seo';
 import { mcpExamples } from '../../web/src/mcp-examples';
 import { supportedLocales } from '../../web/src/i18n/locales';
+import { tools as catalogTools } from '@packetrove/contracts';
 
 describe('website in the Workers runtime', () => {
   it.each(websitePages)('serves localized content and metadata at $pathname without running JavaScript', async ({ locale, page, pathname }) => {
@@ -70,11 +71,10 @@ describe('website in the Workers runtime', () => {
         expect(html).toContain(escapeHtml(question.answer));
       }
     }
-    if (page === 'subtract') expect(html).not.toContain('data-mcp-tool=');
     if (page !== 'mcp') {
       expect(html).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
     }
-    for (const tool of page === 'mcp' ? ['cidr', 'ip'] as const : page === 'cidr' || page === 'ip' ? [page] : []) {
+    for (const { page: tool } of catalogTools.filter(tool => page === 'mcp' || page === tool.page)) {
       const example = mcpExamples[tool];
       expect(html).toContain('data-mcp-tool="' + example.name + '"');
       expect(html).toContain(escapeHtml(JSON.stringify(example.arguments, null, 2)));

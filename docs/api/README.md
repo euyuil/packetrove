@@ -59,6 +59,33 @@ A covering CIDR may add addresses. Replacing allowlist entries with that CIDR
 can allow additional addresses; replacing blocklist entries can block additional
 addresses. The tool calculates a result and does not edit firewall rules.
 
+## Exact CIDR subtraction
+
+`POST /v1/cidr/subtract` accepts required `include` and `exclude` arrays. Include
+must contain at least one address or CIDR; exclude may be empty. Use one address
+family and at most 1,000 entries across both lists, up to 64 characters each.
+The shared 64 KiB JSON request-body limit applies.
+
+```sh
+curl -fsS https://api.packetrove.com/v1/cidr/subtract \
+  -H 'Content-Type: application/json' \
+  -d '{"include":["203.0.113.0/24"],"exclude":["203.0.113.64/26"]}'
+```
+
+The result is the minimal sorted canonical CIDR list for `union(include)` minus
+`union(exclude)`, with no additional coverage. The example returns
+`203.0.113.0/26` and `203.0.113.128/25`. `includedAddressCount`,
+`removedAddressCount`, and `remainingAddressCount` are exact decimal strings:
+`"256"`, `"64"`, and `"192"`. `normalizedInclude` and `normalizedExclude`
+preserve input order; overlaps count once in address counts.
+
+Complete removal succeeds with `cidrs: []` and zero remaining addresses. An
+empty exclude list simplifies the exact include union. Results exceeding
+10,000 CIDRs fail with `INVALID_INPUT`, without a partial list. Remaining
+ranges are relative to the inputs, not evidence of live network availability.
+The API sends inputs to the server; use the website for browser-local
+calculation. Neither interface changes WireGuard or firewall settings.
+
 ## Current public IP
 
 The public IP endpoint is `/v1/public-ip`. The former `/v1/ip` path is removed
@@ -99,7 +126,8 @@ network-path and hosting limitations.
 
 Errors use `{ "error": { "code": "...", "message": "...", "issues": [] } }`.
 The optional `issues` array contains messages and, when applicable, a zero-based
-`index` into `inputs`. An invalid entry makes the whole calculation fail;
+`index` into `inputs`, or into the subtraction list identified by the optional
+`list` field (`include` or `exclude`). An invalid entry makes the whole calculation fail;
 entries are never silently skipped.
 For a structurally valid calculation request, all invalid addresses or CIDRs
 are reported together in input order, so they can be corrected in one pass.

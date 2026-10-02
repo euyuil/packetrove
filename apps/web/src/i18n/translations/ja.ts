@@ -108,10 +108,18 @@ export const ja = {
     cidrSummary: 'IPv4 または IPv6 のアドレスと CIDR 範囲を JSON で送信します。レスポンスには最小の集約 CIDR、正規化した入力、十進数文字列で表す正確なアドレス数が含まれます。この API リクエストでは入力をサーバーに送信します。',
     cidrResponse: 'この例では {{cidr}} を返し、{{additional}} 個のアドレスが追加されます。許可リストやブロックリストで結果を使う前に、additionalAddressCount を確認してください。',
     ipSummary: 'この HTTP 接続で確認されたパブリック IP を返します。アドレスと末尾の改行には text/plain、アドレスとアドレスファミリーには application/json を指定します。レスポンスはキャッシュされません。VPN やプロキシを使うと、確認される出口アドレスが変わります。',
+    subtractSummary: "include から exclude を正確に差し引きます。最小の正規 CIDR 一覧と正確な十進文字列のアドレス数を返します。この API は入力をサーバーへ送信します。",
+    subtractResponse: "この例は {{cidrs}} を返し、残りは {{remaining}} アドレスです。余分な範囲は追加しません。",
   },
   discovery: {
     subtract: {
       title: "CIDR 差分のよくある質問",
+      mcpTitle: "MCP で CIDR 差分を使う",
+      purpose: "AI エージェントに、含めるアドレス空間から除外ネットワークを差し引き、正確な残りの CIDR 一覧を返すよう依頼します。",
+      inputs: "同じアドレスファミリーの include と exclude 配列を渡します。include は空にできません。exclude は空でも構いません。合計 {{maximumInputs}} 件まで、各項目は {{maximumLength}} 文字までです。",
+      result: "cidrs と、正確な十進文字列の includedAddressCount、removedAddressCount、remainingAddressCount を読み取ります。全削除は空の一覧を返します。{{maximumOutputs}} CIDR を超える結果は部分一覧なしでエラーになります。",
+      boundary: "リモート API と MCP は入力をサーバーへ送信し、ブラウザーはローカルで計算します。残りの範囲は入力に対する差分で、実際の空き状況は証明しません。WireGuard やファイアウォール設定は変更しません。",
+      openTool: "ブラウザーの差分ツールを開く",
       questions: {
         wireguard: {
           question: "WireGuard の AllowedIPs に例外を設けるには？",
@@ -131,7 +139,7 @@ export const ja = {
         },
         access: {
           question: "MCP、Web API、CLI から差分を呼び出せますか？",
-          answer: "差分は現在、ブラウザーと共有の計算コアで実行できます。ブラウザーの入力はローカルに保持します。MCP、Web API、CLI は集約 CIDR とパブリック IP の操作を提供し、差分は公開していません。MCP ガイドは利用可能な操作を説明します。"
+          answer: "差分はウェブサイト、Web API、MCP で利用できます。ブラウザーの入力はローカルに留まり、API と MCP はサーバーへ送信します。CLI は現在、差分に対応していません。"
         }
       }
     },
@@ -200,12 +208,12 @@ export const ja = {
   },
   mcp: {
     title: "Packetrove を AI エージェントに接続する",
-    explanation: "対応する MCP クライアントを接続して集約 CIDR を計算したり、そのクライアントの接続を確認したりできます。以下の手順で接続し、ツールの例を参照してください。",
+    explanation: "互換性のある MCP クライアントを接続して Packetrove のネットワークツールを利用します。以下の設定を済ませてから、ツールの例を参照してください。",
     connection: "Streamable HTTP · アカウントや API キーは不要",
     connectTitle: "クライアントを接続する",
     connectDescription: "Claude Code または Codex をインストールしたら、このリモートサーバーを追加してください。以下のコマンドはクライアントを設定し、ローカルの Packetrove サーバーはインストールしません。",
     clientGuide: "{{client}} の MCP 公式ドキュメント",
-    check: "クライアントで <code>/mcp</code> を使って接続を確認し、<code>{{cidrTool}}</code> と <code>{{ipTool}}</code> が利用できることを確認してください。",
+    check: "クライアントで <code>/mcp</code> を使って接続を確認します。次のツールが利用可能か確認してください：<code>{{tools}}</code>。",
     discovery: "設定後、クライアントは tools/list でツールを検出し、説明とスキーマに基づいてツールと引数を選びます。Web ページを読むだけではクライアントの設定やアクセス権の付与は行われません。",
     toolName: "ツール名",
     arguments: "引数の例",

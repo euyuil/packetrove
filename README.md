@@ -26,9 +26,9 @@ through Model Context Protocol (MCP).
   observed for the connection making the request.
 
 The website supports ten languages. Hosted tools require no account or API key.
-CIDR subtraction is currently available in the website and shared core;
-the API, CLI, and MCP provide covering-CIDR calculations and public IP lookup.
-The agent skill provides covering-CIDR calculations.
+All three tools are available through the website, Web API, and MCP. The CLI
+provides covering-CIDR calculations and public IP lookup; the agent skill provides
+covering-CIDR calculations.
 
 ## Quick start
 
