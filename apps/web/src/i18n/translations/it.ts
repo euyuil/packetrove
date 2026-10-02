@@ -72,6 +72,7 @@ export const it = {
     excludeHelp: 'Separa le voci con virgole, spazi, tabulazioni o ritorni a capo. Lascia vuoto per semplificare l’elenco incluso senza rimuovere indirizzi.',
     calculate: 'Sottrai CIDR', result: 'Spazio di indirizzi rimanente', output: 'CIDR rimanenti',
     included: 'Indirizzi inclusi', removed: 'Indirizzi rimossi', remaining: 'Indirizzi rimanenti', blocks: 'CIDR risultanti',
+    completed: 'Calcolo completato. Indirizzi rimanenti: {{addresses}}. CIDR: {{cidrs}}.',
     copyList: 'Copia con ritorni a capo', copyAllowed: 'Copia con virgole', copySuccess: 'Copiato con ritorni a capo.', allowedSuccess: 'Copiato con virgole.',
     copyFailure: 'Gli appunti non sono disponibili. Seleziona e copia l’elenco qui sopra.',
     formats: 'Con i ritorni a capo, ogni CIDR occupa una riga. Con le virgole, i CIDR sono separati da una virgola e uno spazio.',

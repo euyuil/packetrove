@@ -85,6 +85,12 @@ The counts are 16 included addresses, 4 removed, and 12 remaining.
   included range's addresses.
 - Complete removal is a successful empty result: zero CIDRs and zero remaining
   addresses. It displays **No addresses remain** and disables both copy actions.
+- A nonempty successful calculation displays a short localized completion
+  status with the exact remaining address count and number of CIDRs. Only this
+  summary is in a polite, atomic status region; the full CIDR list is outside it.
+  Focus stays on the active control. Repeating a calculation updates the short
+  status content without replacing the region. Complete removal keeps its
+  existing message without an additional completion summary.
 - **Copy with newlines** copies every output CIDR with one CIDR per line.
   **Copy with commas** separates CIDRs with a comma and a space. Button labels,
   helper text, and success feedback describe the separator so users can choose
@@ -95,6 +101,9 @@ The counts are 16 included addresses, 4 removed, and 12 remaining.
   language or navigating away and back in the same tab preserves both drafts,
   the result, or the validation error without recalculating. Reloading starts
   with empty inputs.
+  Editing, clearing, or a failed calculation also clears the completion status.
+  Retained results have their summary translated into the current language,
+  including after returning to the tool.
 
 ## Limits, privacy, and implementation
 
@@ -137,3 +146,8 @@ IPv6 counts, copy formats and paste round trips, local calculation,
 language and navigation state, prerendering, and hydration. A deterministic
 small-set oracle checks both address families against independent set membership
 and recursive minimal CIDR partitioning. Run `pnpm check` before submission.
+
+Status tests use the real application, Mantine theme, shared calculation core,
+and ReactDOM in jsdom to check the short status scope, exact counts, focus,
+repeated calculations, state changes, languages, and hydration. They do not
+establish actual screen reader announcements or their frequency.

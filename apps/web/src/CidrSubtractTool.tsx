@@ -1,4 +1,4 @@
-import type { FormEvent, MouseEventHandler } from 'react';
+import { useState, type FormEvent, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert, Badge, Button, Code, DataList, Group, List, Paper, SimpleGrid, Stack, Text, Textarea, ThemeIcon, Title,
@@ -27,6 +27,8 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   const formatter = new Intl.NumberFormat(locale);
   const formatCount = (count: string | number) => formatter.format(typeof count === 'string' ? BigInt(count) : count);
   const { result, error } = draft;
+  // Identical successful calculations still refresh the short status content.
+  const [completionVersion, setCompletionVersion] = useState(0);
   const entries = { include: parseAddressEntries(draft.include), exclude: parseAddressEntries(draft.exclude) };
   const listCopy = useClipboardFeedback();
   const allowedCopy = useClipboardFeedback();
@@ -44,6 +46,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
       onDraftChange({ ...draft, error: null, result: subtractCidrs({
         include: entries.include.map(entry => entry.value), exclude: entries.exclude.map(entry => entry.value),
       }) });
+      setCompletionVersion(version => version + 1);
     } catch (failure) {
       onDraftChange({ ...draft, result: null, error: failure instanceof ToolError ? failure
         : new ToolError('INTERNAL_ERROR', 'Unable to calculate this input. Please try again.') });
@@ -131,6 +134,11 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
             <Title order={2} size="h3" id="result-heading">{t($ => $.subtract.result)}</Title>
             {result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}
           </Group>
+          <Text size="sm" role="status" aria-label={t($ => $.subtract.result)} aria-live="polite" aria-atomic="true">
+            {result && result.cidrs.length > 0 && <span key={completionVersion}>{t($ => $.subtract.completed, {
+              addresses: formatCount(result.remainingAddressCount), cidrs: formatCount(result.cidrs.length),
+            })}</span>}
+          </Text>
           {result ? <>
             <DataList orientation="vertical" withDivider>
               {[

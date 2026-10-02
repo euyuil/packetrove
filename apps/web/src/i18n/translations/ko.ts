@@ -71,6 +71,7 @@ export const ko = {
     excludeHelp: '쉼표, 공백, 탭 또는 줄 바꿈으로 항목을 구분하세요. 비워 두면 주소를 제거하지 않고 포함 목록을 간소화합니다.',
     calculate: 'CIDR 빼기 계산', result: '남은 주소 공간', output: '남은 CIDR',
     included: '포함된 주소 수', removed: '제거된 주소 수', remaining: '남은 주소 수', blocks: '결과 CIDR 수',
+    completed: '계산이 완료되었습니다. 남은 주소 수: {{addresses}}. CIDR 수: {{cidrs}}.',
     copyList: '줄 바꿈으로 구분해 복사', copyAllowed: '쉼표로 구분해 복사', copySuccess: '줄 바꿈으로 구분하여 복사했습니다.', allowedSuccess: '쉼표로 구분하여 복사했습니다.',
     copyFailure: '클립보드를 사용할 수 없습니다. 위의 목록을 선택하여 복사하세요.',
     formats: '줄 바꿈으로 구분하면 각 CIDR이 한 줄에 표시됩니다. 쉼표로 구분하면 CIDR 사이에 쉼표와 공백 한 칸을 넣습니다.',
