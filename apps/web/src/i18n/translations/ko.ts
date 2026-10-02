@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const ko = {
+  languageSuggestion: {
+    title: '이 페이지를 한국어로 보시겠어요?',
+    switch: '한국어로 전환', dismiss: '나중에',
+  },
   common: {
     home: '홈', homeLabel: 'Packetrove 홈', navigation: '주 탐색 메뉴',
     language: '언어', tools: 'IP 주소 도구', copied: '복사됨', dismissCopy: '복사 오류 닫기',

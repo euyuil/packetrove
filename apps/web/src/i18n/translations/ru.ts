@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const ru = {
+  languageSuggestion: {
+    title: 'Хотите читать эту страницу на русском?',
+    switch: 'Перейти на русский', dismiss: 'Не сейчас',
+  },
   common: {
     home: 'Главная', homeLabel: 'Главная страница Packetrove', navigation: 'Основная навигация',
     language: 'Язык', tools: 'ИНСТРУМЕНТЫ ДЛЯ IP-АДРЕСОВ', copied: 'Скопировано', dismissCopy: 'Закрыть сообщение об ошибке копирования',

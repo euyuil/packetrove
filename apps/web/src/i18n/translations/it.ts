@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const it = {
+  languageSuggestion: {
+    title: 'Vuoi leggere questa pagina in italiano?',
+    switch: 'Passa all’italiano', dismiss: 'Non ora',
+  },
   common: {
     home: 'Home', homeLabel: 'Pagina iniziale di Packetrove', navigation: 'Navigazione principale',
     language: 'Lingua', tools: 'STRUMENTI PER INDIRIZZI IP', copied: 'Copiato', dismissCopy: 'Chiudi l’errore di copia',

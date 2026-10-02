@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const fr = {
+  languageSuggestion: {
+    title: 'Voulez-vous lire cette page en français ?',
+    switch: 'Passer au français', dismiss: 'Pas maintenant',
+  },
   common: {
     home: 'Accueil', homeLabel: 'Accueil de Packetrove', navigation: 'Navigation principale',
     language: 'Langue', tools: 'OUTILS POUR ADRESSES IP', copied: 'Copié', dismissCopy: 'Fermer l’erreur de copie',
