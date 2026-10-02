@@ -12,6 +12,7 @@ export const en = {
     feedbackPrompt: 'Found a bug or have an idea? Tell us on GitHub.', reportBug: 'Report a bug', requestFeature: 'Request a feature',
     notFound: 'Page not found', notFoundDescription: 'The page you requested does not exist.', returnHome: 'Return to home',
   },
+  footer: { project: 'Project', contact: 'Contact & feedback', sendEmail: 'Send an email' },
   home: {
     description: 'Open source network utilities for your browser, terminal, and AI agents. Use the navigation to open a tool, or connect Packetrove to your own workflow below.',
     openSource: 'Open source', anonymous: 'No account or API key required',
@@ -100,6 +101,7 @@ export const zhHans = {
     feedbackPrompt: '发现问题或有新想法？欢迎在 GitHub 告诉我们。', reportBug: '报告问题', requestFeature: '功能建议',
     notFound: '页面不存在', notFoundDescription: '你访问的页面不存在。', returnHome: '返回首页',
   },
+  footer: { project: '项目资源', contact: '联系与反馈', sendEmail: '发送邮件' },
   home: {
     description: '在浏览器、终端和 AI 智能体中使用开源网络工具。从导航中选择工具，或参考下方说明将 Packetrove 接入你的工作流程。',
     openSource: '开源', anonymous: '无需账户或 API 密钥',
