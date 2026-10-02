@@ -129,12 +129,12 @@ describe('tool navigation in one page session', () => {
     openTool('Smallest Covering CIDR');
     act(() => { window.history.back(); });
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('My Public IP'));
-    expect(document.title).toBe('My Public IP — Packetrove');
+    expect(document.title).toBe('What Is My IP? Public IP Lookup — Packetrove');
     expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBe('page');
     await screen.findByText('198.51.100.2');
     act(() => { window.history.forward(); });
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Smallest Covering CIDR'));
-    expect(document.title).toBe('Smallest Covering CIDR — Packetrove');
+    expect(document.title).toBe('Smallest Covering CIDR Calculator — Packetrove');
     expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBe('page');
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('::/0');
     expect(screen.getAllByText('340,282,366,920,938,463,463,374,607,431,768,211,456')).toHaveLength(2);
@@ -145,7 +145,7 @@ describe('tool navigation in one page session', () => {
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('::/0');
     act(() => { window.history.forward(); });
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Network tools for humans and agents'));
-    expect(document.title).toBe('Packetrove — Network tools for humans and agents');
+    expect(document.title).toBe('Packetrove — CIDR Calculator and Public IP Lookup');
     expect(fetch).toHaveBeenCalledTimes(2);
   });
   it('handles an unknown history route and returns home with the existing draft', () => {

@@ -30,6 +30,14 @@ can understand network results and share a link in my preferred language.
 - Include translated titles, descriptions, and social metadata in static HTML
   entries. Use self-referencing canonical URLs and reciprocal `en`, `zh-Hans`,
   and `x-default` links. Update metadata during in-page navigation.
+- Prerender the eight localized pages at build time, including their headings,
+  explanations, links, and examples. Hydrate the same React components in the
+  browser without losing page state during navigation or language changes.
+- Generate `sitemap.xml` from the canonical page list and reference it in
+  `robots.txt`. Do not include aliases, missing pages, or API origins.
+- Keep API endpoint summaries and curl examples in the prerendered HTML. Load
+  the interactive reference only on the client. Prerendering makes no network
+  requests and does not populate calculator input or public IP results.
 - Keep unknown routes as HTTP 404 responses. The shared static fallback is in
   English; the application renders its Chinese text for `/zh/` paths.
 
@@ -71,14 +79,17 @@ its serialized errors. Translate these reasons in the web layer rather than
 matching English error messages. `ToolError.toResponse()` continues to return
 the existing shared error schema; local presentation details are omitted.
 
-When changing page titles or descriptions, update both translation metadata and
-the corresponding HTML entries under `apps/web/`, including `zh/`. The website
-runtime tests compare built entries with the resources and verify canonical
-and alternate language links. New page entries must also be included in
-`apps/web/vite.config.ts`.
+When changing page titles or descriptions, update translation metadata in
+`apps/web/src/i18n/resources.ts`. `page-metadata.ts` supplies the same metadata to
+the Vite HTML transform and browser navigation. Keep the `<!--page-metadata-->`
+and empty root placeholders in the HTML entries; `scripts/build.ts` fills them
+from the metadata and React render. New page entries must also be included in
+`apps/web/vite.config.ts` and the route map in `apps/web/src/i18n/routes.ts`.
+The route map and bundled locales determine the sitemap entries.
 
 Run `pnpm check` before submitting changes. The checks cover language switching,
 retained calculator drafts, physical-line validation errors, clipboard status,
-IP lookup isolation, exact IPv6 counts, static entry responses, and unchanged
-API, MCP, and CLI behavior. Contributor development requires no production
+IP lookup isolation, exact IPv6 counts, prerendered content, hydration, sitemap
+and robots responses, static entry responses, and unchanged API, MCP, and CLI
+behavior. Contributor development requires no production
 credentials.
