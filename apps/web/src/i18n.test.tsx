@@ -96,16 +96,16 @@ describe('web internationalization', () => {
     await user.keyboard('{ArrowDown}');
     expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'English' }));
     await user.keyboard('{ArrowDown}');
-    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: '中文' }));
+    expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'Deutsch' }));
     await user.keyboard('{ArrowUp}');
     expect(document.activeElement).toBe(screen.getByRole('menuitem', { name: 'English' }));
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('menu')).toBeNull();
     await waitFor(() => expect(document.activeElement).toBe(trigger));
     await user.keyboard('{Enter}{ArrowDown}{ArrowDown}{Enter}');
-    expect(window.location.pathname).toBe('/zh/');
+    expect(window.location.pathname).toBe('/de/');
     expect(screen.queryByRole('menu')).toBeNull();
-    expect(screen.getByRole('button', { name: '语言: 中文', expanded: false })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Sprache: Deutsch', expanded: false })).toBeDefined();
   });
 
   it.each(['ctrlKey', 'metaKey', 'shiftKey', 'altKey'])('preserves native link behavior for %s language clicks', modifier => {
