@@ -13,6 +13,7 @@ import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 import ApiDocumentation from './ApiDocumentation';
 import { McpDocumentation } from './McpDocumentation';
+import { ToolIcon } from './ToolIcon';
 
 export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
@@ -84,10 +85,13 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         <Button component="a" href={href('/')} onClick={navigate} variant={homePage ? 'light' : 'subtle'}
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
         <Button component="a" href={href('/cidr')} onClick={navigate} variant={cidrPage ? 'light' : 'subtle'}
+          leftSection={<ToolIcon tool="cidr" size={18} />}
           aria-current={cidrPage ? 'page' : undefined}>{t($ => $.cidr.title)}</Button>
         <Button component="a" href={href('/cidr/subtract')} onClick={navigate} variant={subtractPage ? 'light' : 'subtle'}
+          leftSection={<ToolIcon tool="subtract" size={18} />}
           aria-current={subtractPage ? 'page' : undefined}>{t($ => $.subtract.title)}</Button>
         <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
+          leftSection={<ToolIcon tool="ip" size={18} />}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"

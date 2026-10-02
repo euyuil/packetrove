@@ -1,7 +1,7 @@
 import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert, Badge, Button, Code, DataList, Group, List, Paper, SimpleGrid, Stack, Text, Textarea, Title,
+  Alert, Badge, Button, Code, DataList, Group, List, Paper, SimpleGrid, Stack, Text, Textarea, ThemeIcon, Title,
 } from '@mantine/core';
 import {
   MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, type CidrSubtractResult,
@@ -12,6 +12,7 @@ import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage, issueMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
 import { ToolQuestions } from './ToolQuestions';
+import { ToolIcon } from './ToolIcon';
 
 const examples = [
   { name: 'IPv4', include: '203.0.113.0/24', exclude: '203.0.113.64/26', cidrs: ['203.0.113.0/26', '203.0.113.128/25'] },
@@ -81,7 +82,10 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   return <Stack gap="xl">
     <Stack component="section" aria-labelledby="tool-title" gap="sm">
       <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>{t($ => $.common.tools)}</Text>
-      <Title order={1} id="tool-title">{t($ => $.subtract.title)}</Title>
+      <Group gap="md" wrap="nowrap">
+        <ThemeIcon variant="light" size={48} flex="0 0 auto"><ToolIcon tool="subtract" size={28} /></ThemeIcon>
+        <Title order={1} id="tool-title" flex={1}>{t($ => $.subtract.title)}</Title>
+      </Group>
       <Text c="dimmed">{t($ => $.subtract.description)}</Text>
       <Text size="sm" c="var(--mantine-primary-color-filled)">{t($ => $.cidr.local)}</Text>
     </Stack>
