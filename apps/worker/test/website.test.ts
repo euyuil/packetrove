@@ -17,6 +17,7 @@ describe('website in the Workers runtime', () => {
     { path: '/', title: 'Packetrove — Network tools for humans and agents' },
     { path: '/cidr', title: 'Smallest Covering CIDR — Packetrove' },
     { path: '/ip', title: 'My Public IP — Packetrove' },
+    { path: '/docs/api', title: 'API documentation — Packetrove' },
   ])('serves direct navigation to $path through static assets', async ({ path, title }) => {
     const response = await exports.default.fetch(`http://localhost${path}`, {
       headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
@@ -30,6 +31,7 @@ describe('website in the Workers runtime', () => {
   it.each([
     { path: '/cidr', title: 'Smallest Covering CIDR' },
     { path: '/ip', title: 'My Public IP' },
+    { path: '/docs/api', title: 'API documentation' },
   ])('preserves trailing-slash $path links and their query strings', async ({ path, title }) => {
     const response = await exports.default.fetch(`http://localhost${path}/?source=example`, {
       headers: { 'sec-fetch-mode': 'navigate' }, redirect: 'manual',

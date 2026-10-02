@@ -2,4 +2,4 @@ import { createApp } from './app';
 
 const app = createApp();
 
-export default { fetch: app.fetch } satisfies ExportedHandler;
+export default { fetch: app.fetch } satisfies ExportedHandler<Cloudflare.Env>;

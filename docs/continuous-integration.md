@@ -176,8 +176,12 @@ period with `minimumReleaseAge: 1440`. Its exact-version exceptions cover
 the Cloudflare test plugin's security update and the previously validated
 Wrangler, Miniflare, and Redocly CLI versions. Reassess these exceptions when
 updating those packages. Dependency installation scripts are approved
-explicitly through `allowBuilds`; esbuild and workerd require them.
+explicitly through `allowBuilds`; esbuild and workerd require them, and Scalar's
+`vue-demi` script selects the adapter for the installed Vue version.
 The informational `core-js-pure` postinstall is explicitly disabled.
+Exact overrides move Scalar's affected transitive dependencies to the patched
+`undici` 7.29.1 and `@ai-sdk/provider-utils` 4.0.33 releases. Reassess these
+overrides when upgrading Scalar.
 After dependency changes, validate a frozen-lockfile install, run `pnpm check`,
 and inspect `pnpm audit` before pushing. Verify the resulting GitHub Actions
 run as well.
