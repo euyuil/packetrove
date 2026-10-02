@@ -8,6 +8,7 @@ import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage, issueMessage } from './i18n/errors';
+import { resolveLocale } from './i18n/locales';
 import { CidrExamples } from './CidrExamples';
 
 function inputRows(text: string) {
@@ -21,7 +22,7 @@ export function CidrCoverTool({ draft, onDraftChange }: {
   draft: CidrCoverDraft; onDraftChange: (draft: CidrCoverDraft) => void;
 }) {
   const { t, i18n } = useTranslation();
-  const locale = i18n.resolvedLanguage === 'zh-Hans' ? 'zh-Hans' : 'en';
+  const locale = resolveLocale(i18n.resolvedLanguage);
   const formatter = new Intl.NumberFormat(locale);
   const formatCount = (count: string | number) => formatter.format(typeof count === 'string' ? BigInt(count) : count);
   const { input, result, error } = draft;

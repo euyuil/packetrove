@@ -6,6 +6,9 @@ import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { hydrateRoot, type Root } from 'react-dom/client';
 import { Application, IDENTIFIER_PREFIX } from './Application';
 import { websitePages } from './seo';
+import { locales, supportedLocales, type Locale } from './i18n/locales';
+import { localizedPath, resolveRoute } from './i18n/routes';
+import { resources } from './i18n/resources';
 
 vi.mock('./ApiReference', () => ({ default: () => <div>Interactive API reference</div> }));
 vi.mock('./assets/packetrove-logo-160x160.png', async () => {
@@ -55,15 +58,18 @@ async function hydrate(pathname: string, suffix = '') {
   expect(container.querySelector('h1')).toBe(heading);
   expect(document.title).toBe(title);
   expect(document.head.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
-  expect(document.head.querySelectorAll('link[rel="alternate"][hreflang]')).toHaveLength(3);
+  expect(document.head.querySelectorAll('link[rel="alternate"][hreflang]')).toHaveLength(supportedLocales.length + 1);
   expect(recoverableError).not.toHaveBeenCalled();
   expect(consoleError).not.toHaveBeenCalled();
   return container;
 }
 
-async function chooseLanguage(name: 'English' | '简体中文') {
-  fireEvent.click(screen.getByRole('button', { name: /^(Language|语言):/ }));
-  fireEvent.click(await screen.findByRole('menuitem', { name }));
+async function chooseLanguage(locale: Locale) {
+  const current = resolveRoute(window.location.pathname).locale;
+  fireEvent.click(screen.getByRole('button', {
+    name: resources[current].translation.common.language + ': ' + locales[current].name,
+  }));
+  fireEvent.click(await screen.findByRole('menuitem', { name: locales[locale].name }));
   await waitFor(() => { expect(document.querySelector('[role="menu"]')).toBeNull(); });
 }
 
@@ -83,7 +89,7 @@ describe('hydration of production HTML', () => {
     if (page.page === 'api') expect(await screen.findByText('Interactive API reference')).toBeDefined();
   });
 
-  it('calculates locally after hydration and preserves exact counts and drafts through navigation and language changes', async () => {
+  it.each(['zh-Hans', 'es', 'de', 'ja'] as const)('preserves exact counts and drafts after hydration when switching to %s', async locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
@@ -91,22 +97,24 @@ describe('hydration of production HTML', () => {
     const input = screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement;
     fireEvent.change(input, { target: { value: '::/0' } });
     fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
-    await chooseLanguage('简体中文');
-    expect(screen.getByLabelText('IP 地址或 CIDR 网段')).toBe(input);
+    await chooseLanguage(locale);
+    const translation = resources[locale].translation;
+    expect(screen.getByLabelText(translation.cidr.inputLabel)).toBe(input);
     expect(window.location.pathname + window.location.search + window.location.hash)
-      .toBe('/zh/cidr?source=example#tool');
-    expect(screen.getAllByText('340,282,366,920,938,463,463,374,607,431,768,211,456')).toHaveLength(2);
+      .toBe(localizedPath('/cidr', locale) + '?source=example#tool');
+    const count = new Intl.NumberFormat(locale).format(340_282_366_920_938_463_463_374_607_431_768_211_456n);
+    expect(screen.getAllByText(count)).toHaveLength(2);
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href'))
-      .toBe('https://packetrove.com/zh/cidr');
-    fireEvent.click(screen.getByRole('link', { name: '首页' }));
-    fireEvent.click(screen.getByRole('link', { name: '最小覆盖 CIDR' }));
-    expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('::/0');
-    expect(screen.getByText('精确覆盖：此 CIDR 没有增加额外地址。')).toBeDefined();
+      .toBe('https://packetrove.com' + localizedPath('/cidr', locale));
+    fireEvent.click(screen.getByRole('link', { name: translation.common.home }));
+    fireEvent.click(screen.getByRole('link', { name: translation.cidr.title }));
+    expect((screen.getByLabelText(translation.cidr.inputLabel) as HTMLTextAreaElement).value).toBe('::/0');
+    expect(screen.getByText(translation.cidr.exact)).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
     expect(storage).not.toHaveBeenCalled();
   });
 
-  it('keeps the lookup started after hydration when changing language', async () => {
+  it.each(['zh-Hans', 'es', 'de', 'ja'] as const)('keeps the lookup started after hydration when switching to %s', async locale => {
     const pending: Array<{ resolve: (response: Response) => void; signal: AbortSignal }> = [];
     const fetch = vi.fn((_url: string, options: RequestInit) => new Promise<Response>(resolve => {
       pending.push({ resolve, signal: options.signal! });
@@ -116,12 +124,12 @@ describe('hydration of production HTML', () => {
     const requestCount = fetch.mock.calls.length;
     const request = pending.at(-1)!;
     expect(requestCount).toBeGreaterThan(0);
-    await chooseLanguage('简体中文');
+    await chooseLanguage(locale);
     expect(request.signal.aborted).toBe(false);
     expect(fetch).toHaveBeenCalledTimes(requestCount);
     request.resolve(Response.json({ ip: '2001:db8::1', family: 'ipv6' }));
     expect(await screen.findByText('2001:db8::1')).toBeDefined();
-    await chooseLanguage('English');
+    await chooseLanguage('en');
     expect(screen.getByText('2001:db8::1')).toBeDefined();
     expect(fetch).toHaveBeenCalledTimes(requestCount);
   });

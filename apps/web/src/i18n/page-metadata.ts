@@ -1,4 +1,5 @@
 import { resources } from './resources';
+import { supportedLocales } from './locales';
 import { localizedPath, type Locale, type Page } from './routes';
 
 export const WEBSITE_ORIGIN = 'https://packetrove.com';
@@ -29,7 +30,7 @@ export function getPageMetadata(locale: Locale, page: Page, path: string) {
     const url = WEBSITE_ORIGIN + localizedPath(path, locale);
     meta.push({ attribute: 'property', key: 'og:url', content: url });
     links.push({ rel: 'canonical', href: url });
-    for (const language of ['en', 'zh-Hans', 'x-default'] as const) {
+    for (const language of [...supportedLocales, 'x-default'] as const) {
       links.push({ rel: 'alternate', hreflang: language,
         href: WEBSITE_ORIGIN + localizedPath(path, language === 'x-default' ? 'en' : language) });
     }

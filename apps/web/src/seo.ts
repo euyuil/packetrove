@@ -1,8 +1,8 @@
-import { resources } from './i18n/resources';
-import { localizedPath, pagePaths, type Locale } from './i18n/routes';
+import { supportedLocales } from './i18n/locales';
+import { localizedPath, pagePaths } from './i18n/routes';
 import { getPageMetadata, WEBSITE_ORIGIN } from './i18n/page-metadata';
 
-export const websitePages = (Object.keys(resources) as Locale[]).flatMap(locale =>
+export const websitePages = supportedLocales.flatMap(locale =>
   Object.entries(pagePaths).map(([page, path]) => {
     const pathname = localizedPath(path, locale);
     return { locale, page: page as keyof typeof pagePaths, path, pathname,

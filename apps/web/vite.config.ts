@@ -18,8 +18,7 @@ export default defineConfig(({ command, mode }) => ({
       return html.replace('<!--page-metadata-->', () => renderPageMetadata(page.pathname));
     },
   }],
-  input: ['index.html', 'cidr.html', 'ip.html', 'docs/api.html', '404.html',
-    'zh/index.html', 'zh/cidr.html', 'zh/ip.html', 'zh/docs/api.html'],
+  input: [...websitePages.map(page => page.entry), '404.html'],
   build: { target: 'es2022' },
   define: {
     'import.meta.env.VITE_API_ORIGIN': JSON.stringify(loadEnv(mode, process.cwd(), 'VITE_').VITE_API_ORIGIN

@@ -5,12 +5,13 @@ import { PUBLIC_IP_PATH } from '@packetrove/contracts';
 import cliPackage from '../../../packages/cli/package.json';
 import { getApiUrl } from './api';
 import { localizedPath } from './i18n/routes';
+import { resolveLocale } from './i18n/locales';
 
 export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
   documentationUrl: string; repositoryUrl: string; onNavigate: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const { t, i18n } = useTranslation();
-  const locale = i18n.resolvedLanguage === 'zh-Hans' ? 'zh-Hans' : 'en';
+  const locale = resolveLocale(i18n.resolvedLanguage);
   const apiExample = `curl -fsS ${getApiUrl(PUBLIC_IP_PATH)} \\
   -H 'Accept: text/plain'`;
   const cliInstall = [
