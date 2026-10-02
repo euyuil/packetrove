@@ -50,6 +50,15 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
     void copyText(result.cidr);
   }
 
+  const issueItems = error?.issues?.map((issue, index) => {
+    const message = issueMessage(issue, error.details?.[index], t, locale);
+    const entry = issue.index === undefined ? undefined : entries[issue.index];
+    if (!entry) return message;
+    return t($ => entry.entriesOnLine > 1 ? $.cidr.lineEntry : $.cidr.line, {
+      line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
+    });
+  });
+
   return (
     <Stack gap="xl">
       <Stack component="section" aria-labelledby="tool-title" gap="sm">
@@ -77,10 +86,8 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
                   classNames={{ input: 'network-value' }}
                   errorProps={{ component: 'div', id: 'input-error' }}
                   error={error && <Alert color="red" title={errorMessage(error, t, locale)} role="alert">
-                    {error.issues && <List size="sm">{error.issues.map((issue, index) => <List.Item key={index}>
-                      {issue.index === undefined ? issueMessage(issue, error.details?.[index], t, locale)
-                        : t($ => $.cidr.line, { line: formatCount(entries[issue.index]?.line ?? issue.index + 1),
-                          message: issueMessage(issue, error.details?.[index], t, locale) })}
+                    {issueItems && <List size="sm">{issueItems.map((message, index) => <List.Item key={index}>
+                      {message}
                     </List.Item>)}</List>}
                   </Alert>}
                   placeholder={'203.0.113.1\n203.0.113.2\n203.0.113.6'}

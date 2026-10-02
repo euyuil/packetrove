@@ -63,6 +63,7 @@ export const ptBR = {
     limits: 'Digite endereços individuais ou intervalos CIDR, até {{maximum}} entradas. Não é possível misturar IPv4 e IPv6 no mesmo cálculo. As contagens IPv6 permanecem exatas, mesmo para intervalos muito grandes.',
     exampleResult: '{{cidr}} cobre {{covered}} endereços e adiciona {{additional}}.',
     line: 'Linha {{line}}: {{message}}',
+    lineEntry: 'Linha {{line}}, item {{entry}}: {{message}}',
   },
   subtract: {
     title: 'Subtração de CIDRs', description: 'Remova as redes IPv4 ou IPv6 excluídas do espaço de endereços incluído. Obtenha a menor lista exata de CIDRs, sem adicionar endereços.',
@@ -84,6 +85,7 @@ export const ptBR = {
     limits: 'Use uma única família de endereços e, no máximo, {{inputs}} entradas somando as duas listas, com até {{length}} caracteres por entrada. O resultado pode conter até {{outputs}} CIDRs; resultados maiores retornam um erro sem lista parcial.',
     examplesTitle: 'Exemplos de subtração', example: 'Remover {{exclude}} de {{include}}:',
     line: '{{list}}, linha {{line}}: {{message}}', listIssue: '{{list}}: {{message}}',
+    lineEntry: '{{list}}, linha {{line}}, item {{entry}}: {{message}}',
     outputLimitTitle: 'O resultado contém CIDRs demais.',
   },
   ip: {

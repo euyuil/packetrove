@@ -216,7 +216,7 @@ describe('browser calculator', () => {
     enter('\n::1\n\nbad');
     expect(within(screen.getByRole('alert')).getByText(/^Line 4:/)).toBeDefined();
   });
-  it.each(['\n', '\r\n', '\u2028', '\u2029'])('shows all invalid physical lines with %j separators without uploading inputs', separator => {
+  it.each(['\n', '\r\n', '\r', '\u2028', '\u2029'])('shows all invalid physical lines with %j separators without uploading inputs', separator => {
     const calculation = vi.spyOn(core, 'smallestCoveringCidr');
     const fetch = vi.fn(() => { throw new Error('Unexpected API request'); });
     vi.stubGlobal('fetch', fetch);
@@ -226,8 +226,8 @@ describe('browser calculator', () => {
     const alert = within(screen.getByRole('alert'));
     const issues = alert.getAllByRole('listitem');
     expect(issues).toHaveLength(3);
-    expect(issues[0]?.textContent).toMatch(/^Line 3:/);
-    expect(issues[1]?.textContent).toMatch(/^Line 3:/);
+    expect(issues[0]?.textContent).toMatch(/^Line 3, item 1:/);
+    expect(issues[1]?.textContent).toMatch(/^Line 3, item 2:/);
     expect(issues[2]?.textContent).toMatch(/^Line 6:/);
     expect(screen.queryByText('203.0.113.0/30')).toBeNull();
     expect(fetch).not.toHaveBeenCalled();

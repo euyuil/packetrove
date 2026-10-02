@@ -119,14 +119,14 @@ describe('browser-local CIDR subtraction', () => {
     expect(screen.getByLabelText(excludeLabel).getAttribute('aria-invalid')).not.toBe('true');
   });
 
-  it.each(['\n', '\r\n', '\u2028', '\u2029'])('reports the correct list and physical line with %j separators', separator => {
+  it.each(['\n', '\r\n', '\r', '\u2028', '\u2029'])('reports the correct list and physical line with %j separators', separator => {
     render(<App />);
     enter(['', '203.0.113.0/24, 203.0.113.7/24', 'bad，broken'].join(separator),
       ['', '', '203.0.113.1\t203.0.113.2', ',， ', '::/129'].join(separator));
     const errors = within(screen.getByRole('alert')).getAllByRole('listitem');
     expect(errors).toHaveLength(3);
-    expect(errors[0]?.textContent).toMatch(/^Include, line 3:/);
-    expect(errors[1]?.textContent).toMatch(/^Include, line 3:/);
+    expect(errors[0]?.textContent).toMatch(/^Include, line 3, item 1:/);
+    expect(errors[1]?.textContent).toMatch(/^Include, line 3, item 2:/);
     expect(errors[2]?.textContent).toMatch(/^Exclude, line 5:/);
     for (const label of [includeLabel, excludeLabel]) {
       const input = screen.getByLabelText(label);
