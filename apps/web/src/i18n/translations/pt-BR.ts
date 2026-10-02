@@ -57,6 +57,7 @@ export const ptBR = {
     excludeHelp: 'Separe as entradas com vírgulas, espaços, tabulações ou quebras de linha. Deixe em branco para simplificar a lista incluída sem remover endereços.',
     calculate: 'Subtrair CIDRs', result: 'Espaço de endereços restante', output: 'CIDRs restantes',
     included: 'Endereços incluídos', removed: 'Endereços removidos', remaining: 'Endereços restantes', blocks: 'CIDRs do resultado',
+    completed: 'Cálculo concluído. Endereços restantes: {{addresses}}. CIDRs: {{cidrs}}.',
     copyList: 'Copiar com quebras de linha', copyAllowed: 'Copiar com vírgulas', copySuccess: 'Copiado com quebras de linha.', allowedSuccess: 'Copiado com vírgulas.',
     copyFailure: 'A cópia está indisponível. Selecione e copie a lista acima.',
     formats: 'Com quebras de linha, cada CIDR fica em uma linha. Com vírgulas, os CIDRs são separados por uma vírgula e um espaço.',

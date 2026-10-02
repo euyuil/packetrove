@@ -57,6 +57,7 @@ export const fr = {
     excludeHelp: 'Séparez les entrées par des virgules, des espaces, des tabulations ou des sauts de ligne. Laissez vide pour simplifier la liste incluse sans retirer d’adresses.',
     calculate: 'Soustraire les CIDR', result: 'Espace d’adresses restant', output: 'CIDR restants',
     included: 'Adresses incluses', removed: 'Adresses retirées', remaining: 'Adresses restantes', blocks: 'CIDR du résultat',
+    completed: 'Calcul terminé. Adresses restantes : {{addresses}}. CIDR : {{cidrs}}.',
     copyList: 'Copier avec des sauts de ligne', copyAllowed: 'Copier avec des virgules', copySuccess: 'Copié avec des sauts de ligne.', allowedSuccess: 'Copié avec des virgules.',
     copyFailure: 'La copie est indisponible. Sélectionnez et copiez la liste ci-dessus.',
     formats: 'Un saut de ligne place chaque CIDR sur sa propre ligne. Le format avec virgules sépare les CIDR par une virgule et un espace.',

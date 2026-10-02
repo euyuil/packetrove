@@ -124,12 +124,17 @@ describe('hydration of production HTML', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     await hydrate('/cidr/subtract');
+    const completion = screen.getByRole('status', { name: 'Remaining address space' });
+    expect(completion.textContent).toBe('');
     const include = screen.getByLabelText('Included IP addresses or CIDRs');
     const exclude = screen.getByLabelText('Excluded IP addresses or CIDRs');
     fireEvent.change(include, { target: { value: '203.0.113.0/24' } });
     fireEvent.change(exclude, { target: { value: '203.0.113.64/26' } });
     fireEvent.click(screen.getByRole('button', { name: 'Subtract CIDRs' }));
+    expect(completion.textContent).toBe('Calculation complete. Remaining addresses: 192. CIDRs: 2.');
     await chooseLanguage('zh-Hans');
+    expect(screen.getByRole('status', { name: '剩余地址空间' })).toBe(completion);
+    expect(completion.textContent).toBe('计算完成。剩余地址数：192；CIDR 数：2。');
     expect(screen.getByLabelText('包含的 IP 地址或 CIDR 网段')).toBe(include);
     expect(screen.getByLabelText('排除的 IP 地址或 CIDR 网段')).toBe(exclude);
     expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value)
@@ -138,6 +143,7 @@ describe('hydration of production HTML', () => {
     expect(writeText).toHaveBeenCalledExactlyOnceWith('203.0.113.0/26, 203.0.113.128/25');
     fireEvent.click(screen.getByRole('link', { name: '首页' }));
     fireEvent.click(screen.getByRole('link', { name: 'CIDR 相减' }));
+    expect(screen.getByRole('status', { name: '剩余地址空间' }).textContent).toBe('计算完成。剩余地址数：192；CIDR 数：2。');
     expect((screen.getByLabelText('包含的 IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('203.0.113.0/24');
     expect((screen.getByLabelText('排除的 IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('203.0.113.64/26');
     expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value)
