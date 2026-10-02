@@ -40,25 +40,47 @@ async function chooseLanguage(locale: Locale) {
 }
 
 describe('focus after navigation to a different page', () => {
-  it.each(supportedLocales)('moves keyboard focus from the removed %s homepage entry to the calculator content', async locale => {
+  const homepageEntries = supportedLocales.flatMap(locale =>
+    (['cidr', 'subtract'] as const).map(tool => ({ locale, tool })));
+  it.each(homepageEntries)('moves keyboard focus from the removed $locale homepage entry to the $tool content', async ({ locale, tool }) => {
     const translation = resources[locale].translation;
+    const linkName = tool === 'cidr' ? translation.home.cidrLink : translation.home.subtractLink;
+    const title = tool === 'cidr' ? translation.cidr.title : translation.subtract.title;
+    const inputLabel = tool === 'cidr' ? translation.cidr.inputLabel : translation.subtract.includeLabel;
     window.history.replaceState({}, '', localizedPath('/', locale));
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     render(<App />);
-    const entry = screen.getByRole('link', { name: translation.home.cidrLink });
+    const entry = screen.getByRole('link', { name: linkName });
     entry.focus();
     await userEvent.setup().keyboard('{Enter}');
     expect(entry.isConnected).toBe(false);
-    expect(window.location.pathname).toBe(localizedPath('/cidr', locale));
-    const main = screen.getByRole('main', { name: translation.cidr.title });
+    expect(window.location.pathname).toBe(localizedPath(pagePaths[tool], locale));
+    const main = screen.getByRole('main', { name: title });
     expect(document.activeElement).toBe(main);
     expect(main.tabIndex).toBe(-1);
     expect(main.classList.contains('mantine-focus-always')).toBe(true);
-    expect(screen.getByLabelText(translation.cidr.inputLabel)).toBeDefined();
+    expect(screen.getByLabelText(inputLabel)).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
     expect(storage).not.toHaveBeenCalled();
+  });
+
+  it('focuses each distinct CIDR page and retains both unfinished drafts', () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    window.history.replaceState({}, '', '/cidr');
+    render(<App />);
+    fireEvent.change(screen.getByLabelText(resources.en.translation.cidr.inputLabel), { target: { value: '203.0.113.' } });
+    fireEvent.click(screen.getByRole('link', { name: resources.en.translation.subtract.title }));
+    expect(document.activeElement).toBe(screen.getByRole('main', { name: resources.en.translation.subtract.title }));
+    fireEvent.change(screen.getByLabelText(resources.en.translation.subtract.includeLabel), { target: { value: '198.51.100.' } });
+    fireEvent.click(screen.getByRole('link', { name: resources.en.translation.cidr.title }));
+    expect(document.activeElement).toBe(screen.getByRole('main', { name: resources.en.translation.cidr.title }));
+    expect((screen.getByLabelText(resources.en.translation.cidr.inputLabel) as HTMLTextAreaElement).value).toBe('203.0.113.');
+    fireEvent.click(screen.getByRole('link', { name: resources.en.translation.subtract.title }));
+    expect((screen.getByLabelText(resources.en.translation.subtract.includeLabel) as HTMLTextAreaElement).value).toBe('198.51.100.');
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('focuses the new content on actual history back and forward without losing the calculation', async () => {

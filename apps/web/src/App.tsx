@@ -91,7 +91,8 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       </Group>
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-always"
         aria-label={homePage ? t($ => $.common.home) : ipPage ? t($ => $.ip.title)
-          : cidrPage ? t($ => $.cidr.title) : apiPage ? t($ => $.api.title) : t($ => $.common.notFound)}>
+          : cidrPage ? t($ => $.cidr.title) : subtractPage ? t($ => $.subtract.title)
+          : apiPage ? t($ => $.api.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
           : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
           : subtractPage ? <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} />
