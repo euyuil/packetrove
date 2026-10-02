@@ -111,6 +111,13 @@ with empty inputs and makes no network requests. There are no new dependencies
 or external services. The API, CLI, MCP, and covering-calculator skill expose
 their existing operations; subtraction is currently a core and website tool.
 
+The page includes localized questions about WireGuard exceptions, allocation
+gaps, overlapping/outside exclusions, exact subtraction versus covering CIDRs,
+and interface availability. It explicitly describes subtraction as browser/core
+only and links to the same-language MCP guide for the available covering-CIDR
+and public-IP operations. Visiting the guide in the same tab preserves both
+lists and the result. These questions are present in prerendered HTML.
+
 Focused tests cover interval boundaries, `/0`, `/32`, `/128`, canonicalization,
 overlaps on both sides, disjoint ranges, spanning exclusions, complete removal,
 input and output limits, exact IPv6 counts, copy formats, local calculation,

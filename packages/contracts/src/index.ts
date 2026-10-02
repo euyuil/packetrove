@@ -7,6 +7,7 @@ export const MAX_SUBTRACTION_OUTPUTS = 10_000;
 export const MAX_REQUEST_BYTES = 64 * 1_024;
 export const CIDR_COVER_PATH = '/v1/cidr/cover';
 export const MCP_TOOL_NAME = 'smallest_covering_cidr';
+export const MCP_PATH = '/mcp';
 export const PUBLIC_IP_NAME = 'public-ip';
 export const PUBLIC_IP_PATH = `/v1/${PUBLIC_IP_NAME}`;
 export const PUBLIC_IP_TOOL_NAME = PUBLIC_IP_NAME;

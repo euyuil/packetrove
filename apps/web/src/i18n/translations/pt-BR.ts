@@ -25,7 +25,7 @@ export const ptBR = {
     cliExample: 'Depois, exiba seu IP público atual:', cliGuide: 'Ler o guia da CLI (em inglês)',
     mcpTitle: 'Model Context Protocol (MCP)', mcpDescription: 'Conecte seu agente de IA ao Packetrove por Streamable HTTP. Não é necessário autenticar nem executar um servidor local.',
     serverAddress: 'Endereço do servidor', mcpExample: 'Após instalar seu cliente, adicione o servidor:',
-    mcpCheck: 'Use <code>/mcp</code> no seu cliente para verificar a conexão. A consulta de IP público mostra o endereço da conexão usada pelo agente.', mcpGuide: 'Ler o guia do MCP (em inglês)',
+    mcpCheck: 'Use <code>/mcp</code> no seu cliente para verificar a conexão. A consulta de IP público mostra o endereço da conexão usada pelo agente.', mcpGuide: "Ler o guia de conexão MCP",
   },
   cidr: {
     title: 'Menor CIDR de cobertura', description: 'Combine endereços e intervalos IPv4 ou IPv6 no menor CIDR único que cobre todos eles.',
@@ -90,6 +90,112 @@ export const ptBR = {
     cidrResponse: 'Este exemplo retorna {{cidr}} com {{additional}} endereços adicionais. Confira additionalAddressCount antes de usar o resultado em uma lista de endereços permitidos ou bloqueados.',
     ipSummary: 'Retorna o IP público observado nesta conexão HTTP. Solicite text/plain para um endereço seguido de uma quebra de linha, ou application/json para um endereço e sua família. As respostas não são armazenadas em cache. Uma VPN ou um proxy altera o endereço de saída observado.',
   },
+  discovery: {
+    subtract: {
+      title: "Perguntas sobre a subtração de CIDRs",
+      questions: {
+        wireguard: {
+          question: "Como preparo exceções AllowedIPs do WireGuard?",
+          answer: "Coloque os intervalos desejados do túnel em Incluir e as exceções em Excluir. Copiar AllowedIPs copia os CIDRs restantes exatos como valor de configuração. Confira antes de aplicar; o Packetrove não configura o WireGuard nem altera rotas."
+        },
+        remaining: {
+          question: "Os intervalos restantes provam que os endereços estão livres?",
+          answer: "Eles mostram lacunas relativas às suas listas de inclusão e exclusão. A ferramenta não consulta o uso real da rede nem procura sub-redes de um tamanho solicitado."
+        },
+        outside: {
+          question: "O que acontece com exclusões sobrepostas ou fora do intervalo incluído?",
+          answer: "As sobreposições de cada lista são contadas uma vez. Só são removidos endereços também presentes em Incluir; exclusões externas não removem nada. A remoção completa retorna com sucesso uma lista CIDR vazia e zero endereços restantes."
+        },
+        covering: {
+          question: "Qual é a diferença entre subtração e um CIDR de cobertura?",
+          answer: "A subtração mantém exatamente a união das inclusões menos a união das exclusões, incluindo lacunas. Retorna uma lista mínima e ordenada de CIDRs canônicos sem adicionar endereços. Um único CIDR de cobertura pode incluir endereços adicionais."
+        },
+        access: {
+          question: "Posso chamar a subtração via MCP, API web ou CLI?",
+          answer: "A subtração funciona atualmente no navegador e no núcleo de cálculo compartilhado. As entradas do navegador ficam locais. MCP, API web e CLI oferecem cobertura CIDR e IP público, sem expor subtração. O guia MCP documenta essas operações disponíveis."
+        }
+      }
+    },
+    cidr: {
+      title: "Perguntas sobre CIDRs de cobertura",
+      mcpTitle: "Usar esta calculadora via MCP",
+      purpose: "Peça a um agente de IA que calcule um único CIDR para um grupo escolhido de entradas permitidas ou bloqueadas pelo firewall e explique a cobertura adicional.",
+      inputs: "Aceita de 1 a {{maximumInputs}} endereços IPv4 ou IPv6 ou intervalos CIDR, com até {{maximumLength}} caracteres por entrada. Use uma só família por chamada.",
+      result: "Consulte cidr e range para conhecer a rede coberta. Confira additionalAddressCount antes de usar o resultado nas regras do firewall. Todas as contagens são strings decimais para manter a precisão do IPv6.",
+      boundary: "Chamadas MCP remotas enviam suas entradas ao servidor. A calculadora web funciona localmente. Esta ferramenta calcula um único CIDR; escolher várias combinações para respeitar o limite de uma lista inteira exige definir outro objetivo. Ela não altera regras do firewall.",
+      openTool: "Abrir a calculadora no navegador",
+      questions: {
+        firewall: {
+          question: "Como reduzo as entradas de uma lista de IPs do firewall?",
+          answer: "Combine um grupo escolhido em um CIDR de cobertura. Confira primeiro os endereços adicionais: eles serão permitidos por uma lista de permissão ou bloqueados por uma lista de bloqueio."
+        },
+        covering: {
+          question: "Um único CIDR preserva exatamente os endereços originais?",
+          answer: "Somente quando a união original preenche todo esse CIDR. Caso contrário, até o menor CIDR único adiciona endereços. O Packetrove mostra essa ampliação; ele não escolhe a melhor combinação de agrupamentos para uma lista inteira."
+        },
+        overlap: {
+          question: "Como são contadas as sobreposições e as entradas repetidas?",
+          answer: "Cada endereço da união original é contado uma vez. CIDRs com bits de host são normalizados para o endereço de rede. normalizedInputs mantém entradas repetidas sem aumentar as contagens de endereços."
+        },
+        counts: {
+          question: "As contagens continuam exatas para intervalos IPv6 muito grandes?",
+          answer: "Sim. O navegador usa inteiros exatos, e a API e o MCP retornam strings decimais. As contagens incluem todos os endereços cobertos pelas regras, inclusive os de rede e broadcast do IPv4. Use uma só família por cálculo."
+        },
+        privacy: {
+          question: "Para onde vão minhas entradas de cálculo?",
+          answer: "A calculadora web funciona no navegador sem enviar entradas à API. Os dados digitados ficam na memória desta aba. A CLI local calcula offline; a API web e chamadas MCP remotas enviam as entradas ao servidor."
+        }
+      }
+    },
+    ip: {
+      title: "Perguntas sobre seu IP público",
+      mcpTitle: "Consultar uma conexão via MCP",
+      purpose: "Peça a um agente de IA que consulte o IP público observado para a conexão que faz sua chamada MCP.",
+      inputs: "Passe um objeto vazio, {}. A ferramenta observa a conexão da requisição; ela não aceita um endereço IP para consultar.",
+      result: "O exemplo usa um endereço reservado para documentação. Uma chamada real retorna ip e family, com ipv4 ou ipv6, observados para essa requisição.",
+      boundary: "Um cliente de IA hospedado pode retornar seu próprio endereço de saída. Use esta ferramenta web para consultar a conexão do navegador ou a CLI no seu computador para a conexão do terminal. Uma chamada não descobre as duas famílias, endereços locais privados nem um endereço anterior ao proxy. O resultado não é uma prova de identidade.",
+      openTool: "Consultar o IP público do meu navegador",
+      questions: {
+        address: {
+          question: "Qual endereço IP esta página mostra?",
+          answer: "O endereço público observado na requisição atual do seu navegador ao Packetrove. Ele não é seu endereço local privado e não identifica seu dispositivo."
+        },
+        vpn: {
+          question: "O que muda quando uso uma VPN ou um proxy?",
+          answer: "O resultado mostra o endereço de saída usado por essa conexão. Atualize após mudar de rede, VPN ou proxy. Ele não revela um endereço anterior ao proxy."
+        },
+        family: {
+          question: "Uma consulta descobre IPv4 e IPv6?",
+          answer: "Não. Uma requisição observa uma só família. Uma consulta bem-sucedida não comprova conectividade nas duas famílias."
+        },
+        client: {
+          question: "Por que um agente de IA ou a CLI pode informar outro IP?",
+          answer: "Cada interface observa a conexão que faz sua requisição. Um cliente MCP hospedado pode usar uma rede diferente da do seu navegador. Execute a ferramenta web ou a CLI no caminho de rede que deseja consultar."
+        },
+        privacy: {
+          question: "Os resultados de IP são armazenados ou ficam em cache?",
+          answer: "O aplicativo mantém o resultado atual na memória para exibição, sem histórico de consultas nem registros de endereços. Os resultados e erros não são armazenados em cache. A plataforma de hospedagem ainda processa a requisição conforme suas configurações."
+        }
+      }
+    }
+  },
+  mcp: {
+    title: "Conectar o Packetrove a um agente de IA",
+    explanation: "Conecte um cliente MCP compatível para calcular CIDRs de cobertura ou consultar a conexão usada por esse cliente. Configure o cliente abaixo e use os exemplos das ferramentas.",
+    connection: "Streamable HTTP · Sem conta nem chave de API",
+    connectTitle: "Conectar seu cliente",
+    connectDescription: "Com o Claude Code ou o Codex instalado, adicione este servidor remoto. Os comandos configuram o cliente; eles não instalam um servidor Packetrove local.",
+    clientGuide: "Documentação MCP do {{client}}",
+    check: "Use <code>/mcp</code> no cliente para consultar a conexão. Confirme que <code>{{cidrTool}}</code> e <code>{{ipTool}}</code> estão disponíveis.",
+    discovery: "Após a configuração, o cliente descobre as ferramentas com tools/list. As descrições e os esquemas orientam a escolha e os argumentos. Ler uma página web não configura um cliente nem dá acesso às ferramentas.",
+    toolName: "Nome da ferramenta",
+    arguments: "Exemplo de argumentos",
+    exampleResult: "Exemplo de resultado com endereços de documentação",
+    errorsTitle: "Ler resultados e tratar erros",
+    results: "Leia <code>structuredContent</code> ou o JSON do bloco de texto. Mantenha as contagens como strings decimais ou inteiros de precisão arbitrária; converter grandes contagens IPv6 em números de ponto flutuante perde precisão.",
+    errors: "Se <code>isError</code> for true, leia o JSON do erro antes de tentar novamente. Corrija <code>INVALID_INPUT</code> e <code>MIXED_ADDRESS_FAMILIES</code> com as informações do usuário. <code>CLIENT_IP_UNAVAILABLE</code> indica que faltam metadados confiáveis da conexão; não invente um endereço.",
+    technicalGuide: "Ler o guia técnico MCP do repositório (em inglês)"
+  },
   errors: {
     invalidInput: 'As entradas do cálculo são inválidas.', mixedFamilies: 'Use somente IPv4 ou somente IPv6 no mesmo cálculo.',
     invalidJson: 'A requisição deve conter JSON válido.', payloadTooLarge: 'A requisição é grande demais.', unsupportedMediaType: 'O tipo de conteúdo da requisição não é compatível.',
@@ -102,6 +208,7 @@ export const ptBR = {
     tooManyOutputs: 'O resultado completo ultrapassa {{limit}} CIDRs. Use menos exclusões ou intervalos incluídos menores. Nenhum resultado parcial é retornado.',
   },
   meta: {
+    mcp: {"title": "Guia MCP do Packetrove — CIDR e IP público", "description": "Conecte Claude Code ou Codex ao Packetrove via MCP. Entenda argumentos, resultados CIDR exatos, limites do IP da conexão e tratamento de erros, sem chave de API."},
     home: { title: 'Packetrove — Calculadora CIDR e consulta de IP público', description: 'Calcule CIDRs de cobertura no navegador e consulte seu IP público. Ferramentas IPv4 e IPv6 de código aberto para web, API, CLI e MCP, sem conta.' },
     cidr: { title: 'Calculadora do menor CIDR de cobertura — Packetrove', description: 'Encontre o menor CIDR único que cobre endereços e intervalos IPv4 ou IPv6. Calcule no navegador com contagens exatas, cobertura adicional e exemplos.' },
     subtract: { title: 'Calculadora de subtração de CIDRs — Packetrove', description: 'Subtraia listas de CIDRs IPv4 ou IPv6 localmente no navegador. Copie uma lista mínima exata para AllowedIPs do WireGuard ou veja o espaço restante após alocações conhecidas.' },

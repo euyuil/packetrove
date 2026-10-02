@@ -2,7 +2,8 @@ import { exports } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { resources } from '../../web/src/i18n/resources';
 import { localizedPath, pagePaths, resolveRoute, type Locale } from '../../web/src/i18n/routes';
-import { websitePages } from '../../web/src/seo';
+import { escapeHtml, websitePages } from '../../web/src/seo';
+import { mcpExamples } from '../../web/src/mcp-examples';
 import { supportedLocales } from '../../web/src/i18n/locales';
 
 describe('website in the Workers runtime', () => {
@@ -51,11 +52,34 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain(text.ip.explanation);
       expect(html).toContain(text.ip.checking);
       expect(html).not.toContain('class="network-value"');
-    } else {
+    } else if (page === 'api') {
       expect(html).toContain(text.api.cidrSummary);
       expect(html).toContain(text.api.ipSummary);
       expect(html).toContain('203.0.113.1');
       expect(html).not.toContain('class="api-reference"');
+    } else {
+      expect(html).toContain(escapeHtml(text.mcp.explanation));
+      expect(html).toContain('claude mcp add --transport http --scope user packetrove');
+      expect(html).toContain('codex mcp add packetrove');
+      expect(html).toContain('structuredContent');
+      expect(html).toContain('CLIENT_IP_UNAVAILABLE');
+    }
+    if (page === 'cidr' || page === 'ip' || page === 'subtract') {
+      for (const question of Object.values(text.discovery[page].questions)) {
+        expect(html).toContain(escapeHtml(question.question));
+        expect(html).toContain(escapeHtml(question.answer));
+      }
+    }
+    if (page === 'subtract') expect(html).not.toContain('data-mcp-tool=');
+    if (page !== 'mcp') {
+      expect(html).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
+    }
+    for (const tool of page === 'mcp' ? ['cidr', 'ip'] as const : page === 'cidr' || page === 'ip' ? [page] : []) {
+      const example = mcpExamples[tool];
+      expect(html).toContain('data-mcp-tool="' + example.name + '"');
+      expect(html).toContain(escapeHtml(JSON.stringify(example.arguments, null, 2)));
+      expect(html).toContain(escapeHtml(JSON.stringify(example.result, null, 2)));
+      expect(html).toContain(escapeHtml(text.discovery[tool].boundary));
     }
     for (const language of [...supportedLocales, 'x-default'] as const) {
       const alternate: Locale = language === 'x-default' ? 'en' : language;
@@ -69,14 +93,14 @@ describe('website in the Workers runtime', () => {
     expect(logo).toBeDefined();
     expect((await exports.default.fetch('http://localhost' + logo)).status).toBe(200);
   });
-  it('publishes a sitemap of only the 50 canonical pages and an allow-all robots policy', async () => {
+  it('publishes a sitemap of only the registered canonical pages and an allow-all robots policy', async () => {
     const sitemap = await exports.default.fetch('http://localhost/sitemap.xml');
     expect(sitemap.status).toBe(200);
     expect(sitemap.headers.get('content-type')).toContain('xml');
     const xml = await sitemap.text();
     expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
     const urls = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]);
-    expect(urls).toHaveLength(50);
+    expect(urls).toHaveLength(websitePages.length);
     expect(urls).toEqual(supportedLocales.flatMap(locale => Object.values(pagePaths)
       .map(path => 'https://packetrove.com' + localizedPath(path, locale))));
     expect(xml).not.toMatch(/\.html|api\.packetrove|<lastmod>/);
@@ -145,7 +169,7 @@ describe('website in the Workers runtime', () => {
   });
   it.each(['/missing-page', '/missing-page/', '/cidr/missing-page', '/public-ip/missing-page', '/zh/missing-page',
     '/zh/cidr/missing-page', '/es/missing-page', '/de/missing-page', '/ja/missing-page',
-    '/es/cidr/missing-page', '/de/docs/api/missing-page', '/ja/public-ip/missing-page',
+    '/es/cidr/missing-page', '/de/docs/api/missing-page', '/ja/public-ip/missing-page', '/docs/mcp/missing-page',
     '/fr/missing-page', '/pt/missing-page', '/fr/docs/api/missing-page', '/pt/cidr/missing-page',
     '/ru/missing-page', '/ko/missing-page', '/it/missing-page',
     '/ru/docs/api/missing-page', '/ko/public-ip/missing-page', '/it/cidr/missing-page',

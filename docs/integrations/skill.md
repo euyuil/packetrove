@@ -20,11 +20,15 @@ Provide one working calculation interface:
 - A Packetrove checkout path with dependencies installed and the CLI built.
   The agent can run `node /path/to/packetrove/packages/cli/dist/cli.js`.
 - A configured remote MCP connection to `https://api.packetrove.com/mcp`, following
-  the [MCP guide](mcp.md).
+  the localized [website MCP guide](https://packetrove.com/docs/mcp) or the
+  [technical MCP guide](mcp.md).
 
 The CLI option is offline after the build. MCP requires the configured Worker
 to be reachable. The skill itself does not create a hosted service or install
 these prerequisites.
+Remote MCP calculations send inputs to that server. Use the browser or built
+CLI when the calculation must remain local. Reading the website guide does not
+configure a client or activate the skill.
 
 ## Example request
 

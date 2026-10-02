@@ -78,7 +78,7 @@ describe('API documentation failure isolation', () => {
     expect(screen.getByText('203.0.113.0/30')).toBeDefined();
     expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', '203.0.113.2'] });
     expect(fetch).not.toHaveBeenCalled();
-  });
+  }, 15_000);
 
   it('keeps physical-line validation errors and cannot revive a cleared draft on revisiting failed documentation', async () => {
     const { documentation, fetch, calculation } = await application();

@@ -33,7 +33,7 @@ export const en = {
     cliExample: 'Then print your current public IP:', cliGuide: 'Read the CLI guide',
     mcpTitle: 'Model Context Protocol', mcpDescription: 'Connect your AI agent to Packetrove over Streamable HTTP. No authentication or local server is needed.',
     serverAddress: 'Server address', mcpExample: 'With your client installed, add the server:',
-    mcpCheck: 'Use <code>/mcp</code> in your client to check the connection. Public IP checks observe the connection used by the agent.', mcpGuide: 'Read the MCP guide',
+    mcpCheck: 'Use <code>/mcp</code> in your client to check the connection. Public IP checks observe the connection used by the agent.', mcpGuide: "Read the MCP connection guide",
   },
   cidr: {
     title: 'Smallest Covering CIDR', description: 'Combine IPv4 or IPv6 addresses and ranges into the smallest single CIDR that covers them all.',
@@ -97,6 +97,112 @@ export const en = {
     cidrResponse: 'This example returns {{cidr}} with {{additional}} additional addresses. Check additionalAddressCount before using the result in an allowlist or blocklist.',
     ipSummary: 'Return the public IP observed for this HTTP connection. Request text/plain for a single address followed by a newline, or application/json for an address and family. Responses are not cached. A VPN or proxy changes the observed exit address.',
   },
+  discovery: {
+    subtract: {
+      title: "Questions about CIDR subtraction",
+      questions: {
+        wireguard: {
+          question: "How do I prepare WireGuard AllowedIPs exceptions?",
+          answer: "Put the intended tunnel ranges in Include and the exceptions in Exclude. Copy AllowedIPs copies the exact remaining CIDRs as a setting value. Review it before applying; Packetrove does not configure WireGuard or change routes."
+        },
+        remaining: {
+          question: "Do remaining ranges prove that addresses are unused?",
+          answer: "They show gaps relative to your include and exclude lists. The tool does not inspect live network usage or find subnets of a requested size."
+        },
+        outside: {
+          question: "What happens to overlapping or out-of-range exclusions?",
+          answer: "Overlaps on each side count once. Only addresses also present in Include are removed; exclusions outside it remove nothing. Complete removal succeeds with an empty CIDR list and zero remaining addresses."
+        },
+        covering: {
+          question: "How does subtraction differ from a covering CIDR?",
+          answer: "Subtraction preserves the exact remainder of union(include) minus union(exclude), including gaps. It returns a minimal sorted list of canonical CIDRs without adding addresses. A single covering CIDR can include extra addresses."
+        },
+        access: {
+          question: "Can I call subtraction through MCP, the Web API, or CLI?",
+          answer: "Subtraction currently runs in the browser and shared calculation core. Browser inputs stay local. MCP, Web API, and CLI offer the covering-CIDR and public-IP operations; they do not expose subtraction. The MCP guide documents those available operations."
+        }
+      }
+    },
+    cidr: {
+      title: "Questions about covering CIDRs",
+      mcpTitle: "Use this calculator through MCP",
+      purpose: "Ask an AI agent to calculate one covering CIDR for a selected group of firewall allowlist or blocklist entries and explain the extra coverage.",
+      inputs: "Accept 1 to {{maximumInputs}} IPv4 or IPv6 addresses or CIDRs, up to {{maximumLength}} characters each. Use one address family per call.",
+      result: "Read cidr and range for the covered network. Check additionalAddressCount before using it in firewall rules. All address counts are decimal strings so IPv6 values stay exact.",
+      boundary: "Remote MCP calls send your inputs to the server. The browser calculator runs locally. This tool calculates one CIDR; choosing several merges to meet a whole-list entry limit requires a separate decision. It never changes firewall rules.",
+      openTool: "Open the browser calculator",
+      questions: {
+        firewall: {
+          question: "How can I reduce entries in a firewall IP list?",
+          answer: "Combine a selected group into one covering CIDR. Review the additional addresses first: they become allowed in an allowlist or blocked in a blocklist."
+        },
+        covering: {
+          question: "Does one covering CIDR preserve exactly the original addresses?",
+          answer: "Only when the original union fills that CIDR. Otherwise the smallest single covering CIDR adds addresses. Packetrove shows that expansion; it does not choose the best combination of merges for an entire list."
+        },
+        overlap: {
+          question: "How are overlaps and duplicate inputs counted?",
+          answer: "Each address in the original union counts once. CIDRs with host bits are normalized to their network address. Duplicate entries remain in normalizedInputs but do not inflate address counts."
+        },
+        counts: {
+          question: "Can IPv6 counts be trusted for very large ranges?",
+          answer: "Yes. The browser uses exact integers, and API and MCP counts are decimal strings. Counts include all addresses covered by firewall rules, including IPv4 network and broadcast addresses. Use one address family per calculation."
+        },
+        privacy: {
+          question: "Where do my calculation inputs go?",
+          answer: "The web calculator runs in your browser without sending inputs to the API. Drafts stay in this tab’s memory. The local CLI calculates offline; Web API and remote MCP calls submit inputs to the server."
+        }
+      }
+    },
+    ip: {
+      title: "Questions about your public IP",
+      mcpTitle: "Inspect a connection through MCP",
+      purpose: "Ask an AI agent to inspect the public IP observed for the connection making its MCP tool call.",
+      inputs: "Pass an empty object, {}. The tool observes the request connection; it does not accept an IP address to look up.",
+      result: "The example uses a documentation address. A real call returns the observed ip and its family, either ipv4 or ipv6, for that request.",
+      boundary: "A hosted AI client can return its own exit address. To inspect your browser connection, use this web tool; to inspect your computer’s command-line connection, run the CLI on that computer. One call does not discover both families, private local addresses, or an address before a proxy. The result is not an identity proof.",
+      openTool: "Check my browser’s public IP",
+      questions: {
+        address: {
+          question: "Which IP address does this page show?",
+          answer: "The public address observed for your browser’s current request to Packetrove. It is not your private local address and does not identify your device."
+        },
+        vpn: {
+          question: "What changes when I use a VPN or proxy?",
+          answer: "The result shows the exit address used by that connection. Refresh after changing networks, VPNs, or proxy settings. It does not reveal an address before the proxy."
+        },
+        family: {
+          question: "Does a check discover both IPv4 and IPv6?",
+          answer: "No. One request observes one address family. A successful check does not establish connectivity in both IPv4 and IPv6."
+        },
+        client: {
+          question: "Why can an AI agent or CLI report a different IP?",
+          answer: "Each interface observes the connection making its request. A hosted MCP client may use a different network from your browser. Run the web tool or CLI on the network path you want to inspect."
+        },
+        privacy: {
+          question: "Are IP results stored or cached?",
+          answer: "The application keeps the current result in memory for display, without lookup history or address logging. Results and errors are not cached. The hosting platform still processes the request under its settings."
+        }
+      }
+    }
+  },
+  mcp: {
+    title: "Connect Packetrove to an AI agent",
+    explanation: "Connect a compatible MCP client to calculate covering CIDRs or inspect the connection used by that client. Start with the setup below, then use the tool examples.",
+    connection: "Streamable HTTP · No account or API key required",
+    connectTitle: "Connect your client",
+    connectDescription: "With Claude Code or Codex installed, add this remote server. These commands configure the client; they do not install a local Packetrove server.",
+    clientGuide: "{{client}} MCP documentation",
+    check: "Use <code>/mcp</code> in your client to inspect the connection. Confirm that <code>{{cidrTool}}</code> and <code>{{ipTool}}</code> are available.",
+    discovery: "After configuration, the client discovers available tools with tools/list. Tool descriptions and schemas guide selection and arguments. Reading a web page does not configure a client or grant it tool access.",
+    toolName: "Tool name",
+    arguments: "Example arguments",
+    exampleResult: "Example result using documentation addresses",
+    errorsTitle: "Read results and handle errors",
+    results: "Read <code>structuredContent</code>, or the JSON in the text content block. Keep address counts as decimal strings or arbitrary-precision integers; converting large IPv6 counts to floating-point numbers loses precision.",
+    errors: "If <code>isError</code> is true, read the error JSON before retrying. Correct <code>INVALID_INPUT</code> and <code>MIXED_ADDRESS_FAMILIES</code> using the user’s information. <code>CLIENT_IP_UNAVAILABLE</code> means trusted connection metadata is missing; do not invent an address.",
+    technicalGuide: "Read the technical MCP guide in the repository (English)"
+  },
   errors: {
     invalidInput: 'Invalid calculation input.', mixedFamilies: 'Use either IPv4 or IPv6 throughout one calculation.',
     invalidJson: 'The request must contain valid JSON.', payloadTooLarge: 'The request is too large.', unsupportedMediaType: 'Unsupported request content type.',
@@ -109,6 +215,7 @@ export const en = {
     tooManyOutputs: 'The complete result exceeds {{limit}} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.',
   },
   meta: {
+    mcp: {"title": "Packetrove MCP Guide — CIDR and Public IP Tools", "description": "Connect Claude Code or Codex to Packetrove over MCP. Learn tool arguments, exact CIDR results, public IP connection boundaries, and error handling without an API key."},
     home: { title: 'Packetrove — CIDR Calculator and Public IP Lookup', description: 'Calculate covering CIDRs locally in your browser and check your public IP. Open source IPv4 and IPv6 tools for the web, API, CLI, and MCP, with no account required.' },
     cidr: { title: 'Smallest Covering CIDR Calculator — Packetrove', description: 'Find the smallest single CIDR covering IPv4 or IPv6 addresses and ranges. Calculate in your browser with exact address counts, extra coverage, and worked examples.' },
     subtract: { title: 'CIDR Subtraction Calculator — Packetrove', description: 'Subtract IPv4 or IPv6 CIDR lists locally in your browser. Copy an exact minimal list for WireGuard AllowedIPs or inspect remaining address space after known allocations.' },
@@ -147,7 +254,7 @@ export const zhHans = {
     cliExample: '然后输出当前公网 IP：', cliGuide: '阅读命令行指南（英文）',
     mcpTitle: '模型上下文协议（MCP）', mcpDescription: '通过 Streamable HTTP 将 AI 智能体连接到 Packetrove，无需身份验证或本地服务器。',
     serverAddress: '服务器地址', mcpExample: '安装客户端后，添加服务器：',
-    mcpCheck: '在客户端中使用 <code>/mcp</code> 检查连接。公网 IP 查询显示的是智能体所用连接的地址。', mcpGuide: '阅读 MCP 指南（英文）',
+    mcpCheck: '在客户端中使用 <code>/mcp</code> 检查连接。公网 IP 查询显示的是智能体所用连接的地址。', mcpGuide: "阅读 MCP 接入指南",
   },
   cidr: {
     title: '最小覆盖 CIDR', description: '将 IPv4 或 IPv6 地址和网段合并为覆盖全部输入的最小单个 CIDR 网段。',
@@ -211,6 +318,112 @@ export const zhHans = {
     cidrResponse: '此示例返回 {{cidr}}，额外覆盖 {{additional}} 个地址。将结果用于允许列表或拦截列表之前，请检查 additionalAddressCount。',
     ipSummary: '返回本次 HTTP 连接所使用的公网 IP。请求 text/plain 可获得地址及一个换行符，请求 application/json 可获得地址和地址族。响应不缓存；使用 VPN 或代理会改变观察到的出口地址。',
   },
+  discovery: {
+    subtract: {
+      title: "关于 CIDR 扣除的常见问题",
+      questions: {
+        wireguard: {
+          question: "如何生成 WireGuard AllowedIPs 的例外列表？",
+          answer: "在包含列表中填写希望进入隧道的地址范围，在排除列表中填写例外。复制 AllowedIPs 会得到精确剩余 CIDR 列表的配置值。应用前请检查；Packetrove 不会配置 WireGuard 或修改路由。"
+        },
+        remaining: {
+          question: "剩余范围能证明这些地址未被使用吗？",
+          answer: "它只表示相对于包含和排除列表的空缺。工具不会检查实际网络使用情况，也不会寻找指定大小的子网。"
+        },
+        outside: {
+          question: "排除范围重叠或超出包含范围时会怎样？",
+          answer: "两侧的重叠地址都只计一次。只扣除同时位于包含列表中的地址；范围外的排除项不会移除地址。全部扣除是成功的空结果，返回零个 CIDR 和零个剩余地址。"
+        },
+        covering: {
+          question: "扣除与覆盖 CIDR 有什么区别？",
+          answer: "扣除精确保留包含列表并集减去排除列表并集后的剩余集合，包括其中的间隙。结果是按顺序排列的最少规范 CIDR 列表，不会新增地址。单个覆盖 CIDR 则可能包含额外地址。"
+        },
+        access: {
+          question: "能通过 MCP、Web API 或 CLI 调用扣除吗？",
+          answer: "扣除目前在浏览器和共享计算核心中运行，浏览器输入保留在本地。MCP、Web API 和 CLI 提供覆盖 CIDR 与公网 IP 操作，尚未开放扣除。MCP 指南介绍这些已提供的操作。"
+        }
+      }
+    },
+    cidr: {
+      title: "覆盖 CIDR 常见问题",
+      mcpTitle: "通过 MCP 使用计算器",
+      purpose: "让 AI 智能体为选定的一组防火墙允许列表或拦截列表条目计算单个覆盖 CIDR，并解释额外覆盖范围。",
+      inputs: "接受 1 至 {{maximumInputs}} 个 IPv4 或 IPv6 地址或 CIDR，每项最多 {{maximumLength}} 个字符。每次调用只使用一种地址族。",
+      result: "通过 cidr 和 range 查看覆盖网段。在修改防火墙规则前检查 additionalAddressCount。所有地址数均为十进制字符串，保持 IPv6 计数精确。",
+      boundary: "远程 MCP 调用会将输入发送到服务器；网页计算器在浏览器内运行。本工具为给定输入计算一个 CIDR；要选择多个合并组合以满足整张名单的条目限制，需要另行确定目标。本工具不会修改防火墙规则。",
+      openTool: "打开浏览器计算器",
+      questions: {
+        firewall: {
+          question: "怎样减少防火墙 IP 列表的条目？",
+          answer: "将选定的一组条目合并为一个覆盖 CIDR。先检查额外地址：在允许列表中，它们会被额外放行；在拦截列表中，它们会被额外拦截。"
+        },
+        covering: {
+          question: "单个覆盖 CIDR 会精确保留原来的地址集合吗？",
+          answer: "只有原始地址的并集恰好填满该 CIDR 时才会精确覆盖。否则，最小单个覆盖 CIDR 仍会增加地址。Packetrove 会显示扩大的范围，但不会为整张名单选择最佳合并组合。"
+        },
+        overlap: {
+          question: "重叠网段和重复输入怎样计数？",
+          answer: "原始并集中的每个地址只计数一次。含主机位的 CIDR 会规范化为网络地址。normalizedInputs 会保留重复条目，但地址计数不会因此增加。"
+        },
+        counts: {
+          question: "很大的 IPv6 网段也能精确计数吗？",
+          answer: "可以。浏览器使用精确整数，API 和 MCP 以十进制字符串返回计数。计数包含防火墙规则覆盖的全部地址，包括 IPv4 网络地址和广播地址。一次计算只使用一种地址族。"
+        },
+        privacy: {
+          question: "计算输入会发送到哪里？",
+          answer: "网页计算器在浏览器内运行，不会将输入发送到 API。草稿只保留在当前标签页的内存中。本地 CLI 可离线计算；Web API 和远程 MCP 调用会将输入提交到服务器。"
+        }
+      }
+    },
+    ip: {
+      title: "公网 IP 常见问题",
+      mcpTitle: "通过 MCP 查看连接地址",
+      purpose: "让 AI 智能体查看发起本次 MCP 工具调用的连接所使用的公网 IP。",
+      inputs: "传入空对象 {}。工具观察当前请求的连接，不接受待查询的 IP 地址参数。",
+      result: "示例使用文档专用地址。实际调用会返回本次请求观察到的 ip 和地址族 family，其值为 ipv4 或 ipv6。",
+      boundary: "托管 AI 客户端可能返回它自己的出口地址。要查看浏览器连接，请使用本网页工具；要查看电脑的命令行连接，请在该电脑上运行 CLI。一次调用不能同时发现两种地址族、本地私有地址或代理之前的地址。查询结果不能证明客户端身份。",
+      openTool: "查询浏览器的公网 IP",
+      questions: {
+        address: {
+          question: "这个页面显示的是哪个 IP？",
+          answer: "这是 Packetrove 在浏览器当前请求中观察到的公网地址。它不是本地私有地址，也不能用来识别你的设备。"
+        },
+        vpn: {
+          question: "使用 VPN 或代理后会怎样？",
+          answer: "结果显示该连接所使用的出口地址。切换网络、VPN 或代理设置后，请刷新查询。它不会显示代理之前的地址。"
+        },
+        family: {
+          question: "一次查询会同时发现 IPv4 和 IPv6 吗？",
+          answer: "不会。一次请求只观察一种地址族。查询成功并不代表同时具备 IPv4 和 IPv6 连通性。"
+        },
+        client: {
+          question: "为什么 AI 智能体或 CLI 查到的 IP 不同？",
+          answer: "各接口观察的是发起请求的连接。托管 MCP 客户端使用的网络可能与浏览器不同。请在想要检查的网络路径上运行网页工具或 CLI。"
+        },
+        privacy: {
+          question: "IP 查询结果会存储或缓存吗？",
+          answer: "应用仅在内存中保留当前结果用于显示，不保存查询历史，也不记录地址日志。结果和错误均不缓存。托管平台仍会根据其配置处理请求。"
+        }
+      }
+    }
+  },
+  mcp: {
+    title: "将 Packetrove 接入 AI 智能体",
+    explanation: "连接兼容 MCP 的客户端，计算覆盖 CIDR 或查看该客户端连接的公网地址。先按下方步骤接入，再参考工具示例。",
+    connection: "Streamable HTTP · 无需账户或 API 密钥",
+    connectTitle: "连接客户端",
+    connectDescription: "安装 Claude Code 或 Codex 后，添加这个远程服务器。以下命令配置客户端，不会安装本地 Packetrove 服务器。",
+    clientGuide: "{{client}} MCP 官方文档",
+    check: "在客户端中使用 <code>/mcp</code> 检查连接，确认 <code>{{cidrTool}}</code> 和 <code>{{ipTool}}</code> 已可用。",
+    discovery: "完成配置后，客户端通过 tools/list 发现工具，并根据工具描述和参数结构选择调用。阅读网页不会自动配置客户端或授予工具访问权限。",
+    toolName: "工具名称",
+    arguments: "示例参数",
+    exampleResult: "使用文档专用地址的示例结果",
+    errorsTitle: "读取结果与处理错误",
+    results: "读取 <code>structuredContent</code>，或解析文本内容块中的 JSON。地址计数应保留为十进制字符串或任意精度整数；将很大的 IPv6 计数转换为浮点数会丢失精度。",
+    errors: "<code>isError</code> 为 true 时，先读取错误 JSON，再决定是否重试。根据用户提供的信息修正 <code>INVALID_INPUT</code> 和 <code>MIXED_ADDRESS_FAMILIES</code>。<code>CLIENT_IP_UNAVAILABLE</code> 表示缺少可信的连接信息，请勿推测地址。",
+    technicalGuide: "阅读仓库中的 MCP 技术指南（英文）"
+  },
   errors: {
     invalidInput: '计算输入无效。', mixedFamilies: '一次计算请统一使用 IPv4 或 IPv6。',
     invalidJson: '请求必须包含有效的 JSON。', payloadTooLarge: '请求内容过大。', unsupportedMediaType: '不支持此请求内容类型。',
@@ -223,6 +436,7 @@ export const zhHans = {
     tooManyOutputs: '完整结果超过 {{limit}} 个 CIDR。请减少排除项或缩小包含范围，不会返回部分结果。',
   },
   meta: {
+    mcp: {"title": "Packetrove MCP 接入指南 — CIDR 与公网 IP 工具", "description": "通过 MCP 将 Claude Code 或 Codex 接入 Packetrove。了解参数、精确 CIDR 结果、公网 IP 的连接归属与错误处理，无需 API 密钥。"},
     home: { title: 'Packetrove — CIDR 计算器与公网 IP 查询', description: '在浏览器内计算覆盖 CIDR，并查询当前公网 IP。开源 IPv4 与 IPv6 网络工具，支持网页、API、命令行和 MCP，无需账户。' },
     cidr: { title: '最小覆盖 CIDR 计算器 — Packetrove', description: '在浏览器内计算覆盖 IPv4 或 IPv6 地址和网段的最小单个 CIDR，查看精确地址数、额外覆盖范围与计算示例。' },
     subtract: { title: 'CIDR 相减计算器 — Packetrove', description: '在浏览器内完成 IPv4 或 IPv6 CIDR 列表相减，复制精确的最少列表用于 WireGuard AllowedIPs，或查看扣除已知分配后的剩余地址空间。' },

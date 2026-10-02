@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Badge, Button, Group, Loader, Paper, Stack, Text, Title } from '@mantine/core';
 import { PUBLIC_IP_PATH, type PublicIpResult } from '@packetrove/contracts';
@@ -8,8 +8,10 @@ import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
+import { ToolQuestions } from './ToolQuestions';
+import { ToolMcpSection } from './ToolMcpSection';
 
-export function PublicIpTool() {
+export function PublicIpTool({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> } = {}) {
   const { t, i18n } = useTranslation();
   const locale = resolveLocale(i18n.resolvedLanguage);
   const [result, setResult] = useState<PublicIpResult | null>(null);
@@ -88,5 +90,7 @@ export function PublicIpTool() {
       <Text size="sm" c="dimmed">{t($ => $.ip.explanation)}</Text>
       <Text size="sm" c="dimmed">{t($ => $.ip.familyExplanation)}</Text>
     </Stack>
+    <ToolQuestions tool="ip" />
+    <ToolMcpSection tool="ip" onNavigate={onNavigate} />
   </Stack>;
 }

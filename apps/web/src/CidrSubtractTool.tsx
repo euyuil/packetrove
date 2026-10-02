@@ -1,4 +1,4 @@
-import type { FormEvent } from 'react';
+import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Alert, Badge, Button, Code, DataList, Group, List, Paper, SimpleGrid, Stack, Text, Textarea, Title,
@@ -11,6 +11,7 @@ import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage, issueMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
+import { ToolQuestions } from './ToolQuestions';
 
 const examples = [
   { name: 'IPv4', include: '203.0.113.0/24', exclude: '203.0.113.64/26', cidrs: ['203.0.113.0/26', '203.0.113.128/25'] },
@@ -24,8 +25,9 @@ function inputRows(text: string) {
 
 export type CidrSubtractDraft = { include: string; exclude: string; result: CidrSubtractResult | null; error: ToolError | null };
 
-export function CidrSubtractTool({ draft, onDraftChange }: {
+export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   draft: CidrSubtractDraft; onDraftChange: (draft: CidrSubtractDraft) => void;
+  onNavigate?: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const { t, i18n } = useTranslation();
   const locale = resolveLocale(i18n.resolvedLanguage);
@@ -181,5 +183,6 @@ export function CidrSubtractTool({ draft, onDraftChange }: {
         </Paper>)}
       </SimpleGrid>
     </Stack>
+    <ToolQuestions tool="subtract" onNavigate={onNavigate} />
   </Stack>;
 }

@@ -28,6 +28,10 @@ The workflow runs `pnpm check`, which includes:
   Worker tests execute in the local Workers runtime on the GitHub runner.
 - Prerendered multilingual content and metadata, hydration, canonical and alternate
   language links, sitemap entries, and robots policy.
+- Tool questions and MCP guide examples in production HTML for every registered
+  locale. Examples are checked against shared schemas and calculations and are
+  executed through MCP in the local Workers runtime. Guide navigation preserves
+  calculator drafts and makes no tool calls.
 
 The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
@@ -72,9 +76,10 @@ If the expected version is still unavailable at the deadline, the run fails
 with a version-readiness error before running the functional checks.
 
 Once the version is ready,
-`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all 50
+`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all registered
 prerendered localized pages, metadata, canonical and alternate language links,
-the sitemap and robots policy, bundled assets, API results, OpenAPI document,
+the sitemap and robots policy, tool questions, MCP guide examples and links,
+bundled assets, API results, OpenAPI document,
 modern and legacy MCP clients,
 Origin validation, anonymous browser CORS, and origin isolation. With
 `VITE_GIT_COMMIT` set, it also checks that the deployed JavaScript contains the expected build commit. It makes up to three attempts,

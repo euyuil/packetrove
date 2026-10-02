@@ -25,7 +25,7 @@ export const ko = {
     cliExample: '그런 다음 현재 공인 IP를 출력하세요:', cliGuide: 'CLI 가이드 읽기 (영어)',
     mcpTitle: 'Model Context Protocol (MCP)', mcpDescription: 'Streamable HTTP로 AI 에이전트를 Packetrove에 연결하세요. 인증이나 로컬 서버가 필요 없습니다.',
     serverAddress: '서버 주소', mcpExample: '클라이언트를 설치한 후 서버를 추가하세요:',
-    mcpCheck: '클라이언트에서 <code>/mcp</code>로 연결을 확인하세요. 공인 IP 조회 결과는 에이전트가 사용하는 연결의 주소입니다.', mcpGuide: 'MCP 가이드 읽기 (영어)',
+    mcpCheck: '클라이언트에서 <code>/mcp</code>로 연결을 확인하세요. 공인 IP 조회 결과는 에이전트가 사용하는 연결의 주소입니다.', mcpGuide: 'MCP 연결 가이드 읽기',
   },
   cidr: {
     title: '최소 포괄 CIDR', description: 'IPv4 또는 IPv6 주소와 범위를 모두 포함하는 가장 작은 단일 CIDR로 합치세요.',
@@ -89,6 +89,112 @@ export const ko = {
     cidrResponse: '이 예제는 {{cidr}}을 반환하며 주소 {{additional}}개를 추가로 포함합니다. 허용 목록이나 차단 목록에 결과를 사용하기 전에 additionalAddressCount를 확인하세요.',
     ipSummary: '현재 HTTP 연결에서 관찰한 공인 IP를 반환합니다. 주소와 줄 바꿈을 받으려면 text/plain을, 주소와 주소 체계를 받으려면 application/json을 요청하세요. 응답은 캐시되지 않습니다. VPN이나 프록시를 사용하면 관찰되는 출구 주소가 달라집니다.',
   },
+  discovery: {
+    subtract: {
+      title: 'CIDR 빼기 관련 질문',
+      questions: {
+        wireguard: {
+          question: 'WireGuard AllowedIPs의 예외는 어떻게 준비하나요?',
+          answer: '터널 범위는 포함 목록에, 예외는 제외 목록에 입력하세요. AllowedIPs 복사는 정확히 남은 CIDR을 설정값으로 복사합니다. 적용 전에 검토하세요. Packetrove는 WireGuard를 설정하거나 경로를 변경하지 않습니다.',
+        },
+        remaining: {
+          question: '남은 범위는 주소가 사용되지 않는다는 증거인가요?',
+          answer: '포함 및 제외 목록을 기준으로 남은 공간을 보여 줍니다. 이 도구는 실제 네트워크 사용 여부를 확인하거나 요청한 크기의 서브넷을 찾지 않습니다.',
+        },
+        outside: {
+          question: '겹치거나 포함 범위 밖에 있는 제외 항목은 어떻게 처리하나요?',
+          answer: '각 목록의 겹치는 주소는 한 번만 계산합니다. 포함 목록에 있는 주소만 제거하며, 그 밖의 제외 항목은 아무것도 제거하지 않습니다. 모든 주소가 제거되면 빈 CIDR 목록과 남은 주소 수 0을 정상적으로 반환합니다.',
+        },
+        covering: {
+          question: 'CIDR 빼기는 포괄 CIDR과 어떻게 다른가요?',
+          answer: '빼기는 포함 범위의 합집합에서 제외 범위의 합집합을 뺀 정확한 나머지를 유지하며 빈 공간도 보존합니다. 주소를 추가하지 않고 정규화된 CIDR의 최소 목록을 정렬해 반환합니다. 단일 포괄 CIDR은 추가 주소를 포함할 수 있습니다.',
+        },
+        access: {
+          question: 'MCP, 웹 API 또는 CLI로 빼기를 호출할 수 있나요?',
+          answer: '빼기는 현재 브라우저와 공유 계산 코어에서 실행됩니다. 브라우저 입력은 로컬에 유지됩니다. MCP, 웹 API 및 CLI는 포괄 CIDR 계산과 공인 IP 조회를 제공하며 빼기는 제공하지 않습니다. MCP 가이드는 사용 가능한 작업을 설명합니다.',
+        },
+      },
+    },
+    cidr: {
+      title: '포괄 CIDR 관련 질문',
+      mcpTitle: 'MCP로 계산기 사용하기',
+      purpose: 'AI 에이전트에게 방화벽 허용 또는 차단 목록에서 선택한 항목 그룹의 단일 포괄 CIDR을 계산하고 추가 포함 범위를 설명하도록 요청하세요.',
+      inputs: 'IPv4 또는 IPv6 주소나 CIDR을 1개부터 {{maximumInputs}}개까지 받으며, 항목당 최대 {{maximumLength}}자입니다. 호출마다 하나의 주소 체계만 사용하세요.',
+      result: 'cidr과 range에서 포함된 네트워크를 확인하세요. 규칙 적용 전에 additionalAddressCount를 검토하세요. 모든 주소 수는 IPv6의 정확도를 유지하는 십진수 문자열입니다.',
+      boundary: '원격 MCP 호출은 입력을 서버로 전송합니다. 웹 계산기는 로컬에서 실행됩니다. 이 도구는 하나의 CIDR을 계산합니다. 전체 목록의 항목 수 제한에 맞춰 여러 병합을 선택하려면 별도의 판단이 필요합니다. 방화벽 규칙은 변경하지 않습니다.',
+      openTool: '브라우저 계산기 열기',
+      questions: {
+        firewall: {
+          question: '방화벽 IP 목록의 항목 수는 어떻게 줄이나요?',
+          answer: '선택한 그룹을 단일 포괄 CIDR로 합치세요. 먼저 추가 주소를 검토하세요. 허용 목록에서는 해당 주소가 허용되고 차단 목록에서는 차단됩니다.',
+        },
+        covering: {
+          question: '단일 포괄 CIDR은 원래 주소를 정확히 유지하나요?',
+          answer: '원래 합집합이 해당 CIDR을 완전히 채울 때만 가능합니다. 그 외에는 가장 작은 단일 포괄 CIDR도 주소를 추가합니다. Packetrove는 확장 범위를 보여 주며 전체 목록에 가장 적합한 병합 조합을 선택하지는 않습니다.',
+        },
+        overlap: {
+          question: '겹치는 주소와 중복 항목은 어떻게 계산하나요?',
+          answer: '원래 합집합의 각 주소는 한 번만 계산합니다. 호스트 비트가 있는 CIDR은 네트워크 주소로 정규화됩니다. normalizedInputs에는 중복 항목이 남지만 주소 수는 늘어나지 않습니다.',
+        },
+        counts: {
+          question: '매우 큰 IPv6 범위의 주소 수도 정확한가요?',
+          answer: '예. 브라우저는 정확한 정수를 사용하고 API와 MCP는 십진수 문자열을 반환합니다. IPv4 네트워크 및 브로드캐스트 주소를 포함해 규칙이 포함하는 모든 주소를 계산합니다. 계산마다 하나의 주소 체계만 사용하세요.',
+        },
+        privacy: {
+          question: '계산 입력은 어디로 전송되나요?',
+          answer: '웹 계산기는 브라우저에서 실행되며 입력을 API로 전송하지 않습니다. 입력 초안은 이 탭의 메모리에 유지됩니다. 로컬 CLI는 오프라인으로 계산하며 웹 API와 원격 MCP는 입력을 서버로 전송합니다.',
+        },
+      },
+    },
+    ip: {
+      title: '공인 IP 관련 질문',
+      mcpTitle: 'MCP로 연결 확인하기',
+      purpose: 'AI 에이전트에게 MCP 도구 호출에 사용한 연결의 공인 IP를 확인하도록 요청하세요.',
+      inputs: '빈 객체 {}를 전달하세요. 도구는 요청 연결을 관찰하며 조회할 IP 주소를 인수로 받지 않습니다.',
+      result: '예제는 문서용 주소를 사용합니다. 실제 호출은 해당 요청에서 관찰한 ip와 family를 반환하며 family는 ipv4 또는 ipv6입니다.',
+      boundary: '호스팅된 AI 클라이언트는 자신의 출구 주소를 반환할 수 있습니다. 브라우저 연결은 이 웹 도구로, 터미널 연결은 해당 컴퓨터에서 CLI를 실행해 확인하세요. 한 번의 호출로 두 주소 체계, 사설 로컬 주소 또는 프록시 이전 주소를 찾을 수 없습니다. 결과는 신원을 증명하지 않습니다.',
+      openTool: '브라우저의 공인 IP 확인하기',
+      questions: {
+        address: {
+          question: '이 페이지는 어떤 IP 주소를 보여 주나요?',
+          answer: '브라우저가 현재 Packetrove에 보내는 요청에서 관찰한 공인 주소입니다. 사설 로컬 주소가 아니며 기기를 식별하지 않습니다.',
+        },
+        vpn: {
+          question: 'VPN이나 프록시를 사용하면 무엇이 달라지나요?',
+          answer: '결과는 해당 연결의 출구 주소를 보여 줍니다. 네트워크, VPN 또는 프록시 설정을 변경한 뒤 새로고침하세요. 프록시 이전 주소는 표시하지 않습니다.',
+        },
+        family: {
+          question: '한 번의 조회로 IPv4와 IPv6를 모두 확인하나요?',
+          answer: '아니요. 하나의 요청은 하나의 주소 체계만 관찰합니다. 조회가 성공해도 IPv4와 IPv6 양쪽 모두의 연결을 확인한 것은 아닙니다.',
+        },
+        client: {
+          question: 'AI 에이전트나 CLI가 다른 IP를 표시하는 이유는 무엇인가요?',
+          answer: '각 인터페이스는 자신의 요청에 사용된 연결을 관찰합니다. 호스팅된 MCP 클라이언트는 브라우저와 다른 네트워크를 사용할 수 있습니다. 확인하려는 네트워크 경로에서 웹 도구나 CLI를 실행하세요.',
+        },
+        privacy: {
+          question: 'IP 결과가 저장되거나 캐시되나요?',
+          answer: '애플리케이션은 현재 결과를 표시하기 위해 메모리에 유지하며 조회 기록이나 주소 로그를 남기지 않습니다. 결과와 오류는 캐시되지 않습니다. 호스팅 플랫폼은 자체 설정에 따라 요청을 처리합니다.',
+        },
+      },
+    },
+  },
+  mcp: {
+    title: 'Packetrove를 AI 에이전트에 연결하기',
+    explanation: '호환되는 MCP 클라이언트를 연결해 포괄 CIDR을 계산하거나 클라이언트의 연결을 확인하세요. 아래 설정을 마친 뒤 도구 예제를 사용하세요.',
+    connection: 'Streamable HTTP · 계정이나 API 키 불필요',
+    connectTitle: '클라이언트 연결하기',
+    connectDescription: 'Claude Code 또는 Codex를 설치한 뒤 이 원격 서버를 추가하세요. 명령은 클라이언트를 설정하며 로컬 Packetrove 서버를 설치하지 않습니다.',
+    clientGuide: '{{client}} MCP 문서',
+    check: '클라이언트에서 <code>/mcp</code>로 연결을 확인하세요. <code>{{cidrTool}}</code> 및 <code>{{ipTool}}</code>를 사용할 수 있는지 확인하세요.',
+    discovery: '설정 후 클라이언트는 tools/list로 사용 가능한 도구를 찾습니다. 도구 설명과 스키마는 선택과 인수 구성을 안내합니다. 웹 페이지를 읽는 것만으로 클라이언트가 설정되거나 도구 접근 권한이 생기지는 않습니다.',
+    toolName: '도구 이름',
+    arguments: '예제 인수',
+    exampleResult: '문서용 주소를 사용한 예제 결과',
+    errorsTitle: '결과 읽기 및 오류 처리',
+    results: '<code>structuredContent</code> 또는 텍스트 블록의 JSON을 읽으세요. 주소 수는 십진수 문자열이나 임의 정밀도 정수로 유지하세요. 큰 IPv6 주소 수를 부동 소수점 숫자로 변환하면 정확도가 손실됩니다.',
+    errors: '<code>isError</code>가 true이면 재시도 전에 오류 JSON을 읽으세요. 사용자 정보를 바탕으로 <code>INVALID_INPUT</code> 및 <code>MIXED_ADDRESS_FAMILIES</code>를 수정하세요. <code>CLIENT_IP_UNAVAILABLE</code>은 신뢰할 수 있는 연결 메타데이터가 없다는 뜻입니다. 주소를 임의로 만들지 마세요.',
+    technicalGuide: '저장소의 MCP 기술 가이드 읽기 (영어)',
+  },
   errors: {
     invalidInput: '계산 입력이 올바르지 않습니다.', mixedFamilies: '한 번의 계산에는 IPv4 또는 IPv6 중 하나만 사용하세요.',
     invalidJson: '요청에는 올바른 JSON이 포함되어야 합니다.', payloadTooLarge: '요청이 너무 큽니다.', unsupportedMediaType: '지원하지 않는 요청 콘텐츠 유형입니다.',
@@ -101,6 +207,7 @@ export const ko = {
     tooManyOutputs: '전체 결과가 {{limit}}개의 CIDR을 초과합니다. 제외 항목을 줄이거나 포함 범위를 좁히세요. 부분 결과는 반환하지 않습니다.',
   },
   meta: {
+    mcp: { title: 'Packetrove MCP 가이드 — CIDR 및 공인 IP 도구', description: 'Claude Code 또는 Codex를 MCP로 Packetrove에 연결하세요. API 키 없이 도구 인수, 정확한 CIDR 결과, IP 연결의 범위 및 오류 처리를 확인하세요.' },
     home: { title: 'Packetrove — CIDR 계산기와 공인 IP 조회', description: '브라우저에서 포괄 CIDR을 계산하고 공인 IP를 확인하세요. 웹, API, CLI, MCP를 위한 오픈 소스 IPv4 및 IPv6 도구로 계정이 필요 없습니다.' },
     cidr: { title: '최소 포괄 CIDR 계산기 — Packetrove', description: 'IPv4 또는 IPv6 주소와 범위를 모두 포함하는 가장 작은 단일 CIDR을 찾으세요. 브라우저에서 정확한 주소 수, 추가 범위, 예제를 확인할 수 있습니다.' },
     subtract: { title: 'CIDR 빼기 계산기 — Packetrove', description: '브라우저에서 IPv4 또는 IPv6 CIDR 목록을 빼세요. WireGuard AllowedIPs에 사용할 정확한 최소 목록을 복사하거나 알려진 할당을 제외한 나머지 주소 공간을 확인할 수 있습니다.' },
