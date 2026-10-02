@@ -24,6 +24,7 @@ export function App() {
   const commit = import.meta.env.VITE_GIT_COMMIT;
   const sourceUrl = `https://github.com/${repository}${commit ? `/tree/${commit}` : ''}`;
   const documentationUrl = `https://github.com/${repository}/blob/${commit || 'main'}`;
+  const newIssueUrl = `https://github.com/${repository}/issues/new`;
   useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [i18n, locale]);
   useEffect(() => { updatePageMetadata(locale, page, path); }, [locale, page, path]);
   useEffect(() => {
@@ -82,19 +83,33 @@ export function App() {
         </Stack>}
       </Box>
       <Divider />
-      <Group component="footer" justify="space-between">
-        <Text size="xs" c="dimmed">Packetrove · {t($ => $.common.tagline)}</Text>
+      <Stack component="footer" gap="sm">
         <Group gap="xs">
-          <Anchor size="xs" href={sourceUrl} target="_blank" rel="noopener noreferrer"
-            title={commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source)}>
-            GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
-          </Anchor>
-          <Text component="span" size="xs" c="dimmed" aria-hidden="true">·</Text>
-          <Anchor size="xs" href={`${documentationUrl}/LICENSE`} target="_blank" rel="noopener noreferrer">
-            {t($ => $.common.sourceLicense)}
-          </Anchor>
+          <Text size="sm" c="dimmed">{t($ => $.common.feedbackPrompt)}</Text>
+          <Group gap="xs">
+            <Anchor size="sm" href={`${newIssueUrl}?template=bug-report.yml`} target="_blank" rel="noopener noreferrer">
+              {t($ => $.common.reportBug)} <span aria-hidden="true">↗</span>
+            </Anchor>
+            <Text component="span" size="sm" c="dimmed" aria-hidden="true">·</Text>
+            <Anchor size="sm" href={`${newIssueUrl}?template=feature-request.yml`} target="_blank" rel="noopener noreferrer">
+              {t($ => $.common.requestFeature)} <span aria-hidden="true">↗</span>
+            </Anchor>
+          </Group>
         </Group>
-      </Group>
+        <Group justify="space-between">
+          <Text size="xs" c="dimmed">Packetrove · {t($ => $.common.tagline)}</Text>
+          <Group gap="xs">
+            <Anchor size="xs" href={sourceUrl} target="_blank" rel="noopener noreferrer"
+              title={commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source)}>
+              GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
+            </Anchor>
+            <Text component="span" size="xs" c="dimmed" aria-hidden="true">·</Text>
+            <Anchor size="xs" href={`${documentationUrl}/LICENSE`} target="_blank" rel="noopener noreferrer">
+              {t($ => $.common.sourceLicense)}
+            </Anchor>
+          </Group>
+        </Group>
+      </Stack>
     </Stack>
   </Container>;
 }
