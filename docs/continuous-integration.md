@@ -72,7 +72,7 @@ If the expected version is still unavailable at the deadline, the run fails
 with a version-readiness error before running the functional checks.
 
 Once the version is ready,
-`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all 35
+`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all 50
 prerendered localized pages, metadata, canonical and alternate language links,
 the sitemap and robots policy, bundled assets, API results, OpenAPI document,
 modern and legacy MCP clients,

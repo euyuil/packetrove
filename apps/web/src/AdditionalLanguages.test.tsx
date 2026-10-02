@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { render } from './test-utils';
 import { createI18n } from './i18n';
@@ -19,6 +20,9 @@ const additionalLanguages = [
   { locale: 'ja', prefix: '/ja', heading: '人と AI エージェントのためのネットワークツール', count: '340,282,366,920,938,463,463,374,607,431,768,211,456' },
   { locale: 'fr', prefix: '/fr', heading: 'Des outils réseau pour les utilisateurs et les agents IA', count: '340\u202f282\u202f366\u202f920\u202f938\u202f463\u202f463\u202f374\u202f607\u202f431\u202f768\u202f211\u202f456' },
   { locale: 'pt-BR', prefix: '/pt', heading: 'Ferramentas de rede para pessoas e agentes de IA', count: '340.282.366.920.938.463.463.374.607.431.768.211.456' },
+  { locale: 'ru', prefix: '/ru', heading: 'Сетевые инструменты для людей и ИИ-агентов', count: '340\u00a0282\u00a0366\u00a0920\u00a0938\u00a0463\u00a0463\u00a0374\u00a0607\u00a0431\u00a0768\u00a0211\u00a0456' },
+  { locale: 'ko', prefix: '/ko', heading: '사용자와 AI 에이전트를 위한 네트워크 도구', count: '340,282,366,920,938,463,463,374,607,431,768,211,456' },
+  { locale: 'it', prefix: '/it', heading: 'Strumenti di rete per persone e agenti IA', count: '340.282.366.920.938.463.463.374.607.431.768.211.456' },
 ] as const;
 
 afterEach(() => {
@@ -76,6 +80,8 @@ describe('additional website languages', () => {
       expect(link.getAttribute('href')).toBe(localizedPath('/', language));
       expect(link.getAttribute('hreflang')).toBe(language);
       expect(link.getAttribute('aria-current')).toBe(language === locale ? 'true' : null);
+      expect(link.querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+      expect(link.querySelector('img')).toBeNull();
     }
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -138,6 +144,26 @@ describe('additional website languages', () => {
     chooseLanguage('en');
     expect(screen.getByText('203.0.113.1')).toBeDefined();
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(additionalLanguages)('retranslates clipboard feedback in $locale without repeating a write', async ({ locale }) => {
+    window.history.replaceState({}, '', '/cidr');
+    const user = userEvent.setup();
+    const write = vi.spyOn(navigator.clipboard, 'writeText');
+    render(<App />);
+    calculate('::1');
+    await user.click(screen.getByRole('button', { name: en.cidr.copy }));
+    chooseLanguage(locale);
+    const translation = resources[locale].translation;
+    expect(screen.getByRole('status').textContent).toBe(translation.cidr.copySuccess);
+    expect(write).toHaveBeenCalledExactlyOnceWith('::1/128');
+    write.mockRejectedValueOnce(new Error('Example clipboard failure'));
+    await user.click(screen.getByRole('button', { name: translation.common.copied }));
+    expect(screen.getByRole('status').textContent).toBe(translation.cidr.copyFailure);
+    expect(screen.getByRole('button', { name: translation.common.dismissCopy })).toBeDefined();
+    chooseLanguage('en');
+    expect(screen.getByRole('status').textContent).toBe(en.cidr.copyFailure);
+    expect(write).toHaveBeenCalledTimes(2);
   });
 
   it.each(additionalLanguages)('retranslates stored IP failures in $locale without another request', async ({ locale }) => {
@@ -213,10 +239,24 @@ describe('additional website languages', () => {
   it.each([
     { locale: 'fr', zero: '0 entrée', one: '1 entrée', other: '2 entrées', many: '1\u202f000\u202f000 entrées' },
     { locale: 'pt-BR', zero: '0 entrada', one: '1 entrada', other: '2 entradas', many: '1.000.000 entradas' },
+    { locale: 'ko', zero: '0개 항목', one: '1개 항목', other: '2개 항목', many: '1,000,000개 항목' },
+    { locale: 'it', zero: '0 voci', one: '1 voce', other: '2 voci', many: '1.000.000 voci' },
   ] as const)('handles zero, singular, plural, and million counts in $locale', ({ locale, zero, one, other, many }) => {
     const instance = createI18n(locale);
     const formatter = new Intl.NumberFormat(locale);
     for (const [count, expected] of [[0, zero], [1, one], [2, other], [1_000_000, many]] as const) {
+      expect(instance.t($ => $.cidr.entryCount, { count, total: formatter.format(count) })).toBe(expected);
+    }
+  });
+
+  it('uses Russian one, few, and many entry counts including teens and compound endings', () => {
+    const instance = createI18n('ru');
+    const formatter = new Intl.NumberFormat('ru');
+    for (const [count, expected] of [
+      [0, '0 записей'], [1, '1 запись'], [2, '2 записи'], [5, '5 записей'],
+      [11, '11 записей'], [21, '21 запись'], [22, '22 записи'], [25, '25 записей'],
+      [101, '101 запись'], [1_000_000, '1\u00a0000\u00a0000 записей'],
+    ] as const) {
       expect(instance.t($ => $.cidr.entryCount, { count, total: formatter.format(count) })).toBe(expected);
     }
   });
