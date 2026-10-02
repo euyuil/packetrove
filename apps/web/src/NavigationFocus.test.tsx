@@ -146,7 +146,7 @@ describe('focus after navigation to a different page', () => {
     expect(document.activeElement).toBe(input);
     expect(focus).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
-  });
+  }, 15_000); // Allow the complete ten-language menu sequence to finish on slower runners.
 
   it('does not refocus for IP completion or refresh and still cancels a request when leaving', async () => {
     const requests: Array<{ complete: (response: Response) => void; signal: AbortSignal }> = [];

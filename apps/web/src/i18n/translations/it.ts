@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const it = {
+  languageSuggestion: {
+    title: 'Vuoi leggere questa pagina in italiano?',
+    switch: 'Passa all’italiano', dismiss: 'Non ora',
+  },
   common: {
     home: 'Home', homeLabel: 'Pagina iniziale di Packetrove', navigation: 'Navigazione principale',
     language: 'Lingua', tools: 'STRUMENTI PER INDIRIZZI IP', copied: 'Copiato', dismissCopy: 'Chiudi l’errore di copia',
@@ -11,6 +15,17 @@ export const it = {
   },
   footer: { project: 'Progetto', contact: 'Contatti e feedback', sendEmail: 'Invia un’e-mail' },
   home: {
+    galleryTitle: "Esplora gli strumenti",
+    galleryDescription: "Scorri o usa le frecce per vedere gli esempi, poi apri uno strumento.",
+    galleryPrevious: "Strumento precedente",
+    galleryNext: "Strumento successivo",
+    galleryPosition: "{{current}} di {{total}}",
+    previewLabel: "Esempio",
+    previewInputs: "Input di esempio",
+    ipPreview: "Solo un indirizzo di documentazione. Apri lo strumento per verificare la tua connessione.",
+    integrationsTitle: "Usa Packetrove nel tuo flusso di lavoro",
+    apiIntroduction: "Richiama gli strumenti da un client HTTP con contratti JSON condivisi.",
+    cliIntroduction: "Calcola CIDR di copertura in locale o verifica la connessione dal terminale.",
     description: 'Strumenti di rete open source per il browser, il terminale e gli agenti IA. Apri uno strumento dal menu di navigazione oppure segui le istruzioni qui sotto per integrare Packetrove nel tuo lavoro.',
     openSource: 'Open source', anonymous: 'Non servono un account né una chiave API',
     cidrDescription: 'Trova il più piccolo CIDR singolo che comprende indirizzi e intervalli IPv4 o IPv6. Calcola nel browser con conteggi esatti degli indirizzi e una spiegazione della copertura aggiuntiva.',
@@ -90,10 +105,18 @@ export const it = {
     cidrSummary: 'Invia indirizzi IPv4 o IPv6 e intervalli CIDR in formato JSON. La risposta include il CIDR minimo di copertura, le voci normalizzate e i conteggi esatti degli indirizzi come stringhe decimali. Questa richiesta API invia i dati al server.',
     cidrResponse: 'Questo esempio restituisce {{cidr}} con {{additional}} indirizzi aggiuntivi. Controlla additionalAddressCount prima di usare il risultato in un elenco di indirizzi consentiti o bloccati.',
     ipSummary: 'Restituisce l’IP pubblico osservato per questa connessione HTTP. Richiedi text/plain per un indirizzo seguito da un carattere di nuova riga oppure application/json per un indirizzo e la sua famiglia. Le risposte non vengono memorizzate nella cache. Una VPN o un proxy cambia l’indirizzo di uscita osservato.',
+    subtractSummary: "Sottrai esattamente exclude da include. Restituisce un elenco minimo di CIDR canonici e conteggi esatti come stringhe decimali. Questa chiamata invia i dati al server.",
+    subtractResponse: "Questo esempio restituisce {{cidrs}}, con {{remaining}} indirizzi rimanenti e nessuna copertura aggiuntiva.",
   },
   discovery: {
     subtract: {
       title: 'Domande sulla sottrazione CIDR',
+      mcpTitle: "Usare la sottrazione tramite MCP",
+      purpose: "Chiedi a un agente IA di sottrarre le reti escluse dallo spazio incluso e restituire i CIDR rimanenti esatti.",
+      inputs: "Passa array include ed exclude di una sola famiglia. include non può essere vuoto; exclude sì. Usa al massimo {{maximumInputs}} voci totali, con {{maximumLength}} caratteri ciascuna.",
+      result: "Leggi cidrs e i conteggi decimali esatti includedAddressCount, removedAddressCount e remainingAddressCount. La rimozione completa restituisce un elenco vuoto. Oltre {{maximumOutputs}} CIDR si riceve un errore senza elenco parziale.",
+      boundary: "Le chiamate remote API e MCP inviano i dati al server; il browser calcola localmente. Gli intervalli rimanenti dipendono dai dati e non dimostrano disponibilità reale. Non vengono modificati WireGuard né le regole del firewall.",
+      openTool: "Aprire la sottrazione nel browser",
       questions: {
         wireguard: {
           question: 'Come preparo eccezioni per AllowedIPs di WireGuard?',
@@ -113,7 +136,7 @@ export const it = {
         },
         access: {
           question: 'Posso usare la sottrazione tramite MCP, API web o CLI?',
-          answer: 'La sottrazione funziona attualmente nel browser e nel nucleo di calcolo condiviso. I dati del browser rimangono locali. MCP, API web e CLI offrono il calcolo del CIDR di copertura e la verifica dell’IP pubblico, senza esporre la sottrazione. La guida MCP documenta queste operazioni disponibili.',
+          answer: "La sottrazione è disponibile sul sito, tramite Web API e MCP. I dati del browser restano locali; API e MCP li inviano al server. La CLI non offre ancora la sottrazione."
         },
       },
     },
@@ -181,13 +204,24 @@ export const it = {
     },
   },
   mcp: {
+    navigation: "Guida MCP",
+    sdkTitle: "Esegui un esempio Node.js",
+    sdkDescription: "In una nuova cartella, salva il codice come <code>packetrove-example.mjs</code>, poi esegui i comandi. L’esempio usa <code>@modelcontextprotocol/client@{{version}}</code>, scopre gli strumenti e chiama lo strumento CIDR con indirizzi di documentazione.",
+    sdkLocal: "Per lo sviluppo locale, avvia <code>pnpm dev:api</code> e sostituisci l’URL del server con <code>{{localUrl}}</code>.",
+    httpErrors: "Gli errori applicativi usano il JSON condiviso. L’SDK MCP valida il protocollo. JSON non valido, tipi di contenuto non supportati e corpi troppo grandi vengono rifiutati dal livello HTTP.",
+    deploymentTitle: "Distribuzione e limiti della connessione",
+    serverBehavior: "Il server supporta richieste moderne senza stato e inizializzazione, scoperta e chiamate del precedente Streamable HTTP. Non offre sessioni persistenti o flussi di eventi server autonomi.",
+    connectionPrivacy: "I metadati dell’IP pubblico vengono letti per ogni chiamata, con istanze separate per client concorrenti. Risultati ed errori MCP usano Cache-Control: no-store, no-transform. L’applicazione non conserva né registra gli indirizzi consultati.",
+    toolMigration: "Il precedente nome <code>get_public_ip</code> non ha un alias di compatibilità. Aggiorna la scoperta e usa <code>{{ipTool}}</code> nelle chiamate salvate.",
+    endpointMigration: "Il percorso <code>/mcp</code> del sito non è il servizio: GET restituisce 404 e POST 405, senza proxy o reindirizzamenti. Configura i client con <code>{{serverUrl}}</code>. Per la tua distribuzione, aggiorna domini e liste esatte separate di Host e Origin del browser; sono supportati client senza intestazione Origin.",
+    deploymentGuide: "Distribuzione, hosting autonomo e verifica in produzione",
     title: 'Collega Packetrove a un agente IA',
-    explanation: 'Collega un client MCP compatibile per calcolare CIDR di copertura o verificare la connessione usata dal client. Inizia con la configurazione seguente, poi usa gli esempi degli strumenti.',
+    explanation: "Collega un client MCP compatibile per usare gli strumenti di rete Packetrove. Inizia dalla configurazione qui sotto, poi consulta gli esempi.",
     connection: 'Streamable HTTP · Non servono account né chiave API',
     connectTitle: 'Collega il client',
     connectDescription: 'Con Claude Code o Codex installato, aggiungi questo server remoto. I comandi configurano il client; non installano un server Packetrove locale.',
     clientGuide: 'Documentazione MCP di {{client}}',
-    check: 'Usa <code>/mcp</code> nel client per verificare la connessione. Controlla che <code>{{cidrTool}}</code> e <code>{{ipTool}}</code> siano disponibili.',
+    check: "Usa <code>/mcp</code> nel client per verificare la connessione. Conferma che siano disponibili questi strumenti: <code>{{tools}}</code>.",
     discovery: 'Dopo la configurazione, il client scopre gli strumenti tramite tools/list. Descrizioni e schemi guidano la scelta e gli argomenti. Leggere una pagina web non configura il client e non concede accesso agli strumenti.',
     toolName: 'Nome dello strumento',
     arguments: 'Argomenti di esempio',

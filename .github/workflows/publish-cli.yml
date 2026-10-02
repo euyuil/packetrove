@@ -76,19 +76,22 @@ jobs:
       - name: Validate project and independent CLI installations
         run: pnpm check
 
-      - name: Pack CLI and preview publication
-        env:
-          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+      - name: Pack CLI archive
         run: |
           mkdir -p "$RUNNER_TEMP/packetrove-artifacts"
           pnpm --filter @packetrove/cli pack --pack-destination "$RUNNER_TEMP/packetrove-artifacts"
-          npm publish "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz" --dry-run --json
 
       - name: Detect an existing version before publication
         id: registry
         env:
           RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: node scripts/cli-release.ts registry "$RELEASE_TAG" "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz"
+
+      - name: Preview publication for a new version
+        if: steps.registry.outputs.publish == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: npm publish "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz" --dry-run --json
 
       - name: Publish reviewed archive with npm trusted publishing
         if: steps.registry.outputs.publish == 'true'

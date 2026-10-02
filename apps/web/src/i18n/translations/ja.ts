@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const ja = {
+  languageSuggestion: {
+    title: 'このページを日本語で表示しますか？',
+    switch: '日本語に切り替える', dismiss: '今はしない',
+  },
   common: {
     home: 'ホーム', homeLabel: 'Packetrove ホーム', navigation: 'メインナビゲーション',
     language: '言語', tools: 'IP アドレスツール', copied: 'コピー済み', dismissCopy: 'コピーエラーを閉じる',
@@ -11,6 +15,17 @@ export const ja = {
   },
   footer: { project: 'プロジェクト', contact: 'お問い合わせ・ご意見', sendEmail: 'メールを送信' },
   home: {
+    galleryTitle: "ツールを探す",
+    galleryDescription: "スクロールまたは矢印で例を確認し、ツールを開いてください。",
+    galleryPrevious: "前のツール",
+    galleryNext: "次のツール",
+    galleryPosition: "{{total}} 件中 {{current}} 件目",
+    previewLabel: "例",
+    previewInputs: "入力例",
+    ipPreview: "ドキュメント用のアドレスです。接続を確認するにはツールを開いてください。",
+    integrationsTitle: "ワークフローに Packetrove を組み込む",
+    apiIntroduction: "共通の JSON 契約を使い、HTTP クライアントからツールを呼び出します。",
+    cliIntroduction: "ターミナルで最小包含 CIDR をローカル計算したり、接続を確認したりできます。",
     description: 'ブラウザー、ターミナル、AI エージェントで使えるオープンソースのネットワークツールです。ナビゲーションからツールを開くか、以下の手順で Packetrove をワークフローに組み込めます。',
     openSource: 'オープンソース', anonymous: 'アカウントや API キーは不要',
     cidrDescription: 'IPv4 または IPv6 のアドレスと範囲を含む、最小の単一 CIDR を求めます。ブラウザー内で計算し、正確なアドレス数と追加される範囲の説明を確認できます。',
@@ -105,10 +120,18 @@ export const ja = {
     cidrSummary: 'IPv4 または IPv6 のアドレスと CIDR 範囲を JSON で送信します。レスポンスには最小の集約 CIDR、正規化した入力、十進数文字列で表す正確なアドレス数が含まれます。この API リクエストでは入力をサーバーに送信します。',
     cidrResponse: 'この例では {{cidr}} を返し、{{additional}} 個のアドレスが追加されます。許可リストやブロックリストで結果を使う前に、additionalAddressCount を確認してください。',
     ipSummary: 'この HTTP 接続で確認されたパブリック IP を返します。アドレスと末尾の改行には text/plain、アドレスとアドレスファミリーには application/json を指定します。レスポンスはキャッシュされません。VPN やプロキシを使うと、確認される出口アドレスが変わります。',
+    subtractSummary: "include から exclude を正確に差し引きます。最小の正規 CIDR 一覧と正確な十進文字列のアドレス数を返します。この API は入力をサーバーへ送信します。",
+    subtractResponse: "この例は {{cidrs}} を返し、残りは {{remaining}} アドレスです。余分な範囲は追加しません。",
   },
   discovery: {
     subtract: {
       title: "CIDR 差分のよくある質問",
+      mcpTitle: "MCP で CIDR 差分を使う",
+      purpose: "AI エージェントに、含めるアドレス空間から除外ネットワークを差し引き、正確な残りの CIDR 一覧を返すよう依頼します。",
+      inputs: "同じアドレスファミリーの include と exclude 配列を渡します。include は空にできません。exclude は空でも構いません。合計 {{maximumInputs}} 件まで、各項目は {{maximumLength}} 文字までです。",
+      result: "cidrs と、正確な十進文字列の includedAddressCount、removedAddressCount、remainingAddressCount を読み取ります。全削除は空の一覧を返します。{{maximumOutputs}} CIDR を超える結果は部分一覧なしでエラーになります。",
+      boundary: "リモート API と MCP は入力をサーバーへ送信し、ブラウザーはローカルで計算します。残りの範囲は入力に対する差分で、実際の空き状況は証明しません。WireGuard やファイアウォール設定は変更しません。",
+      openTool: "ブラウザーの差分ツールを開く",
       questions: {
         wireguard: {
           question: "WireGuard の AllowedIPs に例外を設けるには？",
@@ -128,7 +151,7 @@ export const ja = {
         },
         access: {
           question: "MCP、Web API、CLI から差分を呼び出せますか？",
-          answer: "差分は現在、ブラウザーと共有の計算コアで実行できます。ブラウザーの入力はローカルに保持します。MCP、Web API、CLI は集約 CIDR とパブリック IP の操作を提供し、差分は公開していません。MCP ガイドは利用可能な操作を説明します。"
+          answer: "差分はウェブサイト、Web API、MCP で利用できます。ブラウザーの入力はローカルに留まり、API と MCP はサーバーへ送信します。CLI は現在、差分に対応していません。"
         }
       }
     },
@@ -196,13 +219,24 @@ export const ja = {
     }
   },
   mcp: {
+    navigation: "MCP ガイド",
+    sdkTitle: "Node.js の例を実行する",
+    sdkDescription: "新しいディレクトリで、下のコードを <code>packetrove-example.mjs</code> として保存し、コマンドを実行します。例は <code>@modelcontextprotocol/client@{{version}}</code> を使い、ツールを検出して文書用アドレスで CIDR ツールを呼び出します。",
+    sdkLocal: "ローカル開発では <code>pnpm dev:api</code> を起動し、例のサーバー URL を <code>{{localUrl}}</code> に置き換えてください。",
+    httpErrors: "業務エラーは共通のエラー JSON を返します。MCP SDK がプロトコルを検証します。不正な JSON、未対応のメディア形式、過大な本文は HTTP 層で拒否されます。",
+    deploymentTitle: "デプロイと接続の制限",
+    serverBehavior: "サーバーは新しいステートレス要求と、従来の Streamable HTTP の初期化、検出、呼び出しに対応します。永続セッションや独立したサーバーイベントストリームは提供しません。",
+    connectionPrivacy: "公開 IP の接続情報は呼び出しごとに読み取られ、同時接続するクライアントのサーバーインスタンスは分離されます。MCP の結果とエラーは Cache-Control: no-store, no-transform を使用します。アプリは照会アドレスを保存・記録しません。",
+    toolMigration: "旧ツール名 <code>get_public_ip</code> に互換エイリアスはありません。ツール検出を更新し、保存済みの呼び出しでは <code>{{ipTool}}</code> を使ってください。",
+    endpointMigration: "ウェブサイトの <code>/mcp</code> はサービスではなく、GET は 404、POST は 405 を返し、呼び出しを転送しません。クライアントには <code>{{serverUrl}}</code> を設定してください。独自デプロイではドメインと、Host およびブラウザー Origin の個別の完全一致許可リストを更新します。Origin ヘッダーのないクライアントも対応します。",
+    deploymentGuide: "デプロイ、セルフホスティング、本番確認",
     title: "Packetrove を AI エージェントに接続する",
-    explanation: "対応する MCP クライアントを接続して集約 CIDR を計算したり、そのクライアントの接続を確認したりできます。以下の手順で接続し、ツールの例を参照してください。",
+    explanation: "互換性のある MCP クライアントを接続して Packetrove のネットワークツールを利用します。以下の設定を済ませてから、ツールの例を参照してください。",
     connection: "Streamable HTTP · アカウントや API キーは不要",
     connectTitle: "クライアントを接続する",
     connectDescription: "Claude Code または Codex をインストールしたら、このリモートサーバーを追加してください。以下のコマンドはクライアントを設定し、ローカルの Packetrove サーバーはインストールしません。",
     clientGuide: "{{client}} の MCP 公式ドキュメント",
-    check: "クライアントで <code>/mcp</code> を使って接続を確認し、<code>{{cidrTool}}</code> と <code>{{ipTool}}</code> が利用できることを確認してください。",
+    check: "クライアントで <code>/mcp</code> を使って接続を確認します。次のツールが利用可能か確認してください：<code>{{tools}}</code>。",
     discovery: "設定後、クライアントは tools/list でツールを検出し、説明とスキーマに基づいてツールと引数を選びます。Web ページを読むだけではクライアントの設定やアクセス権の付与は行われません。",
     toolName: "ツール名",
     arguments: "引数の例",

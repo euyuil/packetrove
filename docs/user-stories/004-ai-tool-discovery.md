@@ -26,11 +26,16 @@ are outcomes to observe after deployment, not guarantees of this implementation.
   identifies `public-ip`, empty arguments, and a documentation-only result.
 - `/cidr/subtract` answers questions about WireGuard exceptions, remaining
   allocation gaps, exclusion overlap, and exact set subtraction. It states that
-  subtraction is a browser/core tool; there is no subtraction MCP/API/CLI
-  operation. It links to the MCP guide for the two available remote tools.
+  subtraction runs locally in the browser and is also available through Web API
+  and MCP. It links to the MCP guide and renders the catalog-derived
+  `subtract_cidrs` example using the same template as other tools.
 - `/docs/mcp` centralizes Claude Code and Codex remote HTTP configuration,
-  `/mcp` inspection, `tools/list` discovery, both tool examples, result decoding,
+  `/mcp` inspection, `tools/list` discovery, all catalog tool examples, result decoding,
   errors, and links back to the tools. Reading it makes no tool calls.
+- The shared navigation links to the MCP guide in the current language. The
+  guide links to the API reference in that language and to the project source.
+  Its text, client commands, SDK example, and tool examples also generate the
+  repository integration guide; build checks reject stale generated Markdown.
 - The homepage keeps a short MCP introduction and server address, with a link
   to the guide. API documentation and tool pages link to that same-language
   guide. Client setup commands live in the guide.
@@ -57,11 +62,13 @@ does not optimize a whole list to a target entry count or apply firewall rules.
 The browser and built CLI calculate locally; remote API and MCP calls submit
 inputs to the service.
 
-Exact CIDR subtraction is a separate browser/core operation. It subtracts the
+Exact CIDR subtraction is a separate operation available through the website,
+Web API, and MCP. It subtracts the
 exclusion union from the included union without introducing addresses, returns
 an exact CIDR list, and does not establish live network availability or configure
-WireGuard. Refer callers to `/cidr/subtract` for these tasks; do not invent a
-subtraction MCP tool, Web API endpoint, or CLI command.
+WireGuard. Use `/cidr/subtract` for browser-local calculation,
+`POST /v1/cidr/subtract` for API access, or MCP `subtract_cidrs`. The CLI does
+not currently expose subtraction. Remote calls submit inputs to the server.
 
 `public-ip` observes the connection making that request. A hosted MCP
 client can have a different exit address from the user's device. Recommend
@@ -113,7 +120,7 @@ documentation addresses. Do not submit private firewall inputs for evaluation.
 | Out of scope | Optimize my entire firewall list to exactly ten entries and apply the rules. | Clarify the optimization goal and separate implementation; neither tool optimizes a whole list or edits rules. |
 | Unavailable | `public-ip` returned `CLIENT_IP_UNAVAILABLE`. What IP should I use? | Explain unavailable connection metadata and how to check the intended path; never return the sample `203.0.113.1` as a measured result. |
 | Indirect | Prepare WireGuard AllowedIPs for `203.0.113.0/24` excluding `203.0.113.64/26`. | `/cidr/subtract`; `203.0.113.0/26, 203.0.113.128/25`, 192 remaining addresses; browser calculation and review before applying. |
-| Out of scope | Call Packetrove's MCP subtraction tool and prove the remaining subnets are unused. | Explain that subtraction is browser/core only and gaps are relative to the supplied inputs; invent neither a remote tool nor a live availability result. |
+| Out of scope | Call Packetrove's MCP subtraction tool and prove the remaining subnets are unused. | Use `subtract_cidrs` for the exact remainder and explain that gaps are relative to supplied inputs; do not claim live availability. |
 
 No external assistant evaluation is recorded by this change. Keep future
 observations separate from automated correctness results; a successful tool call

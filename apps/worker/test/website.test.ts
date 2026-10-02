@@ -5,6 +5,7 @@ import { localizedPath, pagePaths, resolveRoute, type Locale } from '../../web/s
 import { escapeHtml, websitePages } from '../../web/src/seo';
 import { mcpExamples } from '../../web/src/mcp-examples';
 import { supportedLocales } from '../../web/src/i18n/locales';
+import { tools as catalogTools } from '@packetrove/contracts';
 
 describe('website in the Workers runtime', () => {
   it.each(websitePages)('serves localized content and metadata at $pathname without running JavaScript', async ({ locale, page, pathname }) => {
@@ -29,6 +30,8 @@ describe('website in the Workers runtime', () => {
     expect(html).toContain('href="' + localizedPath('/cidr', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/cidr/subtract', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
+    const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? '';
+    expect(navigation).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
       expect(html).toContain(text.home.subtractDescription);
@@ -63,6 +66,10 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('codex mcp add packetrove');
       expect(html).toContain('structuredContent');
       expect(html).toContain('CLIENT_IP_UNAVAILABLE');
+      expect(html).toContain('href="' + localizedPath(pagePaths.api, locale) + '"');
+      expect(html).toContain('data-mcp-sdk-example');
+      expect(html).toContain('client.listTools()');
+      expect(html).toContain('client.callTool(');
     }
     if (page === 'cidr' || page === 'ip' || page === 'subtract') {
       for (const question of Object.values(text.discovery[page].questions)) {
@@ -70,11 +77,10 @@ describe('website in the Workers runtime', () => {
         expect(html).toContain(escapeHtml(question.answer));
       }
     }
-    if (page === 'subtract') expect(html).not.toContain('data-mcp-tool=');
     if (page !== 'mcp') {
       expect(html).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
     }
-    for (const tool of page === 'mcp' ? ['cidr', 'ip'] as const : page === 'cidr' || page === 'ip' ? [page] : []) {
+    for (const { page: tool } of catalogTools.filter(tool => page === 'mcp' || page === tool.page)) {
       const example = mcpExamples[tool];
       expect(html).toContain('data-mcp-tool="' + example.name + '"');
       expect(html).toContain(escapeHtml(JSON.stringify(example.arguments, null, 2)));

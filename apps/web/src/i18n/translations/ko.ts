@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const ko = {
+  languageSuggestion: {
+    title: '이 페이지를 한국어로 보시겠어요?',
+    switch: '한국어로 전환', dismiss: '나중에',
+  },
   common: {
     home: '홈', homeLabel: 'Packetrove 홈', navigation: '주 탐색 메뉴',
     language: '언어', tools: 'IP 주소 도구', copied: '복사됨', dismissCopy: '복사 오류 닫기',
@@ -11,6 +15,17 @@ export const ko = {
   },
   footer: { project: '프로젝트', contact: '문의 및 의견', sendEmail: '이메일 보내기' },
   home: {
+    galleryTitle: "도구 둘러보기",
+    galleryDescription: "스크롤하거나 화살표로 예제를 살펴본 다음 도구를 여세요.",
+    galleryPrevious: "이전 도구",
+    galleryNext: "다음 도구",
+    galleryPosition: "{{total}}개 중 {{current}}번째",
+    previewLabel: "예제",
+    previewInputs: "예제 입력",
+    ipPreview: "문서용 주소입니다. 연결을 확인하려면 도구를 여세요.",
+    integrationsTitle: "작업 흐름에 Packetrove 연결하기",
+    apiIntroduction: "공통 JSON 계약을 사용해 HTTP 클라이언트에서 도구를 호출하세요.",
+    cliIntroduction: "터미널에서 포함 CIDR을 로컬로 계산하거나 연결을 확인하세요.",
     description: '브라우저, 터미널, AI 에이전트에서 사용할 수 있는 오픈 소스 네트워크 도구입니다. 탐색 메뉴에서 도구를 열거나 아래 안내에 따라 Packetrove를 작업 흐름에 연결하세요.',
     openSource: '오픈 소스', anonymous: '계정이나 API 키가 필요 없습니다',
     cidrDescription: 'IPv4 또는 IPv6 주소와 범위를 모두 포함하는 가장 작은 단일 CIDR을 찾으세요. 브라우저에서 계산하며 정확한 주소 수와 추가로 포함되는 범위에 대한 설명을 제공합니다.',
@@ -89,10 +104,18 @@ export const ko = {
     cidrSummary: 'IPv4 또는 IPv6 주소와 CIDR 범위를 JSON으로 보내세요. 응답에는 최소 포괄 CIDR, 정규화된 입력, 10진수 문자열로 표현된 정확한 주소 수가 포함됩니다. 이 API 요청은 입력을 서버로 전송합니다.',
     cidrResponse: '이 예제는 {{cidr}}을 반환하며 주소 {{additional}}개를 추가로 포함합니다. 허용 목록이나 차단 목록에 결과를 사용하기 전에 additionalAddressCount를 확인하세요.',
     ipSummary: '현재 HTTP 연결에서 관찰한 공인 IP를 반환합니다. 주소와 줄 바꿈을 받으려면 text/plain을, 주소와 주소 체계를 받으려면 application/json을 요청하세요. 응답은 캐시되지 않습니다. VPN이나 프록시를 사용하면 관찰되는 출구 주소가 달라집니다.',
+    subtractSummary: "include에서 exclude를 정확히 뺍니다. 최소 정규 CIDR 목록과 정확한 십진 문자열 주소 수를 반환합니다. 이 API는 입력을 서버로 보냅니다.",
+    subtractResponse: "이 예시는 {{cidrs}}를 반환하며 {{remaining}}개의 주소가 남습니다. 추가 범위는 포함하지 않습니다.",
   },
   discovery: {
     subtract: {
       title: 'CIDR 빼기 관련 질문',
+      mcpTitle: "MCP로 CIDR 차집합 사용",
+      purpose: "AI 에이전트에게 포함된 주소 공간에서 제외 네트워크를 빼고 정확한 나머지 CIDR 목록을 반환하도록 요청하세요.",
+      inputs: "같은 주소 계열의 include 및 exclude 배열을 전달하세요. include는 비어 있을 수 없으며 exclude는 비어 있어도 됩니다. 두 목록 합계 {{maximumInputs}}개까지, 각 항목 {{maximumLength}}자까지입니다.",
+      result: "cidrs와 정확한 십진 문자열 includedAddressCount, removedAddressCount, remainingAddressCount를 읽으세요. 전체 제거는 빈 목록을 반환합니다. {{maximumOutputs}}개를 넘는 CIDR 결과는 부분 목록 없이 오류를 반환합니다.",
+      boundary: "원격 API와 MCP는 입력을 서버로 보내고 브라우저는 로컬에서 계산합니다. 남은 범위는 입력에 따른 결과이며 실제 사용 가능 여부를 증명하지 않습니다. WireGuard 설정이나 방화벽 규칙을 변경하지 않습니다.",
+      openTool: "브라우저 차집합 도구 열기",
       questions: {
         wireguard: {
           question: 'WireGuard AllowedIPs의 예외는 어떻게 준비하나요?',
@@ -112,7 +135,7 @@ export const ko = {
         },
         access: {
           question: 'MCP, 웹 API 또는 CLI로 빼기를 호출할 수 있나요?',
-          answer: '빼기는 현재 브라우저와 공유 계산 코어에서 실행됩니다. 브라우저 입력은 로컬에 유지됩니다. MCP, 웹 API 및 CLI는 포괄 CIDR 계산과 공인 IP 조회를 제공하며 빼기는 제공하지 않습니다. MCP 가이드는 사용 가능한 작업을 설명합니다.',
+          answer: "차집합은 웹사이트, Web API, MCP에서 사용할 수 있습니다. 브라우저 입력은 로컬에 남고 API와 MCP는 서버로 보냅니다. CLI는 현재 차집합을 지원하지 않습니다."
         },
       },
     },
@@ -180,13 +203,24 @@ export const ko = {
     },
   },
   mcp: {
+    navigation: "MCP 안내",
+    sdkTitle: "Node.js 예제 실행",
+    sdkDescription: "새 디렉터리에 아래 코드를 <code>packetrove-example.mjs</code>로 저장한 다음 명령을 실행하세요. 예제는 <code>@modelcontextprotocol/client@{{version}}</code>를 사용해 도구를 검색하고 문서용 주소로 CIDR 도구를 호출합니다.",
+    sdkLocal: "로컬 개발에서는 <code>pnpm dev:api</code>를 시작하고 예제의 서버 URL을 <code>{{localUrl}}</code>로 바꾸세요.",
+    httpErrors: "업무 오류는 공유 오류 JSON을 사용합니다. MCP SDK가 프로토콜을 검증합니다. 잘못된 JSON, 지원하지 않는 미디어 형식, 너무 큰 본문은 HTTP 계층에서 거부됩니다.",
+    deploymentTitle: "배포 및 연결 제한",
+    serverBehavior: "서버는 최신 무상태 요청과 기존 Streamable HTTP의 초기화, 검색, 호출을 지원합니다. 영구 세션이나 독립적인 서버 이벤트 스트림은 제공하지 않습니다.",
+    connectionPrivacy: "공인 IP 연결 정보는 도구 호출마다 읽으며 동시 클라이언트의 서버 인스턴스는 격리됩니다. MCP 결과와 오류는 Cache-Control: no-store, no-transform을 사용합니다. 애플리케이션은 조회 주소를 저장하거나 기록하지 않습니다.",
+    toolMigration: "기존 도구 이름 <code>get_public_ip</code>에는 호환 별칭이 없습니다. 도구 검색을 새로 하고 저장된 호출에는 <code>{{ipTool}}</code>를 사용하세요.",
+    endpointMigration: "웹사이트의 <code>/mcp</code>는 서비스가 아닙니다. GET은 404, POST는 405를 반환하며 도구 호출을 프록시하거나 리디렉션하지 않습니다. 클라이언트에 <code>{{serverUrl}}</code>을 설정하세요. 직접 배포할 때는 도메인과 별도의 정확한 Host 및 브라우저 Origin 허용 목록을 갱신하세요. Origin 헤더가 없는 클라이언트도 지원합니다.",
+    deploymentGuide: "배포, 자체 호스팅 및 운영 검증",
     title: 'Packetrove를 AI 에이전트에 연결하기',
-    explanation: '호환되는 MCP 클라이언트를 연결해 포괄 CIDR을 계산하거나 클라이언트의 연결을 확인하세요. 아래 설정을 마친 뒤 도구 예제를 사용하세요.',
+    explanation: "호환되는 MCP 클라이언트를 연결해 Packetrove 네트워크 도구를 사용하세요. 아래에서 연결을 설정한 후 도구 예시를 참고하세요.",
     connection: 'Streamable HTTP · 계정이나 API 키 불필요',
     connectTitle: '클라이언트 연결하기',
     connectDescription: 'Claude Code 또는 Codex를 설치한 뒤 이 원격 서버를 추가하세요. 명령은 클라이언트를 설정하며 로컬 Packetrove 서버를 설치하지 않습니다.',
     clientGuide: '{{client}} MCP 문서',
-    check: '클라이언트에서 <code>/mcp</code>로 연결을 확인하세요. <code>{{cidrTool}}</code> 및 <code>{{ipTool}}</code>를 사용할 수 있는지 확인하세요.',
+    check: "클라이언트에서 <code>/mcp</code>로 연결을 확인하세요. 다음 도구를 사용할 수 있는지 확인하세요: <code>{{tools}}</code>.",
     discovery: '설정 후 클라이언트는 tools/list로 사용 가능한 도구를 찾습니다. 도구 설명과 스키마는 선택과 인수 구성을 안내합니다. 웹 페이지를 읽는 것만으로 클라이언트가 설정되거나 도구 접근 권한이 생기지는 않습니다.',
     toolName: '도구 이름',
     arguments: '예제 인수',

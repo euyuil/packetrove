@@ -23,6 +23,7 @@ The workflow runs `pnpm check`, which includes:
 
 - Type checks for every workspace and repository scripts.
 - Generated OpenAPI consistency and specification validation.
+- Generated MCP integration guide consistency with shared website content.
 - Production builds for the website and offline CLI.
 - Wrangler deployment dry runs for the API and website Workers.
 - Shared calculation, CLI, web application, website isolation, API, and MCP tests.
@@ -145,8 +146,9 @@ npm publication while ordinary feature merges continue to deploy the services.
 The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
 write token in repository secrets. See the [CLI publishing guide](cli-publishing.md)
 for the GitHub App secrets, first-release baseline, trusted-publisher fields, version
-rules, and recovery. Recovery verifies an identical existing npm archive without
-republishing it and rejects a collision with different package contents.
+rules, and recovery. Recovery skips publication preview and upload for an identical
+existing npm archive, verifies it independently, and rejects a collision with
+different package contents.
 
 ## Cloudflare credentials
 

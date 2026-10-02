@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const fr = {
+  languageSuggestion: {
+    title: 'Voulez-vous lire cette page en français ?',
+    switch: 'Passer au français', dismiss: 'Pas maintenant',
+  },
   common: {
     home: 'Accueil', homeLabel: 'Accueil de Packetrove', navigation: 'Navigation principale',
     language: 'Langue', tools: 'OUTILS POUR ADRESSES IP', copied: 'Copié', dismissCopy: 'Fermer l’erreur de copie',
@@ -11,6 +15,17 @@ export const fr = {
   },
   footer: { project: 'Projet', contact: 'Contact et commentaires', sendEmail: 'Envoyer un e-mail' },
   home: {
+    galleryTitle: "Découvrez les outils",
+    galleryDescription: "Faites défiler ou utilisez les flèches pour voir les exemples, puis ouvrez un outil.",
+    galleryPrevious: "Outil précédent",
+    galleryNext: "Outil suivant",
+    galleryPosition: "{{current}} sur {{total}}",
+    previewLabel: "Exemple",
+    previewInputs: "Entrées d’exemple",
+    ipPreview: "Adresse de documentation uniquement. Ouvrez l’outil pour vérifier votre connexion.",
+    integrationsTitle: "Intégrez Packetrove à votre travail",
+    apiIntroduction: "Appelez les outils depuis un client HTTP avec des contrats JSON communs.",
+    cliIntroduction: "Calculez des CIDR englobants localement ou vérifiez la connexion depuis votre terminal.",
     description: 'Des outils réseau open source pour votre navigateur, votre terminal et vos agents IA. Ouvrez un outil depuis la navigation ou suivez les instructions ci-dessous pour intégrer Packetrove à votre travail.',
     openSource: 'Open source', anonymous: 'Aucun compte ni clé API nécessaire',
     cidrDescription: 'Trouvez le plus petit CIDR unique qui englobe des adresses et des plages IPv4 ou IPv6. Calculez dans votre navigateur avec des nombres d’adresses exacts et une explication claire de la couverture supplémentaire.',
@@ -90,10 +105,18 @@ export const fr = {
     cidrSummary: 'Envoyez des adresses IPv4 ou IPv6 et des plages CIDR en JSON. La réponse contient le CIDR englobant minimal, les entrées normalisées et les nombres exacts d’adresses sous forme de chaînes décimales. Cette requête API envoie vos entrées au serveur.',
     cidrResponse: 'Cet exemple renvoie {{cidr}} avec {{additional}} adresses supplémentaires. Vérifiez additionalAddressCount avant d’utiliser le résultat dans une liste d’adresses autorisées ou bloquées.',
     ipSummary: 'Renvoie l’IP publique observée pour cette connexion HTTP. Demandez text/plain pour une adresse suivie d’un saut de ligne ou application/json pour une adresse et sa famille. Les réponses ne sont pas mises en cache. Un VPN ou un proxy modifie l’adresse de sortie observée.',
+    subtractSummary: "Soustrayez exactement exclude de include. Renvoie une liste minimale de CIDR canoniques et des nombres d’adresses exacts sous forme de chaînes décimales. Cet appel envoie les données au serveur.",
+    subtractResponse: "Cet exemple renvoie {{cidrs}}, avec {{remaining}} adresses restantes et aucune couverture supplémentaire.",
   },
   discovery: {
     subtract: {
       title: "Questions sur la soustraction de CIDR",
+      mcpTitle: "Utiliser la soustraction via MCP",
+      purpose: "Demandez à un agent IA de soustraire les réseaux exclus de l’espace inclus et de renvoyer les CIDR restants exacts.",
+      inputs: "Passez des tableaux include et exclude d’une même famille. include ne peut pas être vide ; exclude peut l’être. Limite totale de {{maximumInputs}} entrées, avec {{maximumLength}} caractères chacune.",
+      result: "Lisez cidrs et les nombres décimaux exacts includedAddressCount, removedAddressCount et remainingAddressCount. Une suppression complète renvoie une liste vide. Au-delà de {{maximumOutputs}} CIDR, une erreur est renvoyée sans liste partielle.",
+      boundary: "Les appels API et MCP distants envoient les données au serveur ; le navigateur calcule localement. Les plages restantes dépendent des entrées et ne prouvent pas leur disponibilité réelle. Aucun réglage WireGuard ni règle de pare-feu n’est modifié.",
+      openTool: "Ouvrir la soustraction dans le navigateur",
       questions: {
         wireguard: {
           question: "Comment préparer les exceptions AllowedIPs de WireGuard ?",
@@ -113,7 +136,7 @@ export const fr = {
         },
         access: {
           question: "Puis-je appeler la soustraction via MCP, l’API web ou la CLI ?",
-          answer: "La soustraction fonctionne actuellement dans le navigateur et le noyau de calcul partagé. Les entrées du navigateur restent locales. MCP, l’API web et la CLI proposent le CIDR englobant et l’IP publique, sans exposer la soustraction. Le guide MCP décrit ces opérations disponibles."
+          answer: "La soustraction est disponible sur le site, via l’API web et MCP. Les données du navigateur restent locales ; API et MCP les envoient au serveur. La CLI ne propose pas encore la soustraction."
         }
       }
     },
@@ -181,13 +204,24 @@ export const fr = {
     }
   },
   mcp: {
+    navigation: "Guide MCP",
+    sdkTitle: "Exécuter un exemple Node.js",
+    sdkDescription: "Dans un nouveau dossier, enregistre le code dans <code>packetrove-example.mjs</code>, puis exécute les commandes. L’exemple utilise <code>@modelcontextprotocol/client@{{version}}</code>, découvre les outils et appelle l’outil CIDR avec des adresses de documentation.",
+    sdkLocal: "Pour le développement local, lance <code>pnpm dev:api</code> et remplace l’URL du serveur par <code>{{localUrl}}</code>.",
+    httpErrors: "Les erreurs métier utilisent le JSON d’erreur partagé. Le SDK MCP valide le protocole. Les données JSON invalides, les types de contenu non pris en charge et les corps trop volumineux sont rejetés au niveau HTTP.",
+    deploymentTitle: "Déploiement et limites de connexion",
+    serverBehavior: "Le serveur accepte les requêtes modernes sans état ainsi que l’initialisation, la découverte et les appels de l’ancien transport Streamable HTTP. Il ne fournit ni sessions persistantes ni flux d’événements serveur autonomes.",
+    connectionPrivacy: "Les métadonnées de l’IP publique sont lues pour chaque appel, avec des instances isolées entre clients simultanés. Les résultats et erreurs MCP utilisent Cache-Control: no-store, no-transform. L’application ne conserve ni ne journalise les adresses consultées.",
+    toolMigration: "L’ancien nom <code>get_public_ip</code> n’a pas d’alias de compatibilité. Actualise la découverte et utilise <code>{{ipTool}}</code> dans les appels enregistrés.",
+    endpointMigration: "Le chemin <code>/mcp</code> du site n’est pas le service : GET renvoie 404 et POST 405, sans proxy ni redirection des appels. Configure les clients avec <code>{{serverUrl}}</code>. Pour ton déploiement, adapte les domaines et les listes exactes distinctes de Host et d’Origin du navigateur ; les clients sans en-tête Origin sont acceptés.",
+    deploymentGuide: "Déploiement, auto-hébergement et vérification en production",
     title: "Connecter Packetrove à un agent IA",
-    explanation: "Connectez un client MCP compatible pour calculer des CIDR englobants ou examiner la connexion utilisée par ce client. Configurez-le ci-dessous, puis utilisez les exemples d’outils.",
+    explanation: "Connectez un client MCP compatible pour utiliser les outils réseau Packetrove. Commencez par la configuration ci-dessous, puis consultez les exemples.",
     connection: "Streamable HTTP · Aucun compte ni clé API nécessaire",
     connectTitle: "Connecter votre client",
     connectDescription: "Avec Claude Code ou Codex installé, ajoutez ce serveur distant. Ces commandes configurent le client ; elles n’installent pas de serveur Packetrove local.",
     clientGuide: "Documentation MCP de {{client}}",
-    check: "Utilisez <code>/mcp</code> dans votre client pour examiner la connexion. Vérifiez que <code>{{cidrTool}}</code> et <code>{{ipTool}}</code> sont disponibles.",
+    check: "Utilisez <code>/mcp</code> dans votre client pour vérifier la connexion. Confirmez la disponibilité de ces outils : <code>{{tools}}</code>.",
     discovery: "Après configuration, le client découvre les outils avec tools/list. Les descriptions et les schémas guident le choix et les arguments. Lire une page web ne configure pas un client et ne lui donne pas accès aux outils.",
     toolName: "Nom de l’outil",
     arguments: "Exemple d’arguments",

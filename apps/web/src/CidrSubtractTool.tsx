@@ -4,7 +4,7 @@ import {
   Alert, Badge, Button, Code, DataList, Group, List, Paper, SimpleGrid, Stack, Text, Textarea, ThemeIcon, Title,
 } from '@mantine/core';
 import {
-  MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, type CidrSubtractResult,
+  CIDR_SUBTRACT_EXAMPLES, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, type CidrSubtractResult,
 } from '@packetrove/contracts';
 import { subtractCidrs, ToolError } from '@packetrove/core';
 import { ClipboardCopyButton } from './ClipboardCopyButton';
@@ -13,12 +13,8 @@ import { errorMessage, issueMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
 import { ToolQuestions } from './ToolQuestions';
 import { ToolIcon } from './ToolIcon';
+import { ToolMcpSection } from './ToolMcpSection';
 import { parseAddressEntries } from './parseAddressEntries';
-
-const examples = [
-  { name: 'IPv4', include: '203.0.113.0/24', exclude: '203.0.113.64/26', cidrs: ['203.0.113.0/26', '203.0.113.128/25'] },
-  { name: 'IPv6', include: '2001:db8::/124', exclude: '2001:db8::4/126', cidrs: ['2001:db8::/126', '2001:db8::8/125'] },
-] as const;
 
 export type CidrSubtractDraft = { include: string; exclude: string; result: CidrSubtractResult | null; error: ToolError | null };
 
@@ -108,7 +104,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
                   attributes={{ input: { 'aria-describedby': 'subtract-' + list + '-help' + (affected ? ' subtraction-errors' : '') } }}
                   error={affected} value={draft[list]} rows={6} resize="vertical"
                   spellCheck={false} autoCapitalize="off" autoCorrect="off" classNames={{ input: 'network-value' }}
-                  placeholder={list === 'include' ? examples[0].include : examples[0].exclude}
+                  placeholder={CIDR_SUBTRACT_EXAMPLES[0]!.request[list].join('\n')}
                   onChange={event => replaceLists(list === 'include' ? event.currentTarget.value : draft.include,
                     list === 'exclude' ? event.currentTarget.value : draft.exclude)} />;
               })}
@@ -124,8 +120,8 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
               </Group>
               <Group gap="sm">
                 <Text size="sm" c="dimmed">{t($ => $.cidr.example)}</Text>
-                {examples.map(example => <Button key={example.name} type="button" variant="default" size="xs"
-                  onClick={() => replaceLists(example.include, example.exclude)}>{example.name}</Button>)}
+                {CIDR_SUBTRACT_EXAMPLES.map(example => <Button key={example.name} type="button" variant="default" size="xs"
+                  onClick={() => replaceLists(example.request.include.join('\n'), example.request.exclude.join('\n'))}>{example.name}</Button>)}
               </Group>
               <Button type="submit" fullWidth>{t($ => $.subtract.calculate)}</Button>
             </Stack>
@@ -182,15 +178,16 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
     <Stack component="section" aria-labelledby="examples-heading" gap="sm">
       <Title order={2} size="h4" id="examples-heading">{t($ => $.subtract.examplesTitle)}</Title>
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-        {examples.map(example => <Paper key={example.name} withBorder p="md">
+        {CIDR_SUBTRACT_EXAMPLES.map(example => <Paper key={example.name} withBorder p="md">
           <Stack gap="sm">
             <Text size="sm" fw={600}>{example.name}</Text>
-            <Text size="sm">{t($ => $.subtract.example, { include: example.include, exclude: example.exclude })}</Text>
-            <Code block>{example.cidrs.join('\n')}</Code>
+            <Text size="sm">{t($ => $.subtract.example, { include: example.request.include.join(', '), exclude: example.request.exclude.join(', ') })}</Text>
+            <Code block>{example.result.cidrs.join('\n')}</Code>
           </Stack>
         </Paper>)}
       </SimpleGrid>
     </Stack>
     <ToolQuestions tool="subtract" onNavigate={onNavigate} />
+    <ToolMcpSection tool="subtract" {...(onNavigate ? { onNavigate } : {})} />
   </Stack>;
 }

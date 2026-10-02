@@ -9,6 +9,7 @@ import { websitePages } from './seo';
 import { locales, supportedLocales, type Locale } from './i18n/locales';
 import { localizedPath, resolveRoute } from './i18n/routes';
 import { resources } from './i18n/resources';
+import { languageSuggestionStorageKey } from './useLanguageSuggestion';
 
 vi.mock('./ApiReference', () => ({ default: () => <div>Interactive API reference</div> }));
 vi.mock('./assets/packetrove-logo-160x160.png', async () => {
@@ -77,6 +78,21 @@ async function chooseLanguage(locale: Locale) {
 }
 
 describe('hydration of production HTML', () => {
+  it('offers the browser language after hydrating English HTML without redirecting or moving focus', async () => {
+    vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['zh-CN', 'en-US']);
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const html = await readFile(resolve(dirname(fileURLToPath(import.meta.url)), '../dist/index.html'), 'utf8');
+    const copy = resources['zh-Hans'].translation.languageSuggestion;
+    expect(html).not.toContain(copy.title);
+    await hydrate('/');
+    expect(await screen.findByRole('region', { name: copy.title })).toBeDefined();
+    expect(window.location.pathname).toBe('/');
+    expect(document.documentElement.lang).toBe('en');
+    expect(window.sessionStorage.length).toBe(0);
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it.each(websitePages)('hydrates $pathname without replacing the heading or requesting unrelated data', async page => {
     const fetch = vi.fn(async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
     vi.stubGlobal('fetch', fetch);
@@ -114,7 +130,8 @@ describe('hydration of production HTML', () => {
     expect((screen.getByLabelText(translation.cidr.inputLabel) as HTMLTextAreaElement).value).toBe('::/0');
     expect(screen.getByText(translation.cidr.exact)).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
-    expect(storage).not.toHaveBeenCalled();
+    expect(storage).toHaveBeenCalledExactlyOnceWith(languageSuggestionStorageKey, '1');
+    expect(storage.mock.contexts).toEqual([window.sessionStorage]);
   });
 
   it('subtracts locally after hydration and preserves both lists through language and page changes', async () => {
@@ -149,7 +166,8 @@ describe('hydration of production HTML', () => {
     expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value)
       .toBe('203.0.113.0/26\n203.0.113.128/25');
     expect(fetch).not.toHaveBeenCalled();
-    expect(storage).not.toHaveBeenCalled();
+    expect(storage).toHaveBeenCalledExactlyOnceWith(languageSuggestionStorageKey, '1');
+    expect(storage.mock.contexts).toEqual([window.sessionStorage]);
   });
 
   it.each(supportedLocales.filter(locale => locale !== 'en'))('keeps the lookup started after hydration when switching to %s', async locale => {
