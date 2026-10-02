@@ -42,15 +42,12 @@ export function App() {
 
   return <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py="xl">
     <Stack gap="xl">
-      <Group component="header" justify="space-between">
+      <Group component="header">
         <Anchor href="/" onClick={navigate} aria-label="Packetrove home" underline="never" c="var(--mantine-color-text)">
           <Group gap="sm">
             <img src={packetroveLogo} width="40" height="40" alt="" />
             <Text component="span" size="xl" fw={700}>Packetrove</Text>
           </Group>
-        </Anchor>
-        <Anchor size="sm" href="/docs/api" onClick={navigate} aria-current={apiPage ? 'page' : undefined}>
-          API documentation
         </Anchor>
       </Group>
       <Divider />

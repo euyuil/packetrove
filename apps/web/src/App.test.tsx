@@ -35,12 +35,6 @@ describe('web page routing', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('links to the API documentation page', () => {
-    render(<App />);
-    expect(screen.getByRole('link', { name: 'API documentation' }).getAttribute('href'))
-      .toBe('/docs/api');
-  });
-
   it('uses the configured API and repository in homepage quickstart examples', () => {
     vi.stubEnv('VITE_API_ORIGIN', 'https://api.service.example');
     vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
