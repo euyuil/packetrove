@@ -14,11 +14,7 @@ import { resolveLocale } from './i18n/locales';
 import { ToolQuestions } from './ToolQuestions';
 import { ToolIcon } from './ToolIcon';
 import { ToolMcpSection } from './ToolMcpSection';
-
-function inputRows(text: string) {
-  return text.split(/\r?\n/).map((value, index) => ({ value: value.trim(), line: index + 1 }))
-    .filter(row => row.value.length > 0);
-}
+import { parseAddressEntries } from './parseAddressEntries';
 
 export type CidrSubtractDraft = { include: string; exclude: string; result: CidrSubtractResult | null; error: ToolError | null };
 
@@ -31,7 +27,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   const formatter = new Intl.NumberFormat(locale);
   const formatCount = (count: string | number) => formatter.format(typeof count === 'string' ? BigInt(count) : count);
   const { result, error } = draft;
-  const rows = { include: inputRows(draft.include), exclude: inputRows(draft.exclude) };
+  const entries = { include: parseAddressEntries(draft.include), exclude: parseAddressEntries(draft.exclude) };
   const listCopy = useClipboardFeedback();
   const allowedCopy = useClipboardFeedback();
   const clearCopyFeedback = () => { listCopy.clearCopyFeedback(); allowedCopy.clearCopyFeedback(); };
@@ -46,7 +42,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
     clearCopyFeedback();
     try {
       onDraftChange({ ...draft, error: null, result: subtractCidrs({
-        include: rows.include.map(row => row.value), exclude: rows.exclude.map(row => row.value),
+        include: entries.include.map(entry => entry.value), exclude: entries.exclude.map(entry => entry.value),
       }) });
     } catch (failure) {
       onDraftChange({ ...draft, result: null, error: failure instanceof ToolError ? failure
@@ -72,7 +68,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
     const inputList = detail.list;
     const list = t($ => inputList === 'include' ? $.subtract.include : $.subtract.exclude);
     return issue.index === undefined ? t($ => $.subtract.listIssue, { list, message })
-      : t($ => $.subtract.line, { list, line: formatCount(rows[inputList][issue.index]?.line ?? issue.index + 1), message });
+      : t($ => $.subtract.line, { list, line: formatCount(entries[inputList][issue.index]?.line ?? issue.index + 1), message });
   });
 
   return <Stack gap="xl">
@@ -114,7 +110,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
               })}</Text>
               <Group justify="space-between">
                 <Text size="sm" c="dimmed">{t($ => $.cidr.entryCount, {
-                  count: rows.include.length + rows.exclude.length, total: formatCount(rows.include.length + rows.exclude.length),
+                  count: entries.include.length + entries.exclude.length, total: formatCount(entries.include.length + entries.exclude.length),
                 })}</Text>
                 <Button type="button" variant="default" size="xs" onClick={() => replaceLists('', '')}
                   disabled={!draft.include && !draft.exclude && !result && !error}>{t($ => $.cidr.clear)}</Button>
