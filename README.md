@@ -260,6 +260,12 @@ requests directly to the configured API origin without cookies.
 Scalar's AI features, telemetry, proxy, and external fonts are disabled.
 The website's `/docs/mcp` guide uses the same configured API origin and shared
 tool names and examples as the tool pages, and loads no interactive reference.
+Its text, client commands, and examples are maintained in
+[`apps/web/src/mcp-guide.ts`](apps/web/src/mcp-guide.ts) and the shared language
+resources. The repository's English [`MCP guide`](docs/integrations/mcp.md) is
+generated from that same content. After changing it, run
+`pnpm docs:mcp:generate`; `pnpm docs:mcp:check` rejects stale or manually edited
+output and runs as part of `pnpm build` and `pnpm check`.
 Local public IP lookup depends on Cloudflare connection metadata; without it,
 the API returns `CLIENT_IP_UNAVAILABLE`.
 

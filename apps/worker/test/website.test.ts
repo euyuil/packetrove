@@ -29,6 +29,8 @@ describe('website in the Workers runtime', () => {
     expect(html).toContain('href="' + localizedPath('/cidr', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/cidr/subtract', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
+    const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? '';
+    expect(navigation).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
       expect(html).toContain(text.home.subtractDescription);
@@ -63,6 +65,10 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('codex mcp add packetrove');
       expect(html).toContain('structuredContent');
       expect(html).toContain('CLIENT_IP_UNAVAILABLE');
+      expect(html).toContain('href="' + localizedPath(pagePaths.api, locale) + '"');
+      expect(html).toContain('data-mcp-sdk-example');
+      expect(html).toContain('client.listTools()');
+      expect(html).toContain('client.callTool(');
     }
     if (page === 'cidr' || page === 'ip' || page === 'subtract') {
       for (const question of Object.values(text.discovery[page].questions)) {

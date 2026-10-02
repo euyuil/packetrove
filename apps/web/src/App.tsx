@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
-import { IconHome } from '@tabler/icons-react';
+import { IconBook, IconHome } from '@tabler/icons-react';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { CidrSubtractTool, type CidrSubtractDraft } from './CidrSubtractTool';
@@ -95,6 +95,9 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           leftSection={<ToolIcon tool="ip" size={18} />}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
+        <Button component="a" href={href(pagePaths.mcp)} onClick={navigate} variant={page === 'mcp' ? 'light' : 'subtle'}
+          leftSection={<IconBook size={18} stroke={1.75} aria-hidden="true" focusable="false" />}
+          aria-current={page === 'mcp' ? 'page' : undefined}>{t($ => $.mcp.navigation)}</Button>
       </Group>
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
         aria-label={homePage ? t($ => $.common.home) : ipPage ? t($ => $.ip.title)
@@ -102,7 +105,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
           : ipPage ? <PublicIpTool onNavigate={navigate} /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} onNavigate={navigate} />
-          : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} />
+          : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : subtractPage ? <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} onNavigate={navigate} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
