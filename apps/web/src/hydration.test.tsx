@@ -46,6 +46,8 @@ async function hydrate(pathname: string, suffix = '') {
   document.documentElement.lang = page.locale;
   window.history.replaceState({}, '', pathname + suffix);
   const container = document.getElementById('root')!;
+  const focusedLink = container.querySelector<HTMLAnchorElement>('header a')!;
+  focusedLink.focus();
   const heading = container.querySelector('h1');
   const title = document.title;
   const recoverableError = vi.fn();
@@ -56,6 +58,7 @@ async function hydrate(pathname: string, suffix = '') {
     });
   });
   expect(container.querySelector('h1')).toBe(heading);
+  expect(document.activeElement).toBe(focusedLink);
   expect(document.title).toBe(title);
   expect(document.head.querySelectorAll('link[rel="canonical"]')).toHaveLength(1);
   expect(document.head.querySelectorAll('link[rel="alternate"][hreflang]')).toHaveLength(supportedLocales.length + 1);
