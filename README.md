@@ -42,8 +42,9 @@ entries count once; an empty exclusion list simplifies the exact include union.
 
 For example, including `203.0.113.0/24` and excluding `203.0.113.64/26` returns
 `203.0.113.0/26` and `203.0.113.128/25`: 256 included addresses, 64 removed, and
-192 remaining. Copy the complete newline-separated list or a comma-separated
-WireGuard `AllowedIPs` value. Complete removal displays an explicit empty result
+192 remaining. Copy the complete result with one CIDR per line or with CIDRs
+separated by commas and spaces. The comma format can be used as a WireGuard
+`AllowedIPs` value. Complete removal displays an explicit empty result
 and disables copying.
 
 Prepare WireGuard exceptions, inspect gaps after known allocations, or subtract

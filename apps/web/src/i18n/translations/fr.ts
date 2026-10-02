@@ -57,9 +57,9 @@ export const fr = {
     excludeHelp: 'Une entrée par ligne. Laissez vide pour simplifier la liste incluse sans retirer d’adresses.',
     calculate: 'Soustraire les CIDR', result: 'Espace d’adresses restant', output: 'CIDR restants',
     included: 'Adresses incluses', removed: 'Adresses retirées', remaining: 'Adresses restantes', blocks: 'CIDR du résultat',
-    copyList: 'Copier la liste', copyAllowed: 'Copier AllowedIPs', copySuccess: 'Liste de CIDR copiée.', allowedSuccess: 'Valeur AllowedIPs copiée.',
+    copyList: 'Copier avec des sauts de ligne', copyAllowed: 'Copier avec des virgules', copySuccess: 'Copié avec des sauts de ligne.', allowedSuccess: 'Copié avec des virgules.',
     copyFailure: 'La copie est indisponible. Sélectionnez et copiez la liste ci-dessus.',
-    formats: 'Copier la liste sépare les CIDR par des sauts de ligne. Copier AllowedIPs les sépare par des virgules pour la valeur du paramètre WireGuard.',
+    formats: 'Un saut de ligne place chaque CIDR sur sa propre ligne. Le format avec virgules sépare les CIDR par une virgule et un espace.',
     emptyTitle: 'Aucune adresse restante', emptyDescription: 'Les exclusions ont retiré toutes les adresses incluses. Il n’y a aucune liste de CIDR à copier.',
     pendingTitle: 'Votre résultat apparaîtra ici', pendingDescription: 'Saisissez une liste à inclure et des exclusions facultatives pour calculer le reste exact.',
     explanationTitle: 'Ce que signifie le résultat',
@@ -96,7 +96,7 @@ export const fr = {
       questions: {
         wireguard: {
           question: "Comment préparer les exceptions AllowedIPs de WireGuard ?",
-          answer: "Placez les plages souhaitées du tunnel dans Inclure et les exceptions dans Exclure. Copier AllowedIPs copie les CIDR restants exacts comme valeur de configuration. Vérifiez-la avant de l’appliquer ; Packetrove ne configure pas WireGuard et ne modifie pas les routes."
+          answer: "Placez les plages souhaitées du tunnel dans Inclure et les exceptions dans Exclure. Utilisez Copier avec des virgules pour copier les CIDR restants exacts comme valeur du paramètre AllowedIPs de WireGuard. Vérifiez-la avant de l’appliquer ; Packetrove ne configure pas WireGuard et ne modifie pas les routes."
         },
         remaining: {
           question: "Les plages restantes prouvent-elles que les adresses sont inutilisées ?",

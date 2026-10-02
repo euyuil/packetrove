@@ -56,9 +56,9 @@ export const ko = {
     excludeHelp: '한 줄에 하나씩 입력하세요. 비워 두면 주소를 제거하지 않고 포함 목록을 간소화합니다.',
     calculate: 'CIDR 빼기 계산', result: '남은 주소 공간', output: '남은 CIDR',
     included: '포함된 주소 수', removed: '제거된 주소 수', remaining: '남은 주소 수', blocks: '결과 CIDR 수',
-    copyList: '목록 복사', copyAllowed: 'AllowedIPs 복사', copySuccess: 'CIDR 목록을 복사했습니다.', allowedSuccess: 'AllowedIPs 값을 복사했습니다.',
+    copyList: '줄 바꿈으로 구분해 복사', copyAllowed: '쉼표로 구분해 복사', copySuccess: '줄 바꿈으로 구분하여 복사했습니다.', allowedSuccess: '쉼표로 구분하여 복사했습니다.',
     copyFailure: '클립보드를 사용할 수 없습니다. 위의 목록을 선택하여 복사하세요.',
-    formats: '목록 복사는 CIDR을 줄 바꿈으로 구분합니다. AllowedIPs 복사는 WireGuard 설정 값에 사용할 수 있도록 쉼표로 구분합니다.',
+    formats: '줄 바꿈으로 구분하면 각 CIDR이 한 줄에 표시됩니다. 쉼표로 구분하면 CIDR 사이에 쉼표와 공백 한 칸을 넣습니다.',
     emptyTitle: '남은 주소가 없습니다', emptyDescription: '제외 목록이 포함된 모든 주소를 제거했습니다. 복사할 CIDR 목록이 없습니다.',
     pendingTitle: '결과가 여기에 표시됩니다', pendingDescription: '포함 목록과 선택적인 제외 목록을 입력하여 정확한 나머지 범위를 계산하세요.',
     explanationTitle: '결과의 의미',
@@ -95,7 +95,7 @@ export const ko = {
       questions: {
         wireguard: {
           question: 'WireGuard AllowedIPs의 예외는 어떻게 준비하나요?',
-          answer: '터널 범위는 포함 목록에, 예외는 제외 목록에 입력하세요. AllowedIPs 복사는 정확히 남은 CIDR을 설정값으로 복사합니다. 적용 전에 검토하세요. Packetrove는 WireGuard를 설정하거나 경로를 변경하지 않습니다.',
+          answer: '터널 범위는 포함 목록에, 예외는 제외 목록에 입력하세요. 쉼표로 구분해 복사를 선택하면 정확히 남은 CIDR을 WireGuard의 AllowedIPs 설정값으로 복사할 수 있습니다. 적용 전에 검토하세요. Packetrove는 WireGuard를 설정하거나 경로를 변경하지 않습니다.',
         },
         remaining: {
           question: '남은 범위는 주소가 사용되지 않는다는 증거인가요?',
