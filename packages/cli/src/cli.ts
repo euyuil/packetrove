@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { createInterface } from 'node:readline';
 import { parseArgs } from 'node:util';
-import { MAX_INPUTS, PUBLIC_API_ORIGIN, PUBLIC_IP_NAME, PUBLIC_IP_PATH, type CidrCoverResult } from '@packetrove/contracts';
+import { PUBLIC_API_ORIGIN, PUBLIC_IP_NAME, PUBLIC_IP_PATH, type CidrCoverResult } from '@packetrove/contracts';
 import { lookupPublicIp, smallestCoveringCidr, ToolError } from '@packetrove/core';
+import { appendStandardInput } from './stdin';
 
 const help = `Packetrove: network tools for humans and agents.
 
@@ -48,23 +48,6 @@ function formatResult(result: CidrCoverResult): string {
     'Normalized inputs:',
     ...result.normalizedInputs.map(input => `  ${input}`),
   ].join('\n') + '\n';
-}
-
-async function appendStandardInput(inputs: string[]): Promise<void> {
-  const lines = createInterface({ input: process.stdin, crlfDelay: Infinity });
-  try {
-    for await (const line of lines) {
-      const input = line.trim();
-      if (!input) continue;
-      inputs.push(input);
-      if (inputs.length > MAX_INPUTS) {
-        throw new ToolError('INVALID_INPUT', `Use at most ${MAX_INPUTS} inputs per calculation.`);
-      }
-    }
-  } finally {
-    lines.close();
-    process.stdin.destroy();
-  }
 }
 
 function writeOutput(destination: NodeJS.WriteStream, output: string): Promise<void> {
@@ -125,7 +108,7 @@ async function main(): Promise<void> {
     if (tool !== 'cidr' || command !== 'cover') {
       throw new ToolError('INVALID_INPUT', 'Use "packetrove cidr cover" or "packetrove public-ip". Run "packetrove --help" for usage.');
     }
-    if (parsed.values.stdin) await appendStandardInput(inputs);
+    if (parsed.values.stdin) await appendStandardInput(inputs, process.stdin);
     const result = smallestCoveringCidr({ inputs });
     await writeOutput(process.stdout, json ? `${JSON.stringify(result)}\n` : formatResult(result));
   } catch (error) {
