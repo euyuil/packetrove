@@ -9,6 +9,7 @@ export const fr = {
     feedbackPrompt: 'Un problème ou une idée ? Faites-nous en part sur GitHub.', reportBug: 'Signaler un problème', requestFeature: 'Proposer une fonctionnalité',
     notFound: 'Page introuvable', notFoundDescription: 'La page demandée n’existe pas.', returnHome: 'Retour à l’accueil',
   },
+  footer: { project: 'Projet', contact: 'Contact et commentaires', sendEmail: 'Envoyer un e-mail' },
   home: {
     description: 'Des outils réseau open source pour votre navigateur, votre terminal et vos agents IA. Ouvrez un outil depuis la navigation ou suivez les instructions ci-dessous pour intégrer Packetrove à votre travail.',
     openSource: 'Open source', anonymous: 'Aucun compte ni clé API nécessaire',

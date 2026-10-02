@@ -9,6 +9,7 @@ export const ptBR = {
     feedbackPrompt: 'Encontrou um problema ou tem uma ideia? Conte para nós no GitHub.', reportBug: 'Relatar um problema', requestFeature: 'Sugerir uma funcionalidade',
     notFound: 'Página não encontrada', notFoundDescription: 'A página solicitada não existe.', returnHome: 'Voltar ao início',
   },
+  footer: { project: 'Projeto', contact: 'Contato e feedback', sendEmail: 'Enviar um e-mail' },
   home: {
     description: 'Ferramentas de rede de código aberto para seu navegador, terminal e agentes de IA. Abra uma ferramenta pela navegação ou siga as instruções abaixo para integrar o Packetrove ao seu trabalho.',
     openSource: 'Código aberto', anonymous: 'Não exige conta nem chave de API',

@@ -9,6 +9,7 @@ export const ja = {
     feedbackPrompt: '問題やアイデアがあれば、GitHub でお知らせください。', reportBug: '問題を報告', requestFeature: '機能を提案',
     notFound: 'ページが見つかりません', notFoundDescription: '指定されたページは存在しません。', returnHome: 'ホームに戻る',
   },
+  footer: { project: 'プロジェクト', contact: 'お問い合わせ・ご意見', sendEmail: 'メールを送信' },
   home: {
     description: 'ブラウザー、ターミナル、AI エージェントで使えるオープンソースのネットワークツールです。ナビゲーションからツールを開くか、以下の手順で Packetrove をワークフローに組み込めます。',
     openSource: 'オープンソース', anonymous: 'アカウントや API キーは不要',
