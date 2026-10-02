@@ -21,6 +21,12 @@ so existing imports remain compatible.
 | MCP guide and tool pages | Catalog-derived examples rendered by `ToolMcpSection` and the generated repository guide |
 | Tests and production smoke checks | Actual endpoint, discovery, and documentation coverage against the catalog |
 
+The homepage gallery curates references to catalog entries in `featuredTools`
+inside `apps/web/src/ToolGallery.tsx`. It uses the catalog's shared examples for
+previews and has a stable initial order. New tools enter interface discovery
+and navigation through the catalog; homepage inclusion is a separate selection.
+See the [homepage user story](user-stories/005-home-tool-gallery.md).
+
 Localized prose remains in `apps/web/src/i18n/resources.ts` and the language
 files, indexed by the catalog's page keys. The catalog contains no React
 components or browser state. Tool-specific views can choose an appropriate
