@@ -67,7 +67,20 @@ async function appendStandardInput(inputs: string[]): Promise<void> {
   }
 }
 
+function writeOutput(destination: NodeJS.WriteStream, output: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    destination.write(output, error => {
+      if (error) reject(new ToolError('INTERNAL_ERROR', 'Unable to write command output. The output destination may have closed.'));
+      else resolve();
+    });
+  });
+}
+
 async function main(): Promise<void> {
+  // Handle the error event as well as the write callback's rejection.
+  for (const destination of [process.stdout, process.stderr]) {
+    destination.on('error', () => { process.exitCode = 1; });
+  }
   const args = process.argv.slice(2);
   const optionEnd = args.indexOf('--');
   let json = args.slice(0, optionEnd === -1 ? undefined : optionEnd).includes('--json');
@@ -89,7 +102,7 @@ async function main(): Promise<void> {
     }
     json = parsed.values.json;
     if (parsed.values.help) {
-      process.stdout.write(help);
+      await writeOutput(process.stdout, help);
       return;
     }
     const [tool, command, ...inputs] = parsed.positionals;
@@ -103,7 +116,7 @@ async function main(): Promise<void> {
       if (!['http:', 'https:'].includes(origin.protocol) || origin.username || origin.password
         || origin.pathname !== '/' || origin.search || origin.hash) throw invalidOrigin();
       const result = await lookupPublicIp(new URL(PUBLIC_IP_PATH, origin));
-      process.stdout.write(json ? `${JSON.stringify(result)}\n` : `${result.ip}\n`);
+      await writeOutput(process.stdout, json ? `${JSON.stringify(result)}\n` : `${result.ip}\n`);
       return;
     }
     if (parsed.values['api-origin'] !== undefined) {
@@ -114,19 +127,18 @@ async function main(): Promise<void> {
     }
     if (parsed.values.stdin) await appendStandardInput(inputs);
     const result = smallestCoveringCidr({ inputs });
-    process.stdout.write(json ? `${JSON.stringify(result)}\n` : formatResult(result));
+    await writeOutput(process.stdout, json ? `${JSON.stringify(result)}\n` : formatResult(result));
   } catch (error) {
     const failure = error instanceof ToolError ? error
       : new ToolError('INTERNAL_ERROR', 'An unexpected error occurred.');
-    if (json) {
-      process.stderr.write(`${JSON.stringify(failure.toResponse())}\n`);
-    } else {
-      process.stderr.write(`${failure.code}: ${failure.message}\n`);
-      for (const issue of failure.issues ?? []) {
-        process.stderr.write(`${issue.index === undefined ? 'Input' : `Input ${issue.index + 1}`}: ${issue.message}\n`);
-      }
-    }
     process.exitCode = 1;
+    const output = json ? `${JSON.stringify(failure.toResponse())}\n` : [
+      `${failure.code}: ${failure.message}`,
+      ...(failure.issues ?? []).map(issue => `${issue.index === undefined ? 'Input' : `Input ${issue.index + 1}`}: ${issue.message}`),
+    ].join('\n') + '\n';
+    try { await writeOutput(process.stderr, output); } catch {
+      // An unavailable stderr cannot carry another error; retain the failure status.
+    }
   }
 }
 

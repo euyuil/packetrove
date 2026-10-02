@@ -1,9 +1,17 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { PublicIpTool } from './PublicIpTool';
 import { render } from './test-utils';
+
+function hideStaticAbortMethods() {
+  vi.stubGlobal('AbortSignal', new Proxy(AbortSignal, {
+    get(target, property, receiver) {
+      return property === 'any' || property === 'timeout' ? undefined : Reflect.get(target, property, receiver);
+    },
+  }));
+}
 
 afterEach(() => {
   cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
@@ -34,6 +42,18 @@ describe('public IP web tool', () => {
     render(<PublicIpTool />);
     await screen.findByText('203.0.113.1');
     expect(fetch).toHaveBeenCalledWith('https://api.example.com/v1/ip', expect.objectContaining({ credentials: 'omit' }));
+  });
+
+  it('queries and displays an IP without static AbortSignal helpers', async () => {
+    hideStaticAbortMethods();
+    const fetch = vi.fn(async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    vi.stubGlobal('fetch', fetch);
+    render(<PublicIpTool />);
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(fetch).toHaveBeenCalledExactlyOnceWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+      cache: 'no-store', credentials: 'omit', redirect: 'error',
+    }));
   });
 
   it('clears an old address while refreshing and accepts a changed address family', async () => {
@@ -93,7 +113,8 @@ describe('public IP web tool', () => {
     expect(screen.getByRole('status').textContent).toContain('Select and copy');
   });
 
-  it('cancels pending requests when the page is unmounted', () => {
+  it.each([false, true])('cancels pending requests on unmount (static helpers unavailable: %s)', missing => {
+    if (missing) hideStaticAbortMethods();
     let signal!: AbortSignal;
     vi.stubGlobal('fetch', (_endpoint: string, options: RequestInit) => {
       signal = options.signal!;
@@ -105,7 +126,8 @@ describe('public IP web tool', () => {
     expect(signal.aborted).toBe(true);
   });
 
-  it('does not show a cancelled body-read error after its effect restarts', async () => {
+  it.each([false, true])('ignores a cancelled body-read error after its effect restarts (static helpers unavailable: %s)', async missing => {
+    if (missing) hideStaticAbortMethods();
     let cancelled!: AbortSignal;
     let resolveCurrent!: (response: Response) => void;
     vi.stubGlobal('fetch', vi.fn().mockImplementationOnce((_endpoint: string, options: RequestInit) => {
@@ -120,6 +142,26 @@ describe('public IP web tool', () => {
     expect(cancelled.aborted).toBe(true);
     await waitFor(() => expect(screen.getByText('Checking your public IP…')).toBeDefined());
     expect(screen.queryByRole('alert')).toBeNull();
+    resolveCurrent(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it.each([false, true])('ignores a late success from a cancelled request (static helpers unavailable: %s)', async missing => {
+    if (missing) hideStaticAbortMethods();
+    let cancelled!: AbortSignal;
+    let resolveOld!: (response: Response) => void;
+    let resolveCurrent!: (response: Response) => void;
+    vi.stubGlobal('fetch', vi.fn().mockImplementationOnce((_endpoint: string, options: RequestInit) => {
+      cancelled = options.signal!;
+      return new Promise<Response>(resolve => { resolveOld = resolve; });
+    }).mockImplementationOnce(() => new Promise<Response>(resolve => { resolveCurrent = resolve; })));
+    render(<PublicIpTool />, { reactStrictMode: true });
+    expect(cancelled.aborted).toBe(true);
+    await act(async () => { resolveOld(Response.json({ ip: '2001:db8::7', family: 'ipv6' })); });
+    expect(screen.queryByText('2001:db8::7')).toBeNull();
+    expect(screen.getByText('Checking your public IP…')).toBeDefined();
+    expect((screen.getByRole('button', { name: 'Checking…' }) as HTMLButtonElement).disabled).toBe(true);
     resolveCurrent(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
     expect(screen.queryByRole('alert')).toBeNull();
