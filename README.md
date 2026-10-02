@@ -33,6 +33,30 @@ Use up to 1,000 entries of one address family per calculation. Overlapping
 ranges and duplicate addresses count once. A covering CIDR can allow or block
 addresses outside your original list; review that expansion before applying it.
 
+### Subtract CIDR lists exactly
+
+Use [CIDR Subtraction](https://packetrove.com/cidr/subtract) to remove excluded
+networks from your included address space. The result is the smallest canonical
+CIDR list representing exactly what remains, with no added addresses. Overlapping
+entries count once; an empty exclusion list simplifies the exact include union.
+
+For example, including `203.0.113.0/24` and excluding `203.0.113.64/26` returns
+`203.0.113.0/26` and `203.0.113.128/25`: 256 included addresses, 64 removed, and
+192 remaining. Copy the complete newline-separated list or a comma-separated
+WireGuard `AllowedIPs` value. Complete removal displays an explicit empty result
+and disables copying.
+
+Prepare WireGuard exceptions, inspect gaps after known allocations, or subtract
+two entire lists in one calculation. Gaps are relative to the inputs, not proof
+that addresses are unused on a live network. Review the result before applying
+it. See the [user stories](docs/user-stories/004-cidr-subtraction.md).
+
+Calculations run locally in the browser. Use one address family, at most 1,000
+entries across both lists, and at most 64 characters per entry. Output allows up
+to 10,000 CIDRs; larger results report an error without a partial list.
+Subtraction is available in the shared core and website; the API, CLI, MCP, and
+agent skill currently provide their existing operations.
+
 ### Check your connection's public IP
 
 Open [My Public IP](https://packetrove.com/ip) to see and copy the IPv4 or IPv6
@@ -71,8 +95,8 @@ CIDR calculator, public IP tool, and API documentation shell:
 | Deutsch | [German homepage](https://packetrove.com/de/) | `/de` |
 | 日本語 | [Japanese homepage](https://packetrove.com/ja/) | `/ja` |
 
-For example, Spanish tools are at `/es/cidr` and `/es/ip`, and API documentation
-is at `/es/docs/api`.
+For example, Spanish tools are at `/es/cidr`, `/es/cidr/subtract`, and `/es/ip`,
+and API documentation is at `/es/docs/api`.
 Use the language dropdown in the header to switch the current page. It shows
 the current language, with a British flag for English and a Chinese flag for
 Simplified Chinese, plus Spanish, German, and Japanese flags for their respective
@@ -80,12 +104,12 @@ languages. Menu entries use each language's own name and mark the current choice
 The URL determines the language, so shared links and page reloads keep it;
 browser settings do not automatically redirect visitors.
 
-Changing languages in the same tab preserves the calculator draft and its
-result or validation error. It also keeps an ongoing public IP check and updates
+Changing languages in the same tab preserves both calculators' drafts, results,
+and validation errors. It also keeps an ongoing public IP check and updates
 its labels without making another request. Drafts and IP results stay in memory.
 Translations ship with the web application and require no translation service.
 
-Production builds prerender all 20 pages in the five languages from the same
+Production builds prerender all 25 pages in the five languages from the same
 React components used in the browser. Headings, explanations, navigation links,
 and examples are present in the HTML before JavaScript runs. The browser then
 hydrates that HTML to enable the tools. CIDR inputs stay empty until entered;
@@ -94,7 +118,7 @@ and never embed a visitor's IP address.
 
 Page titles, descriptions, social metadata, canonical URLs, and alternate
 language links share one definition for builds and in-page navigation. Builds
-also generate `sitemap.xml` with the 20 canonical URLs and `robots.txt` with
+also generate `sitemap.xml` with the 25 canonical URLs and `robots.txt` with
 its sitemap location. These URLs use the public `https://packetrove.com` origin;
 change `WEBSITE_ORIGIN` in `apps/web/src/i18n/page-metadata.ts` when self-hosting.
 

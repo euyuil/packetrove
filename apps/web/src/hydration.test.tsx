@@ -114,6 +114,35 @@ describe('hydration of production HTML', () => {
     expect(storage).not.toHaveBeenCalled();
   });
 
+  it('subtracts locally after hydration and preserves both lists through language and page changes', async () => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    await hydrate('/cidr/subtract');
+    const include = screen.getByLabelText('Included IP addresses or CIDRs');
+    const exclude = screen.getByLabelText('Excluded IP addresses or CIDRs');
+    fireEvent.change(include, { target: { value: '203.0.113.0/24' } });
+    fireEvent.change(exclude, { target: { value: '203.0.113.64/26' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Subtract CIDRs' }));
+    await chooseLanguage('zh-Hans');
+    expect(screen.getByLabelText('包含的 IP 地址或 CIDR 网段')).toBe(include);
+    expect(screen.getByLabelText('排除的 IP 地址或 CIDR 网段')).toBe(exclude);
+    expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value)
+      .toBe('203.0.113.0/26\n203.0.113.128/25');
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: '复制 AllowedIPs' })); });
+    expect(writeText).toHaveBeenCalledExactlyOnceWith('203.0.113.0/26, 203.0.113.128/25');
+    fireEvent.click(screen.getByRole('link', { name: '首页' }));
+    fireEvent.click(screen.getByRole('link', { name: 'CIDR 相减' }));
+    expect((screen.getByLabelText('包含的 IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('203.0.113.0/24');
+    expect((screen.getByLabelText('排除的 IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('203.0.113.64/26');
+    expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value)
+      .toBe('203.0.113.0/26\n203.0.113.128/25');
+    expect(fetch).not.toHaveBeenCalled();
+    expect(storage).not.toHaveBeenCalled();
+  });
+
   it.each(['zh-Hans', 'es', 'de', 'ja'] as const)('keeps the lookup started after hydration when switching to %s', async locale => {
     const pending: Array<{ resolve: (response: Response) => void; signal: AbortSignal }> = [];
     const fetch = vi.fn((_url: string, options: RequestInit) => new Promise<Response>(resolve => {

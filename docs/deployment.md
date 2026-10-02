@@ -82,11 +82,13 @@ not published to the API origin. Keep Workers Cache disabled and do not enable
 Worker-first routing for `/openapi.json` when free static-asset requests are
 desired.
 
-Vite builds `index.html`, `cidr.html`, `ip.html`, `docs/api.html`, and `404.html` with shared
+Vite builds `index.html`, `cidr.html`, `cidr/subtract.html`, `ip.html`, `docs/api.html`,
+their localized counterparts, and `404.html` with shared
 JavaScript and styles. Cloudflare serves the project homepage at `/`, the CIDR
-calculator at `/cidr`, My Public IP at `/ip`, and API documentation at
+covering calculator at `/cidr`, CIDR subtraction at `/cidr/subtract`,
+My Public IP at `/ip`, and API documentation at
 `/docs/api` directly, and uses `404-page`
-handling for unknown paths. `/cidr/`, `/ip/`, and `/docs/api/` redirect to their canonical
+handling for unknown paths. `/cidr/`, `/cidr/subtract/`, `/ip/`, and `/docs/api/` redirect to their canonical
 paths without the trailing slash. API routes continue to return structured
 JSON errors, including for browser navigation.
 See [Cloudflare's static HTML routing guide](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).
