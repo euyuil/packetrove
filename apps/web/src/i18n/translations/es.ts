@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const es = {
+  languageSuggestion: {
+    title: '¿Quieres leer esta página en español?',
+    switch: 'Cambiar a español', dismiss: 'Ahora no',
+  },
   common: {
     home: 'Inicio', homeLabel: 'Inicio de Packetrove', navigation: 'Navegación principal',
     language: 'Idioma', tools: 'HERRAMIENTAS DE DIRECCIONES IP', copied: 'Copiado', dismissCopy: 'Cerrar el error de copia',
@@ -105,10 +109,18 @@ export const es = {
     cidrSummary: 'Envía direcciones IPv4 o IPv6 y rangos CIDR como JSON. La respuesta incluye el CIDR mínimo de cobertura, las entradas normalizadas y recuentos exactos de direcciones como cadenas decimales. Esta solicitud a la API envía tus entradas al servidor.',
     cidrResponse: 'Este ejemplo devuelve {{cidr}} con {{additional}} direcciones adicionales. Revisa additionalAddressCount antes de usar el resultado en una lista de direcciones permitidas o bloqueadas.',
     ipSummary: 'Devuelve la IP pública observada para esta conexión HTTP. Solicita text/plain para obtener una dirección seguida de un salto de línea, o application/json para obtener la dirección y su familia. Las respuestas no se almacenan en caché. Una VPN o un proxy cambia la dirección de salida observada.',
+    subtractSummary: "Resta exactamente la lista exclude de include. Devuelve una lista mínima de CIDR canónicos y recuentos exactos como cadenas decimales. Esta petición envía datos al servidor.",
+    subtractResponse: "Este ejemplo devuelve {{cidrs}}, con {{remaining}} direcciones restantes y sin cobertura adicional.",
   },
   discovery: {
     subtract: {
       title: "Preguntas sobre la resta de CIDR",
+      mcpTitle: "Usar la resta mediante MCP",
+      purpose: "Pide a un agente de IA que reste las redes excluidas del espacio incluido y devuelva los CIDR restantes exactos.",
+      inputs: "Envía matrices include y exclude de una sola familia. include no puede estar vacía; exclude sí. Usa como máximo {{maximumInputs}} entradas en total, con {{maximumLength}} caracteres por entrada.",
+      result: "Lee cidrs y los recuentos decimales exactos includedAddressCount, removedAddressCount y remainingAddressCount. Una eliminación completa devuelve una lista vacía. Más de {{maximumOutputs}} CIDR produce un error sin una lista parcial.",
+      boundary: "Las llamadas remotas API y MCP envían datos al servidor; el navegador calcula localmente. Los rangos restantes dependen de tus datos y no demuestran disponibilidad real. No se configura WireGuard ni se cambian reglas del cortafuegos.",
+      openTool: "Abrir la resta en el navegador",
       questions: {
         wireguard: {
           question: "¿Cómo preparo excepciones para AllowedIPs de WireGuard?",
@@ -128,7 +140,7 @@ export const es = {
         },
         access: {
           question: "¿Puedo usar la resta mediante MCP, la API web o la CLI?",
-          answer: "La resta funciona actualmente en el navegador y el núcleo de cálculo compartido. Los datos del navegador permanecen locales. MCP, la API web y la CLI ofrecen operaciones de cobertura CIDR e IP pública, sin exponer la resta. La guía MCP documenta esas operaciones disponibles."
+          answer: "La resta está disponible en la web, la API web y MCP. Los datos del navegador permanecen locales; API y MCP los envían al servidor. La CLI aún no ofrece la resta."
         }
       }
     },
@@ -208,12 +220,12 @@ export const es = {
     endpointMigration: "La ruta <code>/mcp</code> del sitio no es el servicio: GET devuelve 404 y POST 405, sin reenviar ni redirigir llamadas. Configura los clientes con <code>{{serverUrl}}</code>. En tu despliegue, actualiza los dominios y las listas exactas separadas de Host y Origin del navegador; se admiten clientes sin cabecera Origin.",
     deploymentGuide: "Despliegue, alojamiento propio y verificación de producción",
     title: "Conectar Packetrove a un agente de IA",
-    explanation: "Conecta un cliente MCP compatible para calcular CIDR de cobertura o consultar la conexión de ese cliente. Configúralo siguiendo estos pasos y utiliza los ejemplos de herramientas.",
+    explanation: "Conecta un cliente MCP compatible para usar las herramientas de red de Packetrove. Configúralo siguiendo estos pasos y utiliza los ejemplos.",
     connection: "Streamable HTTP · Sin cuenta ni clave de API",
     connectTitle: "Conectar tu cliente",
     connectDescription: "Con Claude Code o Codex instalado, añade este servidor remoto. Los comandos configuran el cliente; no instalan un servidor Packetrove local.",
     clientGuide: "Documentación MCP de {{client}}",
-    check: "Usa <code>/mcp</code> en el cliente para comprobar la conexión. Confirma que estas herramientas estén disponibles: <code>{{toolNames}}</code>.",
+    check: "Usa <code>/mcp</code> en tu cliente para comprobar la conexión. Confirma que estas herramientas estén disponibles: <code>{{tools}}</code>.",
     discovery: "Tras configurarlo, el cliente descubre las herramientas con tools/list. Las descripciones y los esquemas orientan la selección y los argumentos. Leer una página web no configura un cliente ni le concede acceso a herramientas.",
     toolName: "Nombre de la herramienta",
     arguments: "Argumentos de ejemplo",

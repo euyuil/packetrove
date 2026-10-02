@@ -22,12 +22,37 @@
   the user has requested.
 - Build web interfaces with Mantine components and the shared theme. Prefer
   component props and layout components before adding custom CSS.
+- Give buttons a visible background or border in their default state. Use
+  Mantine Button variants such as `filled`, `light`, `outline`, or `default`.
+  Avoid `subtle` and equivalent text-only button styles; users must be able to
+  recognize buttons without hovering over them.
 - Accept common pasted forms in multi-value text inputs. When individual values
   cannot contain commas or whitespace, accept commas, spaces, tabs, line breaks,
   and mixtures of these as separators; ignore empty entries. Share parsing rules
   across related tools and keep localized help, user stories, entry counts, and
   error locations accurate. If values can contain separators, use an unambiguous
   parser appropriate to that format.
+
+## Tool catalog and interface coverage
+
+- Every product tool must have a website page, a Web API endpoint, and an MCP
+  tool in the same delivery. A tool is incomplete until all three interfaces
+  share the same calculation or lookup implementation, contracts, examples,
+  and error semantics. CLI and skill coverage must describe their actual scope.
+- Maintain `packages/contracts/src/tools.ts` as the single source of truth for
+  tool identities, website paths, API methods and paths, MCP names and metadata,
+  schemas, and example references. Interface handlers must cover every catalog
+  entry; do not maintain independent lists of tools in the website or server.
+- Generate tool navigation, homepage gallery content, localized tool paths,
+  API documentation, and MCP discovery and examples from the catalog. Keep
+  localized prose in the translation resources, indexed by the catalog's page
+  keys. Presentation components may specialize a preview without duplicating
+  tool identities, paths, or example inputs and results.
+- Homepage selection and ordering may reference catalog entries by their
+  identifiers. Use shared documentation examples for previews; do not perform
+  live lookups or send user inputs merely to render a gallery or documentation.
+- Adding or changing a tool requires parity checks across website, API, MCP,
+  generated OpenAPI, translations, documentation, and production smoke checks.
 
 ## README and documentation
 

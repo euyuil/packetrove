@@ -3,7 +3,7 @@ import { createServer, type Server } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CIDR_COVER_EXAMPLES } from '../packages/contracts/src/index';
+import { tools } from '../packages/contracts/src/index';
 import { websitePages, websiteRedirects } from '../apps/web/src/seo';
 import { waitForDeployment } from './deployment-readiness';
 
@@ -198,7 +198,7 @@ describe('readiness followed by the production smoke check across separate origi
         response.setHeader('etag', '"specification"');
         response.setHeader('cache-control', 'public, max-age=0, must-revalidate');
         return send(response, 'application/json', JSON.stringify({
-          openapi: '3.1.0', paths: { '/v1/cidr/cover': {}, '/v1/public-ip': {} },
+          openapi: '3.1.0', paths: Object.fromEntries(tools.map(tool => [tool.api.path, {}])),
         }));
       }
       if (path === '/v1/public-ip') {
@@ -207,12 +207,13 @@ describe('readiness followed by the production smoke check across separate origi
         if (request.headers.accept === 'text/plain') return send(response, 'text/plain; charset=UTF-8', '203.0.113.1\n');
         return send(response, 'application/json', JSON.stringify({ ip: '203.0.113.1', family: 'ipv4' }));
       }
-      if (path === '/v1/cidr/cover') {
+      const tool = tools.find(tool => tool.api.path === path && tool.api.method === 'post');
+      if (tool) {
         let body = '';
         request.on('data', chunk => { body += chunk; });
         request.on('end', () => {
-          const value = JSON.parse(body) as { inputs: string[] };
-          const example = CIDR_COVER_EXAMPLES.find(example => JSON.stringify(example.request) === JSON.stringify(value));
+          const value: unknown = JSON.parse(body);
+          const example = tool.examples.find(example => JSON.stringify(example.request) === JSON.stringify(value));
           if (example) send(response, 'application/json', JSON.stringify(example.result));
           else send(response, 'application/json', JSON.stringify({ error: { code: 'MIXED_ADDRESS_FAMILIES' } }), 400);
         });

@@ -86,7 +86,8 @@ describe('subtraction validation and limits', () => {
     expect(() => subtractCidrs({ include: ['bad', '203.0.113.1'], exclude: ['::/129', '203.0.113.01/32'] }))
       .toThrowError(expect.objectContaining({
         code: 'INVALID_INPUT', issues: [
-          { index: 0, message: expect.any(String) }, { index: 0, message: expect.any(String) }, { index: 1, message: expect.any(String) },
+          { list: 'include', index: 0, message: expect.any(String) },
+          { list: 'exclude', index: 0, message: expect.any(String) }, { list: 'exclude', index: 1, message: expect.any(String) },
         ], details: [
           { reason: 'INVALID_ADDRESS', list: 'include' }, { reason: 'INVALID_ADDRESS', list: 'exclude' }, { reason: 'INVALID_ADDRESS', list: 'exclude' },
         ],
@@ -101,7 +102,7 @@ describe('subtraction validation and limits', () => {
   });
   it('reports parse errors before family errors', () => {
     expect(() => subtractCidrs({ include: ['::1'], exclude: ['203.0.113.1', 'bad'] }))
-      .toThrowError(expect.objectContaining({ code: 'INVALID_INPUT', issues: [{ index: 1, message: expect.any(String) }] }));
+      .toThrowError(expect.objectContaining({ code: 'INVALID_INPUT', issues: [{ list: 'exclude', index: 1, message: expect.any(String) }] }));
   });
   it('rejects an empty include list and locates the error', () => {
     expect(() => subtractCidrs({ include: [], exclude: [] })).toThrowError(expect.objectContaining({

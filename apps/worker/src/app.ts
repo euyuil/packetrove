@@ -1,11 +1,11 @@
 import { Hono } from 'hono';
 import { accepts } from 'hono/accepts';
 import { cors } from 'hono/cors';
-import { CIDR_COVER_PATH, PUBLIC_IP_PATH, type ErrorResponse } from '@packetrove/contracts';
-import { smallestCoveringCidr, ToolError } from '@packetrove/core';
+import { tools, PUBLIC_IP_PATH, type ErrorResponse } from '@packetrove/contracts';
+import { ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
 import { mcpHandler } from './mcp';
-import { getPublicIp } from './ip';
+import { executeTool } from './tools';
 
 export function createApp() {
   const app = new Hono<{ Bindings: Cloudflare.Env }>();
@@ -28,17 +28,19 @@ export function createApp() {
       code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.',
     } } satisfies ErrorResponse, 500);
   });
-  app.post(CIDR_COVER_PATH, async context => {
-    const body = await readJsonBody(context.req.raw);
-    return context.json(smallestCoveringCidr(body));
-  });
-  app.get(PUBLIC_IP_PATH, context => {
-    const result = getPublicIp(context.req.raw.headers);
-    const format = accepts(context, {
-      header: 'Accept', supports: ['application/json', 'text/plain'], default: 'application/json',
+  for (const tool of tools) {
+    app.on(tool.api.method.toUpperCase(), tool.api.path, async context => {
+      const body = tool.api.method === 'post' ? await readJsonBody(context.req.raw) : {};
+      const result = executeTool(tool.page, body, context.req.raw.headers);
+      if ('ip' in result) {
+        const format = accepts(context, {
+          header: 'Accept', supports: ['application/json', 'text/plain'], default: 'application/json',
+        });
+        if (format === 'text/plain') return context.text(`${result.ip}\n`);
+      }
+      return context.json(result);
     });
-    return format === 'text/plain' ? context.text(`${result.ip}\n`) : context.json(result);
-  });
+  }
   app.get('/health', context => context.json({ status: 'ok' }));
   // Asset-first routing serves normal requests without invoking this handler.
   app.get('/openapi.json', context => context.env.OPENAPI_ASSETS.fetch(context.req.raw));
@@ -53,7 +55,10 @@ export function createApp() {
     }
     return mcpHandler.fetch(context.req.raw);
   });
-  for (const [path, allowed] of [[CIDR_COVER_PATH, 'POST'], [PUBLIC_IP_PATH, 'GET, HEAD'], ['/health', 'GET, HEAD'], ['/openapi.json', 'GET, HEAD']]) {
+  for (const [path, allowed] of [
+    ...tools.map(tool => [tool.api.path, tool.api.method === 'get' ? 'GET, HEAD' : 'POST']),
+    ['/health', 'GET, HEAD'], ['/openapi.json', 'GET, HEAD'],
+  ]) {
     app.all(path!, context => {
       context.header('Allow', allowed!);
       return context.json({ error: {

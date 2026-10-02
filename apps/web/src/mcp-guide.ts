@@ -1,4 +1,4 @@
-import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_VERSION } from '@packetrove/contracts';
+import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_VERSION, tools } from '@packetrove/contracts';
 import workerManifest from '../../worker/package.json' with { type: 'json' };
 import { createInstance } from 'i18next';
 import type {} from './i18n/i18next';
@@ -29,7 +29,7 @@ export function getMcpToolContent(tool: McpExampleTool, locale: Locale) {
     title: t($ => $.discovery[tool].mcpTitle),
     purpose: t($ => $.discovery[tool].purpose),
     inputs: t($ => $.discovery[tool].inputs, {
-      maximumInputs: new Intl.NumberFormat(locale).format(MAX_INPUTS),
+      maximumInputs: new Intl.NumberFormat(locale).format(tool === 'subtract' ? MAX_SUBTRACTION_INPUTS : MAX_INPUTS),
       maximumLength: MAX_INPUT_LENGTH, maximumOutputs: new Intl.NumberFormat(locale).format(MAX_SUBTRACTION_OUTPUTS),
     }),
     result: t($ => $.discovery[tool].result, {
@@ -69,7 +69,7 @@ try {
 // Both the localized website and the generated repository guide consume this content.
 export function getMcpGuide(locale: Locale, serverUrl: string) {
   const t = guideTranslator(locale);
-  const tools = (Object.keys(mcpExamples) as McpExampleTool[]).map(tool => getMcpToolContent(tool, locale));
+  const toolContent = tools.map(tool => getMcpToolContent(tool.page, locale));
   const sdkVersion = workerManifest.dependencies['@modelcontextprotocol/client'];
   return {
     title: t($ => $.mcp.title),
@@ -82,9 +82,9 @@ export function getMcpGuide(locale: Locale, serverUrl: string) {
     ],
     connectTitle: t($ => $.mcp.connectTitle),
     connectDescription: t($ => $.mcp.connectDescription),
-    check: t($ => $.mcp.check, { toolNames: tools.map(tool => tool.example.name).join(', ') }),
+    check: t($ => $.mcp.check, { tools: toolContent.map(tool => tool.example.name).join(', ') }),
     discovery: t($ => $.mcp.discovery),
-    tools,
+    tools: toolContent,
     labels: {
       toolName: t($ => $.mcp.toolName), serverAddress: t($ => $.home.serverAddress),
       arguments: t($ => $.mcp.arguments), exampleResult: t($ => $.mcp.exampleResult),

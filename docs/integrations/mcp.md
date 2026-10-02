@@ -2,7 +2,7 @@
 
 # Connect Packetrove to an AI agent
 
-Connect a compatible MCP client to calculate covering CIDRs or inspect the connection used by that client. Start with the setup below, then use the tool examples.
+Connect a compatible MCP client to use Packetrove network tools. Start with the setup below, then use the tool examples.
 
 Streamable HTTP · No account or API key required
 
@@ -34,7 +34,7 @@ codex mcp add packetrove \
 
 [Codex MCP documentation](https://developers.openai.com/codex/mcp/)
 
-Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `smallest_covering_cidr, public-ip`.
+Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `smallest_covering_cidr, subtract_cidrs, public-ip`.
 
 After configuration, the client discovers available tools with tools/list. Tool descriptions and schemas guide selection and arguments. Reading a web page does not configure a client or grant it tool access.
 
@@ -88,6 +88,56 @@ Remote MCP calls send your inputs to the server. The browser calculator runs loc
 203.0.113.0/29 covers 8 addresses and adds 5.
 
 [Open the browser calculator](https://packetrove.com/cidr)
+
+## Use subtraction through MCP
+
+Ask an AI agent to subtract excluded networks from included address space and return the exact remaining CIDRs.
+
+Tool name: `subtract_cidrs`
+
+Server address: `https://api.packetrove.com/mcp`
+
+Pass include and exclude arrays from one address family. Include must be nonempty; exclude may be empty. Use at most 1,000 entries across both lists, with at most 64 characters each.
+
+### Example arguments
+
+```json
+{
+  "include": [
+    "203.0.113.0/24"
+  ],
+  "exclude": [
+    "203.0.113.64/26"
+  ]
+}
+```
+
+### Example result using documentation addresses
+
+```json
+{
+  "family": "ipv4",
+  "normalizedInclude": [
+    "203.0.113.0/24"
+  ],
+  "normalizedExclude": [
+    "203.0.113.64/26"
+  ],
+  "cidrs": [
+    "203.0.113.0/26",
+    "203.0.113.128/25"
+  ],
+  "includedAddressCount": "256",
+  "removedAddressCount": "64",
+  "remainingAddressCount": "192"
+}
+```
+
+Read cidrs and the exact decimal-string includedAddressCount, removedAddressCount, and remainingAddressCount. Complete removal returns an empty list. Results exceeding 10,000 CIDRs fail without a partial list.
+
+Remote API and MCP calls send inputs to the server; the browser calculates locally. Remaining ranges are relative to your inputs and do not prove live availability. The tool does not configure WireGuard or change firewall rules.
+
+[Open browser subtraction](https://packetrove.com/cidr/subtract)
 
 ## Inspect a connection through MCP
 

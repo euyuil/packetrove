@@ -65,6 +65,12 @@ translations, routes, prerendering, or page metadata, and the
 [AI tool discovery story](docs/user-stories/004-ai-tool-discovery.md) when changing
 tool explanations or agent examples.
 
+The [shared tool catalog](packages/contracts/src/tools.ts) is the source of truth
+for tool identities, paths, schemas, MCP metadata, and examples. Every product
+tool requires website, Web API, and MCP coverage together. See
+[how to add or change a tool](docs/tool-catalog.md) for the required consumers
+and parity checks.
+
 The API specification is generated from shared schemas. When changing its
 source, regenerate and commit the specification:
 
@@ -77,9 +83,10 @@ Development, build, and deployment commands automatically prepare the API's
 static `/openapi.json` asset.
 
 The website's MCP guide and the repository's English
-[MCP integration guide](docs/integrations/mcp.md) share text, client commands,
-and examples maintained in [mcp-guide.ts](apps/web/src/mcp-guide.ts) and the
-shared language resources. After changing this content, regenerate the
+[MCP integration guide](docs/integrations/mcp.md) share localized text and client
+commands maintained in [mcp-guide.ts](apps/web/src/mcp-guide.ts) and the shared
+language resources. Tool names, paths, and examples come from the catalog.
+After changing this content or the catalog, regenerate the
 repository guide:
 
 ```sh

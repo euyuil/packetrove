@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import {
-  CidrCoverRequestSchema, CidrCoverResultSchema, PublicIpRequestSchema, PublicIpResultSchema,
+  CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
+  PublicIpRequestSchema, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
 } from '@packetrove/contracts';
-import { smallestCoveringCidr } from '@packetrove/core';
+import { smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { App } from './App';
 import { render } from './test-utils';
 import { mcpExamples } from './mcp-examples';
@@ -16,6 +17,7 @@ import { localizedPath, pagePaths } from './i18n/routes';
 import { en, resources } from './i18n/resources';
 import { createI18n } from './i18n';
 import { getMcpGuide } from './mcp-guide';
+import { languageSuggestionStorageKey } from './useLanguageSuggestion';
 
 vi.mock('./ApiReference', () => ({ default: () => <div>Interactive API reference</div> }));
 
@@ -48,14 +50,21 @@ describe('MCP examples in production HTML', () => {
     expect(markdown).not.toMatch(/\{\{|<\/?code>/);
   });
 
-  it.each(websitePages.filter(page => ['cidr', 'ip', 'mcp'].includes(page.page)))(
+  it.each(websitePages.filter(page => page.page === 'mcp' || catalogTools.some(tool => tool.page === page.page)))(
     'publishes executable arguments and contract-valid results at $pathname', async page => {
       const html = await readFile(resolve(dirname(fileURLToPath(import.meta.url)), '../dist', page.entry), 'utf8');
       const document = new DOMParser().parseFromString(html, 'text/html');
       const tools = document.querySelectorAll('[data-mcp-tool]');
-      expect(tools).toHaveLength(page.page === 'mcp' ? 2 : 1);
+      const expected = catalogTools.filter(tool => page.page === 'mcp' || page.page === tool.page);
+      expect(Array.from(tools, section => section.getAttribute('data-mcp-tool')))
+        .toEqual(expected.map(tool => tool.mcp.name));
       for (const section of tools) {
         const name = section.getAttribute('data-mcp-tool');
+        const definition = catalogTools.find(tool => tool.mcp.name === name)!;
+        const guidance = resources[page.locale].translation.discovery[definition.page].result
+          .replaceAll('{{maximumOutputs}}', new Intl.NumberFormat(page.locale).format(MAX_SUBTRACTION_OUTPUTS));
+        expect(section.textContent).toContain(guidance);
+        expect(section.textContent).not.toMatch(/\{\{[^{}]*\}\}/);
         const args = JSON.parse(section.querySelector('[data-mcp-example="arguments"]')!.textContent!);
         const result = JSON.parse(section.querySelector('[data-mcp-example="result"]')!.textContent!);
         if (name === mcpExamples.cidr.name) {
@@ -63,6 +72,10 @@ describe('MCP examples in production HTML', () => {
           expect(CidrCoverResultSchema.parse(result)).toEqual(smallestCoveringCidr(request));
           expect(args).toEqual(mcpExamples.cidr.arguments);
           expect(result).toEqual(mcpExamples.cidr.result);
+        } else if (name === mcpExamples.subtract.name) {
+          expect(CidrSubtractResultSchema.parse(result)).toEqual(subtractCidrs(CidrSubtractRequestSchema.parse(args)));
+          expect(args).toEqual(mcpExamples.subtract.arguments);
+          expect(result).toEqual(mcpExamples.subtract.result);
         } else {
           expect(name).toBe(mcpExamples.ip.name);
           expect(PublicIpRequestSchema.parse(args)).toEqual({});
@@ -114,7 +127,7 @@ describe('localized MCP guide navigation', () => {
     fireEvent.change(screen.getByLabelText(text.subtract.excludeLabel), { target: { value: '203.0.113.64/26' } });
     fireEvent.click(screen.getByRole('button', { name: text.subtract.calculate }));
     expect(screen.getByText(text.discovery.subtract.questions.access.answer)).toBeDefined();
-    expect(document.querySelector('[data-mcp-tool]')).toBeNull();
+    expect(document.querySelector('[data-mcp-tool]')?.getAttribute('data-mcp-tool')).toBe(mcpExamples.subtract.name);
     fireEvent.click(screen.getByRole('link', { name: text.home.mcpGuide }));
     expect(window.location.pathname).toBe(localizedPath(pagePaths.mcp, locale));
     fireEvent.click(screen.getByRole('link', { name: text.subtract.title }));
@@ -183,7 +196,8 @@ describe('localized MCP guide navigation', () => {
         expect(screen.getByText(text.cidr.exact)).toBeDefined();
       }
       expect(fetch).not.toHaveBeenCalled();
-      expect(storage).not.toHaveBeenCalled();
+      expect(storage).toHaveBeenCalledExactlyOnceWith(languageSuggestionStorageKey, '1');
+      expect(storage.mock.contexts).toEqual([window.sessionStorage]);
     },
   );
 });

@@ -1,7 +1,7 @@
 import type { MouseEventHandler } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Anchor, Badge, Code, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
-import { MCP_PATH, PUBLIC_IP_PATH } from '@packetrove/contracts';
+import { MCP_PATH, PUBLIC_IP_PATH, tools } from '@packetrove/contracts';
 import cliPackage from '../../../packages/cli/package.json';
 import { getApiUrl } from './api';
 import { localizedPath, pagePaths } from './i18n/routes';
@@ -36,30 +36,14 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
       </Group>
     </Stack>
     <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
-      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-cidr-heading">
+      {tools.map(tool => <Paper key={tool.id} component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby={'home-' + tool.page + '-heading'}>
         <Stack gap="md">
-          <ThemeIcon variant="light" size={48}><ToolIcon tool="cidr" size={28} /></ThemeIcon>
-          <Title order={2} size="h3" id="home-cidr-heading">{t($ => $.cidr.title)}</Title>
-          <Text c="dimmed">{t($ => $.home.cidrDescription)}</Text>
-          <Anchor href={localizedPath('/cidr', locale)} onClick={onNavigate}>{t($ => $.home.cidrLink)}</Anchor>
+          <ThemeIcon variant="light" size={48}><ToolIcon tool={tool.page} size={28} /></ThemeIcon>
+          <Title order={2} size="h3" id={'home-' + tool.page + '-heading'}>{t($ => $[tool.page].title)}</Title>
+          <Text c="dimmed">{t($ => $.home[`${tool.page}Description`])}</Text>
+          <Anchor href={localizedPath(tool.webPath, locale)} onClick={onNavigate}>{t($ => $.home[`${tool.page}Link`])}</Anchor>
         </Stack>
-      </Paper>
-      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-subtract-heading">
-        <Stack gap="md">
-          <ThemeIcon variant="light" size={48}><ToolIcon tool="subtract" size={28} /></ThemeIcon>
-          <Title order={2} size="h3" id="home-subtract-heading">{t($ => $.subtract.title)}</Title>
-          <Text c="dimmed">{t($ => $.home.subtractDescription)}</Text>
-          <Anchor href={localizedPath('/cidr/subtract', locale)} onClick={onNavigate}>{t($ => $.home.subtractLink)}</Anchor>
-        </Stack>
-      </Paper>
-      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-ip-heading">
-        <Stack gap="md">
-          <ThemeIcon variant="light" size={48}><ToolIcon tool="ip" size={28} /></ThemeIcon>
-          <Title order={2} size="h3" id="home-ip-heading">{t($ => $.ip.title)}</Title>
-          <Text c="dimmed">{t($ => $.home.ipDescription)}</Text>
-          <Anchor href={localizedPath(pagePaths.ip, locale)} onClick={onNavigate}>{t($ => $.home.ipLink)}</Anchor>
-        </Stack>
-      </Paper>
+      </Paper>)}
     </SimpleGrid>
     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} miw={0} aria-labelledby="api-heading">
