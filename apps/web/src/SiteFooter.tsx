@@ -1,9 +1,11 @@
+import type { MouseEventHandler } from 'react';
 import { Anchor, Box, Flex, Group, Stack, Text, Title } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 
-export function SiteFooter({ sourceUrl, documentationUrl, newIssueUrl, commit }: {
+export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, newIssueUrl, commit, onNavigate }: {
   sourceUrl: string; documentationUrl: string; newIssueUrl: string; commit?: string;
+  apiDocumentationHref: string; onNavigate: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const { t } = useTranslation();
 
@@ -23,6 +25,9 @@ export function SiteFooter({ sourceUrl, documentationUrl, newIssueUrl, commit }:
           <Anchor size="sm" href={sourceUrl} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover"
             title={commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source)}>
             GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
+          </Anchor>
+          <Anchor size="sm" href={apiDocumentationHref} onClick={onNavigate} c="dimmed" underline="hover">
+            {t($ => $.api.title)}
           </Anchor>
           <Anchor size="sm" href={`${documentationUrl}/LICENSE`} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover">
             {t($ => $.common.sourceLicense)}
