@@ -63,15 +63,6 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
   return <Stack component="section" gap="md" aria-labelledby="tool-gallery-heading">
     <Title order={2} size="h3" id="tool-gallery-heading">{t($ => $.home.galleryTitle)}</Title>
     <Text size="sm" c="dimmed" id="tool-gallery-help">{t($ => $.home.galleryDescription)}</Text>
-    <Group gap="xs">
-      {featuredTools.map((tool, index) => <Button key={tool.id} size="sm" maw="100%" h="auto" mih={44} py={7}
-        styles={{ label: { whiteSpace: 'normal', textAlign: 'left' } }}
-        variant={index === active ? 'light' : 'default'} leftSection={<ToolIcon tool={tool.page} size={18} />}
-        aria-pressed={index === active} aria-controls="tool-gallery-carousel" disabled={!embla}
-        onClick={() => embla?.scrollTo(index, reducedMotion)}>
-        {t($ => $[tool.page].title)}
-      </Button>)}
-    </Group>
     <Box pos="relative" miw={0}>
       <Carousel id="tool-gallery-carousel" className="tool-gallery mantine-focus-auto" role="group"
         aria-roledescription={undefined} aria-labelledby="tool-gallery-heading" aria-describedby="tool-gallery-help tool-gallery-status"

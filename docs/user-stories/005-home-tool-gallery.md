@@ -10,8 +10,8 @@ instructions or a growing grid of every tool.
 
 The homepage keeps a fixed project introduction followed by a horizontal
 gallery built with Mantine Carousel. One complete card is visible at a time.
-Named tool buttons above the card allow direct selection; large previous/next
-controls and a position indicator sit below it without covering the preview.
+Large previous/next controls and a position indicator sit below the card without
+covering the preview. The carousel does not add a separate selector for each tool.
 The layout stacks each card's description and preview on smaller screens. Tool
 navigation remains available separately.
 
@@ -27,13 +27,13 @@ documentation address and explicitly asks visitors to open the tool for a real
 connection check. No example is a user's observed result.
 
 The gallery has no automatic rotation or random initial selection. Visitors can
-drag or swipe the cards, select a tool by name, use labeled previous/next
-buttons, or focus the gallery and use Left/Right, Home, and End. Controls stay
-synchronized with the selected card, and a localized live status announces the
-current item. Offscreen cards cannot receive keyboard focus or appear in the
-accessibility tree after the carousel initializes. Button and keyboard transitions
-respect the system's reduced-motion preference. All cards and links are prerendered;
-native horizontal scrolling keeps them reachable without JavaScript.
+drag or swipe the cards, use labeled previous/next buttons, or focus the gallery
+and use Left/Right, Home, and End. Controls stay synchronized with the selected
+card, and a localized live status announces the current item. Offscreen cards
+cannot receive keyboard focus or appear in the accessibility tree after the
+carousel initializes. Button and keyboard transitions respect the system's
+reduced-motion preference. All cards and links are prerendered; native horizontal
+scrolling keeps them reachable without JavaScript.
 
 ## Integration and privacy
 
@@ -49,12 +49,12 @@ order, avoiding hydration changes caused by randomness.
 ## Verification
 
 Tests cover all ten locales, catalog-derived examples and links, no network or
-storage writes, direct selection, bounded button and keyboard navigation,
-offscreen focus exclusion, and hydration. Existing navigation and calculation
-tests continue to verify opening a tool, browser-local calculation, and retained
-drafts. Review desktop
-and mobile layouts, dragging, swiping, reduced motion, and the no-JavaScript
-fallback in a real browser, and run `pnpm check` before submission.
+storage writes, arrow-only navigation controls, bounded button and keyboard
+navigation, offscreen focus exclusion, and hydration. Existing navigation and
+calculation tests continue to verify opening a tool, browser-local calculation,
+and retained drafts. Review desktop and mobile layouts, dragging, swiping,
+reduced motion, and the no-JavaScript fallback in a real browser, and run
+`pnpm check` before submission.
 
 The interaction follows the keyboard, focus, and announcement guidance in the
 [W3C carousel tutorial](https://www.w3.org/WAI/tutorials/carousels/).

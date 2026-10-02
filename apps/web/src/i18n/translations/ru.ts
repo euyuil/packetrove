@@ -16,7 +16,7 @@ export const ru = {
   footer: { project: 'Проект', contact: 'Контакты и обратная связь', sendEmail: 'Отправить письмо' },
   home: {
     galleryTitle: "Обзор инструментов",
-    galleryDescription: "Выберите инструмент или пролистайте карточки с примерами, затем откройте нужный инструмент.",
+    galleryDescription: "Используйте стрелки или пролистайте карточки с примерами, затем откройте нужный инструмент.",
     galleryPrevious: "Предыдущий инструмент",
     galleryNext: "Следующий инструмент",
     galleryPosition: "{{current}} из {{total}}",
