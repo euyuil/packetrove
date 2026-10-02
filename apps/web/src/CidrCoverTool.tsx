@@ -1,7 +1,7 @@
 import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Accordion, Alert, Badge, Button, DataList, Group, List, Paper, ScrollArea, SimpleGrid, Stack, Text, Textarea, ThemeIcon, Title,
+  Accordion, Alert, Badge, Button, DataList, Group, List, ScrollArea, SimpleGrid, Stack, Text, Textarea, Title,
 } from '@mantine/core';
 import { CIDR_COVER_EXAMPLES, MAX_INPUTS, type CidrCoverResult } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
@@ -12,7 +12,8 @@ import { resolveLocale } from './i18n/locales';
 import { CidrExamples } from './CidrExamples';
 import { ToolQuestions } from './ToolQuestions';
 import { ToolMcpSection } from './ToolMcpSection';
-import { ToolIcon } from './ToolIcon';
+import { ToolPageHeader } from './ToolPageHeader';
+import { ToolPanel } from './ToolPanel';
 import { parseAddressEntries } from './parseAddressEntries';
 
 export type CidrCoverDraft = { input: string; result: CidrCoverResult | null; error: ToolError | null };
@@ -52,120 +53,102 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
 
   return (
     <Stack gap="xl">
-      <Stack component="section" aria-labelledby="tool-title" gap="sm">
-        <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>{t($ => $.common.tools)}</Text>
-        <Group gap="md" wrap="nowrap">
-          <ThemeIcon variant="light" size={48} flex="0 0 auto"><ToolIcon tool="cidr" size={28} /></ThemeIcon>
-          <Title order={1} id="tool-title" flex={1}>{t($ => $.cidr.title)}</Title>
-        </Group>
-        <Text c="dimmed">{t($ => $.cidr.description)}</Text>
-        <Text size="sm" c="var(--mantine-primary-color-filled)">{t($ => $.cidr.local)}</Text>
-      </Stack>
+      <ToolPageHeader tool="cidr" notice={t($ => $.cidr.local)} />
       <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-        <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="input-heading">
-          <Stack gap="lg">
-            <Group justify="space-between">
-              <Title order={2} size="h3" id="input-heading">{t($ => $.cidr.addresses)}</Title>
-              <Text size="sm" c="dimmed">IPv4 / IPv6</Text>
-            </Group>
-            <form onSubmit={calculate}>
-              <Stack gap="md">
-                <Textarea id="addresses" label={t($ => $.cidr.inputLabel)} value={input}
-                  description={t($ => $.cidr.inputHelp, { maximum: formatCount(MAX_INPUTS) })}
-                  descriptionProps={{ id: 'input-help' }}
-                  rows={8} resize="vertical" spellCheck={false} autoCapitalize="off" autoCorrect="off"
-                  classNames={{ input: 'network-value' }}
-                  errorProps={{ component: 'div', id: 'input-error' }}
-                  error={error && <Alert color="red" title={errorMessage(error, t, locale)} role="alert">
-                    {error.issues && <List size="sm">{error.issues.map((issue, index) => <List.Item key={index}>
-                      {issue.index === undefined ? issueMessage(issue, error.details?.[index], t, locale)
-                        : t($ => $.cidr.line, { line: formatCount(entries[issue.index]?.line ?? issue.index + 1),
-                          message: issueMessage(issue, error.details?.[index], t, locale) })}
-                    </List.Item>)}</List>}
-                  </Alert>}
-                  placeholder={'203.0.113.1\n203.0.113.2\n203.0.113.6'}
-                  onChange={event => replaceInput(event.currentTarget.value)} />
-                <Group justify="space-between">
-                  <Text size="xs" c="dimmed">{t($ => $.cidr.entryCount, { count: entries.length, total: formatCount(entries.length) })}</Text>
-                  <Button type="button" variant="default" size="xs" onClick={() => replaceInput('')}
-                    disabled={!input && !result && !error}>{t($ => $.cidr.clear)}</Button>
-                </Group>
-                <Group gap="sm">
-                  <Text size="sm" c="dimmed">{t($ => $.cidr.example)}</Text>
-                  <Button type="button" variant="default" size="xs"
-                    onClick={() => replaceInput(CIDR_COVER_EXAMPLES[1]!.request.inputs.join('\n'))}>IPv4</Button>
-                  <Button type="button" variant="default" size="xs"
-                    onClick={() => replaceInput(CIDR_COVER_EXAMPLES[2]!.request.inputs.join('\n'))}>IPv6</Button>
-                </Group>
-                <Button type="submit" fullWidth>{t($ => $.cidr.calculate)}</Button>
-              </Stack>
-            </form>
-          </Stack>
-        </Paper>
-        <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="result-heading">
-          <Stack gap="lg">
-            <Group justify="space-between">
-              <Title order={2} size="h3" id="result-heading">{t($ => $.cidr.result)}</Title>
-              {result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}
-            </Group>
-            <Stack gap="md" aria-live="polite">
-              {result ? <>
-                <Text size="xs" c="dimmed">{t($ => $.cidr.resultLabel)}</Text>
-                <Group justify="space-between">
-                  <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.cidr}</Text>
-                  <ClipboardCopyButton label={t($ => $.cidr.copy)} feedback={copyFeedback}
-                    successMessage={t($ => $.cidr.copySuccess)} failureMessage={t($ => $.cidr.copyFailure)}
-                    onCopy={copyCidr} onDismiss={clearCopyFeedback} />
-                </Group>
-                <DataList orientation="vertical" withDivider>
-                  <DataList.Item>
-                    <DataList.ItemLabel>{t($ => $.cidr.first)}</DataList.ItemLabel>
-                    <DataList.ItemValue className="network-value">{result.range.first}</DataList.ItemValue>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.ItemLabel>{t($ => $.cidr.last)}</DataList.ItemLabel>
-                    <DataList.ItemValue className="network-value">{result.range.last}</DataList.ItemValue>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.ItemLabel>{t($ => $.cidr.unique)}</DataList.ItemLabel>
-                    <DataList.ItemValue className="network-value" fw={600}>{formatCount(result.inputAddressCount)}</DataList.ItemValue>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.ItemLabel>{t($ => $.cidr.covered)}</DataList.ItemLabel>
-                    <DataList.ItemValue className="network-value" fw={600}>{formatCount(result.coveredAddressCount)}</DataList.ItemValue>
-                  </DataList.Item>
-                  <DataList.Item>
-                    <DataList.ItemLabel>{t($ => $.cidr.additional)}</DataList.ItemLabel>
-                    <DataList.ItemValue className="network-value" fw={600} c={result.additionalAddressCount === '0' ? 'teal' : 'yellow.9'}>
-                      {formatCount(result.additionalAddressCount)}
-                    </DataList.ItemValue>
-                  </DataList.Item>
-                </DataList>
-                <Alert color={result.additionalAddressCount === '0' ? 'teal' : 'yellow'} role="note">
-                  {result.additionalAddressCount === '0'
-                    ? t($ => $.cidr.exact)
-                    : t($ => result.additionalAddressCount === '1' ? $.cidr.expansionOne : $.cidr.expansionOther,
-                      { total: formatCount(result.additionalAddressCount) })}
-                </Alert>
-                <Accordion variant="contained">
-                  <Accordion.Item value="normalized-inputs">
-                    <Accordion.Control>{t($ => $.cidr.normalized, { total: formatCount(result.normalizedInputs.length) })}</Accordion.Control>
-                    <Accordion.Panel>
-                      <ScrollArea.Autosize mah={200} type="auto">
-                        <List type="ordered" size="sm">{result.normalizedInputs.map((entry, index) => <List.Item key={index}>
-                          <Text component="code" className="network-value" size="sm">{entry}</Text>
-                        </List.Item>)}</List>
-                      </ScrollArea.Autosize>
-                    </Accordion.Panel>
-                  </Accordion.Item>
-                </Accordion>
-              </> : <Stack align="center" py="xl" gap="sm">
-                <Title order={3} size="h4">{t($ => $.cidr.emptyTitle)}</Title>
-                <Text size="sm" c="dimmed" ta="center">{t($ => $.cidr.emptyDescription)}</Text>
-              </Stack>}
+        <ToolPanel headingId="input-heading" title={t($ => $.cidr.addresses)}
+          headerAside={<Text size="sm" c="dimmed">IPv4 / IPv6</Text>}>
+          <form onSubmit={calculate}>
+            <Stack gap="md">
+              <Textarea id="addresses" label={t($ => $.cidr.inputLabel)} value={input}
+                description={t($ => $.cidr.inputHelp, { maximum: formatCount(MAX_INPUTS) })}
+                descriptionProps={{ id: 'input-help' }}
+                rows={8} resize="vertical" spellCheck={false} autoCapitalize="off" autoCorrect="off"
+                classNames={{ input: 'network-value' }}
+                errorProps={{ component: 'div', id: 'input-error' }}
+                error={error && <Alert color="red" title={errorMessage(error, t, locale)} role="alert">
+                  {error.issues && <List size="sm">{error.issues.map((issue, index) => <List.Item key={index}>
+                    {issue.index === undefined ? issueMessage(issue, error.details?.[index], t, locale)
+                      : t($ => $.cidr.line, { line: formatCount(entries[issue.index]?.line ?? issue.index + 1),
+                        message: issueMessage(issue, error.details?.[index], t, locale) })}
+                  </List.Item>)}</List>}
+                </Alert>}
+                placeholder={'203.0.113.1\n203.0.113.2\n203.0.113.6'}
+                onChange={event => replaceInput(event.currentTarget.value)} />
+              <Group justify="space-between">
+                <Text size="xs" c="dimmed">{t($ => $.cidr.entryCount, { count: entries.length, total: formatCount(entries.length) })}</Text>
+                <Button type="button" variant="default" size="xs" onClick={() => replaceInput('')}
+                  disabled={!input && !result && !error}>{t($ => $.cidr.clear)}</Button>
+              </Group>
+              <Group gap="sm">
+                <Text size="sm" c="dimmed">{t($ => $.cidr.example)}</Text>
+                <Button type="button" variant="default" size="xs"
+                  onClick={() => replaceInput(CIDR_COVER_EXAMPLES[1]!.request.inputs.join('\n'))}>IPv4</Button>
+                <Button type="button" variant="default" size="xs"
+                  onClick={() => replaceInput(CIDR_COVER_EXAMPLES[2]!.request.inputs.join('\n'))}>IPv6</Button>
+              </Group>
+              <Button type="submit" fullWidth>{t($ => $.cidr.calculate)}</Button>
             </Stack>
+          </form>
+        </ToolPanel>
+        <ToolPanel headingId="result-heading" title={t($ => $.cidr.result)}
+          headerAside={result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}>
+          <Stack gap="md" aria-live="polite">
+            {result ? <>
+              <Text size="xs" c="dimmed">{t($ => $.cidr.resultLabel)}</Text>
+              <Group justify="space-between">
+                <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.cidr}</Text>
+                <ClipboardCopyButton label={t($ => $.cidr.copy)} feedback={copyFeedback}
+                  successMessage={t($ => $.cidr.copySuccess)} failureMessage={t($ => $.cidr.copyFailure)}
+                  onCopy={copyCidr} onDismiss={clearCopyFeedback} />
+              </Group>
+              <DataList orientation="vertical" withDivider>
+                <DataList.Item>
+                  <DataList.ItemLabel>{t($ => $.cidr.first)}</DataList.ItemLabel>
+                  <DataList.ItemValue className="network-value">{result.range.first}</DataList.ItemValue>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.ItemLabel>{t($ => $.cidr.last)}</DataList.ItemLabel>
+                  <DataList.ItemValue className="network-value">{result.range.last}</DataList.ItemValue>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.ItemLabel>{t($ => $.cidr.unique)}</DataList.ItemLabel>
+                  <DataList.ItemValue className="network-value" fw={600}>{formatCount(result.inputAddressCount)}</DataList.ItemValue>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.ItemLabel>{t($ => $.cidr.covered)}</DataList.ItemLabel>
+                  <DataList.ItemValue className="network-value" fw={600}>{formatCount(result.coveredAddressCount)}</DataList.ItemValue>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.ItemLabel>{t($ => $.cidr.additional)}</DataList.ItemLabel>
+                  <DataList.ItemValue className="network-value" fw={600} c={result.additionalAddressCount === '0' ? 'teal' : 'yellow.9'}>
+                    {formatCount(result.additionalAddressCount)}
+                  </DataList.ItemValue>
+                </DataList.Item>
+              </DataList>
+              <Alert color={result.additionalAddressCount === '0' ? 'teal' : 'yellow'} role="note">
+                {result.additionalAddressCount === '0'
+                  ? t($ => $.cidr.exact)
+                  : t($ => result.additionalAddressCount === '1' ? $.cidr.expansionOne : $.cidr.expansionOther,
+                    { total: formatCount(result.additionalAddressCount) })}
+              </Alert>
+              <Accordion variant="contained">
+                <Accordion.Item value="normalized-inputs">
+                  <Accordion.Control>{t($ => $.cidr.normalized, { total: formatCount(result.normalizedInputs.length) })}</Accordion.Control>
+                  <Accordion.Panel>
+                    <ScrollArea.Autosize mah={200} type="auto">
+                      <List type="ordered" size="sm">{result.normalizedInputs.map((entry, index) => <List.Item key={index}>
+                        <Text component="code" className="network-value" size="sm">{entry}</Text>
+                      </List.Item>)}</List>
+                    </ScrollArea.Autosize>
+                  </Accordion.Panel>
+                </Accordion.Item>
+              </Accordion>
+            </> : <Stack align="center" py="xl" gap="sm">
+              <Title order={3} size="h4">{t($ => $.cidr.emptyTitle)}</Title>
+              <Text size="sm" c="dimmed" ta="center">{t($ => $.cidr.emptyDescription)}</Text>
+            </Stack>}
           </Stack>
-        </Paper>
+        </ToolPanel>
       </SimpleGrid>
       <Stack component="section" aria-labelledby="explanation-heading" gap="sm">
         <Title order={2} size="h4" id="explanation-heading">{t($ => $.cidr.explanationTitle)}</Title>
