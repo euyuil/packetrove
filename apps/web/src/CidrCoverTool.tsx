@@ -13,11 +13,7 @@ import { CidrExamples } from './CidrExamples';
 import { ToolQuestions } from './ToolQuestions';
 import { ToolMcpSection } from './ToolMcpSection';
 import { ToolIcon } from './ToolIcon';
-
-function inputRows(text: string) {
-  return text.split(/\r?\n/).map((value, index) => ({ value: value.trim(), line: index + 1 }))
-    .filter(row => row.value.length > 0);
-}
+import { parseAddressEntries } from './parseAddressEntries';
 
 export type CidrCoverDraft = { input: string; result: CidrCoverResult | null; error: ToolError | null };
 
@@ -31,7 +27,7 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
   const formatCount = (count: string | number) => formatter.format(typeof count === 'string' ? BigInt(count) : count);
   const { input, result, error } = draft;
   const { copyFeedback, clearCopyFeedback, copyText } = useClipboardFeedback();
-  const rows = inputRows(input);
+  const entries = parseAddressEntries(input);
 
   function replaceInput(value: string) {
     onDraftChange({ input: value, result: null, error: null });
@@ -42,7 +38,7 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
     event.preventDefault();
     clearCopyFeedback();
     try {
-      onDraftChange({ input, result: smallestCoveringCidr({ inputs: rows.map(row => row.value) }), error: null });
+      onDraftChange({ input, result: smallestCoveringCidr({ inputs: entries.map(entry => entry.value) }), error: null });
     } catch (failure) {
       onDraftChange({ input, result: null, error: failure instanceof ToolError ? failure
         : new ToolError('INTERNAL_ERROR', 'Unable to calculate this input. Please try again.') });
@@ -83,14 +79,14 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
                   error={error && <Alert color="red" title={errorMessage(error, t, locale)} role="alert">
                     {error.issues && <List size="sm">{error.issues.map((issue, index) => <List.Item key={index}>
                       {issue.index === undefined ? issueMessage(issue, error.details?.[index], t, locale)
-                        : t($ => $.cidr.line, { line: formatCount(rows[issue.index]?.line ?? issue.index + 1),
+                        : t($ => $.cidr.line, { line: formatCount(entries[issue.index]?.line ?? issue.index + 1),
                           message: issueMessage(issue, error.details?.[index], t, locale) })}
                     </List.Item>)}</List>}
                   </Alert>}
                   placeholder={'203.0.113.1\n203.0.113.2\n203.0.113.6'}
                   onChange={event => replaceInput(event.currentTarget.value)} />
                 <Group justify="space-between">
-                  <Text size="xs" c="dimmed">{t($ => $.cidr.entryCount, { count: rows.length, total: formatCount(rows.length) })}</Text>
+                  <Text size="xs" c="dimmed">{t($ => $.cidr.entryCount, { count: entries.length, total: formatCount(entries.length) })}</Text>
                   <Button type="button" variant="default" size="xs" onClick={() => replaceInput('')}
                     disabled={!input && !result && !error}>{t($ => $.cidr.clear)}</Button>
                 </Group>

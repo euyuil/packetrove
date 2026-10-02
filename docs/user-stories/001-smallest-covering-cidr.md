@@ -5,12 +5,16 @@ below and the first implementation choices are agreed. The shared calculation,
 API, web app, MCP, CLI, and agent skill are implemented and documented in the
 README.
 
-## User story
+## User stories
 
 As someone maintaining a cloud firewall IP allowlist or blocklist, I want to
 combine multiple IP addresses or IP ranges into a single CIDR that covers every
 input address while including as few additional addresses as possible, so that
 I can reduce the number of entries in a list with a size limit.
+
+As someone pasting an address list from a configuration, spreadsheet, or another
+calculation, I want the web calculator to accept common separators, so that I can
+calculate without manually putting every value on a separate line.
 
 ## Context
 
@@ -72,6 +76,13 @@ they do not subtract subnet network or broadcast addresses.
 
 The web app performs the calculation locally. The API returns a structured
 result with exact counts represented as decimal strings; MCP uses the same result.
+
+The web input accepts commas (ASCII `,` or full-width `，`), spaces, tabs, and
+line breaks, in any combination. Empty entries are ignored; input order and
+duplicates are preserved for validation and the entry limit. Invalid entries
+report their original line, even when several entries share a line. Both CIDR
+tools use this parsing rule, and either subtraction copy format can be pasted
+directly into the covering calculator.
 
 The homepage introduces Packetrove and links to its tools. The calculator has
 its own page at `/cidr`; My Public IP is at `/public-ip`. The calculator includes

@@ -22,6 +22,12 @@
   the user has requested.
 - Build web interfaces with Mantine components and the shared theme. Prefer
   component props and layout components before adding custom CSS.
+- Accept common pasted forms in multi-value text inputs. When individual values
+  cannot contain commas or whitespace, accept commas, spaces, tabs, line breaks,
+  and mixtures of these as separators; ignore empty entries. Share parsing rules
+  across related tools and keep localized help, user stories, entry counts, and
+  error locations accurate. If values can contain separators, use an unambiguous
+  parser appropriate to that format.
 
 ## Website URL names
 
