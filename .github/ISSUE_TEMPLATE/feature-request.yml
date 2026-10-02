@@ -1,25 +1,22 @@
-name: Feature request / 功能建议
-description: Suggest an improvement to Packetrove. / 提出改进 Packetrove 的建议。
+name: Feature request
+description: Suggest an improvement to Packetrove.
 title: "[Feature]: "
 labels: [enhancement]
 body:
   - type: markdown
     attributes:
       value: |
-        Thank you for sharing your idea. You can write in English or Simplified Chinese.
+        Thank you for sharing your idea.
         Issues are public. Please keep credentials and private network data out of your request.
-
-        感谢你分享想法，可以使用英文或简体中文填写。
-        建议会公开显示，请不要填写凭据或私有网络数据。
   - type: textarea
     id: problem
     attributes:
-      label: What problem would this solve? / 想解决什么问题？
-      description: Describe your use case and what is difficult today. / 描述你的使用场景，以及目前遇到的困难。
+      label: What problem would this solve?
+      description: Describe your use case and what is difficult today.
     validations:
       required: true
   - type: textarea
     id: suggested_feature
     attributes:
-      label: Suggested feature (optional) / 功能设想（选填）
-      description: How would you like Packetrove to help? / 你希望 Packetrove 怎样帮助你？
+      label: Suggested feature (optional)
+      description: How would you like Packetrove to help?
