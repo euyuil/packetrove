@@ -5,6 +5,7 @@ import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
 import { HomePage } from './HomePage';
+import { LanguageSelector } from './LanguageSelector';
 import { localizedPath, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 
@@ -51,14 +52,7 @@ export function App() {
             <Text component="span" size="xl" fw={700}>Packetrove</Text>
           </Group>
         </Anchor>
-        <Group gap="xs" role="group" aria-label={t($ => $.common.language)}>
-            <Button component="a" href={localizedPath(path, 'en') + window.location.search + window.location.hash}
-              onClick={navigate} size="xs" variant={locale === 'en' ? 'light' : 'subtle'} lang="en" hrefLang="en"
-              aria-current={locale === 'en' ? 'true' : undefined}>English</Button>
-            <Button component="a" href={localizedPath(path, 'zh-Hans') + window.location.search + window.location.hash}
-              onClick={navigate} size="xs" variant={locale === 'zh-Hans' ? 'light' : 'subtle'} lang="zh-Hans" hrefLang="zh-Hans"
-              aria-current={locale === 'zh-Hans' ? 'true' : undefined}>简体中文</Button>
-        </Group>
+        <LanguageSelector locale={locale} path={path} onNavigate={navigate} />
       </Group>
       <Divider />
       <Group component="nav" aria-label={t($ => $.common.navigation)} gap="sm">
