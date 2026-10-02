@@ -92,7 +92,7 @@ describe('hydration of production HTML', () => {
     if (page.page === 'api') expect(await screen.findByText('Interactive API reference')).toBeDefined();
   });
 
-  it.each(['zh-Hans', 'es', 'de', 'ja'] as const)('preserves exact counts and drafts after hydration when switching to %s', async locale => {
+  it.each(supportedLocales.filter(locale => locale !== 'en'))('preserves exact counts and drafts after hydration when switching to %s', async locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
@@ -106,7 +106,7 @@ describe('hydration of production HTML', () => {
     expect(window.location.pathname + window.location.search + window.location.hash)
       .toBe(localizedPath('/cidr', locale) + '?source=example#tool');
     const count = new Intl.NumberFormat(locale).format(340_282_366_920_938_463_463_374_607_431_768_211_456n);
-    expect(screen.getAllByText(count)).toHaveLength(2);
+    expect(screen.getAllByText(count, { normalizer: text => text })).toHaveLength(2);
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href'))
       .toBe('https://packetrove.com' + localizedPath('/cidr', locale));
     fireEvent.click(screen.getByRole('link', { name: translation.common.home }));
@@ -117,7 +117,7 @@ describe('hydration of production HTML', () => {
     expect(storage).not.toHaveBeenCalled();
   });
 
-  it.each(['zh-Hans', 'es', 'de', 'ja'] as const)('keeps the lookup started after hydration when switching to %s', async locale => {
+  it.each(supportedLocales.filter(locale => locale !== 'en'))('keeps the lookup started after hydration when switching to %s', async locale => {
     const pending: Array<{ resolve: (response: Response) => void; signal: AbortSignal }> = [];
     const fetch = vi.fn((_url: string, options: RequestInit) => new Promise<Response>(resolve => {
       pending.push({ resolve, signal: options.signal! });

@@ -1,6 +1,8 @@
 import { es } from './translations/es';
 import { de } from './translations/de';
 import { ja } from './translations/ja';
+import { fr } from './translations/fr';
+import { ptBR } from './translations/pt-BR';
 import type { Locale } from './locales';
 
 export const en = {
@@ -181,4 +183,5 @@ export const zhHans = {
 export const resources = {
   en: { translation: en }, 'zh-Hans': { translation: zhHans },
   es: { translation: es }, de: { translation: de }, ja: { translation: ja },
+  fr: { translation: fr }, 'pt-BR': { translation: ptBR },
 } satisfies Record<Locale, { translation: TranslationResource }>;
