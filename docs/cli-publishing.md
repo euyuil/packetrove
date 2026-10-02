@@ -1,8 +1,10 @@
 # Publishing the CLI to npm
 
-The CLI is prepared for public distribution as `@packetrove/cli`, with the
-`packetrove` executable. Its first npm release is pending. Only the CLI is
-published; it bundles the core, contracts, and runtime dependencies.
+The CLI is published as [`@packetrove/cli`](https://www.npmjs.com/package/@packetrove/cli),
+with the `packetrove` executable. The initial `0.1.0` npm package was published
+interactively, and its [GitHub Release](https://github.com/euyuil/packetrove/releases/tag/0.1.0)
+establishes the release-please baseline. Only the CLI is published; it bundles
+the core, contracts, and runtime dependencies.
 
 ## Release policy
 
@@ -177,9 +179,6 @@ maintains the next release pull request. To prepare immediately, run:
 gh workflow run release.yml --repo euyuil/packetrove --ref main
 ```
 
-After npm publication is verified, update the release-pending wording in the
-README and integration guides through a follow-up pull request.
-
 ## Configure npm trusted publishing
 
 After the initial npm publication, open the package's settings on npmjs.com,
@@ -192,6 +191,11 @@ add a trusted publisher, and select GitHub Actions:
 | Workflow filename | `publish-cli.yml` |
 | Environment name | Leave empty; this workflow does not use a GitHub environment |
 | Allowed actions | Allow direct publishing with `npm publish` |
+
+Leave `Allow npm dist-tag` unchecked; this workflow does not manage tags with a
+separate `npm dist-tag` command. Under Publishing access, select the option that
+requires two-factor authentication and disallows tokens that bypass it. This
+restriction does not prevent trusted publishing through OIDC.
 
 Staged publication alone does not permit this workflow's direct command. npm
 does not validate this configuration when it is saved; a later workflow upload
@@ -214,9 +218,11 @@ Service deployment remains governed by `ci.yml`; the tagged CLI only needs its
 exact commit's successful validation even if a later main revision deployed
 the services.
 
-Before upload, the workflow compares the archive's SHA-512 integrity with any
-existing npm version. An absent version is published; an identical existing
-archive skips upload and proceeds to verification; different contents fail.
+Before publication preview or upload, the workflow compares the archive's
+SHA-512 integrity with any existing npm version. An absent version proceeds to
+preview and publication; an identical existing archive skips both and proceeds
+to verification; different contents fail. Even `npm publish --dry-run` rejects
+an already published version, so it runs only when the version is absent.
 Registry errors are failures, not evidence that a version is absent. After
 publication it checks registry integrity, installs the exact version with a
 fresh npm cache outside the workspace, and verifies its calculation.

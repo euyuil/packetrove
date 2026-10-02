@@ -142,11 +142,14 @@ The release pull request is never automatically merged. Leaving it open holds
 npm publication while ordinary feature merges continue to deploy the services.
 
 The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
-write token in repository secrets. The first release and npm-side configuration
-are still pending; see the [CLI publishing guide](cli-publishing.md) for the
-GitHub App secrets, first-release baseline, trusted-publisher fields, version
-rules, and recovery. Recovery verifies an identical existing npm archive without
-republishing it and rejects a collision with different package contents.
+write token in repository secrets. The initial `0.1.0` package is published,
+and its GitHub Release baseline and npm trusted-publisher configuration are
+established. GitHub App release preparation has been verified; the first new
+version upload will verify OIDC publication. See the
+[CLI publishing guide](cli-publishing.md) for GitHub App secrets, first-release
+setup, trusted-publisher fields, version rules, and recovery. Recovery skips
+publication preview and upload for an identical existing npm archive, verifies
+it independently, and rejects a collision with different package contents.
 
 ## Cloudflare credentials
 

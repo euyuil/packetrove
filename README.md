@@ -194,23 +194,20 @@ network path.
 
 ### Run the CLI
 
-With the [development toolchain](#development) installed, build from this
-repository:
+Install the public [`@packetrove/cli`](https://www.npmjs.com/package/@packetrove/cli)
+package with a supported Node.js version and npm:
 
 ```sh
-pnpm install
-pnpm build
-node packages/cli/dist/cli.js cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
-node packages/cli/dist/cli.js public-ip
+npm install --global @packetrove/cli
+packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+packetrove public-ip
 ```
 
 CIDR calculations run locally; `public-ip` calls the public API from the machine
-running the command. The CLI is supplied in this repository and has not been
-published to npm. See the [CLI guide](docs/integrations/cli.md) for file input,
-JSON errors, and packaging. Public distribution is prepared as `@packetrove/cli`;
-after the first release, it will support `npm install --global @packetrove/cli`
-and `npx @packetrove/cli`. See the [CLI publishing guide](docs/cli-publishing.md)
-for first-release setup and automatic release pull requests. Maintainers choose
+running the command. See the [CLI guide](docs/integrations/cli.md) for one-off
+commands with `npx`, source installation, file input, JSON errors, and packaging.
+See the [CLI publishing guide](docs/cli-publishing.md) for first-release setup
+and automatic release pull requests. Maintainers choose
 when to publish by approving and merging the separate release pull request;
 ordinary feature merges still deploy the website and API.
 
