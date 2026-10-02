@@ -35,6 +35,14 @@ preferred language.
   entries. Use self-referencing canonical URLs and reciprocal links for all five
   locales, plus `x-default` pointing to English. Update metadata during in-page
   navigation.
+- Prerender the 20 localized pages at build time, including their headings,
+  explanations, links, and examples. Hydrate the same React components in the
+  browser without losing page state during navigation or language changes.
+- Generate `sitemap.xml` from the canonical page list and reference it in
+  `robots.txt`. Do not include aliases, missing pages, or API origins.
+- Keep API endpoint summaries and curl examples in the prerendered HTML. Load
+  the interactive reference only on the client. Prerendering makes no network
+  requests and does not populate calculator input or public IP results.
 - Keep unknown routes as HTTP 404 responses. The shared static fallback is in
   English; application-rendered not-found pages use the selected locale.
 
@@ -55,16 +63,17 @@ language-detection dependency is enabled.
 
 `apps/web/src/i18n/locales.ts` defines each locale's native name, URL prefix, and
 flag. Routing, supported translation languages, alternate links, Vite inputs,
-and the language menu use this registry. `LanguageSelector.tsx` renders the
-entries with Mantine `Menu`. Tabler Icons supplies the chevron and selection
-check; `country-flag-icons` supplies the five SVG flags. Both dependencies use
-the MIT license, with notices in `apps/web/public/third-party-notices.txt`.
-Icons are bundled locally and do not require an external image service.
+the sitemap, and the language menu use this registry. `LanguageSelector.tsx`
+renders the entries with Mantine `Menu`. Tabler Icons supplies the chevron and
+selection check; `country-flag-icons` supplies the five SVG flags. Both
+dependencies use the MIT license, with notices in
+`apps/web/public/third-party-notices.txt`. Icons are bundled locally and do not
+require an external image service.
 
 When adding a locale, add its registry entry, complete translations and metadata,
-static HTML entries, and flag import together. The menu renders the configured
-entries without adding another header button. Preserve the existing page, query
-string, and fragment in every language link.
+static HTML entries, and flag import together. The menu
+renders the configured entries without adding another header button. Preserve
+the existing page, query string, and fragment in every language link.
 
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while
@@ -80,15 +89,16 @@ its serialized errors. Translate these reasons in the web layer rather than
 matching English error messages. `ToolError.toResponse()` continues to return
 the existing shared error schema; local presentation details are omitted.
 
-When changing page titles or descriptions, update both translation metadata and
-the corresponding HTML entries under `apps/web/`, including localized folders.
-The website runtime tests compare built entries with the resources and verify
-canonical and alternate language links. Vite inputs are derived from the locale
-registry and page paths. The production smoke check validates all 20 localized
-entries.
+When changing page titles or descriptions, update translation metadata in
+`apps/web/src/i18n/resources.ts`. `page-metadata.ts` supplies the same metadata to
+the Vite HTML transform and browser navigation. Keep the `<!--page-metadata-->`
+and empty root placeholders in the HTML entries; `scripts/build.ts` fills them
+from the metadata and React render. `websitePages` derives the Vite inputs and
+sitemap entries from the locale registry and page paths. The production smoke
+check validates all 20 localized entries.
 
 Run `pnpm check` before submitting changes. The checks cover language switching,
 retained calculator drafts, physical-line validation errors, clipboard status,
-IP lookup isolation, exact IPv6 counts, static entry responses, and unchanged
-API, MCP, and CLI behavior. Contributor development requires no production
-credentials.
+IP lookup isolation, exact IPv6 counts, prerendered content, hydration, sitemap
+and robots responses, static entry responses, and unchanged API, MCP, and CLI
+behavior. Contributor development requires no production credentials.

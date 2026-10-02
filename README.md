@@ -85,6 +85,19 @@ result or validation error. It also keeps an ongoing public IP check and updates
 its labels without making another request. Drafts and IP results stay in memory.
 Translations ship with the web application and require no translation service.
 
+Production builds prerender all 20 pages in the five languages from the same
+React components used in the browser. Headings, explanations, navigation links,
+and examples are present in the HTML before JavaScript runs. The browser then
+hydrates that HTML to enable the tools. CIDR inputs stay empty until entered;
+public IP lookup starts only in the browser, so builds make no lookup requests
+and never embed a visitor's IP address.
+
+Page titles, descriptions, social metadata, canonical URLs, and alternate
+language links share one definition for builds and in-page navigation. Builds
+also generate `sitemap.xml` with the 20 canonical URLs and `robots.txt` with
+its sitemap location. These URLs use the public `https://packetrove.com` origin;
+change `WEBSITE_ORIGIN` in `apps/web/src/i18n/page-metadata.ts` when self-hosting.
+
 The interactive API reference, OpenAPI specification, linked integration guides,
 CLI, MCP descriptions, and repository documentation remain in English. Machine
 response fields, error codes, and decimal-string address counts are unchanged.
@@ -178,8 +191,9 @@ Local development and tests need no Cloudflare account or production credentials
 for both the API and website Workers.
 The API publishes the generated specification as a static asset at
 `/openapi.json`; development, build, and deployment commands prepare this asset
-automatically. The website's `/docs/api` page loads Scalar only when opened and
-sends test requests directly to the configured API origin without cookies.
+automatically. The website's `/docs/api` page includes static endpoint summaries
+and curl examples, loads Scalar in the browser only when opened, and sends test
+requests directly to the configured API origin without cookies.
 Scalar's AI features, telemetry, proxy, and external fonts are disabled.
 Local public IP lookup depends on Cloudflare connection metadata; without it,
 the API returns `CLIENT_IP_UNAVAILABLE`.

@@ -4,20 +4,12 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CIDR_COVER_EXAMPLES } from '../packages/contracts/src/index';
-import { supportedLocales } from '../apps/web/src/i18n/locales';
-import { localizedPath, pagePaths } from '../apps/web/src/i18n/routes';
+import { websitePages } from '../apps/web/src/seo';
 import { waitForDeployment } from './deployment-readiness';
 
 const origin = 'https://service.example';
 const commit = '0123456789abcdef0123456789abcdef01234567';
 const previousCommit = '89abcdef0123456789abcdef0123456789abcdef';
-const localizedHtml = new Map(supportedLocales.flatMap(locale => Object.values(pagePaths).map(path => {
-  const localized = localizedPath(path, locale);
-  const entry = localized.slice(1) + (path === '/' ? 'index.html' : '.html');
-  const source = readFileSync(new URL('../apps/web/' + entry, import.meta.url), 'utf8');
-  return [localized, source.replace('/src/main.tsx', '/assets/main.js')
-    .replace('</head>', '<link href="/assets/main.css"></head>')] as const;
-})));
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
@@ -168,6 +160,11 @@ describe('readiness followed by the production smoke check across separate origi
   it.each(['API', 'MCP'])('still fails for a functional %s error after the version is ready', async failed => {
     const requested: string[] = [];
     const apiRequested: string[] = [];
+    const builtPages = new Map(websitePages.map(page => [page.pathname,
+      readFileSync(new URL('../apps/web/dist/' + page.entry, import.meta.url), 'utf8')
+        .replaceAll(/\/assets\/[^\"]+\.js/g, '/assets/main.js')
+        .replaceAll(/\/assets\/[^\"]+\.css/g, '/assets/main.css'),
+    ]));
     const send = (response: import('node:http').ServerResponse, type: string, body: string, status = 200) => {
       response.writeHead(status, { 'content-type': type });
       response.end(body);
@@ -176,8 +173,11 @@ describe('readiness followed by the production smoke check across separate origi
       const path = request.url!;
       requested.push(path);
       if (request.method === 'POST') return send(response, 'text/plain', '', 405);
-      const page = localizedHtml.get(path) ?? localizedHtml.get(path.replace(/\/$/, ''));
+      const page = builtPages.get(path) ?? builtPages.get(path.replace(/\/$/, ''));
       if (page) return send(response, 'text/html', page);
+      if (path === '/sitemap.xml' || path === '/robots.txt') return send(response,
+        path.endsWith('.xml') ? 'application/xml' : 'text/plain',
+        readFileSync(new URL('../apps/web/dist' + path, import.meta.url), 'utf8'));
       if (path === '/assets/main.js') return send(response, 'application/javascript', `const sourceCommit = "${commit}";`);
       if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
       send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
@@ -226,8 +226,8 @@ describe('readiness followed by the production smoke check across separate origi
       expect(apiRequested).toEqual([]);
       const execution = await smoke(target, apiTarget);
       expect(execution.status).toBe(1);
-      expect(execution.stdout).toContain('PASS 5 website languages and localized metadata');
-      for (const path of localizedHtml.keys()) expect(requested).toContain(path);
+      expect(execution.stdout).toContain('PASS 20 prerendered localized pages');
+      for (const page of websitePages) expect(requested).toContain(page.pathname);
       expect(execution.stdout).toContain('PASS website build commit matches the deployment');
       expect(execution.stdout).toContain('PASS website and API origin separation');
       expect(execution.stderr).toContain(failed === 'API' ? 'broken' : '500');

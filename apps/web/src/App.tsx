@@ -1,6 +1,6 @@
-import { lazy, Suspense, useEffect, useLayoutEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useLayoutEffect, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Anchor, Box, Button, Container, Divider, Group, Loader, Stack, Text, Title } from '@mantine/core';
+import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
@@ -9,12 +9,12 @@ import { LanguageSelector } from './LanguageSelector';
 import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
 import { localizedPath, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
+import ApiDocumentation from './ApiDocumentation';
 
-const ApiDocumentation = lazy(() => import('./ApiDocumentation'));
-
-export function App() {
+export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
-  const [pathname, setPathname] = useState(() => window.location.pathname);
+  const [pathname, setPathname] = useState(initialPathname);
+  const [urlSuffix, setUrlSuffix] = useState('');
   const [draft, setDraft] = useState<CidrCoverDraft>({ input: '', result: null, error: null });
   const { locale, page, path } = resolveRoute(pathname);
   const homePage = page === 'home';
@@ -30,9 +30,17 @@ export function App() {
   useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [i18n, locale]);
   useEffect(() => { updatePageMetadata(locale, page, path); }, [locale, page, path]);
   useEffect(() => {
-    const updatePath = () => setPathname(window.location.pathname);
+    const updatePath = () => {
+      setPathname(window.location.pathname);
+      setUrlSuffix(window.location.search + window.location.hash);
+    };
+    updatePath();
     window.addEventListener('popstate', updatePath);
-    return () => window.removeEventListener('popstate', updatePath);
+    window.addEventListener('hashchange', updatePath);
+    return () => {
+      window.removeEventListener('popstate', updatePath);
+      window.removeEventListener('hashchange', updatePath);
+    };
   }, []);
 
   function navigate(event: MouseEvent<HTMLAnchorElement>) {
@@ -43,6 +51,7 @@ export function App() {
       window.history.pushState(null, '', destination);
     }
     setPathname(window.location.pathname);
+    setUrlSuffix(window.location.search + window.location.hash);
   }
 
   return <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py="xl">
@@ -54,7 +63,7 @@ export function App() {
             <Text component="span" size="xl" fw={700}>Packetrove</Text>
           </Group>
         </Anchor>
-        <LanguageSelector locale={locale} path={path} onNavigate={navigate} />
+        <LanguageSelector locale={locale} path={path} urlSuffix={urlSuffix} onNavigate={navigate} />
       </Group>
       <Divider />
       <Group component="nav" aria-label={t($ => $.common.navigation)} gap="sm">
@@ -75,9 +84,7 @@ export function App() {
               <Anchor href={href('/cidr')} onClick={navigate}>{t($ => $.api.returnToCalculator)}</Anchor>
             </Stack>
           }>
-            <Suspense fallback={<Group role="status"><Loader size="sm" /><Text>{t($ => $.api.loading)}</Text></Group>}>
-              <ApiDocumentation />
-            </Suspense>
+            <ApiDocumentation />
           </ApiDocumentationBoundary> : <Stack component="section" py="xl">
           <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>{t($ => $.common.notFound)}</Title>

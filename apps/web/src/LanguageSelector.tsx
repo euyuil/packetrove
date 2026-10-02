@@ -17,10 +17,11 @@ const flags = {
 type LanguageSelectorProps = {
   locale: Locale;
   path: string;
+  urlSuffix?: string;
   onNavigate: (event: MouseEvent<HTMLAnchorElement>) => void;
 };
 
-export function LanguageSelector({ locale, path, onNavigate }: LanguageSelectorProps) {
+export function LanguageSelector({ locale, path, urlSuffix = '', onNavigate }: LanguageSelectorProps) {
   const { t } = useTranslation();
   const current = locales[locale];
   return <Menu position="bottom-end" width={200} shadow="md">
@@ -35,7 +36,7 @@ export function LanguageSelector({ locale, path, onNavigate }: LanguageSelectorP
       {supportedLocales.map(language => {
         const option = locales[language];
         return <Menu.Item key={language} component="a"
-          href={localizedPath(path, language) + window.location.search + window.location.hash}
+          href={localizedPath(path, language) + urlSuffix}
           onClick={onNavigate} lang={language} hrefLang={language}
           aria-current={language === locale ? 'true' : undefined}
           leftSection={<Box component={flags[option.flag]} w={21} h={14} aria-hidden="true" />}

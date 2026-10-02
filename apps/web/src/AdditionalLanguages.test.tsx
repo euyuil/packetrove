@@ -155,7 +155,7 @@ describe('additional website languages', () => {
     const translation = resources[locale].translation;
     expect(await screen.findByRole('heading', { level: 1, name: translation.api.title })).toBeDefined();
     expect(screen.getByText(translation.api.englishReference)).toBeDefined();
-    expect(screen.getByText('English API reference')).toBeDefined();
+    expect(await screen.findByText('English API reference')).toBeDefined();
   });
 
   it.each(additionalLanguages)('localizes API failure recovery in $locale and preserves the calculation', async ({ locale, prefix, count }) => {

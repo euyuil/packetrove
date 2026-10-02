@@ -35,6 +35,22 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
       </Group>
     </Stack>
     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-cidr-heading">
+        <Stack gap="md">
+          <Title order={2} size="h3" id="home-cidr-heading">{t($ => $.cidr.title)}</Title>
+          <Text c="dimmed">{t($ => $.home.cidrDescription)}</Text>
+          <Anchor href={localizedPath('/cidr', locale)} onClick={onNavigate}>{t($ => $.home.cidrLink)}</Anchor>
+        </Stack>
+      </Paper>
+      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-ip-heading">
+        <Stack gap="md">
+          <Title order={2} size="h3" id="home-ip-heading">{t($ => $.ip.title)}</Title>
+          <Text c="dimmed">{t($ => $.home.ipDescription)}</Text>
+          <Anchor href={localizedPath('/ip', locale)} onClick={onNavigate}>{t($ => $.home.ipLink)}</Anchor>
+        </Stack>
+      </Paper>
+    </SimpleGrid>
+    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} miw={0} aria-labelledby="api-heading">
         <Stack gap="md">
           <Title order={2} size="h3" id="api-heading">{t($ => $.home.apiTitle)}</Title>

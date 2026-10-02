@@ -1,30 +1,20 @@
-import type { ComponentProps } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Anchor, Group, Stack, Text, Title } from '@mantine/core';
-import { ApiReferenceReact } from '@scalar/api-reference-react';
-import '@scalar/api-reference-react/style.css';
+import { Anchor, Code, Group, Loader, Paper, Stack, Text, Title } from '@mantine/core';
+import { CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, PUBLIC_IP_PATH } from '@packetrove/contracts';
 import { getApiUrl } from './api';
-import { fetchApiReference } from './api-reference';
 import { resolveLocale } from './i18n/locales';
 
-const configuration: ComponentProps<typeof ApiReferenceReact>['configuration'] = {
-  url: getApiUrl('/openapi.json'),
-  servers: [{ url: new URL(getApiUrl('/')).origin, description: 'Packetrove API' }],
-  proxyUrl: '',
-  customFetch: fetchApiReference,
-  agent: { disabled: true },
-  telemetry: false,
-  persistAuth: false,
-  withDefaultFonts: false,
-  showDeveloperTools: 'never',
-  hideClientButton: true,
-  theme: 'none',
-  darkMode: false,
-  hideDarkModeToggle: true,
-};
+const ApiReference = lazy(() => import('./ApiReference'));
 
 export default function ApiDocumentation() {
   const { t, i18n } = useTranslation();
+  const [interactive, setInteractive] = useState(false);
+  useEffect(() => { setInteractive(true); }, []);
+  const example = CIDR_COVER_EXAMPLES[1]!;
+  const cidrRequest = `curl -fsS ${getApiUrl(CIDR_COVER_PATH)} \\
+  -H 'Content-Type: application/json' \\
+  -d '${JSON.stringify(example.request)}'`;
   return <Stack component="section" gap="lg" aria-labelledby="api-documentation-heading">
     <Group justify="space-between" align="center">
       <Title order={1} size="h2" id="api-documentation-heading">{t($ => $.api.title)}</Title>
@@ -34,6 +24,25 @@ export default function ApiDocumentation() {
       {t($ => $.api.description)}
     </Text>
     {resolveLocale(i18n.resolvedLanguage) !== 'en' && <Text size="sm" c="dimmed">{t($ => $.api.englishReference)}</Text>}
-    <div className="api-reference"><ApiReferenceReact configuration={configuration} /></div>
+    <Paper component="section" withBorder p="lg" aria-labelledby="cidr-api-heading">
+      <Stack gap="sm">
+        <Title order={2} size="h3" id="cidr-api-heading">POST {CIDR_COVER_PATH}</Title>
+        <Text>{t($ => $.api.cidrSummary)}</Text>
+        <Code block>{cidrRequest}</Code>
+        <Text size="sm" c="dimmed">{t($ => $.api.cidrResponse, {
+          cidr: example.result.cidr, additional: example.result.additionalAddressCount,
+        })}</Text>
+      </Stack>
+    </Paper>
+    <Paper component="section" withBorder p="lg" aria-labelledby="ip-api-heading">
+      <Stack gap="sm">
+        <Title order={2} size="h3" id="ip-api-heading">GET {PUBLIC_IP_PATH}</Title>
+        <Text>{t($ => $.api.ipSummary)}</Text>
+        <Code block>{`curl -fsS ${getApiUrl(PUBLIC_IP_PATH)} -H 'Accept: text/plain'`}</Code>
+      </Stack>
+    </Paper>
+    {interactive && <Suspense fallback={<Group role="status"><Loader size="sm" /><Text>{t($ => $.api.loading)}</Text></Group>}>
+      <ApiReference />
+    </Suspense>}
   </Stack>;
 }

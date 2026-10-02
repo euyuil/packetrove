@@ -1,16 +1,13 @@
 import { exports } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { resources } from '../../web/src/i18n/resources';
-import { localizedPath, pagePaths, type Locale } from '../../web/src/i18n/routes';
+import { localizedPath, pagePaths, resolveRoute, type Locale } from '../../web/src/i18n/routes';
+import { websitePages } from '../../web/src/seo';
 import { supportedLocales } from '../../web/src/i18n/locales';
 
-const localizedPages = supportedLocales.flatMap(locale => Object.entries(pagePaths).map(([page, path]) => ({
-  locale, page: page as keyof typeof pagePaths, path: localizedPath(path, locale),
-})));
-
 describe('website in the Workers runtime', () => {
-  it.each(localizedPages)('serves localized metadata at $path without running JavaScript', async ({ locale, page, path }) => {
-    const response = await exports.default.fetch('http://localhost' + path);
+  it.each(websitePages)('serves localized content and metadata at $pathname without running JavaScript', async ({ locale, page, pathname }) => {
+    const response = await exports.default.fetch('http://localhost' + pathname);
     expect(response.status).toBe(200);
     const html = await response.text();
     const metadata = resources[locale].translation.meta[page];
@@ -19,7 +16,37 @@ describe('website in the Workers runtime', () => {
     expect(html).toContain('<meta name="description" content="' + metadata.description + '" />');
     expect(html).toContain('<meta property="og:title" content="' + metadata.title + '" />');
     expect(html).toContain('<meta name="twitter:title" content="' + metadata.title + '" />');
-    expect(html).toContain('<link rel="canonical" href="https://packetrove.com' + path + '" />');
+    expect(html).toContain('<link rel="canonical" href="https://packetrove.com' + pathname + '" />');
+    expect(html.match(/<title>/g)).toHaveLength(1);
+    expect(html.match(/<link rel="canonical"/g)).toHaveLength(1);
+    expect(html).toContain('data-prerendered-path="' + pathname + '"');
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
+    const text = resources[locale].translation;
+    const heading = page === 'home' ? text.common.tagline : text[page].title;
+    expect(html).toMatch(new RegExp('<h1[^>]*>' + heading + '</h1>'));
+    expect(html).toContain('<main');
+    expect(html).toContain('href="' + localizedPath('/cidr', locale) + '"');
+    expect(html).toContain('href="' + localizedPath('/ip', locale) + '"');
+    if (page === 'home') {
+      expect(html).toContain(text.home.cidrDescription);
+      expect(html).toContain(text.home.ipDescription);
+    } else if (page === 'cidr') {
+      expect(html).toContain(text.cidr.explanation);
+      expect(html).toContain(text.cidr.examplesTitle);
+      expect(html).toContain('2001:db8::/63');
+      expect(html).toContain(new Intl.NumberFormat(locale).format(36_893_488_147_419_103_232n));
+      expect(html).toContain('<textarea');
+      expect(html).not.toMatch(/<textarea[^>]*>[^<]+<\/textarea>/);
+    } else if (page === 'ip') {
+      expect(html).toContain(text.ip.explanation);
+      expect(html).toContain(text.ip.checking);
+      expect(html).not.toContain('class="network-value"');
+    } else {
+      expect(html).toContain(text.api.cidrSummary);
+      expect(html).toContain(text.api.ipSummary);
+      expect(html).toContain('203.0.113.1');
+      expect(html).not.toContain('class="api-reference"');
+    }
     for (const language of [...supportedLocales, 'x-default'] as const) {
       const alternate: Locale = language === 'x-default' ? 'en' : language;
       expect(html).toContain('<link rel="alternate" hreflang="' + language
@@ -28,6 +55,25 @@ describe('website in the Workers runtime', () => {
     const script = html.match(/src="(\/assets\/[^\"]+\.js)"/)?.[1];
     expect(script).toBeDefined();
     expect((await exports.default.fetch('http://localhost' + script)).status).toBe(200);
+    const logo = html.match(/<img src="([^\"]+)"/)?.[1];
+    expect(logo).toBeDefined();
+    expect((await exports.default.fetch('http://localhost' + logo)).status).toBe(200);
+  });
+  it('publishes a sitemap of only the 20 canonical pages and an allow-all robots policy', async () => {
+    const sitemap = await exports.default.fetch('http://localhost/sitemap.xml');
+    expect(sitemap.status).toBe(200);
+    expect(sitemap.headers.get('content-type')).toContain('xml');
+    const xml = await sitemap.text();
+    expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
+    const urls = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]);
+    expect(urls).toHaveLength(20);
+    expect(urls).toEqual(supportedLocales.flatMap(locale => Object.values(pagePaths)
+      .map(path => 'https://packetrove.com' + localizedPath(path, locale))));
+    expect(xml).not.toMatch(/\.html|api\.packetrove|<lastmod>/);
+    const robots = await exports.default.fetch('http://localhost/robots.txt');
+    expect(robots.status).toBe(200);
+    expect(robots.headers.get('content-type')).toContain('text/plain');
+    expect(await robots.text()).toBe('User-agent: *\nAllow: /\n\nSitemap: https://packetrove.com/sitemap.xml\n');
   });
   it('serves the built website and bundled JavaScript', async () => {
     const response = await exports.default.fetch('http://localhost/');
@@ -40,18 +86,18 @@ describe('website in the Workers runtime', () => {
     expect(javascript.status).toBe(200);
     expect(javascript.headers.get('content-type')).toContain('javascript');
   });
-  it.each(localizedPages)('serves direct navigation to $path through static assets', async ({ locale, page, path }) => {
-    const response = await exports.default.fetch(`http://localhost${path}`, {
+  it.each(websitePages)('serves direct navigation to $pathname through static assets', async ({ pathname, locale, page }) => {
+    const response = await exports.default.fetch(`http://localhost${pathname}`, {
       headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
     });
     expect(response.status).toBe(200);
     expect(response.headers.get('content-type')).toContain('text/html');
     const html = await response.text();
     expect(html).toContain(`<title>${resources[locale].translation.meta[page].title}</title>`);
-    expect(html).toContain(`<meta property="og:url" content="https://packetrove.com${path}" />`);
+    expect(html).toContain(`<meta property="og:url" content="https://packetrove.com${pathname}" />`);
   });
-  it.each(localizedPages.filter(({ page }) => page !== 'home'))(
-    'preserves trailing-slash $path links and their query strings', async ({ locale, page, path }) => {
+  it.each(websitePages.filter(page => page.page !== 'home').map(page => page.pathname))(
+    'preserves trailing-slash %s links and their query strings', async path => {
       const response = await exports.default.fetch(`http://localhost${path}/?source=example`, {
         headers: { 'sec-fetch-mode': 'navigate' }, redirect: 'manual',
       });
@@ -61,6 +107,7 @@ describe('website in the Workers runtime', () => {
       expect(location.search).toBe('?source=example');
       const destination = await exports.default.fetch(location.href);
       expect(destination.status).toBe(200);
+      const { locale, page } = resolveRoute(path);
       expect(await destination.text()).toContain(`<title>${resources[locale].translation.meta[page].title}</title>`);
     },
   );

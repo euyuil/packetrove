@@ -31,7 +31,7 @@ describe('web page routing', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Calculate covering CIDR' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Refresh IP' })).toBeNull();
-    expect(document.title).toBe('Packetrove — Network tools for humans and agents');
+    expect(document.title).toBe('Packetrove — CIDR Calculator and Public IP Lookup');
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -73,7 +73,7 @@ describe('web page routing', () => {
     expect(screen.getByRole('heading', { name: 'Smallest Covering CIDR', level: 1 })).toBeDefined();
     expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBeNull();
-    expect(document.title).toBe('Smallest Covering CIDR — Packetrove');
+    expect(document.title).toBe('Smallest Covering CIDR Calculator — Packetrove');
     enter('203.0.113.1');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
     expect(fetch).not.toHaveBeenCalled();
@@ -85,7 +85,7 @@ describe('web page routing', () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'My Public IP', level: 1 })).toBeDefined();
     expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBe('page');
-    expect(document.title).toBe('My Public IP — Packetrove');
+    expect(document.title).toBe('What Is My IP? Public IP Lookup — Packetrove');
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
   });
 });

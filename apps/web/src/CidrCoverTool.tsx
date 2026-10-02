@@ -9,6 +9,7 @@ import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage, issueMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
+import { CidrExamples } from './CidrExamples';
 
 function inputRows(text: string) {
   return text.split(/\r?\n/).map((value, index) => ({ value: value.trim(), line: index + 1 }))
@@ -168,6 +169,7 @@ export function CidrCoverTool({ draft, onDraftChange }: {
         <Text size="sm" c="dimmed">{t($ => $.cidr.explanation)}</Text>
         <Text size="sm" c="dimmed">{t($ => $.cidr.countExplanation)}</Text>
       </Stack>
+      <CidrExamples />
     </Stack>
   );
 }

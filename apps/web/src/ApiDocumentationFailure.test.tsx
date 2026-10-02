@@ -18,7 +18,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
-  vi.doUnmock('./ApiDocumentation');
+  vi.doUnmock('./ApiReference');
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
   window.history.replaceState(null, '', '/');
@@ -26,7 +26,7 @@ afterEach(() => {
 
 async function application() {
   const documentation = deferred<DocumentationModule>();
-  vi.doMock('./ApiDocumentation', () => documentation.promise);
+  vi.doMock('./ApiReference', () => documentation.promise);
   const fetch = vi.fn();
   vi.stubGlobal('fetch', fetch);
   const core = await import('@packetrove/core');
@@ -135,7 +135,7 @@ describe('API documentation failure isolation', () => {
     act(() => { window.history.forward(); });
     await waitFor(() => expect(window.location.pathname).toBe('/docs/api'));
     expect(await screen.findByRole('heading', { name: 'API documentation is unavailable' })).toBeDefined();
-    expect(document.title).toBe('API documentation — Packetrove');
+    expect(document.title).toBe('Packetrove API Documentation — CIDR and Public IP');
     returnToCalculator();
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
     expect(calculation).toHaveBeenCalledTimes(1);
@@ -221,7 +221,7 @@ describe('API documentation failure isolation', () => {
     openDocumentation();
     await screen.findByRole('status');
     await act(async () => {
-      documentation.resolve({ default: () => <h1>Loaded documentation</h1> });
+      documentation.resolve({ default: () => <h2>Loaded documentation</h2> });
     });
     expect(await screen.findByRole('heading', { name: 'Loaded documentation' })).toBeDefined();
     expect(screen.queryByRole('alert')).toBeNull();
