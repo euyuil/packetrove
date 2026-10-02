@@ -114,7 +114,7 @@ export function CidrSubtractTool({ draft, onDraftChange }: {
                 <Text size="sm" c="dimmed">{t($ => $.cidr.entryCount, {
                   count: rows.include.length + rows.exclude.length, total: formatCount(rows.include.length + rows.exclude.length),
                 })}</Text>
-                <Button type="button" variant="subtle" size="xs" onClick={() => replaceLists('', '')}
+                <Button type="button" variant="default" size="xs" onClick={() => replaceLists('', '')}
                   disabled={!draft.include && !draft.exclude && !result && !error}>{t($ => $.cidr.clear)}</Button>
               </Group>
               <Group gap="sm">
