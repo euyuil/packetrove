@@ -47,6 +47,9 @@ export const en = {
   },
   api: {
     title: 'API documentation', loading: 'Loading API documentation…', specification: 'OpenAPI specification',
+    unavailableTitle: 'API documentation is unavailable',
+    unavailableDescription: 'The documentation could not be loaded or displayed. You can return to the calculator with your input, result, or validation errors preserved.',
+    returnToCalculator: 'Return to the calculator',
     description: "Explore the endpoints, copy request examples, and try the API without an account or API key. Sending a request submits its inputs to the API. Public IP checks observe your browser's connection.",
     englishReference: 'The interactive reference and specification are in English.',
   },
@@ -121,6 +124,9 @@ export const zhHans = {
   },
   api: {
     title: 'API 文档', loading: '正在加载 API 文档…', specification: 'OpenAPI 规范',
+    unavailableTitle: 'API 文档暂时无法显示',
+    unavailableDescription: '文档加载或显示失败。你可以返回计算器，继续使用当前输入、结果或验证提示。',
+    returnToCalculator: '返回计算器',
     description: '浏览接口、复制请求示例并试用 API，无需账户或 API 密钥。发送请求会将输入提交到 API；公网 IP 查询观察的是浏览器所用连接。',
     englishReference: '交互式接口文档与规范使用英文。',
   },
