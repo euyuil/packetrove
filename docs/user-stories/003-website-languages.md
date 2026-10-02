@@ -24,12 +24,13 @@ network results and share a link in my preferred language.
   supported locale, preserving query strings. Aliases are not canonical pages.
 - Let the URL determine the language. Provide a header dropdown with `English`,
   `Deutsch`, `Español`, `Français`, `Italiano`, `Português`, `Русский`,
-  `한국어`, `中文`, and `日本語` entries in that fixed order, without
+  `中文`, `日本語`, and `한국어` entries in that fixed order, without
   browser-language redirects or persistent storage.
-  Keep English first and retain the same order when switching languages.
+  Keep English first, group Chinese, Japanese, and Korean in that order, and
+  retain the same order when switching languages.
   Show the current language on its button and mark the current menu entry.
   Precede each language with its configured flag: British, German, Spanish,
-  French, Italian, Portuguese, Russian, South Korean, Chinese, or Japanese.
+  French, Italian, Portuguese, Russian, Chinese, Japanese, or South Korean.
   Chinese and Portuguese use generic menu names. Their default text remains
   Simplified Chinese and Brazilian Portuguese, with matching `zh-Hans` and
   `pt-BR` page metadata and number formatting. Flags are decorative visual cues.
