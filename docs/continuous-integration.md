@@ -26,7 +26,7 @@ The workflow runs `pnpm check`, which includes:
 - Wrangler deployment dry runs for the API and website Workers.
 - Shared calculation, CLI, web application, website isolation, API, and MCP tests.
   Worker tests execute in the local Workers runtime on the GitHub runner.
-- Prerendered bilingual content and metadata, hydration, canonical and alternate
+- Prerendered multilingual content and metadata, hydration, canonical and alternate
   language links, sitemap entries, and robots policy.
 
 The same command is available locally. Installation, builds, and tests receive
@@ -72,8 +72,8 @@ If the expected version is still unavailable at the deadline, the run fails
 with a version-readiness error before running the functional checks.
 
 Once the version is ready,
-`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all eight
-prerendered bilingual pages, metadata, canonical and alternate language links,
+`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all 20
+prerendered localized pages, metadata, canonical and alternate language links,
 the sitemap and robots policy, bundled assets, API results, OpenAPI document,
 modern and legacy MCP clients,
 Origin validation, anonymous browser CORS, and origin isolation. With

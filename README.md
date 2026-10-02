@@ -59,22 +59,33 @@ the returned address, and lookup results and errors are not cached.
 
 ## Website languages
 
-The website supports English and Simplified Chinese. English uses the existing
-URLs; Chinese starts at [the Chinese homepage](https://packetrove.com/zh/), with
-tools at `/zh/cidr` and `/zh/ip` and API documentation at `/zh/docs/api`.
+The website supports English, Simplified Chinese, Spanish, German, and Japanese.
+English uses the existing URLs. Other languages use a prefix for the homepage,
+CIDR calculator, public IP tool, and API documentation shell:
+
+| Language | Homepage | URL prefix |
+| --- | --- | --- |
+| English | [English homepage](https://packetrove.com/) | none |
+| 简体中文 | [Chinese homepage](https://packetrove.com/zh/) | `/zh` |
+| Español | [Spanish homepage](https://packetrove.com/es/) | `/es` |
+| Deutsch | [German homepage](https://packetrove.com/de/) | `/de` |
+| 日本語 | [Japanese homepage](https://packetrove.com/ja/) | `/ja` |
+
+For example, Spanish tools are at `/es/cidr` and `/es/ip`, and API documentation
+is at `/es/docs/api`.
 Use the language dropdown in the header to switch the current page. It shows
 the current language, with a British flag for English and a Chinese flag for
-Simplified Chinese. Menu entries use each language's own name and mark the
-current choice. The URL determines the language, so shared links and page
-reloads keep it; browser settings do not
-automatically redirect visitors.
+Simplified Chinese, plus Spanish, German, and Japanese flags for their respective
+languages. Menu entries use each language's own name and mark the current choice.
+The URL determines the language, so shared links and page reloads keep it;
+browser settings do not automatically redirect visitors.
 
 Changing languages in the same tab preserves the calculator draft and its
 result or validation error. It also keeps an ongoing public IP check and updates
 its labels without making another request. Drafts and IP results stay in memory.
 Translations ship with the web application and require no translation service.
 
-Production builds prerender all eight English and Chinese pages from the same
+Production builds prerender all 20 pages in the five languages from the same
 React components used in the browser. Headings, explanations, navigation links,
 and examples are present in the HTML before JavaScript runs. The browser then
 hydrates that HTML to enable the tools. CIDR inputs stay empty until entered;
@@ -83,7 +94,7 @@ and never embed a visitor's IP address.
 
 Page titles, descriptions, social metadata, canonical URLs, and alternate
 language links share one definition for builds and in-page navigation. Builds
-also generate `sitemap.xml` with the eight canonical URLs and `robots.txt` with
+also generate `sitemap.xml` with the 20 canonical URLs and `robots.txt` with
 its sitemap location. These URLs use the public `https://packetrove.com` origin;
 change `WEBSITE_ORIGIN` in `apps/web/src/i18n/page-metadata.ts` when self-hosting.
 

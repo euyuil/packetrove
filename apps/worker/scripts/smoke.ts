@@ -84,7 +84,7 @@ const robots = await timedFetch(`${origin}/robots.txt`);
 assert.equal(robots.status, 200, 'Robots status');
 assert.match(robots.headers.get('content-type') ?? '', /text\/plain/);
 assert.equal(await robots.text(), robotsText, 'Robots policy and sitemap reference');
-console.log('PASS eight prerendered bilingual pages, metadata, canonical and language links, sitemap, and robots policy');
+console.log(`PASS ${websitePages.length} prerendered localized pages, metadata, canonical and language links, sitemap, and robots policy`);
 const missingPage = await timedFetch(`${origin}/missing-page`, {
   headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
 });

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Anchor, Code, Group, Loader, Paper, Stack, Text, Title } from '@mantine/core';
 import { CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, PUBLIC_IP_PATH } from '@packetrove/contracts';
 import { getApiUrl } from './api';
+import { resolveLocale } from './i18n/locales';
 
 const ApiReference = lazy(() => import('./ApiReference'));
 
@@ -22,7 +23,7 @@ export default function ApiDocumentation() {
     <Text c="dimmed" size="sm">
       {t($ => $.api.description)}
     </Text>
-    {i18n.resolvedLanguage === 'zh-Hans' && <Text size="sm" c="dimmed">{t($ => $.api.englishReference)}</Text>}
+    {resolveLocale(i18n.resolvedLanguage) !== 'en' && <Text size="sm" c="dimmed">{t($ => $.api.englishReference)}</Text>}
     <Paper component="section" withBorder p="lg" aria-labelledby="cidr-api-heading">
       <Stack gap="sm">
         <Title order={2} size="h3" id="cidr-api-heading">POST {CIDR_COVER_PATH}</Title>

@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { Code, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { CIDR_COVER_EXAMPLES, MAX_INPUTS } from '@packetrove/contracts';
+import { resolveLocale } from './i18n/locales';
 
 export function CidrExamples() {
   const { t, i18n } = useTranslation();
-  const formatter = new Intl.NumberFormat(i18n.resolvedLanguage === 'zh-Hans' ? 'zh-Hans' : 'en');
+  const formatter = new Intl.NumberFormat(resolveLocale(i18n.resolvedLanguage));
   const titles = [t($ => $.cidr.exactExample), t($ => $.cidr.expandedExample), t($ => $.cidr.ipv6Example)];
   return <Stack component="section" aria-labelledby="examples-heading" gap="md">
     <Title order={2} size="h3" id="examples-heading">{t($ => $.cidr.examplesTitle)}</Title>

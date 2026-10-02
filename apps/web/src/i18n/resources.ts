@@ -1,3 +1,8 @@
+import { es } from './translations/es';
+import { de } from './translations/de';
+import { ja } from './translations/ja';
+import type { Locale } from './locales';
+
 export const en = {
   common: {
     home: 'Home', homeLabel: 'Packetrove home', navigation: 'Main navigation',
@@ -84,6 +89,7 @@ export const en = {
 } as const;
 
 type Translations<T> = { [Key in keyof T]: T[Key] extends string ? string : Translations<T[Key]> };
+export type TranslationResource = Translations<typeof en>;
 
 export const zhHans = {
   common: {
@@ -170,4 +176,7 @@ export const zhHans = {
   },
 } satisfies Translations<typeof en>;
 
-export const resources = { en: { translation: en }, 'zh-Hans': { translation: zhHans } };
+export const resources = {
+  en: { translation: en }, 'zh-Hans': { translation: zhHans },
+  es: { translation: es }, de: { translation: de }, ja: { translation: ja },
+} satisfies Record<Locale, { translation: TranslationResource }>;
