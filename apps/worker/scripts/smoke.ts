@@ -73,12 +73,13 @@ for (const page of websitePages) {
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
       ? text.api.cidrSummary : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
-    if (page.page === 'cidr' || page.page === 'ip') {
+    if (page.page === 'cidr' || page.page === 'ip' || page.page === 'subtract') {
       for (const question of Object.values(text.discovery[page.page].questions)) {
         assert(pageHtml.includes(escapeHtml(question.question)), `Tool question: ${path}`);
         assert(pageHtml.includes(escapeHtml(question.answer)), `Tool answer: ${path}`);
       }
     }
+    if (page.page === 'subtract') assert(!pageHtml.includes('data-mcp-tool='), `Subtraction remains browser-only: ${path}`);
     if (page.page !== 'mcp') {
       assert(pageHtml.includes('href="' + localizedPath(pagePaths.mcp, page.locale) + '"'), `MCP guide link: ${path}`);
     } else {

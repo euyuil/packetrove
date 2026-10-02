@@ -16,7 +16,7 @@ and share a link in my preferred language.
 - English pages have no language prefix. Use `/zh` for Chinese (`zh-Hans`),
   `/es` for Spanish (`es`), `/de` for German (`de`), `/ja` for Japanese (`ja`),
   `/fr` for French (`fr`), and `/pt` for Portuguese (`pt-BR`).
-  Each prefix has a homepage, `/cidr`, `/public-ip`, `/docs/api`, and `/docs/mcp` page.
+  Each prefix has a homepage, `/cidr`, `/cidr/subtract`, `/public-ip`, `/docs/api`, and `/docs/mcp` page.
   Reserve short language codes and language-tag names for locale prefixes;
   choose descriptive tool URL names according to `AGENTS.md`. Legacy `/ip`,
   `/ip/`, and `/ip.html` links redirect permanently to `/public-ip` in each

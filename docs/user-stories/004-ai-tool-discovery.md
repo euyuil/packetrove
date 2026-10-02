@@ -10,6 +10,7 @@ or calculation limits.
 
 This story builds on [smallest covering CIDR](001-smallest-covering-cidr.md),
 [current public IP](002-current-public-ip.md), and
+[exact CIDR subtraction](004-cidr-subtraction.md), with
 [website languages](003-website-languages.md). It covers discoverable website
 content and MCP usage. Improved search inclusion, citations, or recommendations
 are outcomes to observe after deployment, not guarantees of this implementation.
@@ -23,6 +24,10 @@ are outcomes to observe after deployment, not guarantees of this implementation.
 - `/public-ip` answers questions about request connection addresses, VPN/proxy exits,
   one-family results, hosted clients, and application storage. Its MCP section
   identifies `public-ip`, empty arguments, and a documentation-only result.
+- `/cidr/subtract` answers questions about WireGuard exceptions, remaining
+  allocation gaps, exclusion overlap, and exact set subtraction. It states that
+  subtraction is a browser/core tool; there is no subtraction MCP/API/CLI
+  operation. It links to the MCP guide for the two available remote tools.
 - `/docs/mcp` centralizes Claude Code and Codex remote HTTP configuration,
   `/mcp` inspection, `tools/list` discovery, both tool examples, result decoding,
   errors, and links back to the tools. Reading it makes no tool calls.
@@ -51,6 +56,12 @@ strings. Review expansion before using an allowlist or blocklist result. It
 does not optimize a whole list to a target entry count or apply firewall rules.
 The browser and built CLI calculate locally; remote API and MCP calls submit
 inputs to the service.
+
+Exact CIDR subtraction is a separate browser/core operation. It subtracts the
+exclusion union from the included union without introducing addresses, returns
+an exact CIDR list, and does not establish live network availability or configure
+WireGuard. Refer callers to `/cidr/subtract` for these tasks; do not invent a
+subtraction MCP tool, Web API endpoint, or CLI command.
 
 `public-ip` observes the connection making that request. A hosted MCP
 client can have a different exit address from the user's device. Recommend
@@ -101,6 +112,8 @@ documentation addresses. Do not submit private firewall inputs for evaluation.
 | Out of scope | Find my private LAN address, original address before the proxy, and both public address families in one call. | Explain the tool's scope; do not invent addresses or dual-stack discovery. |
 | Out of scope | Optimize my entire firewall list to exactly ten entries and apply the rules. | Clarify the optimization goal and separate implementation; neither tool optimizes a whole list or edits rules. |
 | Unavailable | `public-ip` returned `CLIENT_IP_UNAVAILABLE`. What IP should I use? | Explain unavailable connection metadata and how to check the intended path; never return the sample `203.0.113.1` as a measured result. |
+| Indirect | Prepare WireGuard AllowedIPs for `203.0.113.0/24` excluding `203.0.113.64/26`. | `/cidr/subtract`; `203.0.113.0/26, 203.0.113.128/25`, 192 remaining addresses; browser calculation and review before applying. |
+| Out of scope | Call Packetrove's MCP subtraction tool and prove the remaining subnets are unused. | Explain that subtraction is browser/core only and gaps are relative to the supplied inputs; invent neither a remote tool nor a live availability result. |
 
 No external assistant evaluation is recorded by this change. Keep future
 observations separate from automated correctness results; a successful tool call

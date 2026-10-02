@@ -51,6 +51,29 @@ describe('MCP examples in production HTML', () => {
 });
 
 describe('localized MCP guide navigation', () => {
+  it.each(supportedLocales)('keeps both subtraction lists and the exact result when visiting the %s guide', locale => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    window.history.replaceState({}, '', localizedPath(pagePaths.subtract, locale));
+    render(<App />);
+    const text = resources[locale].translation;
+    fireEvent.change(screen.getByLabelText(text.subtract.includeLabel), { target: { value: '203.0.113.0/24' } });
+    fireEvent.change(screen.getByLabelText(text.subtract.excludeLabel), { target: { value: '203.0.113.64/26' } });
+    fireEvent.click(screen.getByRole('button', { name: text.subtract.calculate }));
+    expect(screen.getByText(text.discovery.subtract.questions.access.answer)).toBeDefined();
+    expect(document.querySelector('[data-mcp-tool]')).toBeNull();
+    fireEvent.click(screen.getByRole('link', { name: text.home.mcpGuide }));
+    expect(window.location.pathname).toBe(localizedPath(pagePaths.mcp, locale));
+    fireEvent.click(screen.getByRole('link', { name: text.subtract.title }));
+    expect((screen.getByLabelText(text.subtract.includeLabel) as HTMLTextAreaElement).value).toBe('203.0.113.0/24');
+    expect((screen.getByLabelText(text.subtract.excludeLabel) as HTMLTextAreaElement).value).toBe('203.0.113.64/26');
+    expect((screen.getByLabelText(text.subtract.output) as HTMLTextAreaElement).value)
+      .toBe('203.0.113.0/26\n203.0.113.128/25');
+    expect(fetch).not.toHaveBeenCalled();
+    expect(storage).not.toHaveBeenCalled();
+  });
+
   it.each(supportedLocales)('links the %s homepage and API reference to the same-language guide without fetching', async locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);

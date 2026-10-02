@@ -20,6 +20,8 @@ export const en = {
     openSource: 'Open source', anonymous: 'No account or API key required',
     cidrDescription: 'Find the smallest single CIDR covering IPv4 or IPv6 addresses and ranges. Calculate locally in your browser, with exact address counts and a clear explanation of any extra coverage.',
     cidrLink: 'Open CIDR calculator',
+    subtractDescription: 'Remove excluded networks from your included address space. Copy an exact CIDR list for WireGuard exceptions or inspect gaps after known allocations, without uploading your inputs.',
+    subtractLink: 'Open CIDR subtraction',
     ipDescription: 'Check the public IP used by your connection. If you use a VPN or proxy, the result shows its exit address; it does not reveal your private local address.',
     ipLink: 'Check my public IP',
     apiTitle: 'Web API', apiDescription: 'Call Packetrove from any HTTP client. For example, get your current public IP with curl:',
@@ -51,6 +53,27 @@ export const en = {
     exampleResult: '{{cidr}} covers {{covered}} addresses and adds {{additional}}.',
     line: 'Line {{line}}: {{message}}',
   },
+  subtract: {
+    title: 'CIDR Subtraction', description: 'Subtract excluded IPv4 or IPv6 networks from your included address space. Get the smallest exact CIDR list, with no added addresses.',
+    inputs: 'Your address lists', include: 'Include', exclude: 'Exclude',
+    includeLabel: 'Included IP addresses or CIDRs', excludeLabel: 'Excluded IP addresses or CIDRs',
+    includeHelp: 'One entry per line. Include at least one address or range.',
+    excludeHelp: 'One entry per line. Leave empty to simplify the include list without removing addresses.',
+    calculate: 'Subtract CIDRs', result: 'Remaining address space', output: 'Remaining CIDRs',
+    included: 'Included addresses', removed: 'Addresses removed', remaining: 'Remaining addresses', blocks: 'Result CIDRs',
+    copyList: 'Copy list', copyAllowed: 'Copy AllowedIPs', copySuccess: 'CIDR list copied.', allowedSuccess: 'AllowedIPs value copied.',
+    copyFailure: 'Copy is unavailable. Select and copy the list above.',
+    formats: 'Copy list separates CIDRs with newlines. Copy AllowedIPs separates them with commas for the WireGuard setting value.',
+    emptyTitle: 'No addresses remain', emptyDescription: 'The exclusions removed every included address. There is no CIDR list to copy.',
+    pendingTitle: 'Your result will appear here', pendingDescription: 'Enter an include list and optional exclusions to calculate the exact remainder.',
+    explanationTitle: 'What the result means',
+    explanation: 'The calculation subtracts the union of exclusions from the union of included ranges. Overlaps count once, host bits are normalized, and no addresses are added. All addresses in a range count, including network and broadcast addresses.',
+    review: 'Use the result for WireGuard exceptions or to inspect gaps after known allocations. Gaps are relative to your inputs; they do not prove addresses are unused on the live network. Review the list before applying it.',
+    limits: 'Use one address family and at most {{inputs}} entries across both lists, with at most {{length}} characters per entry. Results may contain up to {{outputs}} CIDRs; larger results return an error with no partial list.',
+    examplesTitle: 'Subtraction examples', example: 'Remove {{exclude}} from {{include}}:',
+    line: '{{list}}, line {{line}}: {{message}}', listIssue: '{{list}}: {{message}}',
+    outputLimitTitle: 'The result contains too many CIDRs.',
+  },
   ip: {
     title: 'My Public IP', description: 'See the public IP address used by your current connection to Packetrove.',
     online: 'Checked online · Not stored by the application', connection: 'Your current connection', checking: 'Checking your public IP…',
@@ -72,6 +95,31 @@ export const en = {
     ipSummary: 'Return the public IP observed for this HTTP connection. Request text/plain for a single address followed by a newline, or application/json for an address and family. Responses are not cached. A VPN or proxy changes the observed exit address.',
   },
   discovery: {
+    subtract: {
+      title: "Questions about CIDR subtraction",
+      questions: {
+        wireguard: {
+          question: "How do I prepare WireGuard AllowedIPs exceptions?",
+          answer: "Put the intended tunnel ranges in Include and the exceptions in Exclude. Copy AllowedIPs copies the exact remaining CIDRs as a setting value. Review it before applying; Packetrove does not configure WireGuard or change routes."
+        },
+        remaining: {
+          question: "Do remaining ranges prove that addresses are unused?",
+          answer: "They show gaps relative to your include and exclude lists. The tool does not inspect live network usage or find subnets of a requested size."
+        },
+        outside: {
+          question: "What happens to overlapping or out-of-range exclusions?",
+          answer: "Overlaps on each side count once. Only addresses also present in Include are removed; exclusions outside it remove nothing. Complete removal succeeds with an empty CIDR list and zero remaining addresses."
+        },
+        covering: {
+          question: "How does subtraction differ from a covering CIDR?",
+          answer: "Subtraction preserves the exact remainder of union(include) minus union(exclude), including gaps. It returns a minimal sorted list of canonical CIDRs without adding addresses. A single covering CIDR can include extra addresses."
+        },
+        access: {
+          question: "Can I call subtraction through MCP, the Web API, or CLI?",
+          answer: "Subtraction currently runs in the browser and shared calculation core. Browser inputs stay local. MCP, Web API, and CLI offer the covering-CIDR and public-IP operations; they do not expose subtraction. The MCP guide documents those available operations."
+        }
+      }
+    },
     cidr: {
       title: "Questions about covering CIDRs",
       mcpTitle: "Use this calculator through MCP",
@@ -161,11 +209,13 @@ export const en = {
     invalidAddress: 'Use a standard IPv4 or IPv6 address with an optional valid CIDR prefix. Zone identifiers and IPv4 leading zeros are not supported.',
     emptyInputs: 'Enter at least one IP address or CIDR range.', tooManyInputs: 'Use at most {{limit}} entries per calculation.',
     inputTooLong: 'Each entry must contain at most {{limit}} characters.', expectedFamily: 'Expected {{family}} to match the first input.',
+    tooManyOutputs: 'The complete result exceeds {{limit}} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.',
   },
   meta: {
     mcp: {"title": "Packetrove MCP Guide — CIDR and Public IP Tools", "description": "Connect Claude Code or Codex to Packetrove over MCP. Learn tool arguments, exact CIDR results, public IP connection boundaries, and error handling without an API key."},
     home: { title: 'Packetrove — CIDR Calculator and Public IP Lookup', description: 'Calculate covering CIDRs locally in your browser and check your public IP. Open source IPv4 and IPv6 tools for the web, API, CLI, and MCP, with no account required.' },
     cidr: { title: 'Smallest Covering CIDR Calculator — Packetrove', description: 'Find the smallest single CIDR covering IPv4 or IPv6 addresses and ranges. Calculate in your browser with exact address counts, extra coverage, and worked examples.' },
+    subtract: { title: 'CIDR Subtraction Calculator — Packetrove', description: 'Subtract IPv4 or IPv6 CIDR lists locally in your browser. Copy an exact minimal list for WireGuard AllowedIPs or inspect remaining address space after known allocations.' },
     ip: { title: 'What Is My IP? Public IP Lookup — Packetrove', description: 'Check the public IPv4 or IPv6 address used by your current connection. Understand VPN and proxy exit addresses without an account.' },
     api: { title: 'Packetrove API Documentation — CIDR and Public IP', description: 'Use the Packetrove API to calculate covering CIDRs and check public IP addresses. Copy curl examples and explore the OpenAPI reference without an API key.' },
     notFound: { title: 'Page not found — Packetrove', description: 'This Packetrove page does not exist. Return to the homepage to use the network tools.' },
@@ -191,6 +241,8 @@ export const zhHans = {
     openSource: '开源', anonymous: '无需账户或 API 密钥',
     cidrDescription: '查找覆盖 IPv4 或 IPv6 地址和网段的最小单个 CIDR。在浏览器内完成计算，查看精确地址数，以及额外覆盖范围的说明。',
     cidrLink: '打开 CIDR 计算器',
+    subtractDescription: '从包含的地址空间中扣除排除网段。复制精确的 CIDR 列表来设置 WireGuard 例外，或查看扣除已知分配后的空隙，无需上传输入。',
+    subtractLink: '打开 CIDR 相减计算器',
     ipDescription: '查询当前连接使用的公网 IP。使用 VPN 或代理时，结果显示出口地址，不会显示本地私有地址。',
     ipLink: '查询我的公网 IP',
     apiTitle: 'Web API', apiDescription: '使用任意 HTTP 客户端调用 Packetrove。例如，通过 curl 查看当前公网 IP：',
@@ -222,6 +274,27 @@ export const zhHans = {
     exampleResult: '{{cidr}} 覆盖 {{covered}} 个地址，额外增加 {{additional}} 个地址。',
     line: '第 {{line}} 行：{{message}}',
   },
+  subtract: {
+    title: 'CIDR 相减', description: '从包含的 IPv4 或 IPv6 地址空间中扣除排除网段，得到不增加额外地址的最少 CIDR 列表。',
+    inputs: '输入地址列表', include: '包含列表', exclude: '排除列表',
+    includeLabel: '包含的 IP 地址或 CIDR 网段', excludeLabel: '排除的 IP 地址或 CIDR 网段',
+    includeHelp: '每行输入一项，至少包含一个地址或网段。',
+    excludeHelp: '每行输入一项。留空时只精简包含列表，不移除地址。',
+    calculate: '计算 CIDR 相减', result: '剩余地址空间', output: '剩余 CIDR 列表',
+    included: '包含地址数', removed: '实际移除地址数', remaining: '剩余地址数', blocks: '结果 CIDR 数',
+    copyList: '复制列表', copyAllowed: '复制 AllowedIPs', copySuccess: '已复制 CIDR 列表。', allowedSuccess: '已复制 AllowedIPs 值。',
+    copyFailure: '无法使用剪贴板，请选中并复制上方列表。',
+    formats: '复制列表以换行分隔 CIDR；复制 AllowedIPs 以逗号分隔，可用于 WireGuard 设置的值。',
+    emptyTitle: '没有剩余地址', emptyDescription: '排除列表已移除全部包含地址，没有可复制的 CIDR 列表。',
+    pendingTitle: '计算结果将在这里显示', pendingDescription: '输入包含列表和可选的排除列表，计算精确的剩余范围。',
+    explanationTitle: '如何理解结果',
+    explanation: '先分别合并包含和排除范围，再从包含范围中扣除排除范围。重叠地址只计数一次，含主机位的 CIDR 会规范化，不会增加额外地址。网段内所有地址均计入，包括网络地址和广播地址。',
+    review: '可用结果设置 WireGuard 例外，或查看扣除已知分配后的空隙。空隙只相对于输入而言，不代表这些地址在真实网络中无人使用。应用前请检查列表。',
+    limits: '一次计算使用同一种地址类型，两侧列表合计最多 {{inputs}} 项，每项最多 {{length}} 个字符。结果最多 {{outputs}} 个 CIDR，超过上限会报错，不返回部分列表。',
+    examplesTitle: 'CIDR 相减示例', example: '从 {{include}} 中扣除 {{exclude}}：',
+    line: '{{list}}第 {{line}} 行：{{message}}', listIssue: '{{list}}：{{message}}',
+    outputLimitTitle: '结果中的 CIDR 数量过多。',
+  },
   ip: {
     title: '我的公网 IP', description: '查看当前连接到 Packetrove 时使用的公网 IP 地址。',
     online: '在线查询 · 应用不存储结果', connection: '当前连接', checking: '正在查询公网 IP…',
@@ -243,6 +316,31 @@ export const zhHans = {
     ipSummary: '返回本次 HTTP 连接所使用的公网 IP。请求 text/plain 可获得地址及一个换行符，请求 application/json 可获得地址和地址族。响应不缓存；使用 VPN 或代理会改变观察到的出口地址。',
   },
   discovery: {
+    subtract: {
+      title: "关于 CIDR 扣除的常见问题",
+      questions: {
+        wireguard: {
+          question: "如何生成 WireGuard AllowedIPs 的例外列表？",
+          answer: "在包含列表中填写希望进入隧道的地址范围，在排除列表中填写例外。复制 AllowedIPs 会得到精确剩余 CIDR 列表的配置值。应用前请检查；Packetrove 不会配置 WireGuard 或修改路由。"
+        },
+        remaining: {
+          question: "剩余范围能证明这些地址未被使用吗？",
+          answer: "它只表示相对于包含和排除列表的空缺。工具不会检查实际网络使用情况，也不会寻找指定大小的子网。"
+        },
+        outside: {
+          question: "排除范围重叠或超出包含范围时会怎样？",
+          answer: "两侧的重叠地址都只计一次。只扣除同时位于包含列表中的地址；范围外的排除项不会移除地址。全部扣除是成功的空结果，返回零个 CIDR 和零个剩余地址。"
+        },
+        covering: {
+          question: "扣除与覆盖 CIDR 有什么区别？",
+          answer: "扣除精确保留包含列表并集减去排除列表并集后的剩余集合，包括其中的间隙。结果是按顺序排列的最少规范 CIDR 列表，不会新增地址。单个覆盖 CIDR 则可能包含额外地址。"
+        },
+        access: {
+          question: "能通过 MCP、Web API 或 CLI 调用扣除吗？",
+          answer: "扣除目前在浏览器和共享计算核心中运行，浏览器输入保留在本地。MCP、Web API 和 CLI 提供覆盖 CIDR 与公网 IP 操作，尚未开放扣除。MCP 指南介绍这些已提供的操作。"
+        }
+      }
+    },
     cidr: {
       title: "覆盖 CIDR 常见问题",
       mcpTitle: "通过 MCP 使用计算器",
@@ -332,11 +430,13 @@ export const zhHans = {
     invalidAddress: '请输入标准 IPv4 或 IPv6 地址，可附带有效的 CIDR 前缀。不支持区域标识符或 IPv4 地址中的前导零。',
     emptyInputs: '请至少输入一个 IP 地址或 CIDR 网段。', tooManyInputs: '每次计算最多支持 {{limit}} 项。',
     inputTooLong: '每项最多支持 {{limit}} 个字符。', expectedFamily: '请使用 {{family}}，与第一项保持一致。',
+    tooManyOutputs: '完整结果超过 {{limit}} 个 CIDR。请减少排除项或缩小包含范围，不会返回部分结果。',
   },
   meta: {
     mcp: {"title": "Packetrove MCP 接入指南 — CIDR 与公网 IP 工具", "description": "通过 MCP 将 Claude Code 或 Codex 接入 Packetrove。了解参数、精确 CIDR 结果、公网 IP 的连接归属与错误处理，无需 API 密钥。"},
     home: { title: 'Packetrove — CIDR 计算器与公网 IP 查询', description: '在浏览器内计算覆盖 CIDR，并查询当前公网 IP。开源 IPv4 与 IPv6 网络工具，支持网页、API、命令行和 MCP，无需账户。' },
     cidr: { title: '最小覆盖 CIDR 计算器 — Packetrove', description: '在浏览器内计算覆盖 IPv4 或 IPv6 地址和网段的最小单个 CIDR，查看精确地址数、额外覆盖范围与计算示例。' },
+    subtract: { title: 'CIDR 相减计算器 — Packetrove', description: '在浏览器内完成 IPv4 或 IPv6 CIDR 列表相减，复制精确的最少列表用于 WireGuard AllowedIPs，或查看扣除已知分配后的剩余地址空间。' },
     ip: { title: '我的公网 IP 查询 — Packetrove', description: '查询当前连接使用的公网 IPv4 或 IPv6 地址，了解 VPN 与代理出口地址的含义，无需账户。' },
     api: { title: 'Packetrove API 文档 — CIDR 与公网 IP', description: '使用 Packetrove API 计算覆盖 CIDR 与查询公网 IP，复制 curl 请求示例并浏览 OpenAPI 交互式文档，无需 API 密钥。' },
     notFound: { title: '页面不存在 — Packetrove', description: '此 Packetrove 页面不存在，请返回首页使用网络工具。' },

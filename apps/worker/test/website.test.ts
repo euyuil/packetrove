@@ -27,9 +27,11 @@ describe('website in the Workers runtime', () => {
     expect(html).toMatch(new RegExp('<h1[^>]*>' + heading + '</h1>'));
     expect(html).toContain('<main');
     expect(html).toContain('href="' + localizedPath('/cidr', locale) + '"');
+    expect(html).toContain('href="' + localizedPath('/cidr/subtract', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
+      expect(html).toContain(text.home.subtractDescription);
       expect(html).toContain(text.home.ipDescription);
     } else if (page === 'cidr') {
       expect(html).toContain(text.cidr.explanation);
@@ -37,6 +39,14 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('2001:db8::/63');
       expect(html).toContain(new Intl.NumberFormat(locale).format(36_893_488_147_419_103_232n));
       expect(html).toContain('<textarea');
+      expect(html).not.toMatch(/<textarea[^>]*>[^<]+<\/textarea>/);
+    } else if (page === 'subtract') {
+      expect(html).toContain(text.subtract.explanation);
+      expect(html).toContain(text.subtract.review);
+      expect(html).toContain(text.subtract.examplesTitle);
+      expect(html).toContain('203.0.113.128/25');
+      expect(html).toContain('2001:db8::8/125');
+      expect(html.match(/<textarea\b/g)).toHaveLength(2);
       expect(html).not.toMatch(/<textarea[^>]*>[^<]+<\/textarea>/);
     } else if (page === 'ip') {
       expect(html).toContain(text.ip.explanation);
@@ -54,12 +64,13 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('structuredContent');
       expect(html).toContain('CLIENT_IP_UNAVAILABLE');
     }
-    if (page === 'cidr' || page === 'ip') {
+    if (page === 'cidr' || page === 'ip' || page === 'subtract') {
       for (const question of Object.values(text.discovery[page].questions)) {
         expect(html).toContain(escapeHtml(question.question));
         expect(html).toContain(escapeHtml(question.answer));
       }
     }
+    if (page === 'subtract') expect(html).not.toContain('data-mcp-tool=');
     if (page !== 'mcp') {
       expect(html).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
     }

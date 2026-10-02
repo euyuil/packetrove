@@ -15,6 +15,8 @@ export const de = {
     openSource: 'Open Source', anonymous: 'Kein Konto oder API-Schlüssel erforderlich',
     cidrDescription: 'Finden Sie das kleinste einzelne CIDR-Netz, das IPv4- oder IPv6-Adressen und Bereiche abdeckt. Berechnen Sie es lokal im Browser mit exakten Adresszahlen und einer klaren Erklärung zusätzlicher Abdeckung.',
     cidrLink: 'CIDR-Rechner öffnen',
+    subtractDescription: 'Entferne ausgeschlossene Netze aus dem eingeschlossenen Adressraum. Kopiere eine exakte CIDR-Liste für WireGuard-Ausnahmen oder prüfe Lücken nach bekannten Zuweisungen, ohne deine Eingaben hochzuladen.',
+    subtractLink: 'CIDR-Subtraktion öffnen',
     ipDescription: 'Prüfen Sie die öffentliche IP-Adresse Ihrer Verbindung. Bei einem VPN oder Proxy zeigt das Ergebnis dessen Ausgangsadresse; Ihre private lokale Adresse wird nicht angezeigt.',
     ipLink: 'Meine öffentliche IP-Adresse prüfen',
     apiTitle: 'Web-API', apiDescription: 'Rufen Sie Packetrove mit einem beliebigen HTTP-Client auf. Fragen Sie zum Beispiel Ihre aktuelle öffentliche IP-Adresse mit curl ab:',
@@ -46,6 +48,43 @@ export const de = {
     exampleResult: '{{cidr}} deckt {{covered}} Adressen ab und fügt {{additional}} hinzu.',
     line: 'Zeile {{line}}: {{message}}',
   },
+  subtract: {
+    title: 'CIDR-Subtraktion',
+    description: 'Ziehe ausgeschlossene IPv4- oder IPv6-Netze vom eingeschlossenen Adressraum ab. Erhalte die kleinste exakte CIDR-Liste, ohne zusätzliche Adressen.',
+    inputs: 'Deine Adresslisten',
+    include: 'Einschließen',
+    exclude: 'Ausschließen',
+    includeLabel: 'Eingeschlossene IP-Adressen oder CIDRs',
+    excludeLabel: 'Ausgeschlossene IP-Adressen oder CIDRs',
+    includeHelp: 'Ein Eintrag pro Zeile. Schließe mindestens eine Adresse oder einen Bereich ein.',
+    excludeHelp: 'Ein Eintrag pro Zeile. Leer lassen, um die eingeschlossene Liste zu vereinfachen, ohne Adressen zu entfernen.',
+    calculate: 'CIDRs subtrahieren',
+    result: 'Verbleibender Adressraum',
+    output: 'Verbleibende CIDRs',
+    included: 'Eingeschlossene Adressen',
+    removed: 'Entfernte Adressen',
+    remaining: 'Verbleibende Adressen',
+    blocks: 'CIDRs im Ergebnis',
+    copyList: 'Liste kopieren',
+    copyAllowed: 'AllowedIPs kopieren',
+    copySuccess: 'CIDR-Liste kopiert.',
+    allowedSuccess: 'AllowedIPs-Wert kopiert.',
+    copyFailure: 'Kopieren ist nicht möglich. Wähle die Liste oben aus und kopiere sie.',
+    formats: 'Liste kopieren trennt CIDRs durch Zeilenumbrüche. AllowedIPs kopieren trennt sie durch Kommas für den Wert der WireGuard-Einstellung.',
+    emptyTitle: 'Keine Adressen verbleiben',
+    emptyDescription: 'Die Ausschlüsse haben alle eingeschlossenen Adressen entfernt. Es gibt keine CIDR-Liste zum Kopieren.',
+    pendingTitle: 'Dein Ergebnis erscheint hier',
+    pendingDescription: 'Gib eine eingeschlossene Liste und optionale Ausschlüsse ein, um den exakten Rest zu berechnen.',
+    explanationTitle: 'Was das Ergebnis bedeutet',
+    explanation: 'Die Berechnung zieht die Vereinigung der Ausschlüsse von der Vereinigung der eingeschlossenen Bereiche ab. Überschneidungen werden einmal gezählt, Host-Bits werden normalisiert und keine Adressen hinzugefügt. Alle Adressen eines Bereichs zählen, einschließlich Netzwerk- und Broadcast-Adressen.',
+    review: 'Nutze das Ergebnis für WireGuard-Ausnahmen oder um Lücken nach bekannten Zuweisungen zu prüfen. Die Lücken beziehen sich auf deine Eingaben; sie beweisen nicht, dass die Adressen im tatsächlichen Netzwerk ungenutzt sind. Prüfe die Liste vor der Anwendung.',
+    limits: 'Verwende eine Adressfamilie und insgesamt höchstens {{inputs}} Einträge in beiden Listen, mit höchstens {{length}} Zeichen pro Eintrag. Ergebnisse dürfen bis zu {{outputs}} CIDRs enthalten; größere Ergebnisse liefern einen Fehler ohne Teilliste.',
+    examplesTitle: 'Subtraktionsbeispiele',
+    example: '{{exclude}} von {{include}} abziehen:',
+    line: '{{list}}, Zeile {{line}}: {{message}}',
+    listIssue: '{{list}}: {{message}}',
+    outputLimitTitle: 'Das Ergebnis enthält zu viele CIDRs.',
+  },
   ip: {
     title: 'Meine öffentliche IP-Adresse', description: 'Sehen Sie die öffentliche IP-Adresse Ihrer aktuellen Verbindung zu Packetrove.',
     online: 'Online-Abfrage · Die Anwendung speichert das Ergebnis nicht', connection: 'Ihre aktuelle Verbindung', checking: 'Öffentliche IP-Adresse wird abgefragt…',
@@ -67,6 +106,31 @@ export const de = {
     ipSummary: 'Liefert die öffentliche IP-Adresse dieser HTTP-Verbindung. Fordern Sie text/plain für eine Adresse mit anschließendem Zeilenumbruch oder application/json für Adresse und Adressfamilie an. Antworten werden nicht zwischengespeichert. Ein VPN oder Proxy verändert die beobachtete Ausgangsadresse.',
   },
   discovery: {
+    subtract: {
+      title: "Fragen zur CIDR-Subtraktion",
+      questions: {
+        wireguard: {
+          question: "Wie erstelle ich WireGuard-Ausnahmen für AllowedIPs?",
+          answer: "Tragen Sie die gewünschten Tunnelbereiche unter Einschließen und die Ausnahmen unter Ausschließen ein. AllowedIPs kopieren liefert die exakten verbleibenden CIDRs als Einstellungswert. Prüfen Sie ihn vor der Anwendung; Packetrove konfiguriert weder WireGuard noch Routen."
+        },
+        remaining: {
+          question: "Beweisen verbleibende Bereiche, dass Adressen ungenutzt sind?",
+          answer: "Sie zeigen Lücken relativ zu Ihren Einschluss- und Ausschlusslisten. Das Werkzeug prüft keine tatsächliche Netznutzung und sucht keine Subnetze einer bestimmten Größe."
+        },
+        outside: {
+          question: "Was geschieht mit überlappenden oder außerhalb liegenden Ausschlüssen?",
+          answer: "Überschneidungen zählen auf jeder Seite einmal. Entfernt werden nur Adressen, die auch eingeschlossen sind; außerhalb liegende Ausschlüsse entfernen nichts. Vollständige Entfernung ist ein erfolgreiches Ergebnis mit einer leeren CIDR-Liste und null verbleibenden Adressen."
+        },
+        covering: {
+          question: "Wie unterscheidet sich Subtraktion von einem abdeckenden CIDR?",
+          answer: "Subtraktion erhält exakt die Vereinigung der eingeschlossenen Bereiche abzüglich der ausgeschlossenen Bereiche, einschließlich Lücken. Sie liefert eine minimale sortierte Liste kanonischer CIDRs ohne zusätzliche Adressen. Ein einzelnes abdeckendes CIDR kann zusätzliche Adressen enthalten."
+        },
+        access: {
+          question: "Kann ich Subtraktion über MCP, Web-API oder CLI aufrufen?",
+          answer: "Subtraktion läuft derzeit im Browser und im gemeinsamen Berechnungskern. Browsereingaben bleiben lokal. MCP, Web-API und CLI bieten CIDR-Abdeckung und öffentliche IP-Abfragen an, aber keine Subtraktion. Die MCP-Anleitung beschreibt diese verfügbaren Operationen."
+        }
+      }
+    },
     cidr: {
       title: "Fragen zu abdeckenden CIDR-Netzen",
       mcpTitle: "Den Rechner über MCP verwenden",
@@ -156,11 +220,13 @@ export const de = {
     invalidAddress: 'Verwenden Sie eine standardmäßige IPv4- oder IPv6-Adresse mit einem optionalen gültigen CIDR-Präfix. Zonenkennungen und führende Nullen in IPv4-Adressen werden nicht unterstützt.',
     emptyInputs: 'Geben Sie mindestens eine IP-Adresse oder ein CIDR-Netz ein.', tooManyInputs: 'Verwenden Sie höchstens {{limit}} Einträge pro Berechnung.',
     inputTooLong: 'Jeder Eintrag darf höchstens {{limit}} Zeichen enthalten.', expectedFamily: 'Verwenden Sie {{family}}, passend zur ersten Eingabe.',
+    tooManyOutputs: 'Das vollständige Ergebnis überschreitet {{limit}} CIDRs. Verwende weniger Ausschlüsse oder kleinere eingeschlossene Bereiche. Es wird kein Teilergebnis zurückgegeben.',
   },
   meta: {
     mcp: {"title": "Packetrove MCP-Anleitung — CIDR und öffentliche IP", "description": "Verbinde Claude Code oder Codex über MCP mit Packetrove. Erfahre mehr über Argumente, exakte CIDR-Ergebnisse, IP-Verbindungsgrenzen und Fehlerbehandlung ohne API-Schlüssel."},
     home: { title: 'Packetrove — CIDR-Rechner und öffentliche IP-Abfrage', description: 'Berechnen Sie umfassende CIDR-Netze lokal im Browser und prüfen Sie Ihre öffentliche IP-Adresse. Open-Source-Werkzeuge für IPv4 und IPv6 über Web, API, CLI und MCP, ohne Konto.' },
     cidr: { title: 'Rechner für das kleinste umfassende CIDR-Netz — Packetrove', description: 'Finden Sie das kleinste einzelne CIDR-Netz für IPv4- oder IPv6-Adressen und Bereiche. Berechnen Sie es im Browser mit exakten Adresszahlen, zusätzlicher Abdeckung und Beispielen.' },
+    subtract: { title: 'CIDR-Subtraktionsrechner — Packetrove', description: 'Subtrahiere IPv4- oder IPv6-CIDR-Listen lokal im Browser. Kopiere eine exakte minimale Liste für WireGuard AllowedIPs oder prüfe den verbleibenden Adressraum nach bekannten Zuweisungen.' },
     ip: { title: 'Wie lautet meine IP? Öffentliche IP-Abfrage — Packetrove', description: 'Prüfen Sie die öffentliche IPv4- oder IPv6-Adresse Ihrer Verbindung und verstehen Sie VPN- und Proxy-Ausgangsadressen, ohne Konto.' },
     api: { title: 'Packetrove-API — CIDR und öffentliche IP-Adresse', description: 'Berechnen Sie umfassende CIDR-Netze und prüfen Sie öffentliche IP-Adressen mit der Packetrove-API. Kopieren Sie curl-Beispiele und erkunden Sie die OpenAPI-Referenz ohne API-Schlüssel.' },
     notFound: { title: 'Seite nicht gefunden — Packetrove', description: 'Diese Packetrove-Seite existiert nicht. Kehren Sie zur Startseite zurück, um die Netzwerkwerkzeuge zu verwenden.' },

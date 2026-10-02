@@ -15,6 +15,8 @@ export const ja = {
     openSource: 'オープンソース', anonymous: 'アカウントや API キーは不要',
     cidrDescription: 'IPv4 または IPv6 のアドレスと範囲を含む、最小の単一 CIDR を求めます。ブラウザー内で計算し、正確なアドレス数と追加される範囲の説明を確認できます。',
     cidrLink: 'CIDR 計算器を開く',
+    subtractDescription: '含めるアドレス空間から除外するネットワークを取り除きます。入力をアップロードせずに、WireGuard の例外設定用の正確な CIDR リストをコピーしたり、既知の割り当てを除いた空き範囲を確認したりできます。',
+    subtractLink: 'CIDR 差分計算器を開く',
     ipDescription: '現在の接続で使われるパブリック IP を確認できます。VPN やプロキシを使う場合はその出口アドレスが表示され、ローカルのプライベートアドレスは表示されません。',
     ipLink: '自分のパブリック IP を確認',
     apiTitle: 'Web API', apiDescription: '任意の HTTP クライアントから Packetrove を呼び出せます。たとえば、curl で現在のパブリック IP を取得できます：',
@@ -46,6 +48,43 @@ export const ja = {
     exampleResult: '{{cidr}} は {{covered}} 個のアドレスを含み、{{additional}} 個を追加します。',
     line: '{{line}} 行目：{{message}}',
   },
+  subtract: {
+    title: 'CIDR の差分',
+    description: '含める IPv4 または IPv6 のアドレス空間から、除外するネットワークを取り除きます。余分なアドレスを含まない、最小の正確な CIDR リストを取得できます。',
+    inputs: 'アドレスリスト',
+    include: '含めるリスト',
+    exclude: '除外するリスト',
+    includeLabel: '含める IP アドレスまたは CIDR',
+    excludeLabel: '除外する IP アドレスまたは CIDR',
+    includeHelp: '1 行に 1 件入力します。少なくとも 1 つのアドレスまたは範囲を含めてください。',
+    excludeHelp: '1 行に 1 件入力します。空欄の場合はアドレスを削除せず、含めるリストを最小限にまとめます。',
+    calculate: 'CIDR の差分を計算',
+    result: '残りのアドレス空間',
+    output: '残りの CIDR',
+    included: '含めたアドレス数',
+    removed: '削除したアドレス数',
+    remaining: '残りのアドレス数',
+    blocks: '結果の CIDR 数',
+    copyList: 'リストをコピー',
+    copyAllowed: 'AllowedIPs をコピー',
+    copySuccess: 'CIDR リストをコピーしました。',
+    allowedSuccess: 'AllowedIPs の値をコピーしました。',
+    copyFailure: 'クリップボードを利用できません。上のリストを選択してコピーしてください。',
+    formats: 'リストのコピーでは CIDR を改行で区切ります。AllowedIPs のコピーでは、WireGuard の設定値として使えるようにカンマで区切ります。',
+    emptyTitle: '残りのアドレスはありません',
+    emptyDescription: '除外リストにより、含めたすべてのアドレスが削除されました。コピーできる CIDR リストはありません。',
+    pendingTitle: 'ここに結果が表示されます',
+    pendingDescription: '含めるリストと任意の除外リストを入力すると、残りの範囲を正確に計算できます。',
+    explanationTitle: '結果の意味',
+    explanation: '含める範囲の和集合から、除外範囲の和集合を取り除きます。重複するアドレスは 1 回だけ数え、ホスト部を正規化し、アドレスを追加しません。ネットワークアドレスやブロードキャストアドレスを含む、範囲内のすべてのアドレスを数えます。',
+    review: 'WireGuard の例外設定や、既知の割り当て後に残る範囲の確認に使えます。残りの範囲は入力に基づくもので、実際のネットワークでアドレスが未使用であることを示しません。適用する前にリストを確認してください。',
+    limits: '両方のリストで同じアドレスファミリーを使用し、合計 {{inputs}} 件まで、各入力は {{length}} 文字以内にしてください。結果は {{outputs}} 件の CIDR までです。超えた場合はエラーになり、結果の一部だけを返すことはありません。',
+    examplesTitle: '差分の計算例',
+    example: '{{include}} から {{exclude}} を取り除く：',
+    line: '{{list}}の {{line}} 行目：{{message}}',
+    listIssue: '{{list}}：{{message}}',
+    outputLimitTitle: '結果の CIDR が多すぎます。',
+  },
   ip: {
     title: '自分のパブリック IP', description: '現在の Packetrove への接続で使われるパブリック IP アドレスを確認します。',
     online: 'オンラインで確認 · アプリは結果を保存しません', connection: '現在の接続', checking: 'パブリック IP を確認しています…',
@@ -67,6 +106,31 @@ export const ja = {
     ipSummary: 'この HTTP 接続で確認されたパブリック IP を返します。アドレスと末尾の改行には text/plain、アドレスとアドレスファミリーには application/json を指定します。レスポンスはキャッシュされません。VPN やプロキシを使うと、確認される出口アドレスが変わります。',
   },
   discovery: {
+    subtract: {
+      title: "CIDR 差分のよくある質問",
+      questions: {
+        wireguard: {
+          question: "WireGuard の AllowedIPs に例外を設けるには？",
+          answer: "トンネルに通したい範囲を包含リストに、例外を除外リストに入力します。AllowedIPs のコピーは、正確な残りの CIDR を設定値としてコピーします。適用前に確認してください。Packetrove は WireGuard の設定やルートの変更を行いません。"
+        },
+        remaining: {
+          question: "残りの範囲はアドレスが未使用であることを証明しますか？",
+          answer: "入力した包含・除外リストに対する空き範囲を示します。実際のネットワーク使用状況を調べたり、指定サイズのサブネットを検索したりはしません。"
+        },
+        outside: {
+          question: "除外範囲が重複したり、包含範囲の外にある場合は？",
+          answer: "各リストの重複は一度だけ数えます。包含リストにもあるアドレスだけを除去し、範囲外の除外は影響しません。全除去も成功で、空の CIDR リストと残りのアドレス数ゼロを返します。"
+        },
+        covering: {
+          question: "差分と集約 CIDR はどう違いますか？",
+          answer: "差分は包含リストの和集合から除外リストの和集合を引いた範囲を、間隙も含めて正確に保持します。アドレスを追加せず、正規化して並べた最小個数の CIDR リストを返します。単一の集約 CIDR は追加のアドレスを含む場合があります。"
+        },
+        access: {
+          question: "MCP、Web API、CLI から差分を呼び出せますか？",
+          answer: "差分は現在、ブラウザーと共有の計算コアで実行できます。ブラウザーの入力はローカルに保持します。MCP、Web API、CLI は集約 CIDR とパブリック IP の操作を提供し、差分は公開していません。MCP ガイドは利用可能な操作を説明します。"
+        }
+      }
+    },
     cidr: {
       title: "集約 CIDR に関するよくある質問",
       mcpTitle: "MCP から計算ツールを使う",
@@ -156,11 +220,13 @@ export const ja = {
     invalidAddress: '標準の IPv4 または IPv6 アドレスを入力してください。有効な CIDR プレフィックスも指定できます。ゾーン識別子や IPv4 の先頭のゼロはサポートされていません。',
     emptyInputs: 'IP アドレスまたは CIDR 範囲を少なくとも 1 件入力してください。', tooManyInputs: '1 回の計算で入力できるのは最大 {{limit}} 件です。',
     inputTooLong: '各入力は {{limit}} 文字以内にしてください。', expectedFamily: '最初の入力に合わせて {{family}} を使ってください。',
+    tooManyOutputs: '結果全体が {{limit}} 件の CIDR を超えています。除外項目を減らすか、含める範囲を小さくしてください。結果の一部だけを返すことはありません。',
   },
   meta: {
     mcp: {"title": "Packetrove MCP ガイド — CIDR とパブリック IP", "description": "MCP で Claude Code や Codex を Packetrove に接続。引数、正確な CIDR の結果、IP の接続範囲、エラー処理を API キーなしで確認できます。"},
     home: { title: 'Packetrove — CIDR 計算器とパブリック IP 確認', description: 'ブラウザー内で集約 CIDR を計算し、パブリック IP を確認できます。Web、API、CLI、MCP で使える IPv4・IPv6 用のオープンソースツールです。アカウントは不要です。' },
     cidr: { title: '最小の集約 CIDR 計算器 — Packetrove', description: 'IPv4 または IPv6 のアドレスと範囲を含む最小の単一 CIDR を求めます。ブラウザー内で正確なアドレス数、追加範囲、計算例を確認できます。' },
+    subtract: { title: 'CIDR 差分計算器 — Packetrove', description: 'IPv4 または IPv6 の CIDR リストの差分をブラウザー内で計算します。WireGuard AllowedIPs 用の正確な最小リストをコピーしたり、既知の割り当て後の残りの範囲を確認したりできます。' },
     ip: { title: '自分の IP は？ パブリック IP 確認 — Packetrove', description: '現在の接続で使われる IPv4 または IPv6 のパブリック IP を確認し、VPN やプロキシの出口アドレスについて理解できます。アカウントは不要です。' },
     api: { title: 'Packetrove API — CIDR とパブリック IP', description: 'Packetrove API で集約 CIDR の計算とパブリック IP の確認ができます。API キーなしで curl の例をコピーし、OpenAPI リファレンスを利用できます。' },
     notFound: { title: 'ページが見つかりません — Packetrove', description: 'この Packetrove のページは存在しません。ホームに戻ってネットワークツールをご利用ください。' },
