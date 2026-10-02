@@ -1,6 +1,6 @@
 {
   "name": "@packetrove/worker",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -14,9 +14,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@packetrove/contracts": "workspace:*", "@packetrove/core": "workspace:*", "hono": "4.13.12",
-    "agents": "0.24.0", "@modelcontextprotocol/server": "2.0.0",
-    "@modelcontextprotocol/client": "2.0.0", "@modelcontextprotocol/sdk": "1.30.0",
+    "@packetrove/contracts": "workspace:*",
+    "@packetrove/core": "workspace:*",
+    "hono": "4.13.12",
+    "agents": "0.24.0",
+    "@modelcontextprotocol/server": "2.0.0",
+    "@modelcontextprotocol/client": "2.0.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
     "zod": "4.6.5"
   },
   "devDependencies": {
