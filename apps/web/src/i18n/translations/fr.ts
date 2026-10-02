@@ -203,6 +203,17 @@ export const fr = {
     }
   },
   mcp: {
+    navigation: "Guide MCP",
+    sdkTitle: "Exécuter un exemple Node.js",
+    sdkDescription: "Dans un nouveau dossier, enregistre le code dans <code>packetrove-example.mjs</code>, puis exécute les commandes. L’exemple utilise <code>@modelcontextprotocol/client@{{version}}</code>, découvre les outils et appelle l’outil CIDR avec des adresses de documentation.",
+    sdkLocal: "Pour le développement local, lance <code>pnpm dev:api</code> et remplace l’URL du serveur par <code>{{localUrl}}</code>.",
+    httpErrors: "Les erreurs métier utilisent le JSON d’erreur partagé. Le SDK MCP valide le protocole. Les données JSON invalides, les types de contenu non pris en charge et les corps trop volumineux sont rejetés au niveau HTTP.",
+    deploymentTitle: "Déploiement et limites de connexion",
+    serverBehavior: "Le serveur accepte les requêtes modernes sans état ainsi que l’initialisation, la découverte et les appels de l’ancien transport Streamable HTTP. Il ne fournit ni sessions persistantes ni flux d’événements serveur autonomes.",
+    connectionPrivacy: "Les métadonnées de l’IP publique sont lues pour chaque appel, avec des instances isolées entre clients simultanés. Les résultats et erreurs MCP utilisent Cache-Control: no-store, no-transform. L’application ne conserve ni ne journalise les adresses consultées.",
+    toolMigration: "L’ancien nom <code>get_public_ip</code> n’a pas d’alias de compatibilité. Actualise la découverte et utilise <code>{{ipTool}}</code> dans les appels enregistrés.",
+    endpointMigration: "Le chemin <code>/mcp</code> du site n’est pas le service : GET renvoie 404 et POST 405, sans proxy ni redirection des appels. Configure les clients avec <code>{{serverUrl}}</code>. Pour ton déploiement, adapte les domaines et les listes exactes distinctes de Host et d’Origin du navigateur ; les clients sans en-tête Origin sont acceptés.",
+    deploymentGuide: "Déploiement, auto-hébergement et vérification en production",
     title: "Connecter Packetrove à un agent IA",
     explanation: "Connectez un client MCP compatible pour utiliser les outils réseau Packetrove. Commencez par la configuration ci-dessous, puis consultez les exemples.",
     connection: "Streamable HTTP · Aucun compte ni clé API nécessaire",

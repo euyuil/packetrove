@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type Rea
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import { isToolPage, tools, type ToolPage } from '@packetrove/contracts';
-import { IconHome } from '@tabler/icons-react';
+import { IconBook, IconHome } from '@tabler/icons-react';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { CidrSubtractTool, type CidrSubtractDraft } from './CidrSubtractTool';
@@ -87,21 +87,24 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       </Group>
       <Divider />
       <Group component="nav" aria-label={t($ => $.common.navigation)} gap="sm">
-        <Button component="a" href={href('/')} onClick={navigate} variant={homePage ? 'light' : 'subtle'}
+        <Button component="a" href={href('/')} onClick={navigate} variant={homePage ? 'light' : 'default'}
           leftSection={<IconHome size={18} stroke={1.75} aria-hidden="true" focusable="false" />}
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
         {tools.map(tool => <Button key={tool.id} component="a" href={href(tool.webPath)} onClick={navigate}
           leftSection={<ToolIcon tool={tool.page} size={18} />}
-          variant={page === tool.page ? 'light' : 'subtle'} aria-current={page === tool.page ? 'page' : undefined}>
+          variant={page === tool.page ? 'light' : 'default'} aria-current={page === tool.page ? 'page' : undefined}>
           {t($ => $[tool.page].title)}
         </Button>)}
+        <Button component="a" href={href(pagePaths.mcp)} onClick={navigate} variant={page === 'mcp' ? 'light' : 'default'}
+          leftSection={<IconBook size={18} stroke={1.75} aria-hidden="true" focusable="false" />}
+          aria-current={page === 'mcp' ? 'page' : undefined}>{t($ => $.mcp.navigation)}</Button>
       </Group>
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
         aria-label={homePage ? t($ => $.common.home) : isToolPage(page) ? t($ => $[page].title)
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} />
           : isToolPage(page) ? toolPages[page]
-          : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} />
+          : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>
