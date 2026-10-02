@@ -1,15 +1,18 @@
 name: Publish CLI to npm
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
-      version:
-        description: Exact stable version from packages/cli/package.json
+      tag:
+        description: Existing stable GitHub release tag to recover (for example cli-v0.1.1)
         required: true
         type: string
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: npm-cli-publication
@@ -18,19 +21,39 @@ concurrency:
 jobs:
   publish:
     name: Validate and publish CLI
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'cli-v') &&
+      !github.event.release.draft && !github.event.release.prerelease)
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     permissions:
       contents: read
+      actions: read
       id-token: write
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
       WRANGLER_SEND_METRICS: "false"
     steps:
-      - name: Check out release revision
+      - name: Check out exact release tag
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Require a stable CLI tag on main before running repository code
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^cli-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::A stable CLI release tag is required."
+            exit 1
+          fi
+          tag_sha="$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"
+          if [[ "$(git rev-parse HEAD)" != "$tag_sha" ]]; then
+            echo "::error::The checkout must match the existing release tag."
+            exit 1
+          fi
+          git merge-base --is-ancestor "$tag_sha" origin/main
 
       - name: Set up pnpm from package.json
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -41,26 +64,11 @@ jobs:
           node-version-file: .node-version
           package-manager-cache: false
 
-      - name: Validate release request
-        run: |
-          node --input-type=module <<'NODE'
-          import { execFileSync } from 'node:child_process';
-          import { readFileSync } from 'node:fs';
-          const manifest = JSON.parse(readFileSync('packages/cli/package.json', 'utf8'));
-          if (process.env.GITHUB_REF !== 'refs/heads/main') {
-            throw new Error('CLI publication must be requested on main.');
-          }
-          if (process.env.RELEASE_VERSION !== manifest.version) {
-            throw new Error('Requested version must match packages/cli/package.json.');
-          }
-          if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(manifest.version)) {
-            throw new Error('This workflow publishes stable semantic versions only.');
-          }
-          const [major, minor, patch] = execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim().split('.').map(Number);
-          if (major < 11 || (major === 11 && (minor < 5 || (minor === 5 && patch < 1)))) {
-            throw new Error('npm CLI 11.5.1 or later is required for trusted publishing.');
-          }
-          NODE
+      - name: Validate release tag and its main CI result
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/cli-release.ts release "$RELEASE_TAG"
 
       - name: Install locked dependencies
         run: pnpm install --frozen-lockfile
@@ -69,36 +77,35 @@ jobs:
         run: pnpm check
 
       - name: Pack CLI and preview publication
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: |
           mkdir -p "$RUNNER_TEMP/packetrove-artifacts"
           pnpm --filter @packetrove/cli pack --pack-destination "$RUNNER_TEMP/packetrove-artifacts"
           npm publish "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz" --dry-run --json
 
-      - name: Check that the validated revision is still current
+      - name: Detect an existing version before publication
+        id: registry
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          latest_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
-          if [[ "$GITHUB_SHA" != "$latest_sha" ]]; then
-            echo "::error::The validated revision has been superseded on main. Run the release from the current main revision."
-            exit 1
-          fi
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+        run: node scripts/cli-release.ts registry "$RELEASE_TAG" "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz"
 
       - name: Publish reviewed archive with npm trusted publishing
+        if: steps.registry.outputs.publish == 'true'
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: npm publish "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz" --access public --registry=https://registry.npmjs.org/
 
-      - name: Verify the exact published CLI version
+      - name: Verify registry contents and the exact published CLI version
+        env:
+          RELEASE_VERSION: ${{ steps.release.outputs.version }}
         run: |
+          node scripts/cli-release.ts registry-verify "$RELEASE_TAG" "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz"
           mkdir -p "$RUNNER_TEMP/packetrove-npm-consumer"
-          cd "$RUNNER_TEMP/packetrove-npm-consumer"
-          npm exec --yes --ignore-scripts --registry=https://registry.npmjs.org/ --package="@packetrove/cli@$RELEASE_VERSION" -- packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json > "$RUNNER_TEMP/packetrove-published-result.json"
-          node --input-type=module <<'NODE'
-          import { readFileSync } from 'node:fs';
-          import { join } from 'node:path';
-          const result = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'packetrove-published-result.json'), 'utf8'));
-          if (result.cidr !== '203.0.113.0/29' || result.inputAddressCount !== '3'
-            || result.coveredAddressCount !== '8' || result.additionalAddressCount !== '5') {
-            throw new Error('The published CLI returned an unexpected CIDR result.');
-          }
-          NODE
-          echo "Published and verified @packetrove/cli@$RELEASE_VERSION from $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"
+          : > "$RUNNER_TEMP/packetrove-consumer.npmrc"
+          (
+            cd "$RUNNER_TEMP/packetrove-npm-consumer"
+            npm --cache "$RUNNER_TEMP/packetrove-consumer-cache" --userconfig "$RUNNER_TEMP/packetrove-consumer.npmrc" exec --yes --ignore-scripts --registry=https://registry.npmjs.org/ --package="@packetrove/cli@$RELEASE_VERSION" -- packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json > "$RUNNER_TEMP/packetrove-published-result.json"
+          )
+          node scripts/cli-release.ts verify "$RUNNER_TEMP/packetrove-published-result.json"
+          echo "Published and verified @packetrove/cli@$RELEASE_VERSION from $RELEASE_TAG." >> "$GITHUB_STEP_SUMMARY"

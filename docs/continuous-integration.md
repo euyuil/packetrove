@@ -26,6 +26,8 @@ The workflow runs `pnpm check`, which includes:
 - Wrangler deployment dry runs for the API and website Workers.
 - Shared calculation, CLI, web application, website isolation, API, and MCP tests.
   Worker tests execute in the local Workers runtime on the GitHub runner.
+- Prerendered bilingual content and metadata, hydration, canonical and alternate
+  language links, sitemap entries, and robots policy.
 
 The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
@@ -70,8 +72,10 @@ If the expected version is still unavailable at the deadline, the run fails
 with a version-readiness error before running the functional checks.
 
 Once the version is ready,
-`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies the website,
-bundled assets, API results, OpenAPI document, modern and legacy MCP clients,
+`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all eight
+prerendered bilingual pages, metadata, canonical and alternate language links,
+the sitemap and robots policy, bundled assets, API results, OpenAPI document,
+modern and legacy MCP clients,
 Origin validation, anonymous browser CORS, and origin isolation. With
 `VITE_GIT_COMMIT` set, it also checks that the deployed JavaScript contains the expected build commit. It makes up to three attempts,
 waiting five seconds between failures to allow for temporary network errors.
@@ -115,15 +119,26 @@ unless it updates `main`; opening, reopening, or updating a pull request targeti
 
 ## CLI publication
 
-[`publish-cli.yml`](../.github/workflows/publish-cli.yml) provides a separate,
-manual npm publishing workflow. It accepts the expected CLI version and only
-publishes from `main` after validation. Ordinary pull requests, updates to
-`main`, and website deployments do not publish an npm package.
+After one-time setup, [`release-cli.yml`](../.github/workflows/release-cli.yml)
+runs after successful current `main` validation, deployment, and production
+checks. Release-please maintains a separate pull request with the next CLI
+version and changelog, including bundled core and contracts changes. Website-only
+changes do not produce a CLI release. A repository-scoped GitHub App allows the
+release pull request to run the same required validation as other pull requests.
+
+The owner decides when to approve and squash-merge the release pull request.
+After main CI succeeds, release-please creates its tag and GitHub Release;
+[`publish-cli.yml`](../.github/workflows/publish-cli.yml) then validates and
+publishes the tagged CLI to npm. Publication does not build a later main revision.
+The release pull request is never automatically merged. Leaving it open holds
+npm publication while ordinary feature merges continue to deploy the services.
 
 The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
 write token in repository secrets. The first release and npm-side configuration
-are still pending; see the [CLI publishing guide](cli-publishing.md) for setup,
-the exact trusted-publisher fields, and the release procedure.
+are still pending; see the [CLI publishing guide](cli-publishing.md) for the
+GitHub App secrets, first-release baseline, trusted-publisher fields, version
+rules, and recovery. Recovery verifies an identical existing npm archive without
+republishing it and rejects a collision with different package contents.
 
 ## Cloudflare credentials
 

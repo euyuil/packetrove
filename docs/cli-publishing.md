@@ -1,28 +1,117 @@
 # Publishing the CLI to npm
 
 The CLI is prepared for public distribution as `@packetrove/cli`, with the
-`packetrove` executable. Its first npm release is pending. The workspace root,
-core, contracts, website, and Worker packages remain private. The CLI bundles
-its runtime dependencies; users do not need the other workspace packages.
+`packetrove` executable. Its first npm release is pending. Only the CLI is
+published; it bundles the core, contracts, and runtime dependencies.
 
-## First release
+## Release policy
 
-1. Sign in to your personal npm account, verify its email address, and enable
-   two-factor authentication for interactive publishing.
-2. Create the `packetrove` npm organization if that name is available. Choose
-   the free public-packages plan and ensure your account has permission to
-   publish packages under its scope. A personal npm login alone does not grant
-   access to `@packetrove`.
-3. Have the owner authorize and squash-merge the release preparation pull
-   request. Wait for the merged revision's required validation, deployment, and
-   production checks. Use that revision from `main` for the release.
-4. Before publishing, review tracked files, reachable Git history, workflow
-   logs, and uploaded artifacts for private information as required by
-   [AGENTS.md](../AGENTS.md). Review the actual package contents, including the
-   source map, README, root license, and third-party notices. Report the scope
-   and limits of the review.
-5. Using the Node.js and pnpm versions pinned by the repository, install locked
-   dependencies and validate before creating the package:
+After the one-time setup below, maintainers merge ordinary feature pull
+requests as usual. The existing `CI and deployment` workflow validates and
+deploys the website, API, and MCP on `main`.
+
+[`release-cli.yml`](../.github/workflows/release-cli.yml) runs after a successful
+current `main` validation, deployment, and production check. Release-please
+maintains a separate `chore(cli): release <version>` pull request containing the
+CLI changelog and version updates. This pull request also runs the required
+`Validate project` check and must be up to date with `main`. It is never
+automatically merged. Leave it open to accumulate changes without publishing
+npm.
+
+The owner's approval to squash-merge that release pull request authorizes its
+npm release. Complete the public-material and package review required by
+[AGENTS.md](../AGENTS.md) before approving it; there is no second publishing
+prompt after the release pull request is merged. After the merged revision passes CI, release-please creates
+`cli-v<version>` and a GitHub Release. The release event triggers
+[`publish-cli.yml`](../.github/workflows/publish-cli.yml), which validates, packs,
+publishes through npm trusted publishing, and verifies the exact npm version.
+Ordinary feature merges continue to deploy the services; they do not themselves
+publish npm.
+
+### Versions and release scope
+
+Use Conventional Commit titles for squash-merged pull requests:
+
+| Change affecting the CLI | Title example | Result from 0.1.0 |
+| --- | --- | --- |
+| Fix, packaging correction, or dependency update | `fix(cli): correct JSON error output` | 0.1.1 |
+| Feature in the CLI, core, or contracts | `feat(core): support another calculation` | 0.2.0 |
+| Breaking change before 1.0 | `feat(cli)!: change the input format` | 0.2.0 |
+| Documentation, chores, or website-only changes | `docs: clarify installation`, `feat(web): improve navigation` | No CLI release |
+
+For a stable version of 1.0.0 or later, breaking changes bump the major version.
+Use release-please's documented [Release-As override](https://github.com/googleapis/release-please#how-do-i-change-the-version-number)
+when deliberately graduating to 1.0.0. Routine releases require no manual
+version edits or workflow version input. Give CLI dependency and packaging fixes
+a `fix` title; an ordinary `chore` title does not request a release.
+
+The release component uses the pinned `release-please` development dependency
+and the Node strategy with a small file filter in `scripts/cli-release-please.ts`.
+This handles root files exactly, including website-only lockfile changes, which
+the upstream directory exclusion does not handle. This tooling is not bundled
+in the CLI. The release component is rooted at `.`, so changes in `packages/cli`,
+`packages/core`, and `packages/contracts` all contribute to the CLI. Shared
+build inputs such as `package.json`, `pnpm-workspace.yaml`, `.node-version`,
+`tsconfig.base.json`, and `LICENSE` also contribute. Website and Worker changes,
+documentation, agent skills, repository scripts, workflow files, and a lockfile
+change by itself are excluded. A mixed commit that also changes CLI inputs still
+contributes. Update the relevant package manifest when changing a CLI dependency
+and regenerate the lockfile together.
+
+Release-please updates `packages/cli/package.json`, the private root
+`package.json`, `.release-please-manifest.json`, and
+`packages/cli/CHANGELOG.md`. The root version tracks CLI release bookkeeping;
+the root, core, contracts, website, and Worker packages remain private. The other
+workspace package versions are not automatically changed.
+
+## One-time GitHub App setup
+
+Create a GitHub App in **Settings → Developer settings → GitHub Apps**. Use a
+descriptive name, the public repository URL as its homepage, disable webhooks,
+and grant only these repository permissions:
+
+| Permission | Access |
+| --- | --- |
+| Contents | Read and write |
+| Issues | Read and write |
+| Pull requests | Read and write |
+| Metadata | Read, granted automatically |
+
+Install the App only on `euyuil/packetrove`. Generate a private key and store the
+following as GitHub Actions **repository secrets**:
+
+| Secret | Value |
+| --- | --- |
+| `RELEASE_APP_CLIENT_ID` | The App's Client ID |
+| `RELEASE_APP_PRIVATE_KEY` | The complete private-key PEM |
+
+Keep both values out of tracked files, repository variables, and logs. The
+workflow generates a short-lived token limited to the current repository and
+revokes it when the job ends. The token is passed only to release-please. The
+App does not bypass `main` protection or automatically merge pull requests.
+
+GitHub's default workflow token does not trigger new workflow runs for the
+pull requests and releases it creates. The App allows release pull requests to
+run the required CI check and GitHub Releases to trigger npm publication. See
+the [release-please action documentation](https://github.com/googleapis/release-please-action#other-actions-on-release-please-prs).
+If the App secrets are absent, preparation records a setup message and skips;
+ordinary validation and service deployment still run.
+
+## First release and baseline
+
+1. Sign in to an npm account with verified email, interactive publishing 2FA,
+   and permission to publish public packages under the `packetrove`
+   organization.
+2. Have the owner authorize and squash-merge the publishing preparation pull
+   request. Wait for the actual merged revision's validation, deployment, and
+   production checks. Record that exact `main` commit as `<release-commit>` and
+   build the initial `0.1.0` archive from that commit.
+3. Review tracked files, reachable Git history, workflow logs, and uploaded
+   artifacts for private information as required by [AGENTS.md](../AGENTS.md).
+   Review the actual archive, including the source map, README, root license,
+   and third-party notices. Report the scope and limits of the review.
+4. Using the pinned Node.js and pnpm versions, install locked dependencies,
+   validate, and pack:
 
    ```sh
    pnpm install --frozen-lockfile
@@ -31,8 +120,8 @@ its runtime dependencies; users do not need the other workspace packages.
    npm publish /tmp/packetrove-artifacts/packetrove-cli-0.1.0.tgz --dry-run --json
    ```
 
-6. After explicit authorization for the first npm release, publish that reviewed
-   archive from the account's own terminal. Complete npm's browser or 2FA
+5. After explicit authorization for the first npm release, publish that reviewed
+   archive from the account's own terminal and complete npm's browser or 2FA
    prompts:
 
    ```sh
@@ -40,13 +129,10 @@ its runtime dependencies; users do not need the other workspace packages.
    npm publish /tmp/packetrove-artifacts/packetrove-cli-0.1.0.tgz --access public --registry=https://registry.npmjs.org/
    ```
 
-   This first interactive release establishes the package and its settings.
-   It does not have GitHub Actions provenance. Later releases can use the
-   trusted-publisher workflow below. The example archive name assumes version
-   `0.1.0`; use the actual reviewed version from `packages/cli/package.json`.
-
-7. Verify the published version from an empty temporary directory, so a local
-   workspace executable cannot satisfy the command:
+   The first interactive release establishes the package settings. It does not
+   have GitHub Actions provenance. Keep the archive and its integrity for the
+   baseline verification.
+6. Verify the published version from an empty temporary directory:
 
    ```sh
    mkdir -p /tmp/packetrove-npm-verification
@@ -56,65 +142,82 @@ its runtime dependencies; users do not need the other workspace packages.
    ```
 
    Expect `203.0.113.0/29`, with input, covered, and additional address counts of
-   `"3"`, `"8"`, and `"5"`. Use documentation addresses for release checks;
-   do not log an actual public IP lookup result. Update the release-pending
-   wording in the README and integration guides through a follow-up pull request
-   after the publication is verified.
+   `"3"`, `"8"`, and `"5"`. Use documentation addresses rather than a real
+   public IP lookup for release checks.
+7. Configure npm trusted publishing as described below, then create the
+   initial GitHub Release at the exact commit used for the npm archive:
 
-Public scoped packages require `--access public`; the CLI also records this
-setting in `publishConfig`. Package name and version combinations cannot be
-reused after publication. See npm's [scoped publishing guide](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/)
-and [publish command](https://docs.npmjs.com/cli/v11/commands/npm-publish/).
+   ```sh
+   gh release create cli-v0.1.0 --repo euyuil/packetrove --target <release-commit> --title "CLI 0.1.0" --notes "Initial public CLI release."
+   ```
 
-## Configure trusted publishing
+   Replace `<release-commit>` with the recorded SHA. Do not tag a later commit
+   with different package contents. This event starts the publishing workflow;
+   it detects the identical existing npm archive and verifies without uploading
+   it again. Review the workflow result.
 
-After the first release, open the package settings on npmjs.com, add a trusted
-publisher, and select GitHub Actions. Configure these public repository fields:
+The initial `cli-v0.1.0` GitHub Release is release-please's baseline. Preparation
+skips until it exists, so installing this automation does not silently publish
+the first npm package. Once setup is complete, the next successful `main` run
+maintains the next release pull request. To prepare immediately, run:
+
+```sh
+gh workflow run release-cli.yml --repo euyuil/packetrove --ref main
+```
+
+After npm publication is verified, update the release-pending wording in the
+README and integration guides through a follow-up pull request.
+
+## Configure npm trusted publishing
+
+After the initial npm publication, open the package's settings on npmjs.com,
+add a trusted publisher, and select GitHub Actions:
 
 | Field | Value |
 | --- | --- |
 | Organization or user | `euyuil` |
 | Repository | `packetrove` |
 | Workflow filename | `publish-cli.yml` |
-| Environment name | Leave empty; the workflow does not use a GitHub environment |
+| Environment name | Leave empty; this workflow does not use a GitHub environment |
 | Allowed actions | Allow direct publishing with `npm publish` |
 
-Allowing staged publication alone will not permit this workflow's direct
-`npm publish` command. npm does not validate the configuration when it is saved;
-the first workflow release is the live verification of this setup.
+Staged publication alone does not permit this workflow's direct command. npm
+does not validate this configuration when it is saved; a later workflow upload
+is the live test of the trusted-publisher setup.
 
-The workflow uses a GitHub-hosted runner, npm CLI 11.5.1 or later, and the
-job's `id-token: write` permission. No npm token or private account identifier
-is committed or configured as a workflow input. Public releases from this
-public repository receive automatic provenance when trusted publishing is
-configured successfully. See the [npm trusted-publishing guide](https://docs.npmjs.com/trusted-publishers/).
+The workflow uses a GitHub-hosted runner, npm CLI 11.5.1 or later, and
+`id-token: write`. No long-lived npm token is needed. Trusted publication from
+this public repository receives automatic provenance. See the
+[npm trusted-publishing guide](https://docs.npmjs.com/trusted-publishers/).
+Scoped public packages require public access. Name/version pairs cannot be
+reused; see the [npm publish command](https://docs.npmjs.com/cli/v11/commands/npm-publish/).
 
-## Later releases
+## Verification and recovery
 
-1. Update `packages/cli/package.json` to a new stable semantic version through a
-   pull request. Run appropriate checks and obtain the owner's merge approval.
-   The CLI version is independent of website deployments and other workspace
-   versions. This workflow publishes stable releases under the `latest` tag.
-2. Wait for the merged revision's validation and production workflow, complete
-   the public-material and package-content review, and obtain authorization to
-   publish that specific npm version.
-3. Open **Actions → Publish CLI to npm → Run workflow**, select `main`, and enter
-   the exact CLI version. Alternatively, use:
+Publication checks the stable GitHub Release, tag ancestry on `main`, agreement
+between the tag and version files, and successful main CI validation for that
+exact commit. It reruns `pnpm check` on the tagged checkout and packs that
+checkout. Later commits on `main` do not change the publication contents.
+Service deployment remains governed by `ci.yml`; the tagged CLI only needs its
+exact commit's successful validation even if a later main revision deployed
+the services.
 
-   ```sh
-   gh workflow run publish-cli.yml --repo euyuil/packetrove --ref main -f version=0.1.1
-   ```
+Before upload, the workflow compares the archive's SHA-512 integrity with any
+existing npm version. An absent version is published; an identical existing
+archive skips upload and proceeds to verification; different contents fail.
+Registry errors are failures, not evidence that a version is absent. After
+publication it checks registry integrity, installs the exact version with a
+fresh npm cache outside the workspace, and verifies its calculation.
 
-4. Inspect the workflow result. It validates the branch, requested version, and
-   npm CLI support, runs `pnpm check`, creates the archive, checks that `main`
-   still points to the validated revision, and publishes with OIDC. It then
-   installs the exact published version in an isolated directory and verifies
-   a CIDR calculation using documentation addresses.
+If upload succeeds but later verification fails, the version may already be
+public. Inspect the registry and workflow logs, then rerun the failed job or
+request recovery of the existing GitHub Release:
 
-The workflow is manual; merging a pull request or deploying the website does
-not trigger an npm release. It neither bumps versions nor changes repository
-refs. A superseded main revision, version mismatch, or failed validation stops
-publication. If publication succeeds but verification fails, the npm version
-may already be public; inspect the registry before retrying. Do not try to
-overwrite an existing version. If `main` advances after the final revision
-check, the already validated revision may still publish.
+```sh
+gh workflow run publish-cli.yml --repo euyuil/packetrove --ref main -f tag=cli-v0.1.1
+```
+
+Recovery uses the original tag, runs all publication checks, and never bumps a
+version or overwrites a published package. If release preparation failed, fix
+the configuration or recover main CI first, then rerun `release-cli.yml`.
+A failed GitHub Release or npm upload does not undo service deployment.

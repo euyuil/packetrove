@@ -36,8 +36,8 @@ the repository, build a package, and install that local archive:
 git clone https://github.com/euyuil/packetrove.git
 cd packetrove
 pnpm install
-pnpm --filter @packetrove/cli pack --pack-destination "$PWD"
-npm install --global ./packetrove-cli-0.1.0.tgz
+pnpm --filter @packetrove/cli pack --out "$PWD/packetrove-cli.tgz"
+npm install --global ./packetrove-cli.tgz
 packetrove ip
 ```
 

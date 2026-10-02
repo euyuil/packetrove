@@ -4,12 +4,19 @@
 schemas and generator, then run `pnpm spec:generate`. `pnpm spec:check` verifies
 that the committed document matches its source and validates OpenAPI semantics.
 
-The [interactive API documentation](https://packetrove.com/docs/api) renders
-this specification with Scalar and supports request examples and browser-based
+The [API documentation](https://packetrove.com/docs/api) includes prerendered
+endpoint summaries and curl examples in English and Simplified Chinese. In the
+browser, it loads Scalar to render this specification and support interactive
 test calls. Test requests go directly to the configured API without cookies or
 a third-party proxy. Calculation inputs entered into the documentation's test
 client are sent to the API; the website's CIDR calculator continues to run
 locally in the browser.
+
+If the interactive reference module fails to load or render, the documentation area
+shows an error message with a link back to the calculator. Site navigation and
+the calculator's input, result, or validation error remain in the current page
+session's memory. Revisiting a failed module may show the same message; the
+application does not retry its download or automatically reload the page.
 
 ## Smallest covering CIDR
 

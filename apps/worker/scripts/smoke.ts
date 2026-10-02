@@ -7,6 +7,9 @@ import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
+import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
+import { resources } from '../../web/src/i18n/resources';
+import { escapeHtml, robotsText, websitePages } from '../../web/src/seo';
 
 const originArguments = process.argv.slice(2);
 if (originArguments.length !== 2) {
@@ -40,18 +43,48 @@ const website = await timedFetch(`${origin}/`);
 assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
 const html = await website.text();
-assert.match(html, /<title>Packetrove — Network tools for humans and agents<\/title>/);
-for (const path of ['/cidr', '/cidr/', '/ip', '/ip/', '/docs/api', '/docs/api/']) {
-  const toolPage = await timedFetch(`${origin}${path}`, {
-    headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
-  });
-  assert.equal(toolPage.status, 200, `Tool page status: ${path}`);
-  assert.match(toolPage.headers.get('content-type') ?? '', /text\/html/);
-  assert.match(await toolPage.text(), path.startsWith('/cidr')
-    ? /<title>Smallest Covering CIDR — Packetrove<\/title>/
-    : path.startsWith('/docs/api') ? /<title>API documentation — Packetrove<\/title>/
-    : /<title>My Public IP — Packetrove<\/title>/);
+for (const page of websitePages) {
+  for (const path of page.pathname.endsWith('/') ? [page.pathname] : [page.pathname, page.pathname + '/']) {
+    const response = await timedFetch(`${origin}${path}`, {
+      headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
+    });
+    assert.equal(response.status, 200, `Page status: ${path}`);
+    assert.match(response.headers.get('content-type') ?? '', /text\/html/);
+    const pageHtml = await response.text();
+    const metadata = getPageMetadata(page.locale, page.page, page.path);
+    assert(pageHtml.includes('<html lang="' + metadata.lang + '"'), `Page language: ${path}`);
+    assert(pageHtml.includes('<title>' + escapeHtml(metadata.title) + '</title>'), `Page title: ${path}`);
+    for (const entry of metadata.meta) {
+      assert(pageHtml.includes('<meta ' + entry.attribute + '="' + entry.key
+        + '" content="' + escapeHtml(entry.content) + '"'), `Page metadata ${entry.key}: ${path}`);
+    }
+    for (const entry of metadata.links) {
+      assert(pageHtml.includes('<link rel="' + entry.rel + '"'
+        + (entry.hreflang ? ' hreflang="' + entry.hreflang + '"' : '')
+        + ' href="' + entry.href + '"'), `Page link ${entry.rel}: ${path}`);
+    }
+    const text = resources[page.locale].translation;
+    const heading = page.page === 'home' ? text.common.tagline : text[page.page].title;
+    assert.equal(Array.from(pageHtml.matchAll(/<h1\b/g)).length, 1, `Single page heading: ${path}`);
+    assert(new RegExp('<h1[^>]*>' + escapeHtml(heading) + '</h1>').test(pageHtml), `Prerendered heading: ${path}`);
+    assert(pageHtml.includes('data-prerendered-path="' + page.pathname + '"'), `Prerendered page: ${path}`);
+    const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
+      ? text.api.cidrSummary : text[page.page].explanation;
+    assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
+  }
 }
+const sitemap = await timedFetch(`${origin}/sitemap.xml`);
+assert.equal(sitemap.status, 200, 'Sitemap status');
+assert.match(sitemap.headers.get('content-type') ?? '', /xml/);
+const sitemapXml = await sitemap.text();
+assert(sitemapXml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'), 'Sitemap namespace');
+assert.deepEqual(Array.from(sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]),
+  websitePages.map(page => WEBSITE_ORIGIN + page.pathname), 'Sitemap canonical URLs');
+const robots = await timedFetch(`${origin}/robots.txt`);
+assert.equal(robots.status, 200, 'Robots status');
+assert.match(robots.headers.get('content-type') ?? '', /text\/plain/);
+assert.equal(await robots.text(), robotsText, 'Robots policy and sitemap reference');
+console.log('PASS eight prerendered bilingual pages, metadata, canonical and language links, sitemap, and robots policy');
 const missingPage = await timedFetch(`${origin}/missing-page`, {
   headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
 });
