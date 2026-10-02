@@ -57,9 +57,9 @@ export const it = {
     excludeHelp: 'Una voce per riga. Lascia vuoto per semplificare l’elenco incluso senza rimuovere indirizzi.',
     calculate: 'Sottrai CIDR', result: 'Spazio di indirizzi rimanente', output: 'CIDR rimanenti',
     included: 'Indirizzi inclusi', removed: 'Indirizzi rimossi', remaining: 'Indirizzi rimanenti', blocks: 'CIDR risultanti',
-    copyList: 'Copia elenco', copyAllowed: 'Copia AllowedIPs', copySuccess: 'Elenco CIDR copiato.', allowedSuccess: 'Valore AllowedIPs copiato.',
+    copyList: 'Copia con ritorni a capo', copyAllowed: 'Copia con virgole', copySuccess: 'Copiato con ritorni a capo.', allowedSuccess: 'Copiato con virgole.',
     copyFailure: 'Gli appunti non sono disponibili. Seleziona e copia l’elenco qui sopra.',
-    formats: 'Copia elenco separa i CIDR con caratteri di nuova riga. Copia AllowedIPs li separa con virgole per il valore dell’impostazione WireGuard.',
+    formats: 'Con i ritorni a capo, ogni CIDR occupa una riga. Con le virgole, i CIDR sono separati da una virgola e uno spazio.',
     emptyTitle: 'Non rimangono indirizzi', emptyDescription: 'Le esclusioni hanno rimosso tutti gli indirizzi inclusi. Non c’è un elenco CIDR da copiare.',
     pendingTitle: 'Il risultato apparirà qui', pendingDescription: 'Inserisci un elenco da includere ed esclusioni facoltative per calcolare il resto esatto.',
     explanationTitle: 'Cosa significa il risultato',
@@ -96,7 +96,7 @@ export const it = {
       questions: {
         wireguard: {
           question: 'Come preparo eccezioni per AllowedIPs di WireGuard?',
-          answer: 'Inserisci gli intervalli del tunnel in Includi e le eccezioni in Escludi. Copia AllowedIPs fornisce i CIDR rimanenti esatti come valore di configurazione. Controllalo prima di applicarlo; Packetrove non configura WireGuard e non modifica le rotte.',
+          answer: 'Inserisci gli intervalli del tunnel in Includi e le eccezioni in Escludi. Usa Copia con virgole per copiare i CIDR rimanenti esatti come valore di AllowedIPs di WireGuard. Controllalo prima di applicarlo; Packetrove non configura WireGuard e non modifica le rotte.',
         },
         remaining: {
           question: 'Gli intervalli rimanenti dimostrano che gli indirizzi sono liberi?',
