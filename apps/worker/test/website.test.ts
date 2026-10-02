@@ -1,7 +1,31 @@
 import { exports } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
+import { resources } from '../../web/src/i18n/resources';
+import { localizedPath, pagePaths, type Locale } from '../../web/src/i18n/routes';
 
 describe('website in the Workers runtime', () => {
+  it.each((['en', 'zh-Hans'] as const).flatMap(locale => Object.entries(pagePaths).map(([page, path]) => ({
+    locale, page: page as keyof typeof pagePaths, path: localizedPath(path, locale),
+  }))))('serves localized metadata at $path without running JavaScript', async ({ locale, page, path }) => {
+    const response = await exports.default.fetch('http://localhost' + path);
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    const metadata = resources[locale].translation.meta[page];
+    expect(html).toContain('<html lang="' + locale + '"');
+    expect(html).toContain('<title>' + metadata.title + '</title>');
+    expect(html).toContain('<meta name="description" content="' + metadata.description + '" />');
+    expect(html).toContain('<meta property="og:title" content="' + metadata.title + '" />');
+    expect(html).toContain('<meta name="twitter:title" content="' + metadata.title + '" />');
+    expect(html).toContain('<link rel="canonical" href="https://packetrove.com' + path + '" />');
+    for (const language of ['en', 'zh-Hans', 'x-default'] as const) {
+      const alternate: Locale = language === 'x-default' ? 'en' : language;
+      expect(html).toContain('<link rel="alternate" hreflang="' + language
+        + '" href="https://packetrove.com' + localizedPath(pagePaths[page], alternate) + '" />');
+    }
+    const script = html.match(/src="(\/assets\/[^\"]+\.js)"/)?.[1];
+    expect(script).toBeDefined();
+    expect((await exports.default.fetch('http://localhost' + script)).status).toBe(200);
+  });
   it('serves the built website and bundled JavaScript', async () => {
     const response = await exports.default.fetch('http://localhost/');
     expect(response.status).toBe(200);
@@ -32,6 +56,9 @@ describe('website in the Workers runtime', () => {
     { path: '/cidr', title: 'Smallest Covering CIDR' },
     { path: '/ip', title: 'My Public IP' },
     { path: '/docs/api', title: 'API documentation' },
+    { path: '/zh/cidr', title: '最小覆盖 CIDR' },
+    { path: '/zh/ip', title: '我的公网 IP' },
+    { path: '/zh/docs/api', title: 'API 文档' },
   ])('preserves trailing-slash $path links and their query strings', async ({ path, title }) => {
     const response = await exports.default.fetch(`http://localhost${path}/?source=example`, {
       headers: { 'sec-fetch-mode': 'navigate' }, redirect: 'manual',
@@ -44,7 +71,8 @@ describe('website in the Workers runtime', () => {
     expect(destination.status).toBe(200);
     expect(await destination.text()).toContain(`<title>${title} — Packetrove</title>`);
   });
-  it.each(['/missing-page', '/missing-page/', '/cidr/missing-page', '/ip/missing-page', '/assets/missing.js', '/assets/missing.css'])('returns a real static 404 for %s', async path => {
+  it.each(['/missing-page', '/missing-page/', '/cidr/missing-page', '/ip/missing-page', '/zh/missing-page',
+    '/zh/cidr/missing-page', '/assets/missing.js', '/assets/missing.css'])('returns a real static 404 for %s', async path => {
     for (const headers of [{}, { 'sec-fetch-mode': 'navigate', accept: 'text/html' }]) {
       const response = await exports.default.fetch(`http://localhost${path}`, { headers });
       expect(response.status).toBe(404);

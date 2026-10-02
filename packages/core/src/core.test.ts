@@ -1,8 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { CIDR_COVER_EXAMPLES, CidrCoverResultSchema } from '@packetrove/contracts';
+import { CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from './index';
 
 describe('smallest covering CIDR', () => {
+  it.each([
+    { inputs: ['bad'], detail: { reason: 'INVALID_ADDRESS' } },
+    { inputs: [], detail: { reason: 'EMPTY_INPUTS' } },
+    { inputs: new Array(1001).fill('203.0.113.1'), detail: { reason: 'TOO_MANY_INPUTS', limit: 1000 } },
+    { inputs: ['x'.repeat(65)], detail: { reason: 'INPUT_TOO_LONG', limit: 64 } },
+    { inputs: ['::1', '203.0.113.1'], detail: { reason: 'EXPECTED_FAMILY', family: 'ipv6' } },
+  ])('provides local issue details without changing the serialized error: $detail.reason', ({ inputs, detail }) => {
+    try {
+      smallestCoveringCidr({ inputs });
+      expect.fail('Expected invalid input');
+    } catch (failure) {
+      expect(failure).toBeInstanceOf(ToolError);
+      const error = failure as ToolError;
+      expect(error.details).toEqual([detail]);
+      expect(ErrorResponseSchema.parse(error.toResponse())).toEqual({ error: {
+        code: error.code, message: error.message, issues: error.issues,
+      } });
+      expect(error.toResponse().error).not.toHaveProperty('details');
+    }
+  });
   it.each(CIDR_COVER_EXAMPLES)('computes $name', ({ request, result }) => {
     expect(smallestCoveringCidr(request)).toEqual(result);
     expect(CidrCoverResultSchema.safeParse(result).success).toBe(true);

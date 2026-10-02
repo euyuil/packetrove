@@ -2,10 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface ClipboardFeedback {
   status: 'idle' | 'success' | 'error';
-  message: string;
 }
 
-const idleFeedback: ClipboardFeedback = { status: 'idle', message: '' };
+const idleFeedback: ClipboardFeedback = { status: 'idle' };
 
 export function useClipboardFeedback() {
   const [copyFeedback, setCopyFeedback] = useState(idleFeedback);
@@ -27,16 +26,16 @@ export function useClipboardFeedback() {
     return () => window.clearTimeout(timeout);
   }, [copyFeedback]);
 
-  const copyText = useCallback(async (text: string, successMessage: string, failureMessage: string) => {
+  const copyText = useCallback(async (text: string) => {
     const attempt = ++currentAttempt.current;
     setCopyFeedback(idleFeedback);
     try {
       if (!navigator.clipboard?.writeText) throw new Error('Clipboard is unavailable');
       await navigator.clipboard.writeText(text);
       // A system clipboard write cannot be cancelled; only its feedback expires.
-      if (currentAttempt.current === attempt) setCopyFeedback({ status: 'success', message: successMessage });
+      if (currentAttempt.current === attempt) setCopyFeedback({ status: 'success' });
     } catch {
-      if (currentAttempt.current === attempt) setCopyFeedback({ status: 'error', message: failureMessage });
+      if (currentAttempt.current === attempt) setCopyFeedback({ status: 'error' });
     }
   }, []);
 
