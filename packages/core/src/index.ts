@@ -5,11 +5,18 @@ import {
   type CidrCoverResult, type ErrorCode, type ErrorResponse, type InputIssue,
 } from '@packetrove/contracts';
 
+export type InputIssueDetail =
+  | { reason: 'INVALID_INPUT' | 'INVALID_ADDRESS' | 'EMPTY_INPUTS' }
+  | { reason: 'TOO_MANY_INPUTS' | 'INPUT_TOO_LONG'; limit: number }
+  | { reason: 'EXPECTED_FAMILY'; family: 'ipv4' | 'ipv6' };
+
 export class ToolError extends Error {
   constructor(
     public readonly code: ErrorCode,
     message: string,
     public readonly issues?: InputIssue[],
+    // Local presentation details follow the issues array and are omitted from toResponse().
+    public readonly details?: InputIssueDetail[],
   ) {
     super(message);
     this.name = 'ToolError';
@@ -43,7 +50,7 @@ function formatAddress(value: bigint, family: Family): string {
 function parseInput(input: string, index: number): ParsedInput {
   const fail = () => new ToolError('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', [
     { index, message: 'Use a standard IPv4 or IPv6 address with an optional valid CIDR prefix. Zone identifiers and IPv4 leading zeros are not supported.' },
-  ]);
+  ], [{ reason: 'INVALID_ADDRESS' }]);
   const entry = input.trim();
   const parts = entry.split('/');
   const text = parts[0]!;
@@ -99,27 +106,37 @@ export function smallestCoveringCidr(value: unknown): CidrCoverResult {
     throw new ToolError('INVALID_INPUT', 'Invalid calculation input.', request.error.issues.map(issue => {
       const index = issue.path[0] === 'inputs' && typeof issue.path[1] === 'number' ? issue.path[1] : undefined;
       return { ...(index === undefined ? {} : { index }), message: issue.message };
+    }), request.error.issues.map((issue): InputIssueDetail => {
+      if (issue.path[0] === 'inputs' && issue.code === 'too_small' && issue.path.length === 1) {
+        return { reason: 'EMPTY_INPUTS' };
+      }
+      if (issue.path[0] === 'inputs' && issue.code === 'too_big') {
+        return { reason: issue.path.length === 1 ? 'TOO_MANY_INPUTS' : 'INPUT_TOO_LONG', limit: Number(issue.maximum) };
+      }
+      return { reason: 'INVALID_INPUT' };
     }));
   }
   const parsed: ParsedInput[] = [];
   const issues: InputIssue[] = [];
+  const details: InputIssueDetail[] = [];
   for (const [index, input] of request.data.inputs.entries()) {
     try {
       parsed.push(parseInput(input, index));
     } catch (error) {
       if (!(error instanceof ToolError) || error.code !== 'INVALID_INPUT' || !error.issues?.length) throw error;
       issues.push(...error.issues);
+      details.push(...error.issues.map((_, index) => error.details?.[index] || { reason: 'INVALID_INPUT' as const }));
     }
   }
   if (issues.length) {
-    throw new ToolError('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', issues);
+    throw new ToolError('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', issues, details);
   }
   const { family, width } = parsed[0]!;
   const differentFamily = parsed.findIndex(entry => entry.family !== family);
   if (differentFamily !== -1) {
     throw new ToolError('MIXED_ADDRESS_FAMILIES', 'Use either IPv4 or IPv6 throughout one calculation.', [
       { index: differentFamily, message: `Expected ${family === 'ipv4' ? 'IPv4' : 'IPv6'} to match the first input.` },
-    ]);
+    ], [{ reason: 'EXPECTED_FAMILY', family }]);
   }
   let minimum = parsed[0]!.first;
   let maximum = parsed[0]!.last;

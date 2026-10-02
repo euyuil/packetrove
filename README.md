@@ -57,6 +57,26 @@ address family; it does not separately discover both IPv4 and IPv6 addresses.
 Public IP checks make a network request. The application does not store or log
 the returned address, and lookup results and errors are not cached.
 
+## Website languages
+
+The website supports English and Simplified Chinese. English uses the existing
+URLs; Chinese starts at [the Chinese homepage](https://packetrove.com/zh/), with
+tools at `/zh/cidr` and `/zh/ip` and API documentation at `/zh/docs/api`.
+Use the language controls to switch the current page. The URL determines the
+language, so shared links and page reloads keep it; browser settings do not
+automatically redirect visitors.
+
+Changing languages in the same tab preserves the calculator draft and its
+result or validation error. It also keeps an ongoing public IP check and updates
+its labels without making another request. Drafts and IP results stay in memory.
+Translations ship with the web application and require no translation service.
+
+The interactive API reference, OpenAPI specification, linked integration guides,
+CLI, MCP descriptions, and repository documentation remain in English. Machine
+response fields, error codes, and decimal-string address counts are unchanged.
+See the [website language story](docs/user-stories/003-website-languages.md) for
+the scope and contributor instructions.
+
 ## Use it your way
 
 | Interface | Get started |

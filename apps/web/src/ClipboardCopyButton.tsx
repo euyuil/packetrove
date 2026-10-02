@@ -1,15 +1,20 @@
 import { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button, CloseButton, darken, Group, Popover, Text, useMantineTheme, VisuallyHidden } from '@mantine/core';
 import type { ClipboardFeedback } from './useClipboardFeedback';
 
 interface ClipboardCopyButtonProps {
   label: string;
   feedback: ClipboardFeedback;
+  successMessage: string;
+  failureMessage: string;
   onCopy: () => void;
   onDismiss: () => void;
 }
 
-export function ClipboardCopyButton({ label, feedback, onCopy, onDismiss }: ClipboardCopyButtonProps) {
+export function ClipboardCopyButton({ label, feedback, successMessage, failureMessage, onCopy, onDismiss }: ClipboardCopyButtonProps) {
+  const { t } = useTranslation();
+  const message = feedback.status === 'success' ? successMessage : feedback.status === 'error' ? failureMessage : '';
   const theme = useMantineTheme();
   const failureBackground = darken(theme.colors.orange[9], 0.08);
   const button = useRef<HTMLButtonElement>(null);
@@ -28,18 +33,18 @@ export function ClipboardCopyButton({ label, feedback, onCopy, onDismiss }: Clip
           w={112} flex="0 0 auto" onClick={onCopy} onKeyDown={event => {
             if (event.key === 'Escape' && feedback.status === 'error') dismiss();
           }}>
-          {copied ? <><span aria-hidden="true">✓</span> Copied</> : label}
+          {copied ? <><span aria-hidden="true">✓</span> {t($ => $.common.copied)}</> : label}
         </Button>
       </Popover.Target>
       <Popover.Dropdown bg={failureBackground} c="white"
         style={{ '--popover-border-color': failureBackground }}>
         <Group gap="xs" wrap="nowrap" align="flex-start">
-          <Text size="sm" flex={1}>{feedback.message}</Text>
+          <Text size="sm" flex={1}>{message}</Text>
           <CloseButton size="sm" c="white" variant="transparent"
-            aria-label="Dismiss copy error" onClick={dismiss} />
+            aria-label={t($ => $.common.dismissCopy)} onClick={dismiss} />
         </Group>
       </Popover.Dropdown>
     </Popover>
-    <VisuallyHidden role="status" aria-live="polite" aria-atomic="true">{feedback.message}</VisuallyHidden>
+    <VisuallyHidden role="status" aria-live="polite" aria-atomic="true">{message}</VisuallyHidden>
   </>;
 }
