@@ -185,6 +185,8 @@ describe('readiness followed by the production smoke check across separate origi
       }));
       if (path === '/v1/ip') {
         response.setHeader('cache-control', 'no-store');
+        response.setHeader('vary', 'Accept');
+        if (request.headers.accept === 'text/plain') return send(response, 'text/plain; charset=UTF-8', '203.0.113.1\n');
         return send(response, 'application/json', JSON.stringify({ ip: '203.0.113.1', family: 'ipv4' }));
       }
       if (path === '/v1/cidr/cover') {

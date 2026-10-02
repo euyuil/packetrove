@@ -26,8 +26,8 @@ describe('web page routing', () => {
     expect(screen.getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBe('page');
     expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBeNull();
     expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Open CIDR calculator' }).getAttribute('href')).toBe('/cidr');
-    expect(screen.getByRole('link', { name: 'Open public IP tool' }).getAttribute('href')).toBe('/ip');
+    expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('href')).toBe('/cidr');
+    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('href')).toBe('/ip');
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Calculate covering CIDR' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Refresh IP' })).toBeNull();
@@ -39,6 +39,22 @@ describe('web page routing', () => {
     render(<App />);
     expect(screen.getByRole('link', { name: /API specification/ }).getAttribute('href'))
       .toBe('https://api.packetrove.com/openapi.json');
+  });
+
+  it('uses the configured API and repository in homepage quickstart examples', () => {
+    vi.stubEnv('VITE_API_ORIGIN', 'https://api.service.example');
+    vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
+    render(<App />);
+    const api = screen.getByRole('region', { name: 'Web API' });
+    expect(api.textContent).toContain('curl -fsS https://api.service.example/v1/ip');
+    expect(api.textContent).toContain("-H 'Accept: text/plain'");
+    const cli = screen.getByRole('region', { name: 'Command-line interface' });
+    expect(cli.textContent).toContain('git clone https://github.com/example-owner/packetrove.git');
+    expect(within(cli).getByText('packetrove ip')).toBeDefined();
+    const mcp = screen.getByRole('region', { name: 'Model Context Protocol' });
+    expect(mcp.textContent).toContain('claude mcp add --transport http --scope user packetrove');
+    expect(mcp.textContent).toContain('codex mcp add packetrove');
+    expect(mcp.textContent).toContain('--url https://api.service.example/mcp');
   });
 
   it.each(['/missing-page', '/ip/missing-page', '/cidr/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {

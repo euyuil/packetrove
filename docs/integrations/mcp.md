@@ -19,6 +19,28 @@ smoke check in the deployment guide. The server supports modern stateless
 requests and legacy Streamable HTTP initialization, tool discovery, and tool calls. It does not
 provide persistent MCP sessions or standalone server event streams.
 
+## Claude Code and Codex
+
+With Claude Code installed, add Packetrove to your user configuration so it is
+available across projects:
+
+```sh
+claude mcp add --transport http --scope user packetrove \
+  https://api.packetrove.com/mcp
+```
+
+With the Codex CLI installed, add the remote server:
+
+```sh
+codex mcp add packetrove \
+  --url https://api.packetrove.com/mcp
+```
+
+Use `/mcp` inside either client to inspect the connection. These commands
+configure the remote server; they do not install a local Packetrove server.
+See the [Claude Code MCP guide](https://code.claude.com/docs/en/mcp) and
+[Codex MCP guide](https://developers.openai.com/codex/mcp/) for client options.
+
 ## Tool input and result
 
 Pass an `inputs` array containing 1 to 1,000 IPv4 addresses or IPv6 addresses,

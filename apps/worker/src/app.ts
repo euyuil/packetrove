@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { accepts } from 'hono/accepts';
 import { cors } from 'hono/cors';
 import { CIDR_COVER_PATH, PUBLIC_IP_PATH, type ErrorResponse } from '@packetrove/contracts';
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
@@ -15,6 +16,7 @@ export function createApp() {
   }
   app.use(PUBLIC_IP_PATH, async (context, next) => {
     context.header('Cache-Control', 'no-store');
+    context.header('Vary', 'Accept', { append: true });
     await next();
   });
   app.onError((error, context) => {
@@ -32,7 +34,13 @@ export function createApp() {
     const body = await readJsonBody(context.req.raw);
     return context.json(smallestCoveringCidr(body));
   });
-  app.get(PUBLIC_IP_PATH, context => context.json(getPublicIp(context.req.raw.headers)));
+  app.get(PUBLIC_IP_PATH, context => {
+    const result = getPublicIp(context.req.raw.headers);
+    const format = accepts(context, {
+      header: 'Accept', supports: ['application/json', 'text/plain'], default: 'application/json',
+    });
+    return format === 'text/plain' ? context.text(`${result.ip}\n`) : context.json(result);
+  });
   app.get('/health', context => context.json({ status: 'ok' }));
   app.get('/openapi.json', context => context.json(specification));
   app.use('/mcp', async (context, next) => {

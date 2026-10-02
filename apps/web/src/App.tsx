@@ -61,7 +61,7 @@ export function App() {
           aria-current={ipPage ? 'page' : undefined}>My Public IP</Button>
       </Group>
       <Box component="main">
-        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} />
+        {homePage ? <HomePage documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
           : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} /> : <Stack component="section" py="xl">
           <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>Page not found</Title>

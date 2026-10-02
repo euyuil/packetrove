@@ -125,6 +125,21 @@ assert.equal(publicIpResponse.headers.get('cache-control'), 'no-store', 'Public 
 // Validate without printing the address into public deployment logs.
 assert(PublicIpResultSchema.safeParse(await publicIpResponse.json()).success, 'Invalid public IP result.');
 console.log('PASS public IP API result and no-store header');
+const plainIpResponse = await timedFetch(`${apiOrigin}${PUBLIC_IP_PATH}`, {
+  cache: 'no-store', headers: { accept: 'text/plain' },
+});
+assert.equal(plainIpResponse.status, 200, 'Plain-text public IP API status');
+assert.match(plainIpResponse.headers.get('content-type') ?? '', /^text\/plain(?:;|$)/);
+assert.equal(plainIpResponse.headers.get('cache-control'), 'no-store', 'Plain-text IP results must not be stored.');
+assert(plainIpResponse.headers.get('vary')?.split(',').some(value => value.trim().toLowerCase() === 'accept'),
+  'Public IP response format must vary by Accept.');
+const plainIp = await plainIpResponse.text();
+assert(plainIp.endsWith('\n'), 'Plain-text IP result must end with a newline.');
+const ip = plainIp.slice(0, -1);
+// Keep actual lookup addresses out of assertion output and deployment logs.
+assert(PublicIpResultSchema.safeParse({ ip, family: ip.includes(':') ? 'ipv6' : 'ipv4' }).success,
+  'Invalid plain-text public IP result.');
+console.log('PASS plain-text public IP API result and no-store header');
 for (const example of CIDR_COVER_EXAMPLES) {
   const response = await timedFetch(`${apiOrigin}${CIDR_COVER_PATH}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(example.request),
