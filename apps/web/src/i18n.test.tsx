@@ -43,7 +43,7 @@ describe('web internationalization', () => {
     openLanguageMenu();
     expect(screen.getByRole('menuitem', { name: 'English' }).getAttribute('href')).toBe('/');
     expect(document.documentElement.lang).toBe('zh-Hans');
-    expect(document.title).toBe('Packetrove — 面向用户与智能体的网络工具');
+    expect(document.title).toBe('Packetrove — CIDR 计算器与公网 IP 查询');
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://packetrove.com/zh/');
     expect(document.head.querySelector('link[hreflang="en"]')?.getAttribute('href')).toBe('https://packetrove.com/');
     expect(fetch).not.toHaveBeenCalled();
@@ -139,7 +139,7 @@ describe('web internationalization', () => {
     expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('::/0');
     expect(screen.getAllByText('340,282,366,920,938,463,463,374,607,431,768,211,456')).toHaveLength(2);
     expect(screen.getByText('精确覆盖：此 CIDR 没有增加额外地址。')).toBeDefined();
-    expect(document.title).toBe('最小覆盖 CIDR — Packetrove');
+    expect(document.title).toBe('最小覆盖 CIDR 计算器 — Packetrove');
     expect(document.head.querySelector('meta[property="og:url"]')?.getAttribute('content')).toBe('https://packetrove.com/zh/cidr');
     fireEvent.click(screen.getByRole('link', { name: '首页' }));
     fireEvent.click(screen.getByRole('link', { name: '最小覆盖 CIDR' }));
@@ -256,8 +256,8 @@ describe('web internationalization', () => {
     render(<App />);
     expect(await screen.findByRole('heading', { level: 1, name: 'API 文档' })).toBeDefined();
     expect(screen.getByText('交互式接口文档与规范使用英文。')).toBeDefined();
-    expect(screen.getByText('English API reference')).toBeDefined();
-    expect(document.title).toBe('API 文档 — Packetrove');
+    expect(await screen.findByText('English API reference')).toBeDefined();
+    expect(document.title).toBe('Packetrove API 文档 — CIDR 与公网 IP');
   });
 
   it('uses plural forms without rounding large address counts', () => {

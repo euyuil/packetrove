@@ -26,6 +26,8 @@ The workflow runs `pnpm check`, which includes:
 - Wrangler deployment dry runs for the API and website Workers.
 - Shared calculation, CLI, web application, website isolation, API, and MCP tests.
   Worker tests execute in the local Workers runtime on the GitHub runner.
+- Prerendered bilingual content and metadata, hydration, canonical and alternate
+  language links, sitemap entries, and robots policy.
 
 The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
@@ -70,8 +72,10 @@ If the expected version is still unavailable at the deadline, the run fails
 with a version-readiness error before running the functional checks.
 
 Once the version is ready,
-`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies the website,
-bundled assets, API results, OpenAPI document, modern and legacy MCP clients,
+`pnpm smoke https://packetrove.com https://api.packetrove.com` verifies all eight
+prerendered bilingual pages, metadata, canonical and alternate language links,
+the sitemap and robots policy, bundled assets, API results, OpenAPI document,
+modern and legacy MCP clients,
 Origin validation, anonymous browser CORS, and origin isolation. With
 `VITE_GIT_COMMIT` set, it also checks that the deployed JavaScript contains the expected build commit. It makes up to three attempts,
 waiting five seconds between failures to allow for temporary network errors.

@@ -1,8 +1,10 @@
 import { spawn } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CIDR_COVER_EXAMPLES } from '../packages/contracts/src/index';
+import { websitePages } from '../apps/web/src/seo';
 import { waitForDeployment } from './deployment-readiness';
 
 const origin = 'https://service.example';
@@ -158,6 +160,11 @@ describe('readiness followed by the production smoke check across separate origi
   it.each(['API', 'MCP'])('still fails for a functional %s error after the version is ready', async failed => {
     const requested: string[] = [];
     const apiRequested: string[] = [];
+    const builtPages = new Map(websitePages.map(page => [page.pathname,
+      readFileSync(new URL('../apps/web/dist/' + page.entry, import.meta.url), 'utf8')
+        .replaceAll(/\/assets\/[^\"]+\.js/g, '/assets/main.js')
+        .replaceAll(/\/assets\/[^\"]+\.css/g, '/assets/main.css'),
+    ]));
     const send = (response: import('node:http').ServerResponse, type: string, body: string, status = 200) => {
       response.writeHead(status, { 'content-type': type });
       response.end(body);
@@ -166,14 +173,13 @@ describe('readiness followed by the production smoke check across separate origi
       const path = request.url!;
       requested.push(path);
       if (request.method === 'POST') return send(response, 'text/plain', '', 405);
-      const mainHtml = '<title>Packetrove — Network tools for humans and agents</title>'
-        + '<script src="/assets/main.js"></script><link href="/assets/main.css">';
-      if (path === '/') return send(response, 'text/html', mainHtml);
+      const page = builtPages.get(path) ?? builtPages.get(path.replace(/\/$/, ''));
+      if (page) return send(response, 'text/html', page);
+      if (path === '/sitemap.xml' || path === '/robots.txt') return send(response,
+        path.endsWith('.xml') ? 'application/xml' : 'text/plain',
+        readFileSync(new URL('../apps/web/dist' + path, import.meta.url), 'utf8'));
       if (path === '/assets/main.js') return send(response, 'application/javascript', `const sourceCommit = "${commit}";`);
       if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
-      if (path === '/cidr' || path === '/cidr/') return send(response, 'text/html', '<title>Smallest Covering CIDR — Packetrove</title>');
-      if (path === '/ip' || path === '/ip/') return send(response, 'text/html', '<title>My Public IP — Packetrove</title>');
-      if (path === '/docs/api' || path === '/docs/api/') return send(response, 'text/html', '<title>API documentation — Packetrove</title>');
       send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
     });
     const apiServer = createServer((request, response) => {
