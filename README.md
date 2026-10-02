@@ -84,7 +84,7 @@ the returned address, and lookup results and errors are not cached.
 ## Website languages
 
 The website supports English, Chinese, Spanish, German, Japanese, French,
-and Portuguese.
+Portuguese, Russian, Korean, and Italian.
 English uses the existing URLs. Other languages use a prefix for the homepage,
 CIDR calculator, public IP tool, API documentation shell, and MCP connection guide:
 
@@ -97,14 +97,18 @@ CIDR calculator, public IP tool, API documentation shell, and MCP connection gui
 | 日本語 | [Japanese homepage](https://packetrove.com/ja/) | `/ja` |
 | Français | [French homepage](https://packetrove.com/fr/) | `/fr` |
 | Português | [Portuguese homepage](https://packetrove.com/pt/) | `/pt` |
+| Русский | [Russian homepage](https://packetrove.com/ru/) | `/ru` |
+| 한국어 | [Korean homepage](https://packetrove.com/ko/) | `/ko` |
+| Italiano | [Italian homepage](https://packetrove.com/it/) | `/it` |
 
 For example, Spanish tools are at `/es/cidr`, `/es/cidr/subtract`, and `/es/public-ip`,
 and API documentation is at `/es/docs/api`. The Spanish MCP guide is at `/es/docs/mcp`.
 Use the language dropdown in the header to switch the current page. It shows
 the current language, with a British flag for English and a Chinese flag for
-Chinese, plus Spanish, German, Japanese, French, and Portuguese flags for their
-respective languages. Menu entries use each language's own name and mark the
-current choice. Chinese and Portuguese use generic language names in the menu.
+Chinese, plus Spanish, German, Japanese, French, Portuguese, Russian, South Korean,
+and Italian flags for their respective languages. Menu entries use each
+language's own name and mark the current choice. Chinese and Portuguese use
+generic language names in the menu.
 Chinese uses Simplified Chinese text (`zh-Hans`); Portuguese uses Brazilian
 wording and number formatting (`pt-BR`). The flags serve as visual cues, and the
 locale tags describe the text and formatting used by the pages.

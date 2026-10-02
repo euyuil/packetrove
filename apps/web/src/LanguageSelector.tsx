@@ -8,6 +8,9 @@ import GermanyFlag from 'country-flag-icons/react/3x2/DE';
 import JapanFlag from 'country-flag-icons/react/3x2/JP';
 import FranceFlag from 'country-flag-icons/react/3x2/FR';
 import PortugalFlag from 'country-flag-icons/react/3x2/PT';
+import RussiaFlag from 'country-flag-icons/react/3x2/RU';
+import SouthKoreaFlag from 'country-flag-icons/react/3x2/KR';
+import ItalyFlag from 'country-flag-icons/react/3x2/IT';
 import { useTranslation } from 'react-i18next';
 import { localizedPath, type Locale } from './i18n/routes';
 import { locales, supportedLocales } from './i18n/locales';
@@ -15,6 +18,7 @@ import { locales, supportedLocales } from './i18n/locales';
 const flags = {
   GB: UnitedKingdomFlag, CN: ChinaFlag, ES: SpainFlag, DE: GermanyFlag, JP: JapanFlag,
   FR: FranceFlag, PT: PortugalFlag,
+  RU: RussiaFlag, KR: SouthKoreaFlag, IT: ItalyFlag,
 } satisfies Record<(typeof locales)[Locale]['flag'], typeof UnitedKingdomFlag>;
 
 type LanguageSelectorProps = {

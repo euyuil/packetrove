@@ -171,7 +171,7 @@ describe('browser-local CIDR subtraction', () => {
 });
 
 describe('copy formats and retained subtraction state', () => {
-  it.each(['es', 'de', 'ja', 'fr', 'pt-BR'] as const)('retains the exact result, formats counts and translates list errors in %s', async (locale: Locale) => {
+  it.each(['es', 'de', 'ja', 'fr', 'pt-BR', 'ru', 'ko', 'it'] as const)('retains the exact result, formats counts and translates list errors in %s', async (locale: Locale) => {
     const calculation = vi.spyOn(core, 'subtractCidrs');
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);

@@ -42,9 +42,9 @@ not evidence of market size.
 ## Behavior and examples
 
 The tool is available at `/cidr/subtract` and under the existing `/zh`, `/es`,
-`/de`, `/ja`, `/fr`, and `/pt` prefixes, with labels, errors, descriptions, and metadata in all
-seven website languages. The homepage and navigation link to it. All seven pages
-are prerendered and included in the sitemap.
+`/de`, `/ja`, `/fr`, `/pt`, `/ru`, `/ko`, and `/it` prefixes, with labels, errors,
+descriptions, and metadata in all ten website languages. The homepage and
+navigation link to it. All ten pages are prerendered and included in the sitemap.
 
 Enter one IPv4 or IPv6 address or CIDR per line. Blank lines are ignored; invalid
 entries report the affected list and original physical line number. Individual

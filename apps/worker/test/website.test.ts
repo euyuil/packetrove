@@ -171,6 +171,8 @@ describe('website in the Workers runtime', () => {
     '/zh/cidr/missing-page', '/es/missing-page', '/de/missing-page', '/ja/missing-page',
     '/es/cidr/missing-page', '/de/docs/api/missing-page', '/ja/public-ip/missing-page', '/docs/mcp/missing-page',
     '/fr/missing-page', '/pt/missing-page', '/fr/docs/api/missing-page', '/pt/cidr/missing-page',
+    '/ru/missing-page', '/ko/missing-page', '/it/missing-page',
+    '/ru/docs/api/missing-page', '/ko/public-ip/missing-page', '/it/cidr/missing-page',
     '/assets/missing.js', '/assets/missing.css', '/_redirects'])('returns a real static 404 for %s', async path => {
     for (const headers of [{}, { 'sec-fetch-mode': 'navigate', accept: 'text/html' }]) {
       const response = await exports.default.fetch(`http://localhost${path}`, { headers });
