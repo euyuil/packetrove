@@ -150,18 +150,27 @@ export function smallestCoveringCidr(value: unknown): CidrCoverResult {
 
 /** Query an IP endpoint without persisting its per-request result. */
 export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSignal): Promise<PublicIpResult> {
+  const request = new AbortController();
+  const cancel = () => request.abort(signal?.reason);
+  if (signal?.aborted) cancel();
+  else signal?.addEventListener('abort', cancel, { once: true });
+  // Use one cancellable budget for headers and body without newer AbortSignal helpers.
+  const timeout = setTimeout(() => request.abort(new DOMException('The operation timed out.', 'TimeoutError')), 10_000);
   let response: Response;
   let text: string;
   try {
     const options = {
       headers: { accept: 'application/json' },
       cache: 'no-store', credentials: 'omit', redirect: 'error',
-      signal: AbortSignal.any([AbortSignal.timeout(10_000), ...(signal ? [signal] : [])]),
+      signal: request.signal,
     } as const;
     response = await fetch(endpoint, options);
     text = await response.text();
   } catch {
     throw new ToolError('NETWORK_ERROR', 'Unable to reach the IP lookup service. Check your connection and try again.');
+  } finally {
+    clearTimeout(timeout);
+    signal?.removeEventListener('abort', cancel);
   }
   let body: unknown;
   try { body = JSON.parse(text) as unknown; } catch {
