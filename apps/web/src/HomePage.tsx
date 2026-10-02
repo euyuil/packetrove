@@ -34,12 +34,19 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
         <Badge variant="light">{t($ => $.home.anonymous)}</Badge>
       </Group>
     </Stack>
-    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+    <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-cidr-heading">
         <Stack gap="md">
           <Title order={2} size="h3" id="home-cidr-heading">{t($ => $.cidr.title)}</Title>
           <Text c="dimmed">{t($ => $.home.cidrDescription)}</Text>
           <Anchor href={localizedPath('/cidr', locale)} onClick={onNavigate}>{t($ => $.home.cidrLink)}</Anchor>
+        </Stack>
+      </Paper>
+      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-subtract-heading">
+        <Stack gap="md">
+          <Title order={2} size="h3" id="home-subtract-heading">{t($ => $.subtract.title)}</Title>
+          <Text c="dimmed">{t($ => $.home.subtractDescription)}</Text>
+          <Anchor href={localizedPath('/cidr/subtract', locale)} onClick={onNavigate}>{t($ => $.home.subtractLink)}</Anchor>
         </Stack>
       </Paper>
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-ip-heading">

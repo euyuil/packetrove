@@ -10,9 +10,10 @@ interface ClipboardCopyButtonProps {
   failureMessage: string;
   onCopy: () => void;
   onDismiss: () => void;
+  disabled?: boolean;
 }
 
-export function ClipboardCopyButton({ label, feedback, successMessage, failureMessage, onCopy, onDismiss }: ClipboardCopyButtonProps) {
+export function ClipboardCopyButton({ label, feedback, successMessage, failureMessage, onCopy, onDismiss, disabled = false }: ClipboardCopyButtonProps) {
   const { t } = useTranslation();
   const message = feedback.status === 'success' ? successMessage : feedback.status === 'error' ? failureMessage : '';
   const theme = useMantineTheme();
@@ -30,7 +31,7 @@ export function ClipboardCopyButton({ label, feedback, successMessage, failureMe
       position="top-end" width={280} withArrow shadow="sm">
       <Popover.Target>
         <Button ref={button} type="button" variant={copied ? 'light' : 'default'} size="xs"
-          w={112} flex="0 0 auto" onClick={onCopy} onKeyDown={event => {
+          miw={112} flex="0 0 auto" disabled={disabled} onClick={onCopy} onKeyDown={event => {
             if (event.key === 'Escape' && feedback.status === 'error') dismiss();
           }}>
           {copied ? <><span aria-hidden="true">✓</span> {t($ => $.common.copied)}</> : label}

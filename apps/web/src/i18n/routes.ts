@@ -1,9 +1,9 @@
 import { PUBLIC_IP_NAME } from '@packetrove/contracts';
 import { locales, supportedLocales, type Locale } from './locales';
 export type { Locale } from './locales';
-export type Page = 'home' | 'cidr' | 'ip' | 'api' | 'notFound';
+export type Page = 'home' | 'cidr' | 'subtract' | 'ip' | 'api' | 'notFound';
 
-export const pagePaths = { home: '/', cidr: '/cidr', ip: `/${PUBLIC_IP_NAME}`, api: '/docs/api' } as const;
+export const pagePaths = { home: '/', cidr: '/cidr', subtract: '/cidr/subtract', ip: `/${PUBLIC_IP_NAME}`, api: '/docs/api' } as const;
 export const legacyPagePaths: Readonly<Record<string, string>> = { '/ip': pagePaths.ip };
 
 export function localizedPath(path: string, locale: Locale) {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
+import { CidrSubtractTool, type CidrSubtractDraft } from './CidrSubtractTool';
 import { PublicIpTool } from './PublicIpTool';
 import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
@@ -17,12 +18,14 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const [pathname, setPathname] = useState(initialPathname);
   const [urlSuffix, setUrlSuffix] = useState('');
   const [draft, setDraft] = useState<CidrCoverDraft>({ input: '', result: null, error: null });
+  const [subtractDraft, setSubtractDraft] = useState<CidrSubtractDraft>({ include: '', exclude: '', result: null, error: null });
   const { locale, page, path } = resolveRoute(pathname);
   const main = useRef<HTMLElement>(null);
   const previousPath = useRef(path);
   const homePage = page === 'home';
   const ipPage = page === 'ip';
   const cidrPage = page === 'cidr';
+  const subtractPage = page === 'subtract';
   const apiPage = page === 'api';
   const href = (destination: string) => localizedPath(destination, locale);
   const repository = import.meta.env.VITE_GITHUB_REPOSITORY || 'euyuil/packetrove';
@@ -81,6 +84,8 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
         <Button component="a" href={href('/cidr')} onClick={navigate} variant={cidrPage ? 'light' : 'subtle'}
           aria-current={cidrPage ? 'page' : undefined}>{t($ => $.cidr.title)}</Button>
+        <Button component="a" href={href('/cidr/subtract')} onClick={navigate} variant={subtractPage ? 'light' : 'subtle'}
+          aria-current={subtractPage ? 'page' : undefined}>{t($ => $.subtract.title)}</Button>
         <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
@@ -89,6 +94,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
           : cidrPage ? t($ => $.cidr.title) : apiPage ? t($ => $.api.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
           : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
+          : subtractPage ? <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>

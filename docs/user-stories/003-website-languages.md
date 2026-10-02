@@ -15,7 +15,7 @@ and share a link in my preferred language.
 - English pages have no language prefix. Use `/zh` for Chinese (`zh-Hans`),
   `/es` for Spanish (`es`), `/de` for German (`de`), `/ja` for Japanese (`ja`),
   `/fr` for French (`fr`), and `/pt` for Portuguese (`pt-BR`).
-  Each prefix has a homepage, `/cidr`, `/public-ip`, and `/docs/api` page.
+  Each prefix has a homepage, `/cidr`, `/cidr/subtract`, `/public-ip`, and `/docs/api` page.
   Reserve short language codes and language-tag names for locale prefixes;
   choose descriptive tool URL names according to `AGENTS.md`. Legacy `/ip`,
   `/ip/`, and `/ip.html` links redirect permanently to `/public-ip` in each
@@ -48,7 +48,7 @@ and share a link in my preferred language.
   entries. Use self-referencing canonical URLs and reciprocal links for all seven
   locales, plus `x-default` pointing to English. Update metadata during in-page
   navigation.
-- Prerender the 28 localized pages at build time, including their headings,
+- Prerender the 35 localized pages at build time, including their headings,
   explanations, links, and examples. Hydrate the same React components in the
   browser without losing page state during navigation or language changes.
 - Generate `sitemap.xml` from the canonical page list and reference it in
@@ -113,7 +113,7 @@ the Vite HTML transform and browser navigation. Keep the `<!--page-metadata-->`
 and empty root placeholders in the HTML entries; `scripts/build.ts` fills them
 from the metadata and React render. `websitePages` derives the Vite inputs and
 sitemap entries from the locale registry and page paths. The production smoke
-check validates all 28 localized entries.
+check validates all 35 localized entries.
 
 Run `pnpm check` before submitting changes. The checks cover language switching,
 retained calculator drafts, physical-line validation errors, clipboard status,

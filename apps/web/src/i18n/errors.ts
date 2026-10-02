@@ -23,6 +23,7 @@ export function issueMessage(issue: InputIssue, detail: InputIssueDetail | undef
     case 'EMPTY_INPUTS': return t($ => $.errors.emptyInputs);
     case 'TOO_MANY_INPUTS': return t($ => $.errors.tooManyInputs, { limit: detail.limit });
     case 'INPUT_TOO_LONG': return t($ => $.errors.inputTooLong, { limit: detail.limit });
+    case 'TOO_MANY_OUTPUTS': return t($ => $.errors.tooManyOutputs, { limit: detail.limit });
     case 'EXPECTED_FAMILY': return t($ => $.errors.expectedFamily, { family: detail.family === 'ipv4' ? 'IPv4' : 'IPv6' });
     default: return t($ => $.errors.invalidInput);
   }
