@@ -148,7 +148,7 @@ describe('API documentation failure isolation', () => {
     openDocumentation();
     await failDocumentation(documentation);
     fireEvent.click(screen.getByRole('button', { name: 'Language: English' }));
-    fireEvent.click(screen.getByRole('menuitem', { name: '简体中文' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: '中文' }));
     expect(window.location.pathname).toBe('/zh/docs/api');
     expect(screen.getByRole('heading', { name: 'API 文档暂时无法显示' })).toBeDefined();
     expect(screen.getByRole('navigation', { name: '主导航' })).toBeDefined();

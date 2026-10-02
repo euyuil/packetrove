@@ -2,8 +2,8 @@
 
 ## User story
 
-As a user of Packetrove, I want to read the website in English, Simplified Chinese,
-Spanish, German, Japanese, French, or Brazilian Portuguese and switch languages
+As a user of Packetrove, I want to read the website in English, Chinese,
+Spanish, German, Japanese, French, or Portuguese and switch languages
 without losing my current calculation, so that I can understand network results
 and share a link in my preferred language.
 
@@ -12,16 +12,19 @@ and share a link in my preferred language.
 - Translate the homepage, navigation, CIDR calculator, public IP tool, API
   documentation shell, loading states, clipboard feedback, accessible labels,
   and the application-rendered not-found page.
-- Keep existing English URLs. Use `/zh` for Simplified Chinese (`zh-Hans`),
+- Keep existing English URLs. Use `/zh` for Chinese (`zh-Hans`),
   `/es` for Spanish (`es`), `/de` for German (`de`), `/ja` for Japanese (`ja`),
-  `/fr` for French (`fr`), and `/pt` for Brazilian Portuguese (`pt-BR`).
+  `/fr` for French (`fr`), and `/pt` for Portuguese (`pt-BR`).
   Each prefix has a homepage, `/cidr`, `/ip`, and `/docs/api` page.
 - Let the URL determine the language. Provide a header dropdown with `English`,
-  `简体中文`, `Español`, `Deutsch`, `日本語`, `Français`, and `Português (Brasil)`
+  `中文`, `Español`, `Deutsch`, `日本語`, `Français`, and `Português`
   entries, without browser-language redirects or persistent storage.
   Show the current language on its button and mark the current menu entry.
   Precede each language with its configured flag: British, Chinese, Spanish,
-  German, Japanese, French, or Brazilian.
+  German, Japanese, French, or Portuguese.
+  Chinese and Portuguese use generic menu names. Their default text remains
+  Simplified Chinese and Brazilian Portuguese, with matching `zh-Hans` and
+  `pt-BR` page metadata and number formatting. Flags are decorative visual cues.
   Keep flags decorative and language names accessible. Support keyboard opening,
   arrow-key navigation, selection, and Escape to close and return focus.
 - Switch the current page in place, preserving calculator input, results, and
@@ -75,6 +78,9 @@ When adding a locale, add its registry entry, complete translations and metadata
 static HTML entries, and flag import together. The menu
 renders the configured entries without adding another header button. Preserve
 the existing page, query string, and fragment in every language link.
+Refresh the links when opening the menu and when following or opening a link's
+context menu, including after the interactive API reference updates the URL.
+Keep modified clicks and other native link actions available.
 
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while
