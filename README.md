@@ -7,173 +7,35 @@
 **Network tools for humans and agents.**
 
 Packetrove helps developers and network administrators simplify firewall IP
-lists, check a connection's public IP, and use the same tools from a browser,
-scripts, or an AI agent.
+lists, subtract network ranges, and check a connection's public IP. Use the
+website for a quick calculation, the API or CLI for scripts, or connect AI agents
+through Model Context Protocol (MCP).
 
-**[Explore Packetrove](https://packetrove.com) ·
-[Try the CIDR calculator](https://packetrove.com/cidr) ·
-[Check your public IP](https://packetrove.com/public-ip)**
+**[Website](https://packetrove.com) ·
+[CIDR calculator](https://packetrove.com/cidr) ·
+[CIDR subtraction](https://packetrove.com/cidr/subtract) ·
+[My Public IP](https://packetrove.com/public-ip)**
 
 ## What you can do
 
-### Simplify firewall IP lists
+- **Cover an IP list with one CIDR.** Find the smallest IPv4 or IPv6 network
+  covering your inputs, with its full address range and exact additional coverage.
+- **Subtract CIDR lists exactly.** Remove excluded networks and copy the smallest
+  CIDR list representing the remaining addresses, without adding addresses.
+- **Check a connection's public IP.** See and copy the IPv4 or IPv6 address
+  observed for the connection making the request.
 
-Running out of entries in an IP allowlist or blocklist? Paste your IPv4 or IPv6
-addresses and CIDR ranges to find the smallest single CIDR that covers them all.
-Packetrove shows the full address range and exactly how many additional
-addresses it includes, so you can decide whether the wider coverage fits your
-firewall rules.
+The website supports ten languages. Hosted tools require no account or API key.
+All three tools are available through the website, Web API, and MCP. The CLI
+provides covering-CIDR calculations and public IP lookup; the agent skill provides
+covering-CIDR calculations.
 
-| Your inputs | Smallest covering CIDR | Coverage |
-| --- | --- | --- |
-| `203.0.113.1`, `203.0.113.2`, `203.0.113.6` | `203.0.113.0/29` | 8 addresses: your 3 plus 5 additional addresses |
-| `203.0.113.0/25`, `203.0.113.128/25` | `203.0.113.0/24` | 256 addresses, with no additional coverage |
+Browse example results in the homepage gallery, then open a tool to enter your
+own inputs. Gallery previews use documentation addresses and make no live lookups.
 
-In either web CIDR tool, separate entries with commas (`,` or `，`), spaces,
-tabs, or line breaks. Mixed and repeated separators are accepted; empty entries
-are ignored.
+## Quick start
 
-Use up to 1,000 entries of one address family per calculation. Overlapping
-ranges and duplicate addresses count once. A covering CIDR can allow or block
-addresses outside your original list; review that expansion before applying it.
-
-### Subtract CIDR lists exactly
-
-Use [CIDR Subtraction](https://packetrove.com/cidr/subtract) to remove excluded
-networks from your included address space. The result is the smallest canonical
-CIDR list representing exactly what remains, with no added addresses. Overlapping
-entries count once; an empty exclusion list simplifies the exact include union.
-
-For example, including `203.0.113.0/24` and excluding `203.0.113.64/26` returns
-`203.0.113.0/26` and `203.0.113.128/25`: 256 included addresses, 64 removed, and
-192 remaining. Copy the complete result with one CIDR per line or with CIDRs
-separated by commas and spaces. The comma format can be used as a WireGuard
-`AllowedIPs` value. Complete removal displays an explicit empty result
-and disables copying.
-
-Prepare WireGuard exceptions, inspect gaps after known allocations, or subtract
-two entire lists in one calculation. Gaps are relative to the inputs, not proof
-that addresses are unused on a live network. Review the result before applying
-it. See the [user stories](docs/user-stories/004-cidr-subtraction.md).
-
-Calculations run locally in the browser. Use one address family, at most 1,000
-entries across both lists, and at most 64 characters per entry. Output allows up
-to 10,000 CIDRs; larger results report an error without a partial list.
-Subtraction is available in the shared core, website, Web API, and MCP. The CLI
-and covering-calculator skill continue to provide their existing operations.
-
-### Check your connection's public IP
-
-Open [My Public IP](https://packetrove.com/public-ip) to see and copy the IPv4 or IPv6
-address used by your current connection. Refresh after changing networks, VPNs,
-or proxy settings.
-
-With a VPN or proxy, the result is its exit address. Each check observes one
-address family; it does not separately discover both IPv4 and IPv6 addresses.
-
-## Why Packetrove?
-
-- **Keep CIDR inputs local.** The web calculator runs entirely in your browser
-  without sending your address list to the API. The CLI calculates offline after
-  it is built.
-- **See what changes.** Results include the canonical CIDR, address range, and
-  exact counts, including large IPv6 ranges and any additional coverage.
-- **Fit your workflow.** Use the website for a quick check, JSON results for
-  scripts, or Model Context Protocol (MCP) tools for AI agents.
-- **Start without an account.** The hosted website, Web API, and MCP server
-  require no login or API key.
-
-Public IP checks make a network request. The application does not store or log
-the returned address, and lookup results and errors are not cached.
-
-All product tools have website, Web API, and MCP access. Their identities,
-paths, schemas, metadata, and example references are maintained in one
-[shared tool catalog](packages/contracts/src/tools.ts). Website navigation,
-localized tool paths, API documentation, and MCP discovery and guides consume
-that catalog. See [how to add or change a tool](docs/tool-catalog.md).
-
-The homepage presents a manually browsed gallery of selected tools, with
-catalog-derived example previews and links to each tool. It makes no live
-lookups. API, CLI, and MCP setup is linked from compact introductions;
-see the [homepage user story](docs/user-stories/005-home-tool-gallery.md).
-
-## Website languages
-
-The website supports English, Chinese, Spanish, German, Japanese, French,
-Portuguese, Russian, Korean, and Italian.
-English uses the existing URLs. Other languages use a prefix for the homepage,
-CIDR calculator, public IP tool, API documentation shell, and MCP connection guide:
-
-| Language | Homepage | URL prefix |
-| --- | --- | --- |
-| English | [English homepage](https://packetrove.com/) | none |
-| 中文 | [Chinese homepage](https://packetrove.com/zh/) | `/zh` |
-| Español | [Spanish homepage](https://packetrove.com/es/) | `/es` |
-| Deutsch | [German homepage](https://packetrove.com/de/) | `/de` |
-| 日本語 | [Japanese homepage](https://packetrove.com/ja/) | `/ja` |
-| Français | [French homepage](https://packetrove.com/fr/) | `/fr` |
-| Português | [Portuguese homepage](https://packetrove.com/pt/) | `/pt` |
-| Русский | [Russian homepage](https://packetrove.com/ru/) | `/ru` |
-| 한국어 | [Korean homepage](https://packetrove.com/ko/) | `/ko` |
-| Italiano | [Italian homepage](https://packetrove.com/it/) | `/it` |
-
-For example, Spanish tools are at `/es/cidr`, `/es/cidr/subtract`, and `/es/public-ip`,
-and API documentation is at `/es/docs/api`. The Spanish MCP guide is at `/es/docs/mcp`.
-Use the language dropdown in the header to switch the current page. It shows
-the current language, with a British flag for English and a Chinese flag for
-Chinese, plus Spanish, German, Japanese, French, Portuguese, Russian, South Korean,
-and Italian flags for their respective languages. Menu entries use each
-language's own name and mark the current choice. Chinese and Portuguese use
-generic language names in the menu.
-Chinese uses Simplified Chinese text (`zh-Hans`); Portuguese uses Brazilian
-wording and number formatting (`pt-BR`). The flags serve as visual cues, and the
-locale tags describe the text and formatting used by the pages.
-The URL determines the language, so shared links and page reloads keep it;
-browser settings do not automatically redirect visitors.
-
-Changing languages in the same tab preserves both calculators' drafts, results,
-and validation errors. It also keeps an ongoing public IP check and updates
-its labels without making another request. Drafts and IP results stay in memory.
-Translations ship with the web application and require no translation service.
-
-Production builds prerender every registered page in every supported language
-from the same React components used in the browser. Headings, explanations, navigation links,
-and examples are present in the HTML before JavaScript runs. The browser then
-hydrates that HTML to enable the tools. CIDR inputs stay empty until entered;
-public IP lookup starts only in the browser, so builds make no lookup requests
-and never embed a visitor's IP address.
-
-Page titles, descriptions, social metadata, canonical URLs, and alternate
-language links share one definition for builds and in-page navigation. Builds
-also generate `sitemap.xml` with those canonical URLs and `robots.txt` with
-its sitemap location. These URLs use the public `https://packetrove.com` origin;
-change `WEBSITE_ORIGIN` in `apps/web/src/i18n/page-metadata.ts` when self-hosting.
-
-The tool pages include localized questions about common tasks and examples for
-their MCP tools, including exact CIDR subtraction. The
-[MCP connection guide](https://packetrove.com/docs/mcp)
-centralizes Claude Code and Codex setup, arguments, results, errors, and limits.
-These sections are present in the prerendered HTML and use documentation addresses;
-reading the guide makes no tool calls and does not connect an AI client.
-
-The interactive API reference, OpenAPI specification, repository integration guides,
-CLI, MCP descriptions, and repository documentation remain in English. Machine
-response fields, error codes, and decimal-string address counts are unchanged.
-See the [website language story](docs/user-stories/003-website-languages.md) for
-the scope and contributor instructions.
-
-## Use it your way
-
-| Interface | Get started |
-| --- | --- |
-| Website | [Project overview](https://packetrove.com) · [CIDR calculator](https://packetrove.com/cidr) · [My Public IP](https://packetrove.com/public-ip) |
-| Web API | [Interactive API documentation](https://packetrove.com/docs/api) · [API guide](docs/api/README.md) · [OpenAPI specification](https://api.packetrove.com/openapi.json) |
-| Command-line interface (CLI) | [CLI guide](docs/integrations/cli.md), with offline CIDR calculations and JSON output |
-| AI agents | [MCP connection guide](https://packetrove.com/docs/mcp) · [Technical MCP guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
-
-### Call the API
-
-Calculate a covering CIDR with a single request:
+Open the [CIDR calculator](https://packetrove.com/cidr), or call the API:
 
 ```sh
 curl https://api.packetrove.com/v1/cidr/cover \
@@ -181,128 +43,59 @@ curl https://api.packetrove.com/v1/cidr/cover \
   -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
 ```
 
-The result includes `cidr: "203.0.113.0/29"` and
-`additionalAddressCount: "5"`. Address counts are decimal strings to preserve
-exact IPv6 values. Use `GET https://api.packetrove.com/v1/public-ip` to check the
-connection making the request.
+The result is `203.0.113.0/29`: eight addresses, including five beyond the three
+inputs. Review this expansion before using it in an allowlist or blocklist.
+API address counts are decimal strings to preserve exact IPv6 values.
 
-### Connect an AI agent
+## Use it your way
 
-Add `https://api.packetrove.com/mcp` to a client that supports Streamable HTTP.
-The server provides covering CIDRs, exact CIDR subtraction, and public-IP
-diagnostics without authentication. The repository also includes a
-[CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) for calculating ranges
-and explaining additional allowlist or blocklist coverage.
+| Interface | Get started |
+| --- | --- |
+| Website | [Browse the tools](https://packetrove.com) |
+| Web API | [Interactive reference](https://packetrove.com/docs/api) · [API contract](docs/api/README.md) |
+| Command-line interface (CLI) | `npm install --global @packetrove/cli` · [CLI guide](docs/integrations/cli.md) |
+| Model Context Protocol (MCP) | [Connection guide](https://packetrove.com/docs/mcp) · [Technical guide](docs/integrations/mcp.md) |
+| Agent skill | [Covering-CIDR skill setup](docs/integrations/skill.md) |
 
-Use the [MCP connection guide](https://packetrove.com/docs/mcp) for Claude Code
-and Codex commands. Once configured, clients discover all catalog tools through
-`tools/list`, including their input/output schemas and usage limits. Remote CIDR
-calls send inputs to the server; the browser and built CLI calculate locally.
+## Privacy and scope
 
-A hosted MCP client checks its own connection, which may differ from your
-computer's. Use the website or run the CLI on your machine to inspect that
-network path.
+- Website CIDR calculations run locally in your browser; CLI calculations run
+  offline. API and remote MCP calculations send inputs to the server.
+- Public IP checks make a network request and observe one address family per
+  check. A VPN or proxy supplies its exit address; a hosted MCP client may
+  observe a different connection from your computer's.
+- The application does not store or log returned IP addresses. Lookup results
+  and errors are not cached.
 
-### Run the CLI
-
-With the [development toolchain](#development) installed, build from this
-repository:
-
-```sh
-pnpm install
-pnpm build
-node packages/cli/dist/cli.js cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
-node packages/cli/dist/cli.js public-ip
-```
-
-CIDR calculations run locally; `public-ip` calls the public API from the machine
-running the command. The CLI is supplied in this repository and has not been
-published to npm. See the [CLI guide](docs/integrations/cli.md) for file input,
-JSON errors, and packaging. Public distribution is prepared as `@packetrove/cli`;
-after the first release, it will support `npm install --global @packetrove/cli`
-and `npx @packetrove/cli`. See the [CLI publishing guide](docs/cli-publishing.md)
-for first-release setup and automatic release pull requests. Maintainers choose
-when to publish by approving and merging the separate release pull request;
-ordinary feature merges still deploy the website and API.
-
-Packetrove uses one product version across its website, API, MCP, CLI, core, and
-contracts. Formal releases use plain tags such as `0.1.0`, without `v` or a
-component prefix. The release pull request updates all workspace versions and
-the root [changelog](CHANGELOG.md) together. The CLI is published to npm at that
-same version; service deployments continue to be identified by their Git commit.
+For input formats, limits, and detailed behavior, see the
+[covering-CIDR](docs/user-stories/001-smallest-covering-cidr.md),
+[CIDR subtraction](docs/user-stories/004-cidr-subtraction.md), and
+[public IP](docs/user-stories/002-current-public-ip.md) guides.
 
 ## Development
 
-The web interface uses React, Vite, and Mantine. Prefer Mantine components and
-layout props, with shared visual settings in `apps/web/src/theme.ts`. Custom CSS
-handles the page background and wrapping long network values.
-
-Use Node.js 24.21.0 LTS, pinned in `.node-version`, and pnpm 12.8.1, pinned in
-`package.json`.
+Use the Node.js version in [.node-version](.node-version) and the pnpm version
+in [package.json](package.json). Local development needs no production credentials.
 
 ```sh
 pnpm install
-pnpm spec:generate
-pnpm check
-pnpm dev:api
+pnpm dev:web
 ```
 
-`pnpm dev:api` serves the API and MCP at `http://localhost:8787`. In another
-terminal, run `pnpm dev:web` and open `http://localhost:5173` for the website with
-hot reload. Its IP lookup calls the local API without cookies. CIDR calculation
-works with the web development server alone. Production builds use
-`https://api.packetrove.com`; set `VITE_API_ORIGIN` when building a self-hosted copy
-with a different API origin.
+Open `http://localhost:5173`. For the API and MCP, run `pnpm dev:api` in another
+terminal; they listen at `http://localhost:8787`. Local public IP lookup requires
+Cloudflare connection metadata and reports `CLIENT_IP_UNAVAILABLE` without it.
+See [Contributing](CONTRIBUTING.md) for complete setup, checks, and Git hooks.
 
-`pnpm install` automatically enables repository-local Git hooks. Install
-Gitleaks once (`brew install gitleaks` on macOS) for credential scanning and
-Conventional Commit checks. Missing Gitleaks allows local development but blocks
-commits. See the [local Git checks guide](docs/git-checks.md) for setup and
-troubleshooting.
+## Documentation and contributing
 
-Local development and tests need no Cloudflare account or production credentials.
-`pnpm build` validates the API specification and performs deployment dry runs
-for both the API and website Workers.
-The API publishes the generated specification as a static asset at
-`/openapi.json`; development, build, and deployment commands prepare this asset
-automatically. The website's `/docs/api` page includes static endpoint summaries
-and curl examples, loads Scalar in the browser only when opened, and sends test
-requests directly to the configured API origin without cookies.
-Scalar's AI features, telemetry, proxy, and external fonts are disabled.
-The website's `/docs/mcp` guide uses the same configured API origin and shared
-tool names and examples as the tool pages, and loads no interactive reference.
-Local public IP lookup depends on Cloudflare connection metadata; without it,
-the API returns `CLIENT_IP_UNAVAILABLE`.
-
-Dependency build scripts are limited to the reviewed entries in
-`pnpm-workspace.yaml`. Scalar's Vue integration uses `vue-demi`; its approved
-installation script selects the adapter for the installed Vue version.
-
-## Self-hosting
-
-The website uses `packetrove.com`; the Web API and MCP use
-`api.packetrove.com` on a separate Worker. The former root-domain API and MCP
-addresses no longer serve interfaces after the split; update configured clients
-to the new URLs. GET requests return 404 and POST requests return 405.
-The services run on Cloudflare Workers. Follow
-the [deployment guide](docs/deployment.md) to deploy your own copy, configure
-credentials, and verify it.
-
-GitHub Actions validates pull requests with `pnpm check`; updates to `main`
-deploy after validation and run production checks. See the
-[continuous integration guide](docs/continuous-integration.md) for details.
-
-## Contributing
-
-See the [contribution guide](CONTRIBUTING.md) for discussing changes, local
-development, checks, and pull requests.
-
-The [AI tool discovery story](docs/user-stories/004-ai-tool-discovery.md)
-records the content scope, tool selection boundaries, and manual prompt checks.
+- [Contribute or report an issue](CONTRIBUTING.md)
+- [Self-hosting](docs/deployment.md)
+- [Continuous integration and deployment](docs/continuous-integration.md)
+- [CLI publishing and product releases](docs/cli-publishing.md) · [Changelog](CHANGELOG.md)
 
 ## License
 
-Packetrove is licensed under the [MIT License](LICENSE).
-Third-party components retain their own licenses and copyright notices. The
-website includes [third-party notices](apps/web/public/third-party-notices.txt),
-and the bundled CLI includes [third-party notices](packages/cli/THIRD_PARTY_NOTICES).
+Packetrove is licensed under the [MIT License](LICENSE). Bundled components
+retain their own licenses; see the [website notices](apps/web/public/third-party-notices.txt)
+and [CLI notices](packages/cli/THIRD_PARTY_NOTICES).

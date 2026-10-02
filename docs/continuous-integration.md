@@ -12,8 +12,9 @@ also deploy and verify production.
 
 ## Validation
 
-One standard Ubuntu 26.04 runner installs Node.js 24.21.0 LTS from
-`.node-version` and the pnpm version declared in the root `package.json`.
+One standard Ubuntu 26.04 runner installs Node.js from
+[.node-version](../.node-version) and the pnpm version declared in the root
+[package.json](../package.json).
 Dependencies are installed from the committed lockfile with
 `pnpm install --frozen-lockfile`. The pnpm package store is cached using that
 lockfile's hash.
@@ -142,9 +143,8 @@ The release pull request is never automatically merged. Leaving it open holds
 npm publication while ordinary feature merges continue to deploy the services.
 
 The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
-write token in repository secrets. The first release and npm-side configuration
-are still pending; see the [CLI publishing guide](cli-publishing.md) for the
-GitHub App secrets, first-release baseline, trusted-publisher fields, version
+write token in repository secrets. See the [CLI publishing guide](cli-publishing.md)
+for the GitHub App secrets, first-release baseline, trusted-publisher fields, version
 rules, and recovery. Recovery verifies an identical existing npm archive without
 republishing it and rejects a collision with different package contents.
 
@@ -197,9 +197,11 @@ credentials are not persisted for subsequent build and test commands. Actions
 are pinned to full commit hashes, with release versions recorded in comments.
 When updating an action, verify its release and replace the pinned commit.
 
-Keep `.node-version` aligned with the Node.js LTS version verified in the README
-and the matching major version of `@types/node`. Update pnpm through the root
-`packageManager` field and regenerate the lockfile when changing dependencies.
+Keep [.node-version](../.node-version) aligned with the supported Node.js LTS
+release and the matching major version of `@types/node`. The
+[development setup](../CONTRIBUTING.md#getting-started) reads its toolchain pins
+from that file and the root `packageManager` field. Update pnpm through that field
+and regenerate the lockfile when changing dependencies.
 
 Prefer the default stable release channel and versions that satisfy the
 dependencies' declared peer requirements. Vitest stays on 4.1.11 while

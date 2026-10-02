@@ -50,6 +50,29 @@
 - Adding or changing a tool requires parity checks across website, API, MCP,
   generated OpenAPI, translations, documentation, and production smoke checks.
 
+## README and documentation
+
+- Keep the root README focused on first-time users and contributors: a short
+  project description, primary capabilities, one representative working example,
+  interface links, minimal local startup, and help, contribution, and license links.
+- Keep capability descriptions brief. Preserve information needed to choose a
+  workflow, including interface availability, installation status, privacy
+  boundaries, and significant calculation or connection limitations.
+- Update the README when a change affects primary capabilities, public entry
+  points, installation, quick-start steps, or those essential limitations.
+  Record detailed implementation changes, acceptance criteria, and release
+  history in their corresponding documents rather than accumulating README sections.
+- Put detailed usage and interface examples in the API and integration guides,
+  behavior and acceptance requirements in user stories, complete development
+  instructions in CONTRIBUTING.md and docs/git-checks.md, and deployment and
+  publishing procedures in their existing guides.
+- Give each detailed explanation one primary maintenance location and link to
+  it from other documents. Reuse existing guides before adding new documents;
+  remove redundant descriptions when their authoritative documentation exists.
+- When moving or removing content, update incoming links, heading anchors, and
+  references to the old documentation responsibility. Keep toolchain versions
+  sourced from .node-version and package.json rather than duplicating version pins.
+
 ## Website URL names
 
 - English website pages have no language prefix, so the first path segment of
@@ -132,7 +155,8 @@
   Gitleaks. Credential scanning in continuous integration is deferred by the
   owner; do not add it as part of unrelated work.
 
-When changing setup, update this file, README.md, and docs/git-checks.md together.
+When changing setup, update this file, README.md, CONTRIBUTING.md, and
+docs/git-checks.md together.
 Verify a fresh clone, missing Gitleaks, preserved custom hooks, and the skipped
 continuous integration path.
 
