@@ -19,6 +19,46 @@ describe('current public IP in the Workers runtime', () => {
     expect(PublicIpResultSchema.parse(await response.json())).toEqual(result);
   });
 
+  it.each([
+    { headers: { 'cf-connecting-ip': '203.0.113.1' }, ip: '203.0.113.1' },
+    { headers: { 'cf-connecting-ip': '2001:db8::1' }, ip: '2001:db8::1' },
+    { headers: { 'cf-connecting-ip': '240.0.0.1', 'cf-connecting-ipv6': '2001:db8::7' }, ip: '2001:db8::7' },
+  ])('returns a newline-terminated plain-text address when requested: $ip', async ({ headers, ip }) => {
+    const response = await lookup({ ...headers, accept: 'text/plain' });
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/plain; charset=UTF-8');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('vary')).toBe('Accept');
+    expect(response.headers.get('access-control-allow-origin')).toBe('*');
+    expect(await response.text()).toBe(`${ip}\n`);
+  });
+
+  it.each([
+    { accept: '*/*', type: 'application/json' },
+    { accept: 'text/html', type: 'application/json' },
+    { accept: 'text/plain;q=0', type: 'application/json' },
+    { accept: 'text/plain;q=0.5, application/json;q=1', type: 'application/json' },
+    { accept: 'application/json;q=0.5, text/plain;q=1', type: 'text/plain' },
+    { accept: 'text/*', type: 'text/plain' },
+  ])('selects a supported response for Accept: $accept', async ({ accept, type }) => {
+    const response = await lookup({ 'cf-connecting-ip': '203.0.113.1', accept });
+    expect(response.headers.get('content-type')).toContain(type);
+    expect(type === 'text/plain' ? await response.text() : await response.json())
+      .toEqual(type === 'text/plain' ? '203.0.113.1\n' : { ip: '203.0.113.1', family: 'ipv4' });
+  });
+
+  it.each([
+    { headers: {}, method: 'GET', status: 503, code: 'CLIENT_IP_UNAVAILABLE' },
+    { headers: { 'cf-connecting-ip': 'invalid' }, method: 'GET', status: 503, code: 'CLIENT_IP_UNAVAILABLE' },
+    { headers: {}, method: 'POST', status: 405, code: 'METHOD_NOT_ALLOWED' },
+  ])('keeps plain-text request errors structured and uncached: $code', async ({ headers, method, status, code }) => {
+    const response = await lookup({ ...headers, accept: 'text/plain' }, method);
+    expect(response.status).toBe(status);
+    expect(response.headers.get('content-type')).toContain('application/json');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(ErrorResponseSchema.parse(await response.json()).error.code).toBe(code);
+  });
+
   it('ignores caller-supplied forwarded addresses and query parameters', async () => {
     const response = await exports.default.fetch(`http://localhost${PUBLIC_IP_PATH}?ip=198.51.100.10`, {
       headers: {
@@ -63,11 +103,24 @@ describe('current public IP in the Workers runtime', () => {
       .toBe('203.0.113.3');
   });
 
+  it('isolates concurrent clients using different response formats', async () => {
+    const [plain, json] = await Promise.all([
+      lookup({ 'cf-connecting-ip': '203.0.113.1', accept: 'text/plain' }),
+      lookup({ 'cf-connecting-ip': '2001:db8::1', accept: 'application/json' }),
+    ]);
+    expect(await plain.text()).toBe('203.0.113.1\n');
+    expect(await json.json()).toEqual({ ip: '2001:db8::1', family: 'ipv6' });
+  });
+
   it('supports HEAD and rejects unsupported methods without caching the error', async () => {
     const response = await lookup({ 'cf-connecting-ip': '203.0.113.1' }, 'HEAD');
     expect(response.status).toBe(200);
     expect(await response.text()).toBe('');
     expect(response.headers.get('cache-control')).toBe('no-store');
+    const plain = await lookup({ 'cf-connecting-ip': '203.0.113.1', accept: 'text/plain' }, 'HEAD');
+    expect(plain.status).toBe(200);
+    expect(plain.headers.get('content-type')).toContain('text/plain');
+    expect(await plain.text()).toBe('');
     const unsupported = await lookup({}, 'POST');
     expect(unsupported.status).toBe(405);
     expect(unsupported.headers.get('allow')).toBe('GET, HEAD');
@@ -79,7 +132,9 @@ describe('current public IP in the Workers runtime', () => {
     const error = vi.spyOn(console, 'error');
     try {
       await lookup({ 'cf-connecting-ip': '203.0.113.1' });
+      await lookup({ 'cf-connecting-ip': '203.0.113.1', accept: 'text/plain' });
       await lookup();
+      await lookup({ accept: 'text/plain' });
       expect(log).not.toHaveBeenCalled();
       expect(error).not.toHaveBeenCalled();
     } finally { log.mockRestore(); error.mockRestore(); }

@@ -27,8 +27,12 @@ so that I can diagnose my network path or copy the address into a firewall list.
 
 ## API and infrastructure
 
-`GET /v1/ip` takes no body and returns the shared JSON result. The CLI uses
-this endpoint; the MCP tool is named `get_public_ip` and takes an empty object.
+`GET /v1/ip` takes no body and returns the shared JSON result by default.
+With `Accept: text/plain`, a successful response contains only the observed
+address and a newline, with `Content-Type: text/plain; charset=UTF-8`.
+Errors remain structured JSON and responses include `Vary: Accept`.
+The CLI uses the default JSON response from this endpoint; the MCP tool is
+named `get_public_ip` and takes an empty object.
 Each interface reports missing or invalid connection information explicitly.
 
 The API and MCP use the `packetrove-api` Cloudflare Worker at
