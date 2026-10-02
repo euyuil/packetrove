@@ -2,13 +2,14 @@ import { McpServer, type McpRequestContext } from '@modelcontextprotocol/server'
 import { createMcpHandler } from 'agents/mcp/server';
 import {
   CidrCoverRequestSchema, CidrCoverResultSchema, MAX_INPUTS, MAX_INPUT_LENGTH, MCP_PATH, MCP_TOOL_NAME,
+  PACKETROVE_VERSION,
   PUBLIC_IP_TOOL_NAME, PublicIpRequestSchema, PublicIpResultSchema,
 } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { getPublicIp } from './ip';
 
 export function createMcpServer(context: McpRequestContext) {
-  const server = new McpServer({ name: 'Packetrove', version: '0.1.0' });
+  const server = new McpServer({ name: 'Packetrove', version: PACKETROVE_VERSION });
   server.registerTool(MCP_TOOL_NAME, {
     title: 'Smallest Covering CIDR',
     description: `Use when combining a selected group of firewall allowlist or blocklist entries into one smallest covering CIDR, or when checking the exact extra coverage. Accept 1 to ${MAX_INPUTS.toLocaleString('en')} IP addresses or CIDRs from one address family, up to ${MAX_INPUT_LENGTH} characters each; normalize host bits and count overlaps once. Return the canonical CIDR, inclusive range, and exact decimal-string counts, including additionalAddressCount. The range may allow or block additional addresses. This computes one CIDR for the supplied inputs; it does not optimize an entire list against an entry limit or change firewall rules. Remote MCP calls submit inputs to this server; the calculation makes no outbound network requests.`,

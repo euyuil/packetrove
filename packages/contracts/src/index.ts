@@ -1,5 +1,7 @@
 import { z } from 'zod';
+import manifest from '../package.json' with { type: 'json' };
 
+export const PACKETROVE_VERSION = manifest.version;
 export const MAX_INPUTS = 1_000;
 export const MAX_INPUT_LENGTH = 64;
 export const MAX_SUBTRACTION_INPUTS = 1_000;

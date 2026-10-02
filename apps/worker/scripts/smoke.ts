@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextp
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
-  PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
+  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
@@ -234,6 +234,7 @@ const client = new Client({ name: 'packetrove-smoke', version: '0.1.0' }, {
 });
 try {
   await client.connect(new StreamableHTTPClientTransport(new URL(`${apiOrigin}/mcp`), { fetch: mcpFetch }));
+  assert.equal(client.getServerVersion()?.version, PACKETROVE_VERSION);
   const tools = (await client.listTools()).tools;
   assert(tools.some(tool => tool.name === MCP_TOOL_NAME), 'Missing CIDR tool.');
   assert(tools.some(tool => tool.name === PUBLIC_IP_TOOL_NAME), 'Missing public IP tool.');
@@ -254,6 +255,7 @@ try {
   // SDK 1.30 declares sessionId differently on its transport and interface.
   await legacyClient.connect(transport as LegacyTransportContract);
   assert.equal(legacyClient.getServerVersion()?.name, 'Packetrove');
+  assert.equal(legacyClient.getServerVersion()?.version, PACKETROVE_VERSION);
   assert.equal((await legacyClient.listTools()).tools[0]?.name, MCP_TOOL_NAME);
   const result = await legacyClient.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
   assert.notEqual(result.isError, true);

@@ -122,6 +122,32 @@ Each job has a ten-minute timeout. A branch push alone does not run this workflo
 unless it updates `main`; opening, reopening, or updating a pull request targeting
 `main` triggers validation. Manual validation and deployment require `main`.
 
+## Product releases and CLI publication
+
+After one-time setup, [`release.yml`](../.github/workflows/release.yml)
+runs after successful current `main` validation, deployment, and production
+checks. Release-please maintains one product release pull request with the next
+version, root changelog, all workspace versions, and generated OpenAPI version.
+Website, API, MCP, CLI, core, and contracts changes contribute to that version.
+The release tag and npm version use the same plain number, such as `0.1.1`.
+A repository-scoped GitHub App allows the
+release pull request to run the same required validation as other pull requests.
+
+The owner decides when to approve and squash-merge the release pull request.
+After main CI succeeds, release-please creates its tag and GitHub Release;
+[`publish-cli.yml`](../.github/workflows/publish-cli.yml) then validates and
+publishes the tagged CLI to npm at the product version, even for a release with
+website-only changes. Publication does not build a later main revision.
+The release pull request is never automatically merged. Leaving it open holds
+npm publication while ordinary feature merges continue to deploy the services.
+
+The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
+write token in repository secrets. The first release and npm-side configuration
+are still pending; see the [CLI publishing guide](cli-publishing.md) for the
+GitHub App secrets, first-release baseline, trusted-publisher fields, version
+rules, and recovery. Recovery verifies an identical existing npm archive without
+republishing it and rejects a collision with different package contents.
+
 ## Cloudflare credentials
 
 Configure these repository settings in GitHub Actions before the first run:

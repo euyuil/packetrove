@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverRequestSchema,
   CidrCoverResultSchema, ErrorResponseSchema, HealthResultSchema, MAX_REQUEST_BYTES,
-  PUBLIC_IP_PATH, PublicIpResultSchema,
+  PACKETROVE_VERSION, PUBLIC_IP_PATH, PublicIpResultSchema,
 } from './index';
 
 extendZodWithOpenApi(z);
@@ -89,7 +89,7 @@ export function createOpenApiDocument() {
   });
   return new OpenApiGeneratorV31(registry.definitions).generateDocument({
     openapi: '3.1.0',
-    info: { title: 'Packetrove API', version: '0.1.0',
+    info: { title: 'Packetrove API', version: PACKETROVE_VERSION,
       license: { name: 'MIT', url: 'https://opensource.org/license/mit/' },
       description: 'Network tools for humans and agents, including local calculations and request-based diagnostics. Address counts are decimal strings for exact IPv6 representation.' },
     servers: [{ url: '/', description: 'The host serving this specification' }],

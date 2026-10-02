@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { smallestCoveringCidr } from '@packetrove/core';
 import {
   CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema,
-  MAX_REQUEST_BYTES, MCP_TOOL_NAME,
+  MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_VERSION,
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
 import { mcpExamples } from '../../web/src/mcp-examples';
@@ -37,6 +37,7 @@ describe('stateless MCP in the Workers runtime', () => {
   it('discovers a read-only tool with input and output schemas', async () => {
     const client = await connectedClient();
     try {
+      expect(client.getServerVersion()).toMatchObject({ name: 'Packetrove', version: PACKETROVE_VERSION });
       const { tools } = await client.listTools();
       expect(tools).toHaveLength(2);
       expect(tools[0]).toMatchObject({
@@ -120,6 +121,7 @@ describe('stateless MCP in the Workers runtime', () => {
     await client.connect(transport as LegacyTransportContract);
     try {
       expect(client.getServerVersion()?.name).toBe('Packetrove');
+      expect(client.getServerVersion()?.version).toBe(PACKETROVE_VERSION);
       expect((await client.listTools()).tools[0]?.name).toBe(MCP_TOOL_NAME);
       const example = CIDR_COVER_EXAMPLES[1]!;
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });

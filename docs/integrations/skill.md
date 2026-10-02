@@ -16,7 +16,7 @@ global agent settings.
 Provide one working calculation interface:
 
 - A `packetrove` CLI executable on the agent's command path, installed from the
-  local CLI artifact.
+  local CLI artifact, or from `@packetrove/cli` after the first npm release.
 - A Packetrove checkout path with dependencies installed and the CLI built.
   The agent can run `node /path/to/packetrove/packages/cli/dist/cli.js`.
 - A configured remote MCP connection to `https://api.packetrove.com/mcp`, following
