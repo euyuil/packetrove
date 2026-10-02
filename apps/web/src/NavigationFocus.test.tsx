@@ -101,7 +101,8 @@ describe('focus after navigation to a different page', () => {
     render(<App />);
     const main = screen.getByRole('main');
     const focus = vi.spyOn(main, 'focus');
-    for (const locale of supportedLocales.filter(language => language !== 'en').concat('en')) {
+    const languages: Locale[] = [...supportedLocales.filter(language => language !== 'en'), 'en'];
+    for (const locale of languages) {
       const trigger = await chooseLanguage(locale);
       expect(document.activeElement).toBe(trigger);
       expect(main.getAttribute('aria-label')).toBe(resources[locale].translation.cidr.title);
