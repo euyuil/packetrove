@@ -25,6 +25,8 @@ Use `@packetrove/cli@<version>` to pin a published version for reproducible
 scripts. Supported Node.js versions are 22.22.2+ in the 22.x line, 24.15.0+ in
 the 24.x line, and 26+. Git and pnpm are needed only for development or source
 installation. Maintainers should follow the [publishing guide](../cli-publishing.md).
+Source builds can include unreleased changes. The standard-input buffering fix
+described below is available from source and will be included in the next npm release.
 
 ## Install from source
 
@@ -167,7 +169,7 @@ pnpm --filter @packetrove/cli pack --pack-destination /tmp/packetrove-artifacts
 
 The package declares a `packetrove` executable for clients that install the
 tarball. Packing alone does not install it; the source-install commands above
-install the archive globally. No package has been published to npm.
+install the archive globally.
 
 `pnpm check` also packs the CLI in a temporary workspace, installs that archive
 offline with both npm and pnpm in isolated consumers, and runs the installed

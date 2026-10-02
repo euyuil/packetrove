@@ -200,9 +200,15 @@ add a trusted publisher, and select GitHub Actions:
 | Environment name | Leave empty; this workflow does not use a GitHub environment |
 | Allowed actions | Allow direct publishing with `npm publish` |
 
+Leave `Allow npm dist-tag` unchecked; this workflow does not manage tags with a
+separate `npm dist-tag` command. Under Publishing access, select the option that
+requires two-factor authentication and disallows tokens that bypass it. This
+restriction does not prevent trusted publishing through OIDC.
+
 Staged publication alone does not permit this workflow's direct command. npm
 does not validate this configuration when it is saved; a later workflow upload
-is the live test of the trusted-publisher setup.
+is the live test of the trusted-publisher setup. Recovery of an identical
+existing archive skips upload and does not test OIDC publication.
 
 The workflow uses a GitHub-hosted runner, npm CLI 11.5.1 or later, and
 `id-token: write`. No long-lived npm token is needed. Trusted publication from
@@ -221,9 +227,11 @@ Service deployment remains governed by `ci.yml`; the tagged CLI only needs its
 exact commit's successful validation even if a later main revision deployed
 the services.
 
-Before upload, the workflow compares the archive's SHA-512 integrity with any
-existing npm version. An absent version is published; an identical existing
-archive skips upload and proceeds to verification; different contents fail.
+Before publication preview or upload, the workflow compares the archive's
+SHA-512 integrity with any existing npm version. An absent version proceeds to
+preview and publication; an identical existing archive skips both and proceeds
+to verification; different contents fail. Even `npm publish --dry-run` rejects
+an already published version, so it runs only when the version is absent.
 Registry errors are failures, not evidence that a version is absent. After
 publication it checks registry integrity, installs the exact version with a
 fresh npm cache outside the workspace, and verifies its calculation.
