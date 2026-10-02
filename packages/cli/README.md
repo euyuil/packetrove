@@ -12,8 +12,8 @@ use the same plain number, such as `0.1.0`.
 
 ## Installation
 
-Once a version is published to npm, install it with Node.js and npm; Git, pnpm,
-and a source checkout are not needed:
+Install the npm package with Node.js and npm; Git, pnpm, and a source checkout
+are not needed:
 
 ```sh
 npm install --global @packetrove/cli
@@ -27,7 +27,7 @@ npx @packetrove/cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
 ```
 
 Supported Node.js versions are 22.22.2 or later in the 22.x line, 24.15.0 or
-later in the 24.x line, and 26 or later. Before the first release, follow the
+later in the 24.x line, and 26 or later. To build your own copy, follow the
 [source installation guide](https://github.com/euyuil/packetrove/blob/main/docs/integrations/cli.md#install-from-source).
 
 ## Cover IP addresses and CIDR ranges

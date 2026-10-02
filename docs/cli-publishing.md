@@ -1,7 +1,9 @@
 # Publishing the CLI to npm
 
-The CLI is prepared for public distribution as `@packetrove/cli`, with the
-`packetrove` executable. Its first npm release is pending. Only the CLI is
+The CLI is published as `@packetrove/cli`, with the `packetrove` executable.
+The initial `0.1.0` release is available on
+[npm](https://www.npmjs.com/package/@packetrove/cli) and
+[GitHub](https://github.com/euyuil/packetrove/releases/tag/0.1.0). Only the CLI is
 published; it bundles the core, contracts, and runtime dependencies.
 
 ## Release policy
@@ -111,6 +113,10 @@ ordinary validation and service deployment still run.
 
 ## First release and baseline
 
+The steps below document the initial distribution setup. The project's `0.1.0`
+package and GitHub Release already exist; subsequent releases follow the
+release policy above and still require publication verification.
+
 1. Sign in to an npm account with verified email, interactive publishing 2FA,
    and permission to publish public packages under the `packetrove`
    organization.
@@ -177,8 +183,9 @@ maintains the next release pull request. To prepare immediately, run:
 gh workflow run release.yml --repo euyuil/packetrove --ref main
 ```
 
-After npm publication is verified, update the release-pending wording in the
-README and integration guides through a follow-up pull request.
+After npm publication is verified, keep installation and availability wording
+in the README, package README, and integration guides consistent with the
+published package through a follow-up pull request.
 
 ## Configure npm trusted publishing
 

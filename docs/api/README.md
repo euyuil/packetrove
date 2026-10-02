@@ -11,6 +11,8 @@ test calls. Test requests go directly to the configured API without cookies or
 a third-party proxy. Calculation inputs entered into the documentation's test
 client are sent to the API; the website's CIDR calculator continues to run
 locally in the browser.
+The interactive reference loads only when the API documentation is opened.
+Scalar's AI features, telemetry, and external fonts are disabled.
 The page links to the same-language [MCP connection guide](https://packetrove.com/docs/mcp)
 for agent setup and tool examples. MCP tool names, results, and errors follow
 the same shared contracts.
@@ -116,8 +118,8 @@ Static Assets, ahead of the Worker script. It supports `HEAD`, ETag-based
 revalidation, and anonymous cross-origin access. Each deployment publishes the
 validated specification from the same source as the API contracts.
 
-The contract specifies anonymous access. Implementation and deployment status
-are tracked in the repository README.
+API calls require no login or API key. See the
+[deployment guide](../deployment.md) for hosting configuration and live verification.
 
 The website at `https://packetrove.com` does not serve API endpoints. The former
 `/api/v1/*` and `/api/openapi.json` addresses on that host no longer serve the API

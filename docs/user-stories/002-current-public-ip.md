@@ -1,7 +1,9 @@
 # Current public IP address
 
-The scope below is agreed. The README records implementation and deployment
-status for each interface.
+This document records the agreed behavior and connection limitations. See the
+[API contract](../api/README.md), [CLI guide](../integrations/cli.md), and
+[MCP guide](../integrations/mcp.md) for usage, and the
+[deployment guide](../deployment.md) for hosting and live verification.
 
 ## User story
 
