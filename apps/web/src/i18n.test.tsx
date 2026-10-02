@@ -188,13 +188,13 @@ describe('web internationalization', () => {
     calculate('::1');
     await user.click(screen.getByRole('button', { name: 'Copy CIDR' }));
     chooseLanguage('中文');
-    expect(screen.getByRole('status').textContent).toBe('已复制 CIDR。');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('已复制 CIDR。');
     expect(write).toHaveBeenCalledExactlyOnceWith('::1/128');
     write.mockRejectedValueOnce(new Error('Denied'));
     await user.click(screen.getByRole('button', { name: /已复制/ }));
-    expect(screen.getByRole('status').textContent).toBe('无法使用剪贴板，请选中并复制上方 CIDR。');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('无法使用剪贴板，请选中并复制上方 CIDR。');
     chooseLanguage('English');
-    expect(screen.getByRole('status').textContent).toBe('Copy is unavailable. Select and copy the CIDR above.');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('Copy is unavailable. Select and copy the CIDR above.');
     expect(screen.getByRole('button', { name: 'Dismiss copy error' })).toBeDefined();
     expect(write).toHaveBeenCalledTimes(2);
   });

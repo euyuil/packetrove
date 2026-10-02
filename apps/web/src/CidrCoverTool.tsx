@@ -1,7 +1,7 @@
 import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Accordion, Alert, Badge, Button, DataList, Group, List, ScrollArea, SimpleGrid, Stack, Text, Textarea, Title,
+  Accordion, Alert, Badge, Button, DataList, Group, List, ScrollArea, SimpleGrid, Stack, Text, Textarea, Title, VisuallyHidden,
 } from '@mantine/core';
 import { CIDR_COVER_EXAMPLES, MAX_INPUTS, type CidrCoverResult } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
@@ -15,6 +15,10 @@ import { ToolMcpSection } from './ToolMcpSection';
 import { ToolPageHeader } from './ToolPageHeader';
 import { ToolPanel } from './ToolPanel';
 import { parseAddressEntries } from './parseAddressEntries';
+import { NetworkValue } from './NetworkValue';
+import { ToolErrorSummary } from './ToolErrorSummary';
+import { ToolResultCounts } from './ToolResultCounts';
+import { useCalculationFeedback } from './useCalculationFeedback';
 
 export type CidrCoverDraft = { input: string; result: CidrCoverResult | null; error: ToolError | null };
 
@@ -29,6 +33,7 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
   const { input, result, error } = draft;
   const { copyFeedback, clearCopyFeedback, copyText } = useClipboardFeedback();
   const entries = parseAddressEntries(input);
+  const feedback = useCalculationFeedback();
 
   function replaceInput(value: string) {
     onDraftChange({ input: value, result: null, error: null });
@@ -40,9 +45,11 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
     clearCopyFeedback();
     try {
       onDraftChange({ input, result: smallestCoveringCidr({ inputs: entries.map(entry => entry.value) }), error: null });
+      feedback.complete(false);
     } catch (failure) {
       onDraftChange({ input, result: null, error: failure instanceof ToolError ? failure
         : new ToolError('INTERNAL_ERROR', 'Unable to calculate this input. Please try again.') });
+      feedback.complete(true);
     }
   }
 
@@ -54,24 +61,25 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
   return (
     <Stack gap="xl">
       <ToolPageHeader tool="cidr" notice={t($ => $.cidr.local)} />
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg" style={{ alignItems: 'start' }}>
         <ToolPanel headingId="input-heading" title={t($ => $.cidr.addresses)}
           headerAside={<Text size="sm" c="dimmed">IPv4 / IPv6</Text>}>
           <form onSubmit={calculate}>
             <Stack gap="md">
+              {error && <ToolErrorSummary ref={feedback.errorSummary} id="input-error" title={errorMessage(error, t, locale)}
+                issues={error.issues?.map((issue, index) => ({
+                  inputId: 'addresses',
+                  message: issue.index === undefined ? issueMessage(issue, error.details?.[index], t, locale)
+                    : t($ => $.cidr.line, { line: formatCount(entries[issue.index]?.line ?? issue.index + 1),
+                      message: issueMessage(issue, error.details?.[index], t, locale) }),
+                }))} />}
               <Textarea id="addresses" label={t($ => $.cidr.inputLabel)} value={input}
                 description={t($ => $.cidr.inputHelp, { maximum: formatCount(MAX_INPUTS) })}
                 descriptionProps={{ id: 'input-help' }}
-                rows={8} resize="vertical" spellCheck={false} autoCapitalize="off" autoCorrect="off"
+                autosize minRows={4} maxRows={10} spellCheck={false} autoCapitalize="off" autoCorrect="off"
                 classNames={{ input: 'network-value' }}
-                errorProps={{ component: 'div', id: 'input-error' }}
-                error={error && <Alert color="red" title={errorMessage(error, t, locale)} role="alert">
-                  {error.issues && <List size="sm">{error.issues.map((issue, index) => <List.Item key={index}>
-                    {issue.index === undefined ? issueMessage(issue, error.details?.[index], t, locale)
-                      : t($ => $.cidr.line, { line: formatCount(entries[issue.index]?.line ?? issue.index + 1),
-                        message: issueMessage(issue, error.details?.[index], t, locale) })}
-                  </List.Item>)}</List>}
-                </Alert>}
+                attributes={{ input: { 'aria-describedby': 'input-help' + (error ? ' input-error' : '') } }}
+                error={Boolean(error)}
                 placeholder={'203.0.113.1\n203.0.113.2\n203.0.113.6'}
                 onChange={event => replaceInput(event.currentTarget.value)} />
               <Group justify="space-between">
@@ -90,47 +98,48 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
             </Stack>
           </form>
         </ToolPanel>
-        <ToolPanel headingId="result-heading" title={t($ => $.cidr.result)}
+        <ToolPanel ref={feedback.resultPanel} headingId="result-heading" title={t($ => $.cidr.result)}
           headerAside={result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}>
-          <Stack gap="md" aria-live="polite">
+          <VisuallyHidden role="status" aria-label={t($ => $.cidr.result)} aria-live="polite" aria-atomic="true">
+            {result && <span key={feedback.completionVersion}>{t($ => $.cidr.resultLabel)}: {result.cidr}</span>}
+          </VisuallyHidden>
+          <Stack gap="md">
             {result ? <>
-              <Text size="xs" c="dimmed">{t($ => $.cidr.resultLabel)}</Text>
-              <Group justify="space-between">
-                <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.cidr}</Text>
-                <ClipboardCopyButton label={t($ => $.cidr.copy)} feedback={copyFeedback}
-                  successMessage={t($ => $.cidr.copySuccess)} failureMessage={t($ => $.cidr.copyFailure)}
-                  onCopy={copyCidr} onDismiss={clearCopyFeedback} />
-              </Group>
-              <DataList orientation="vertical" withDivider>
-                <DataList.Item>
-                  <DataList.ItemLabel>{t($ => $.cidr.first)}</DataList.ItemLabel>
-                  <DataList.ItemValue className="network-value">{result.range.first}</DataList.ItemValue>
-                </DataList.Item>
-                <DataList.Item>
-                  <DataList.ItemLabel>{t($ => $.cidr.last)}</DataList.ItemLabel>
-                  <DataList.ItemValue className="network-value">{result.range.last}</DataList.ItemValue>
-                </DataList.Item>
-                <DataList.Item>
-                  <DataList.ItemLabel>{t($ => $.cidr.unique)}</DataList.ItemLabel>
-                  <DataList.ItemValue className="network-value" fw={600}>{formatCount(result.inputAddressCount)}</DataList.ItemValue>
-                </DataList.Item>
-                <DataList.Item>
-                  <DataList.ItemLabel>{t($ => $.cidr.covered)}</DataList.ItemLabel>
-                  <DataList.ItemValue className="network-value" fw={600}>{formatCount(result.coveredAddressCount)}</DataList.ItemValue>
-                </DataList.Item>
-                <DataList.Item>
-                  <DataList.ItemLabel>{t($ => $.cidr.additional)}</DataList.ItemLabel>
-                  <DataList.ItemValue className="network-value" fw={600} c={result.additionalAddressCount === '0' ? 'teal' : 'yellow.9'}>
-                    {formatCount(result.additionalAddressCount)}
-                  </DataList.ItemValue>
-                </DataList.Item>
-              </DataList>
+              <Stack gap="xs">
+                <Text size="sm" c="dimmed">{t($ => $.cidr.resultLabel)}</Text>
+                <Group justify="space-between">
+                  <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">
+                    <NetworkValue value={result.cidr} />
+                  </Text>
+                  <ClipboardCopyButton label={t($ => $.cidr.copy)} feedback={copyFeedback}
+                    successMessage={t($ => $.cidr.copySuccess)} failureMessage={t($ => $.cidr.copyFailure)}
+                    onCopy={copyCidr} onDismiss={clearCopyFeedback} />
+                </Group>
+              </Stack>
               <Alert color={result.additionalAddressCount === '0' ? 'teal' : 'yellow'} role="note">
+                <Group component="dl" m={0} gap="xs" mb={4}>
+                  <Text component="dt" size="sm" fw={600}>{t($ => $.cidr.additional)}</Text>
+                  <Text component="dd" m={0} className="network-value" fw={700}>{formatCount(result.additionalAddressCount)}</Text>
+                </Group>
                 {result.additionalAddressCount === '0'
                   ? t($ => $.cidr.exact)
                   : t($ => result.additionalAddressCount === '1' ? $.cidr.expansionOne : $.cidr.expansionOther,
                     { total: formatCount(result.additionalAddressCount) })}
               </Alert>
+              <ToolResultCounts items={[
+                { label: t($ => $.cidr.unique), value: formatCount(result.inputAddressCount) },
+                { label: t($ => $.cidr.covered), value: formatCount(result.coveredAddressCount) },
+              ]} />
+              <DataList orientation="vertical" withDivider>
+                <DataList.Item>
+                  <DataList.ItemLabel>{t($ => $.cidr.first)}</DataList.ItemLabel>
+                  <DataList.ItemValue className="network-value"><NetworkValue value={result.range.first} /></DataList.ItemValue>
+                </DataList.Item>
+                <DataList.Item>
+                  <DataList.ItemLabel>{t($ => $.cidr.last)}</DataList.ItemLabel>
+                  <DataList.ItemValue className="network-value"><NetworkValue value={result.range.last} /></DataList.ItemValue>
+                </DataList.Item>
+              </DataList>
               <Accordion variant="contained">
                 <Accordion.Item value="normalized-inputs">
                   <Accordion.Control>{t($ => $.cidr.normalized, { total: formatCount(result.normalizedInputs.length) })}</Accordion.Control>

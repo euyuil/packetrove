@@ -278,7 +278,7 @@ describe('browser calculator', () => {
     const writeText = vi.spyOn(navigator.clipboard, 'writeText');
     await user.click(screen.getByRole('button', { name: 'Copy CIDR' }));
     expect(writeText).toHaveBeenCalledWith('::1/128');
-    expect(screen.getByRole('status').textContent).toBe('CIDR copied.');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('CIDR copied.');
   });
   it('provides a useful message when clipboard access fails', async () => {
     const user = userEvent.setup();
@@ -286,6 +286,6 @@ describe('browser calculator', () => {
     render(<App />);
     enter('::1');
     await user.click(screen.getByRole('button', { name: 'Copy CIDR' }));
-    expect(screen.getByRole('status').textContent).toBe('Copy is unavailable. Select and copy the CIDR above.');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('Copy is unavailable. Select and copy the CIDR above.');
   });
 });

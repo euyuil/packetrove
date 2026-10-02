@@ -39,6 +39,9 @@ class ResizeObserver {
 
 window.ResizeObserver = ResizeObserver;
 
+// JSDOM has no FontFaceSet; Mantine's autosizing textarea listens for font loads.
+Object.defineProperty(document, 'fonts', { value: new EventTarget(), configurable: true });
+
 Object.defineProperty(window, 'IntersectionObserver', {
   writable: true,
   value: class {

@@ -94,13 +94,13 @@ describe.each(tools)('$name copy feedback', tool => {
     beginResultChange();
     if (stage === 'after the new result appears') await finishResultChange();
     await finishCopy(oldCopy, outcome);
-    expect(screen.queryByRole('status')?.textContent ?? '').toBe('');
+    expect(screen.queryByRole('status', { name: '' })?.textContent ?? '').toBe('');
     if (stage === 'while the result is cleared') await finishResultChange();
-    expect(screen.getByRole('status').textContent).toBe('');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('');
 
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
     expect(writeText.mock.calls.map(call => call[0])).toEqual([tool.first, tool.second]);
-    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(tool.success);
   });
 
   it.each(['success', 'failure'] as const)('does not let an older copy %s replace the latest copy feedback', async outcome => {
@@ -112,9 +112,9 @@ describe.each(tools)('$name copy feedback', tool => {
     fireEvent.click(screen.getByRole('button', { name: tool.button }));
 
     await finishCopy(latestCopy, 'success');
-    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(tool.success);
     await finishCopy(oldCopy, outcome);
-    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(tool.success);
   });
 
   it('keeps feedback empty while the latest copy is pending and reports its failure', async () => {
@@ -124,12 +124,12 @@ describe.each(tools)('$name copy feedback', tool => {
     await openTool(tool);
     fireEvent.click(screen.getByRole('button', { name: tool.button }));
     await finishCopy(oldCopy, 'success');
-    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(tool.success);
 
     fireEvent.click(screen.getByRole('button', { name: 'Copied' }));
-    expect(screen.getByRole('status').textContent).toBe('');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('');
     await finishCopy(latestCopy, 'failure');
-    expect(screen.getByRole('status').textContent).toContain('Select and copy');
+    expect(screen.getByRole('status', { name: '' }).textContent).toContain('Select and copy');
   });
 
   it.each(['success', 'failure'] as const)('handles a pending copy %s after unmount without affecting a new page', async outcome => {
@@ -140,10 +140,10 @@ describe.each(tools)('$name copy feedback', tool => {
     view.unmount();
     await openTool(tool);
     await finishCopy(oldCopy, outcome);
-    expect(screen.getByRole('status').textContent).toBe('');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('');
 
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
-    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(tool.success);
   });
 
   it('restores the button two seconds after the latest successful copy', async () => {
@@ -158,10 +158,10 @@ describe.each(tools)('$name copy feedback', tool => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Copied' })); });
     act(() => { vi.advanceTimersByTime(500); });
     expect(screen.getByRole('button', { name: 'Copied' })).toBeDefined();
-    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(tool.success);
     act(() => { vi.advanceTimersByTime(1_500); });
     expect(screen.getByRole('button', { name: tool.button })).toBeDefined();
-    expect(screen.getByRole('status').textContent).toBe('');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('');
     expect(writeText).toHaveBeenCalledTimes(2);
   });
 
@@ -173,12 +173,12 @@ describe.each(tools)('$name copy feedback', tool => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
     act(() => { vi.advanceTimersByTime(10_000); });
     expect(screen.getByRole('dialog').textContent).toContain('Select and copy');
-    expect(screen.getByRole('status').textContent).toContain('Select and copy');
+    expect(screen.getByRole('status', { name: '' }).textContent).toContain('Select and copy');
     if (method === 'close button') fireEvent.click(screen.getByRole('button', { name: 'Dismiss copy error' }));
     else if (method === 'Escape') fireEvent.keyDown(screen.getByRole('button', { name: tool.button }), { key: 'Escape' });
     else fireEvent.mouseDown(document.body);
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.getByRole('status').textContent).toBe('');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('');
   });
 
   it('can retry after a failure without clearing the successful feedback', async () => {
@@ -189,7 +189,7 @@ describe.each(tools)('$name copy feedback', tool => {
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: tool.button })); });
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.getByRole('button', { name: 'Copied' })).toBeDefined();
-    expect(screen.getByRole('status').textContent).toBe(tool.success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(tool.success);
   });
 });
 
@@ -200,5 +200,5 @@ it('invalidates a pending CIDR copy when recalculating unchanged input', async (
   fireEvent.click(screen.getByRole('button', { name: 'Copy CIDR' }));
   fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
   await finishCopy(oldCopy, 'success');
-  expect(screen.getByRole('status').textContent).toBe('');
+  expect(screen.getByRole('status', { name: '' }).textContent).toBe('');
 });

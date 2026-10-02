@@ -8,6 +8,21 @@ body {
   min-width: 0;
 }
 
+.tool-error-summary:focus {
+  outline: 2px solid var(--mantine-color-red-7);
+  outline-offset: 3px;
+}
+
+/* Mantine's size prop does not support pointer or viewport breakpoints. */
+@media (max-width: 47.99em), (pointer: coarse) {
+  .mantine-Button-root,
+  .mantine-Menu-item,
+  .mantine-CloseButton-root {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+}
+
 /* Replace Carousel's English-only announcement with the localized status. */
 .tool-gallery > [role='status'] {
   display: none;

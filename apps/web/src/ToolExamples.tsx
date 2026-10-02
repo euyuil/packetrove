@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react';
-import { Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Paper, SimpleGrid, Stack, Title } from '@mantine/core';
+import { ToolDisclosure } from './ToolDisclosure';
 
 export function ToolExamples({ title, description, columns = 2, children }: {
   title: ReactNode; description?: ReactNode; columns?: number; children: ReactNode;
 }) {
-  return <Stack component="section" aria-labelledby="examples-heading" gap="md">
-    <Title order={2} size="h3" id="examples-heading">{title}</Title>
-    {description && <Text size="sm" c="dimmed">{description}</Text>}
+  return <ToolDisclosure headingId="examples-heading" title={title} description={description}>
     <SimpleGrid cols={{ base: 1, md: columns }} spacing="lg">{children}</SimpleGrid>
-  </Stack>;
+  </ToolDisclosure>;
 }
 
 export function ToolExampleCard({ title, children }: { title: ReactNode; children: ReactNode }) {
