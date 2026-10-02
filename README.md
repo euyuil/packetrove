@@ -202,7 +202,18 @@ node packages/cli/dist/cli.js public-ip
 CIDR calculations run locally; `public-ip` calls the public API from the machine
 running the command. The CLI is supplied in this repository and has not been
 published to npm. See the [CLI guide](docs/integrations/cli.md) for file input,
-JSON errors, and packaging.
+JSON errors, and packaging. Public distribution is prepared as `@packetrove/cli`;
+after the first release, it will support `npm install --global @packetrove/cli`
+and `npx @packetrove/cli`. See the [CLI publishing guide](docs/cli-publishing.md)
+for first-release setup and automatic release pull requests. Maintainers choose
+when to publish by approving and merging the separate release pull request;
+ordinary feature merges still deploy the website and API.
+
+Packetrove uses one product version across its website, API, MCP, CLI, core, and
+contracts. Formal releases use plain tags such as `0.1.0`, without `v` or a
+component prefix. The release pull request updates all workspace versions and
+the root [changelog](CHANGELOG.md) together. The CLI is published to npm at that
+same version; service deployments continue to be identified by their Git commit.
 
 ## Development
 
