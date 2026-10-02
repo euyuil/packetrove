@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert, Badge, Button, Code, DataList, Group, List, Paper, SimpleGrid, Stack, Text, Textarea, ThemeIcon, Title,
+  Alert, Badge, Button, DataList, Group, List, SimpleGrid, Stack, Text, Textarea, Title,
 } from '@mantine/core';
 import {
   CIDR_SUBTRACT_EXAMPLES, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, type CidrSubtractResult,
@@ -12,7 +12,9 @@ import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage, issueMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
 import { ToolQuestions } from './ToolQuestions';
-import { ToolIcon } from './ToolIcon';
+import { ToolPageHeader } from './ToolPageHeader';
+import { ToolPanel } from './ToolPanel';
+import { CidrSubtractExamples } from './CidrSubtractExamples';
 import { ToolMcpSection } from './ToolMcpSection';
 import { parseAddressEntries } from './parseAddressEntries';
 
@@ -78,118 +80,91 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   });
 
   return <Stack gap="xl">
-    <Stack component="section" aria-labelledby="tool-title" gap="sm">
-      <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>{t($ => $.common.tools)}</Text>
-      <Group gap="md" wrap="nowrap">
-        <ThemeIcon variant="light" size={48} flex="0 0 auto"><ToolIcon tool="subtract" size={28} /></ThemeIcon>
-        <Title order={1} id="tool-title" flex={1}>{t($ => $.subtract.title)}</Title>
-      </Group>
-      <Text c="dimmed">{t($ => $.subtract.description)}</Text>
-      <Text size="sm" c="var(--mantine-primary-color-filled)">{t($ => $.cidr.local)}</Text>
-    </Stack>
+    <ToolPageHeader tool="subtract" notice={t($ => $.cidr.local)} />
     <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="input-heading">
-        <Stack gap="lg">
-          <Title order={2} size="h3" id="input-heading">{t($ => $.subtract.inputs)}</Title>
-          <form onSubmit={calculate}>
-            <Stack gap="md">
-              {error && <Alert color="red" id="subtraction-errors" role="alert" title={
-                error.details?.some(detail => detail.reason === 'TOO_MANY_OUTPUTS')
-                  ? t($ => $.subtract.outputLimitTitle) : errorMessage(error, t, locale)
-              }>{issueItems && <List size="sm">{issueItems.map((message, index) => <List.Item key={index}>{message}</List.Item>)}</List>}</Alert>}
-              {(['include', 'exclude'] as const).map(list => {
-                // Associate each input with the shared error summary instead of Mantine's own error element.
-                const affected = Boolean(error && (!error.details?.length || error.details.some(detail => !detail.list || detail.list === list)));
-                return <Textarea key={list} id={'subtract-' + list}
-                  label={t($ => list === 'include' ? $.subtract.includeLabel : $.subtract.excludeLabel)}
-                  description={t($ => list === 'include' ? $.subtract.includeHelp : $.subtract.excludeHelp)}
-                  descriptionProps={{ id: 'subtract-' + list + '-help' }}
-                  attributes={{ input: { 'aria-describedby': 'subtract-' + list + '-help' + (affected ? ' subtraction-errors' : '') } }}
-                  error={affected} value={draft[list]} rows={6} resize="vertical"
-                  spellCheck={false} autoCapitalize="off" autoCorrect="off" classNames={{ input: 'network-value' }}
-                  placeholder={CIDR_SUBTRACT_EXAMPLES[0]!.request[list].join('\n')}
-                  onChange={event => replaceLists(list === 'include' ? event.currentTarget.value : draft.include,
-                    list === 'exclude' ? event.currentTarget.value : draft.exclude)} />;
-              })}
-              <Text size="xs" c="dimmed">{t($ => $.subtract.limits, {
-                inputs: formatCount(MAX_SUBTRACTION_INPUTS), length: formatCount(MAX_INPUT_LENGTH), outputs: formatCount(MAX_SUBTRACTION_OUTPUTS),
+      <ToolPanel headingId="input-heading" title={t($ => $.subtract.inputs)}>
+        <form onSubmit={calculate}>
+          <Stack gap="md">
+            {error && <Alert color="red" id="subtraction-errors" role="alert" title={
+              error.details?.some(detail => detail.reason === 'TOO_MANY_OUTPUTS')
+                ? t($ => $.subtract.outputLimitTitle) : errorMessage(error, t, locale)
+            }>{issueItems && <List size="sm">{issueItems.map((message, index) => <List.Item key={index}>{message}</List.Item>)}</List>}</Alert>}
+            {(['include', 'exclude'] as const).map(list => {
+              // Associate each input with the shared error summary instead of Mantine's own error element.
+              const affected = Boolean(error && (!error.details?.length || error.details.some(detail => !detail.list || detail.list === list)));
+              return <Textarea key={list} id={'subtract-' + list}
+                label={t($ => list === 'include' ? $.subtract.includeLabel : $.subtract.excludeLabel)}
+                description={t($ => list === 'include' ? $.subtract.includeHelp : $.subtract.excludeHelp)}
+                descriptionProps={{ id: 'subtract-' + list + '-help' }}
+                attributes={{ input: { 'aria-describedby': 'subtract-' + list + '-help' + (affected ? ' subtraction-errors' : '') } }}
+                error={affected} value={draft[list]} rows={6} resize="vertical"
+                spellCheck={false} autoCapitalize="off" autoCorrect="off" classNames={{ input: 'network-value' }}
+                placeholder={CIDR_SUBTRACT_EXAMPLES[0]!.request[list].join('\n')}
+                onChange={event => replaceLists(list === 'include' ? event.currentTarget.value : draft.include,
+                  list === 'exclude' ? event.currentTarget.value : draft.exclude)} />;
+            })}
+            <Text size="xs" c="dimmed">{t($ => $.subtract.limits, {
+              inputs: formatCount(MAX_SUBTRACTION_INPUTS), length: formatCount(MAX_INPUT_LENGTH), outputs: formatCount(MAX_SUBTRACTION_OUTPUTS),
+            })}</Text>
+            <Group justify="space-between">
+              <Text size="sm" c="dimmed">{t($ => $.cidr.entryCount, {
+                count: entries.include.length + entries.exclude.length, total: formatCount(entries.include.length + entries.exclude.length),
               })}</Text>
-              <Group justify="space-between">
-                <Text size="sm" c="dimmed">{t($ => $.cidr.entryCount, {
-                  count: entries.include.length + entries.exclude.length, total: formatCount(entries.include.length + entries.exclude.length),
-                })}</Text>
-                <Button type="button" variant="default" size="xs" onClick={() => replaceLists('', '')}
-                  disabled={!draft.include && !draft.exclude && !result && !error}>{t($ => $.cidr.clear)}</Button>
-              </Group>
-              <Group gap="sm">
-                <Text size="sm" c="dimmed">{t($ => $.cidr.example)}</Text>
-                {CIDR_SUBTRACT_EXAMPLES.map(example => <Button key={example.name} type="button" variant="default" size="xs"
-                  onClick={() => replaceLists(example.request.include.join('\n'), example.request.exclude.join('\n'))}>{example.name}</Button>)}
-              </Group>
-              <Button type="submit" fullWidth>{t($ => $.subtract.calculate)}</Button>
-            </Stack>
-          </form>
-        </Stack>
-      </Paper>
-      <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="result-heading">
-        <Stack gap="lg">
-          <Group justify="space-between">
-            <Title order={2} size="h3" id="result-heading">{t($ => $.subtract.result)}</Title>
-            {result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}
-          </Group>
-          <Text size="sm" role="status" aria-label={t($ => $.subtract.result)} aria-live="polite" aria-atomic="true">
-            {result && result.cidrs.length > 0 && <span key={completionVersion}>{t($ => $.subtract.completed, {
-              addresses: formatCount(result.remainingAddressCount), cidrs: formatCount(result.cidrs.length),
-            })}</span>}
-          </Text>
-          {result ? <>
-            <DataList orientation="vertical" withDivider>
-              {[
-                [t($ => $.subtract.included), result.includedAddressCount],
-                [t($ => $.subtract.removed), result.removedAddressCount],
-                [t($ => $.subtract.remaining), result.remainingAddressCount],
-                [t($ => $.subtract.blocks), result.cidrs.length],
-              ].map(([label, count]) => <DataList.Item key={label}>
-                <DataList.ItemLabel>{label}</DataList.ItemLabel>
-                <DataList.ItemValue className="network-value">{formatCount(count!)}</DataList.ItemValue>
-              </DataList.Item>)}
-            </DataList>
-            {result.cidrs.length ? <Textarea label={t($ => $.subtract.output)} value={result.cidrs.join('\n')}
-              readOnly rows={10} resize="vertical" spellCheck={false} classNames={{ input: 'network-value' }} />
-              : <Alert color="teal" role="status" title={t($ => $.subtract.emptyTitle)}>{t($ => $.subtract.emptyDescription)}</Alert>}
-            <Group gap="sm">
-              <ClipboardCopyButton label={t($ => $.subtract.copyList)} feedback={listCopy.copyFeedback}
-                successMessage={t($ => $.subtract.copySuccess)} failureMessage={t($ => $.subtract.copyFailure)}
-                onCopy={() => copy('list')} onDismiss={listCopy.clearCopyFeedback} disabled={!result.cidrs.length} />
-              <ClipboardCopyButton label={t($ => $.subtract.copyAllowed)} feedback={allowedCopy.copyFeedback}
-                successMessage={t($ => $.subtract.allowedSuccess)} failureMessage={t($ => $.subtract.copyFailure)}
-                onCopy={() => copy('allowed')} onDismiss={allowedCopy.clearCopyFeedback} disabled={!result.cidrs.length} />
+              <Button type="button" variant="default" size="xs" onClick={() => replaceLists('', '')}
+                disabled={!draft.include && !draft.exclude && !result && !error}>{t($ => $.cidr.clear)}</Button>
             </Group>
-            <Text size="xs" c="dimmed">{t($ => $.subtract.formats)}</Text>
-          </> : <Stack align="center" py="xl" gap="sm">
-            <Title order={3} size="h4">{t($ => $.subtract.pendingTitle)}</Title>
-            <Text size="sm" c="dimmed" ta="center">{t($ => $.subtract.pendingDescription)}</Text>
-          </Stack>}
-        </Stack>
-      </Paper>
+            <Group gap="sm">
+              <Text size="sm" c="dimmed">{t($ => $.cidr.example)}</Text>
+              {CIDR_SUBTRACT_EXAMPLES.map(example => <Button key={example.name} type="button" variant="default" size="xs"
+                onClick={() => replaceLists(example.request.include.join('\n'), example.request.exclude.join('\n'))}>{example.name}</Button>)}
+            </Group>
+            <Button type="submit" fullWidth>{t($ => $.subtract.calculate)}</Button>
+          </Stack>
+        </form>
+      </ToolPanel>
+      <ToolPanel headingId="result-heading" title={t($ => $.subtract.result)}
+        headerAside={result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}>
+        <Text size="sm" role="status" aria-label={t($ => $.subtract.result)} aria-live="polite" aria-atomic="true">
+          {result && result.cidrs.length > 0 && <span key={completionVersion}>{t($ => $.subtract.completed, {
+            addresses: formatCount(result.remainingAddressCount), cidrs: formatCount(result.cidrs.length),
+          })}</span>}
+        </Text>
+        {result ? <>
+          <DataList orientation="vertical" withDivider>
+            {[
+              [t($ => $.subtract.included), result.includedAddressCount],
+              [t($ => $.subtract.removed), result.removedAddressCount],
+              [t($ => $.subtract.remaining), result.remainingAddressCount],
+              [t($ => $.subtract.blocks), result.cidrs.length],
+            ].map(([label, count]) => <DataList.Item key={label}>
+              <DataList.ItemLabel>{label}</DataList.ItemLabel>
+              <DataList.ItemValue className="network-value">{formatCount(count!)}</DataList.ItemValue>
+            </DataList.Item>)}
+          </DataList>
+          {result.cidrs.length ? <Textarea label={t($ => $.subtract.output)} value={result.cidrs.join('\n')}
+            readOnly rows={10} resize="vertical" spellCheck={false} classNames={{ input: 'network-value' }} />
+            : <Alert color="teal" role="status" title={t($ => $.subtract.emptyTitle)}>{t($ => $.subtract.emptyDescription)}</Alert>}
+          <Group gap="sm">
+            <ClipboardCopyButton label={t($ => $.subtract.copyList)} feedback={listCopy.copyFeedback}
+              successMessage={t($ => $.subtract.copySuccess)} failureMessage={t($ => $.subtract.copyFailure)}
+              onCopy={() => copy('list')} onDismiss={listCopy.clearCopyFeedback} disabled={!result.cidrs.length} />
+            <ClipboardCopyButton label={t($ => $.subtract.copyAllowed)} feedback={allowedCopy.copyFeedback}
+              successMessage={t($ => $.subtract.allowedSuccess)} failureMessage={t($ => $.subtract.copyFailure)}
+              onCopy={() => copy('allowed')} onDismiss={allowedCopy.clearCopyFeedback} disabled={!result.cidrs.length} />
+          </Group>
+          <Text size="xs" c="dimmed">{t($ => $.subtract.formats)}</Text>
+        </> : <Stack align="center" py="xl" gap="sm">
+          <Title order={3} size="h4">{t($ => $.subtract.pendingTitle)}</Title>
+          <Text size="sm" c="dimmed" ta="center">{t($ => $.subtract.pendingDescription)}</Text>
+        </Stack>}
+      </ToolPanel>
     </SimpleGrid>
     <Stack component="section" aria-labelledby="explanation-heading" gap="sm">
       <Title order={2} size="h4" id="explanation-heading">{t($ => $.subtract.explanationTitle)}</Title>
       <Text size="sm" c="dimmed">{t($ => $.subtract.explanation)}</Text>
       <Text size="sm" c="dimmed">{t($ => $.subtract.review)}</Text>
     </Stack>
-    <Stack component="section" aria-labelledby="examples-heading" gap="sm">
-      <Title order={2} size="h4" id="examples-heading">{t($ => $.subtract.examplesTitle)}</Title>
-      <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
-        {CIDR_SUBTRACT_EXAMPLES.map(example => <Paper key={example.name} withBorder p="md">
-          <Stack gap="sm">
-            <Text size="sm" fw={600}>{example.name}</Text>
-            <Text size="sm">{t($ => $.subtract.example, { include: example.request.include.join(', '), exclude: example.request.exclude.join(', ') })}</Text>
-            <Code block>{example.result.cidrs.join('\n')}</Code>
-          </Stack>
-        </Paper>)}
-      </SimpleGrid>
-    </Stack>
+    <CidrSubtractExamples />
     <ToolQuestions tool="subtract" onNavigate={onNavigate} />
     <ToolMcpSection tool="subtract" {...(onNavigate ? { onNavigate } : {})} />
   </Stack>;
