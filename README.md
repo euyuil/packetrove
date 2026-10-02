@@ -60,7 +60,7 @@ the returned address, and lookup results and errors are not cached.
 ## Website languages
 
 The website supports English, Chinese, Spanish, German, Japanese, French,
-and Portuguese.
+Portuguese, Russian, Korean, and Italian.
 English uses the existing URLs. Other languages use a prefix for the homepage,
 CIDR calculator, public IP tool, and API documentation shell:
 
@@ -73,13 +73,17 @@ CIDR calculator, public IP tool, and API documentation shell:
 | 日本語 | [Japanese homepage](https://packetrove.com/ja/) | `/ja` |
 | Français | [French homepage](https://packetrove.com/fr/) | `/fr` |
 | Português | [Portuguese homepage](https://packetrove.com/pt/) | `/pt` |
+| Русский | [Russian homepage](https://packetrove.com/ru/) | `/ru` |
+| 한국어 | [Korean homepage](https://packetrove.com/ko/) | `/ko` |
+| Italiano | [Italian homepage](https://packetrove.com/it/) | `/it` |
 
 For example, Spanish tools are at `/es/cidr` and `/es/public-ip`, and API documentation
 is at `/es/docs/api`.
 Use the language dropdown in the header to switch the current page. It shows
 the current language, with a British flag for English and a Chinese flag for
-Chinese, plus Spanish, German, Japanese, French, and Portuguese flags for their
-respective languages. Menu entries use each language's own name and mark the
+Chinese, plus Spanish, German, Japanese, French, Portuguese, Russian, South Korean,
+and Italian flags for their respective languages. Menu entries use each
+language's own name and mark the
 current choice. Chinese and Portuguese use generic language names in the menu.
 Chinese uses Simplified Chinese text (`zh-Hans`); Portuguese uses Brazilian
 wording and number formatting (`pt-BR`). The flags serve as visual cues, and the
@@ -92,7 +96,7 @@ result or validation error. It also keeps an ongoing public IP check and updates
 its labels without making another request. Drafts and IP results stay in memory.
 Translations ship with the web application and require no translation service.
 
-Production builds prerender all 28 pages in the seven languages from the same
+Production builds prerender all 40 pages in the ten languages from the same
 React components used in the browser. Headings, explanations, navigation links,
 and examples are present in the HTML before JavaScript runs. The browser then
 hydrates that HTML to enable the tools. CIDR inputs stay empty until entered;
@@ -101,7 +105,7 @@ and never embed a visitor's IP address.
 
 Page titles, descriptions, social metadata, canonical URLs, and alternate
 language links share one definition for builds and in-page navigation. Builds
-also generate `sitemap.xml` with the 28 canonical URLs and `robots.txt` with
+also generate `sitemap.xml` with the 40 canonical URLs and `robots.txt` with
 its sitemap location. These URLs use the public `https://packetrove.com` origin;
 change `WEBSITE_ORIGIN` in `apps/web/src/i18n/page-metadata.ts` when self-hosting.
 
