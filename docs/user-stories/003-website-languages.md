@@ -74,6 +74,9 @@ When adding a locale, add its registry entry, complete translations and metadata
 static HTML entries, and flag import together. The menu
 renders the configured entries without adding another header button. Preserve
 the existing page, query string, and fragment in every language link.
+Refresh the links when opening the menu and when following or opening a link's
+context menu, including after the interactive API reference updates the URL.
+Keep modified clicks and other native link actions available.
 
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while

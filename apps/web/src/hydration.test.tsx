@@ -133,4 +133,17 @@ describe('hydration of production HTML', () => {
     expect(screen.getByText('2001:db8::1')).toBeDefined();
     expect(fetch).toHaveBeenCalledTimes(requestCount);
   });
+
+  it.each(['pushState', 'replaceState'] as const)('keeps client reference navigation after hydration with %s', async method => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    await hydrate('/docs/api', '?source=initial#previous');
+    act(() => {
+      window.history[method](null, '', '/docs/api?source=selected#tag/Current-public-IP/get/v1/ip');
+    });
+    await chooseLanguage('zh-Hans');
+    expect(window.location.pathname + window.location.search + window.location.hash)
+      .toBe('/zh/docs/api?source=selected#tag/Current-public-IP/get/v1/ip');
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });
