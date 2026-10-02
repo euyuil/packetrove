@@ -2,21 +2,25 @@
 
 ## User story
 
-As a user of Packetrove, I want to read the website in English or Simplified
-Chinese and switch languages without losing my current calculation, so that I
-can understand network results and share a link in my preferred language.
+As a user of Packetrove, I want to read the website in English, Simplified Chinese,
+Spanish, German, or Japanese and switch languages without losing my current
+calculation, so that I can understand network results and share a link in my
+preferred language.
 
-## First-phase scope
+## Website scope
 
 - Translate the homepage, navigation, CIDR calculator, public IP tool, API
   documentation shell, loading states, clipboard feedback, accessible labels,
   and the application-rendered not-found page.
-- Keep existing English URLs. Serve Chinese at `/zh/`, `/zh/cidr`, `/zh/ip`,
-  and `/zh/docs/api`, with the locale identifier `zh-Hans`.
-- Let the URL determine the language. Provide a header dropdown with `English`
-  and `简体中文` entries, without browser-language redirects or persistent storage.
+- Keep existing English URLs. Use `/zh` for Simplified Chinese (`zh-Hans`),
+  `/es` for Spanish (`es`), `/de` for German (`de`), and `/ja` for Japanese (`ja`).
+  Each prefix has a homepage, `/cidr`, `/ip`, and `/docs/api` page.
+- Let the URL determine the language. Provide a header dropdown with `English`,
+  `简体中文`, `Español`, `Deutsch`, and `日本語` entries, without browser-language
+  redirects or persistent storage.
   Show the current language on its button and mark the current menu entry.
-  Precede English with a British flag and Simplified Chinese with a Chinese flag.
+  Precede each language with its configured flag: British, Chinese, Spanish,
+  German, or Japanese.
   Keep flags decorative and language names accessible. Support keyboard opening,
   arrow-key navigation, selection, and Escape to close and return focus.
 - Switch the current page in place, preserving calculator input, results, and
@@ -28,43 +32,48 @@ can understand network results and share a link in my preferred language.
 - Format displayed counts for the selected language using `Intl.NumberFormat`.
   Parse decimal-string address counts as `BigInt` to retain exact IPv6 values.
 - Include translated titles, descriptions, and social metadata in static HTML
-  entries. Use self-referencing canonical URLs and reciprocal `en`, `zh-Hans`,
-  and `x-default` links. Update metadata during in-page navigation.
+  entries. Use self-referencing canonical URLs and reciprocal links for all five
+  locales, plus `x-default` pointing to English. Update metadata during in-page
+  navigation.
 - Keep unknown routes as HTTP 404 responses. The shared static fallback is in
-  English; the application renders its Chinese text for `/zh/` paths.
+  English; application-rendered not-found pages use the selected locale.
 
 The interactive API reference and specification, linked integration guides,
 CLI, MCP descriptions, and repository documentation remain in English in this
 phase. API fields, error codes, serialized messages, and address counts retain
-their existing contracts. Browser-language suggestions and additional locales
+their existing contracts. Browser-language suggestions and further locales
 are future work.
 
 ## Implementation and contribution
 
 The web application uses `i18next` and `react-i18next`. Bundled translation
-resources are in `apps/web/src/i18n/resources.ts`. English defines the key
-structure; the Chinese resource must satisfy the same structure. Selector-based
-translation calls are checked by TypeScript through `i18next.d.ts`. English is
-the fallback language. No translation backend or language-detection dependency
-is enabled.
+resources are in `apps/web/src/i18n/resources.ts` and its `translations/` folder.
+English defines the key structure; every other resource must satisfy the same
+structure. Selector-based translation calls are checked by TypeScript through
+`i18next.d.ts`. English is the fallback language. No translation backend or
+language-detection dependency is enabled.
 
-`apps/web/src/LanguageSelector.tsx` maps supported locales to their native names
-and flags and renders the entries with Mantine `Menu`. Tabler Icons supplies the
-chevron and selection check; `country-flag-icons` supplies the British and Chinese
-SVG flags. Both dependencies use the MIT license, with notices in
-`apps/web/public/third-party-notices.txt`. Icons are bundled locally and do not
-require an external image service.
+`apps/web/src/i18n/locales.ts` defines each locale's native name, URL prefix, and
+flag. Routing, supported translation languages, alternate links, Vite inputs,
+and the language menu use this registry. `LanguageSelector.tsx` renders the
+entries with Mantine `Menu`. Tabler Icons supplies the chevron and selection
+check; `country-flag-icons` supplies the five SVG flags. Both dependencies use
+the MIT license, with notices in `apps/web/public/third-party-notices.txt`.
+Icons are bundled locally and do not require an external image service.
 
-When adding a locale, add its translations, route mapping, static HTML entries,
-metadata and alternate links, and language selector entry together. The menu
-renders the configured entries without adding another header button. Preserve
-the existing page, query string, and fragment in every language link.
+When adding a locale, add its registry entry, complete translations and metadata,
+static HTML entries, and flag import together. The menu renders the configured
+entries without adding another header button. Preserve the existing page, query
+string, and fragment in every language link.
 
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while
 preserving command examples, endpoint paths, IP addresses, CIDRs, and exact
 counts. English entry counts use singular and plural forms; large address
 counts are never converted to JavaScript `Number` for display or plural selection.
+Spanish also defines the CLDR `many` entry-count form; Japanese uses the same
+counter for singular and plural entries. Preserve interpolation names and inline
+code tokens in every translation.
 
 The calculation core provides structured local issue reasons separately from
 its serialized errors. Translate these reasons in the web layer rather than
@@ -72,10 +81,11 @@ matching English error messages. `ToolError.toResponse()` continues to return
 the existing shared error schema; local presentation details are omitted.
 
 When changing page titles or descriptions, update both translation metadata and
-the corresponding HTML entries under `apps/web/`, including `zh/`. The website
-runtime tests compare built entries with the resources and verify canonical
-and alternate language links. New page entries must also be included in
-`apps/web/vite.config.ts`.
+the corresponding HTML entries under `apps/web/`, including localized folders.
+The website runtime tests compare built entries with the resources and verify
+canonical and alternate language links. Vite inputs are derived from the locale
+registry and page paths. The production smoke check validates all 20 localized
+entries.
 
 Run `pnpm check` before submitting changes. The checks cover language switching,
 retained calculator drafts, physical-line validation errors, clipboard status,

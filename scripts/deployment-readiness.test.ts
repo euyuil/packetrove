@@ -1,13 +1,23 @@
 import { spawn } from 'node:child_process';
 import { createServer, type Server } from 'node:http';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CIDR_COVER_EXAMPLES } from '../packages/contracts/src/index';
+import { supportedLocales } from '../apps/web/src/i18n/locales';
+import { localizedPath, pagePaths } from '../apps/web/src/i18n/routes';
 import { waitForDeployment } from './deployment-readiness';
 
 const origin = 'https://service.example';
 const commit = '0123456789abcdef0123456789abcdef01234567';
 const previousCommit = '89abcdef0123456789abcdef0123456789abcdef';
+const localizedHtml = new Map(supportedLocales.flatMap(locale => Object.values(pagePaths).map(path => {
+  const localized = localizedPath(path, locale);
+  const entry = localized.slice(1) + (path === '/' ? 'index.html' : '.html');
+  const source = readFileSync(new URL('../apps/web/' + entry, import.meta.url), 'utf8');
+  return [localized, source.replace('/src/main.tsx', '/assets/main.js')
+    .replace('</head>', '<link href="/assets/main.css"></head>')] as const;
+})));
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
@@ -166,14 +176,10 @@ describe('readiness followed by the production smoke check across separate origi
       const path = request.url!;
       requested.push(path);
       if (request.method === 'POST') return send(response, 'text/plain', '', 405);
-      const mainHtml = '<title>Packetrove — Network tools for humans and agents</title>'
-        + '<script src="/assets/main.js"></script><link href="/assets/main.css">';
-      if (path === '/') return send(response, 'text/html', mainHtml);
+      const page = localizedHtml.get(path) ?? localizedHtml.get(path.replace(/\/$/, ''));
+      if (page) return send(response, 'text/html', page);
       if (path === '/assets/main.js') return send(response, 'application/javascript', `const sourceCommit = "${commit}";`);
       if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
-      if (path === '/cidr' || path === '/cidr/') return send(response, 'text/html', '<title>Smallest Covering CIDR — Packetrove</title>');
-      if (path === '/ip' || path === '/ip/') return send(response, 'text/html', '<title>My Public IP — Packetrove</title>');
-      if (path === '/docs/api' || path === '/docs/api/') return send(response, 'text/html', '<title>API documentation — Packetrove</title>');
       send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
     });
     const apiServer = createServer((request, response) => {
@@ -220,6 +226,8 @@ describe('readiness followed by the production smoke check across separate origi
       expect(apiRequested).toEqual([]);
       const execution = await smoke(target, apiTarget);
       expect(execution.status).toBe(1);
+      expect(execution.stdout).toContain('PASS 5 website languages and localized metadata');
+      for (const path of localizedHtml.keys()) expect(requested).toContain(path);
       expect(execution.stdout).toContain('PASS website build commit matches the deployment');
       expect(execution.stdout).toContain('PASS website and API origin separation');
       expect(execution.stderr).toContain(failed === 'API' ? 'broken' : '500');

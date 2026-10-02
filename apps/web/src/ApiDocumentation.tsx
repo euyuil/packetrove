@@ -5,6 +5,7 @@ import { ApiReferenceReact } from '@scalar/api-reference-react';
 import '@scalar/api-reference-react/style.css';
 import { getApiUrl } from './api';
 import { fetchApiReference } from './api-reference';
+import { resolveLocale } from './i18n/locales';
 
 const configuration: ComponentProps<typeof ApiReferenceReact>['configuration'] = {
   url: getApiUrl('/openapi.json'),
@@ -32,7 +33,7 @@ export default function ApiDocumentation() {
     <Text c="dimmed" size="sm">
       {t($ => $.api.description)}
     </Text>
-    {i18n.resolvedLanguage === 'zh-Hans' && <Text size="sm" c="dimmed">{t($ => $.api.englishReference)}</Text>}
+    {resolveLocale(i18n.resolvedLanguage) !== 'en' && <Text size="sm" c="dimmed">{t($ => $.api.englishReference)}</Text>}
     <div className="api-reference"><ApiReferenceReact configuration={configuration} /></div>
   </Stack>;
 }

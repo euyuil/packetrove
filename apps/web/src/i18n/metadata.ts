@@ -1,4 +1,5 @@
 import { resources } from './resources';
+import { supportedLocales } from './locales';
 import { localizedPath, type Locale, type Page } from './routes';
 
 const websiteOrigin = 'https://packetrove.com';
@@ -40,8 +41,8 @@ export function updatePageMetadata(locale: Locale, page: Page, path: string) {
   meta('name', 'twitter:image', websiteOrigin + '/packetrove-social-preview-1280x640.png');
   meta('property', 'og:url', url);
   for (const [language, href] of [
-    ['', url], ['en', websiteOrigin + localizedPath(path, 'en')],
-    ['zh-Hans', websiteOrigin + localizedPath(path, 'zh-Hans')], ['x-default', websiteOrigin + localizedPath(path, 'en')],
+    ['', url], ...supportedLocales.map(language => [language, websiteOrigin + localizedPath(path, language)]),
+    ['x-default', websiteOrigin + localizedPath(path, 'en')],
   ]) {
     const link = document.createElement('link');
     link.rel = language ? 'alternate' : 'canonical';

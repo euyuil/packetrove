@@ -7,10 +7,11 @@ import { getApiUrl } from './api';
 import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 import { errorMessage } from './i18n/errors';
+import { resolveLocale } from './i18n/locales';
 
 export function PublicIpTool() {
   const { t, i18n } = useTranslation();
-  const locale = i18n.resolvedLanguage === 'zh-Hans' ? 'zh-Hans' : 'en';
+  const locale = resolveLocale(i18n.resolvedLanguage);
   const [result, setResult] = useState<PublicIpResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<ToolError | null>(null);

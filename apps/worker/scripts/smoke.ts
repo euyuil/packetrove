@@ -7,6 +7,9 @@ import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
 } from '@packetrove/contracts';
+import { resources } from '../../web/src/i18n/resources';
+import { supportedLocales } from '../../web/src/i18n/locales';
+import { localizedPath, pagePaths } from '../../web/src/i18n/routes';
 
 const originArguments = process.argv.slice(2);
 if (originArguments.length !== 2) {
@@ -41,6 +44,27 @@ assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
 const html = await website.text();
 assert.match(html, /<title>Packetrove — Network tools for humans and agents<\/title>/);
+for (const locale of supportedLocales) {
+  for (const [page, path] of Object.entries(pagePaths)) {
+    const localized = localizedPath(path, locale);
+    const response = await timedFetch(`${origin}${localized}`, {
+      headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
+    });
+    assert.equal(response.status, 200, `Localized page status: ${localized}`);
+    assert.match(response.headers.get('content-type') ?? '', /text\/html/);
+    const content = await response.text();
+    const metadata = resources[locale].translation.meta[page as keyof typeof pagePaths];
+    assert(content.includes(`<html lang="${locale}"`), `Localized page language: ${localized}`);
+    assert(content.includes(`<title>${metadata.title}</title>`), `Localized page title: ${localized}`);
+    assert(content.includes(`<meta name="description" content="${metadata.description}" />`), `Localized page description: ${localized}`);
+    assert(content.includes(`<link rel="canonical" href="https://packetrove.com${localized}" />`), `Localized canonical: ${localized}`);
+    for (const alternate of supportedLocales) {
+      assert(content.includes(`<link rel="alternate" hreflang="${alternate}" href="https://packetrove.com${localizedPath(path, alternate)}" />`),
+        `Localized alternate ${alternate}: ${localized}`);
+    }
+  }
+}
+console.log(`PASS ${supportedLocales.length} website languages and localized metadata`);
 for (const path of ['/cidr', '/cidr/', '/ip', '/ip/', '/docs/api', '/docs/api/']) {
   const toolPage = await timedFetch(`${origin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
