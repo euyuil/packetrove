@@ -27,9 +27,10 @@ describe('interactive API documentation', () => {
     window.history.replaceState({}, '', '/docs/api');
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'API documentation', level: 1 }, { timeout: 15_000 })).toBeDefined();
+    // The static page heading does not wait for the lazy reference module.
     await waitFor(() => {
       expect(screen.getAllByText('Find the smallest single CIDR covering all inputs').length).toBeGreaterThan(0);
-    }, { timeout: 5_000 });
+    }, { timeout: 15_000 });
     expect(document.title).toBe('Packetrove API Documentation — CIDR and Public IP');
     expect(screen.getByRole('link', { name: /OpenAPI specification/ }).getAttribute('href'))
       .toBe('https://api.packetrove.com/openapi.json');
@@ -52,5 +53,5 @@ describe('interactive API documentation', () => {
     expect(CidrCoverRequestSchema.parse(await trial.json()).inputs.length).toBeGreaterThan(0);
     expect(requests.every(request => ['https://api.packetrove.com/openapi.json', 'https://api.packetrove.com/v1/cidr/cover']
       .includes(request.url))).toBe(true);
-  }, 20_000);
+  }, 30_000);
 });

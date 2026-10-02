@@ -102,7 +102,7 @@ describe('localized MCP guide navigation', () => {
         }));
       } else {
         const count = new Intl.NumberFormat(locale).format(340_282_366_920_938_463_463_374_607_431_768_211_456n);
-        expect(screen.getAllByText(count)).toHaveLength(2);
+        expect(screen.getAllByText(count, { normalizer: text => text })).toHaveLength(2);
         expect(screen.getByText(text.cidr.exact)).toBeDefined();
       }
       expect(fetch).not.toHaveBeenCalled();
