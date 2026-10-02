@@ -1,0 +1,104 @@
+name: Publish CLI to npm
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact stable version from packages/cli/package.json
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-cli-publication
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Validate and publish CLI
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - name: Check out release revision
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up pnpm from package.json
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Set up Node.js without a package cache
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Validate release request
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          import { readFileSync } from 'node:fs';
+          const manifest = JSON.parse(readFileSync('packages/cli/package.json', 'utf8'));
+          if (process.env.GITHUB_REF !== 'refs/heads/main') {
+            throw new Error('CLI publication must be requested on main.');
+          }
+          if (process.env.RELEASE_VERSION !== manifest.version) {
+            throw new Error('Requested version must match packages/cli/package.json.');
+          }
+          if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(manifest.version)) {
+            throw new Error('This workflow publishes stable semantic versions only.');
+          }
+          const [major, minor, patch] = execFileSync('npm', ['--version'], { encoding: 'utf8' }).trim().split('.').map(Number);
+          if (major < 11 || (major === 11 && (minor < 5 || (minor === 5 && patch < 1)))) {
+            throw new Error('npm CLI 11.5.1 or later is required for trusted publishing.');
+          }
+          NODE
+
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate project and independent CLI installations
+        run: pnpm check
+
+      - name: Pack CLI and preview publication
+        run: |
+          mkdir -p "$RUNNER_TEMP/packetrove-artifacts"
+          pnpm --filter @packetrove/cli pack --pack-destination "$RUNNER_TEMP/packetrove-artifacts"
+          npm publish "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz" --dry-run --json
+
+      - name: Check that the validated revision is still current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq '.object.sha')"
+          if [[ "$GITHUB_SHA" != "$latest_sha" ]]; then
+            echo "::error::The validated revision has been superseded on main. Run the release from the current main revision."
+            exit 1
+          fi
+
+      - name: Publish reviewed archive with npm trusted publishing
+        run: npm publish "$RUNNER_TEMP/packetrove-artifacts/packetrove-cli-$RELEASE_VERSION.tgz" --access public --registry=https://registry.npmjs.org/
+
+      - name: Verify the exact published CLI version
+        run: |
+          mkdir -p "$RUNNER_TEMP/packetrove-npm-consumer"
+          cd "$RUNNER_TEMP/packetrove-npm-consumer"
+          npm exec --yes --ignore-scripts --registry=https://registry.npmjs.org/ --package="@packetrove/cli@$RELEASE_VERSION" -- packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json > "$RUNNER_TEMP/packetrove-published-result.json"
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          const result = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'packetrove-published-result.json'), 'utf8'));
+          if (result.cidr !== '203.0.113.0/29' || result.inputAddressCount !== '3'
+            || result.coveredAddressCount !== '8' || result.additionalAddressCount !== '5') {
+            throw new Error('The published CLI returned an unexpected CIDR result.');
+          }
+          NODE
+          echo "Published and verified @packetrove/cli@$RELEASE_VERSION from $GITHUB_SHA." >> "$GITHUB_STEP_SUMMARY"

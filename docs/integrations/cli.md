@@ -4,6 +4,29 @@ The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
 locally without a Worker, Cloudflare account, or network connection. The `ip`
 command queries the current connection through an IP lookup API.
 
+## Install from npm after the first release
+
+The package is prepared for public distribution as `@packetrove/cli`. Its first
+npm release is pending. Once a version is published, users need only a supported
+Node.js version and npm:
+
+```sh
+npm install --global @packetrove/cli
+packetrove --help
+packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+```
+
+For a one-off calculation, use a published package without a global installation:
+
+```sh
+npx @packetrove/cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+```
+
+Use `@packetrove/cli@<version>` to pin a published version for reproducible
+scripts. Supported Node.js versions are 22.22.2+ in the 22.x line, 24.15.0+ in
+the 24.x line, and 26+. Git and pnpm are needed only for development or source
+installation. Maintainers should follow the [publishing guide](../cli-publishing.md).
+
 ## Install from source
 
 The CLI is not published to npm. With Git, Node.js, and pnpm installed, clone
@@ -137,6 +160,7 @@ tarball. Packing alone does not install it; the source-install commands above
 install the archive globally. No package has been published to npm.
 
 `pnpm check` also packs the CLI in a temporary workspace, installs that archive
-offline in an isolated consumer, and runs the installed `packetrove` command.
-It checks the executable, package metadata, license notices, and structured
-success and error output without publishing or installing anything globally.
+offline with both npm and pnpm in isolated consumers, and runs the installed
+`packetrove` command. It checks the executable, public package metadata, README,
+license notices, and structured success and error output without publishing or
+installing anything globally.

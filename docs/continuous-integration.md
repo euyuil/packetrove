@@ -113,6 +113,18 @@ Each job has a ten-minute timeout. A branch push alone does not run this workflo
 unless it updates `main`; opening, reopening, or updating a pull request targeting
 `main` triggers validation. Manual validation and deployment require `main`.
 
+## CLI publication
+
+[`publish-cli.yml`](../.github/workflows/publish-cli.yml) provides a separate,
+manual npm publishing workflow. It accepts the expected CLI version and only
+publishes from `main` after validation. Ordinary pull requests, updates to
+`main`, and website deployments do not publish an npm package.
+
+The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
+write token in repository secrets. The first release and npm-side configuration
+are still pending; see the [CLI publishing guide](cli-publishing.md) for setup,
+the exact trusted-publisher fields, and the release procedure.
+
 ## Cloudflare credentials
 
 Configure these repository settings in GitHub Actions before the first run:
