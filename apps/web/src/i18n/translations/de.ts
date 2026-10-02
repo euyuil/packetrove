@@ -80,6 +80,7 @@ export const de = {
     removed: 'Entfernte Adressen',
     remaining: 'Verbleibende Adressen',
     blocks: 'CIDRs im Ergebnis',
+    completed: 'Berechnung abgeschlossen. Verbleibende Adressen: {{addresses}}. CIDRs: {{cidrs}}.',
     copyList: 'Mit Zeilenumbrüchen kopieren',
     copyAllowed: 'Mit Kommas kopieren',
     copySuccess: 'Mit Zeilenumbrüchen kopiert.',

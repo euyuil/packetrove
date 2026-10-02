@@ -81,6 +81,7 @@ export const es = {
     removed: 'Direcciones eliminadas',
     remaining: 'Direcciones restantes',
     blocks: 'CIDR del resultado',
+    completed: 'Cálculo completado. Direcciones restantes: {{addresses}}. CIDR: {{cidrs}}.',
     copyList: 'Copiar con saltos de línea',
     copyAllowed: 'Copiar con comas',
     copySuccess: 'Copiado con saltos de línea.',

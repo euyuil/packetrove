@@ -80,6 +80,7 @@ export const ja = {
     removed: '削除したアドレス数',
     remaining: '残りのアドレス数',
     blocks: '結果の CIDR 数',
+    completed: '計算が完了しました。残りのアドレス数：{{addresses}}。CIDR 数：{{cidrs}}。',
     copyList: '改行区切りでコピー',
     copyAllowed: 'カンマ区切りでコピー',
     copySuccess: '改行区切りでコピーしました。',
