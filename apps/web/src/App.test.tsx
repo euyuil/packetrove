@@ -35,7 +35,7 @@ describe('web page routing', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('uses the configured API and repository in quickstart examples and the linked MCP guide', () => {
+  it('links compact integration introductions to guides using the configured origins and repository', () => {
     vi.stubEnv('VITE_API_ORIGIN', 'https://api.service.example');
     vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
     vi.stubEnv('VITE_GIT_COMMIT', '');
@@ -43,11 +43,10 @@ describe('web page routing', () => {
     vi.stubGlobal('fetch', fetch);
     render(<App />);
     const api = screen.getByRole('region', { name: 'Web API' });
-    expect(api.textContent).toContain('curl -fsS https://api.service.example/v1/public-ip');
-    expect(api.textContent).toContain("-H 'Accept: text/plain'");
+    expect(within(api).getByRole('link', { name: 'Read the API guide' }).getAttribute('href')).toBe('/docs/api');
     const cli = screen.getByRole('region', { name: 'Command-line interface' });
-    expect(cli.textContent).toContain('git clone https://github.com/example-owner/packetrove.git');
-    expect(within(cli).getByText('packetrove public-ip')).toBeDefined();
+    expect(within(cli).getByRole('link', { name: 'Read the CLI guide' }).getAttribute('href'))
+      .toBe('https://github.com/example-owner/packetrove/blob/main/docs/integrations/cli.md');
     const mcp = screen.getByRole('region', { name: 'Model Context Protocol' });
     expect(mcp.textContent).toContain('https://api.service.example/mcp');
     const guide = within(mcp).getByRole('link', { name: 'Read the MCP connection guide' });

@@ -8,6 +8,17 @@ body {
   min-width: 0;
 }
 
+.tool-gallery {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  padding-bottom: var(--mantine-spacing-sm);
+}
+
+.tool-gallery > article {
+  scroll-snap-align: start;
+}
+
 .api-reference {
   --scalar-font: var(--mantine-font-family);
   --scalar-font-code: var(--mantine-font-family-monospace);

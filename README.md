@@ -88,6 +88,11 @@ paths, schemas, metadata, and example references are maintained in one
 localized tool paths, API documentation, and MCP discovery and guides consume
 that catalog. See [how to add or change a tool](docs/tool-catalog.md).
 
+The homepage presents a manually browsed gallery of selected tools, with
+catalog-derived example previews and links to each tool. It makes no live
+lookups. API, CLI, and MCP setup is linked from compact introductions;
+see the [homepage user story](docs/user-stories/005-home-tool-gallery.md).
+
 ## Website languages
 
 The website supports English, Chinese, Spanish, German, Japanese, French,
