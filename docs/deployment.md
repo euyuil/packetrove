@@ -37,8 +37,10 @@ Actions run. The workflow does not create a `workers.dev` or preview URL.
 
 ## Local publishing prerequisites
 
-Use the Node.js and pnpm versions described in the repository README, install
-dependencies with `pnpm install --frozen-lockfile`, and authenticate Wrangler:
+Follow the [development setup](../CONTRIBUTING.md#getting-started), using the
+Node.js version in [.node-version](../.node-version) and the pnpm version in
+[package.json](../package.json). Install dependencies with
+`pnpm install --frozen-lockfile`, and authenticate Wrangler:
 
 ```sh
 pnpm --filter @packetrove/worker exec wrangler login
@@ -207,6 +209,11 @@ and the separate MCP Host and Origin allowlists. Build the website with
 can use `public-ip --api-origin https://api.example.com`. OpenAPI uses a relative server
 URL so it resolves against the host serving the specification. Local Vite
 serves the website separately and points IP requests to `http://localhost:8787`.
+
+Set `WEBSITE_ORIGIN` in
+[page-metadata.ts](../apps/web/src/i18n/page-metadata.ts) to your website origin
+before rebuilding. Canonical URLs, alternate-language links, social metadata,
+and the sitemap use this value; changing Worker domains alone does not update them.
 
 ## Costs and limits
 

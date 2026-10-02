@@ -1,9 +1,10 @@
 # Smallest covering CIDR for firewall IP lists
 
-This document records a user story for Packetrove. The calculation described
-below and the first implementation choices are agreed. The shared calculation,
-API, web app, MCP, CLI, and agent skill are implemented and documented in the
-README.
+This document records the agreed calculation, behavior, and implementation
+choices for Packetrove's covering-CIDR tool. The shared calculation is available
+through the website, API, MCP, CLI, and agent skill. See the
+[API contract](../api/README.md) and [integration guides](../integrations/)
+for interface usage.
 
 ## User stories
 
