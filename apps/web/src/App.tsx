@@ -120,7 +120,8 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         </Stack>}
       </Box>
       <Divider />
-      <SiteFooter sourceUrl={sourceUrl} documentationUrl={documentationUrl} newIssueUrl={newIssueUrl} commit={commit} />
+      <SiteFooter sourceUrl={sourceUrl} documentationUrl={documentationUrl} apiDocumentationHref={href(pagePaths.api)}
+        newIssueUrl={newIssueUrl} commit={commit} onNavigate={navigate} />
     </Stack>
   </Container>;
 }
