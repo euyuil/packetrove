@@ -232,7 +232,7 @@ describe('readiness followed by the production smoke check across separate origi
       expect(apiRequested).toEqual([]);
       const execution = await smoke(target, apiTarget);
       expect(execution.status).toBe(1);
-      expect(execution.stdout).toContain('PASS 20 prerendered localized pages');
+      expect(execution.stdout).toContain('PASS 28 prerendered localized pages');
       expect(execution.stdout).toContain('PASS legacy public IP redirects');
       for (const page of websitePages) expect(requested).toContain(page.pathname);
       expect(execution.stdout).toContain('PASS website build commit matches the deployment');
