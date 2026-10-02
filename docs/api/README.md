@@ -11,6 +11,12 @@ a third-party proxy. Calculation inputs entered into the documentation's test
 client are sent to the API; the website's CIDR calculator continues to run
 locally in the browser.
 
+If the documentation module fails to load or render, the documentation area
+shows an error message with a link back to the calculator. Site navigation and
+the calculator's input, result, or validation error remain in the current page
+session's memory. Revisiting a failed module may show the same message; the
+application does not retry its download or automatically reload the page.
+
 ## Smallest covering CIDR
 
 The configured production base URL is `https://api.packetrove.com`. The
