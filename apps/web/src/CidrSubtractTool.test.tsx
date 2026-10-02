@@ -66,9 +66,24 @@ describe('browser-local CIDR subtraction', () => {
     expect(window.location.pathname + window.location.search + window.location.hash).toBe('/cidr/subtract');
   });
 
+  it.each([
+    ['commas', ', '], ['spaces', ' '], ['tabs', '\t'], ['full-width commas', '，'],
+    ['Unicode spaces', '\u00a0\u3000'], ['mixed repeated separators', ',， \t\r\n, '],
+  ])('subtracts pasted lists separated by %s locally', (_, separator) => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    enter(['203.0.113.0/25', '203.0.113.128/25'].join(separator),
+      ['203.0.113.64/26', '198.51.100.0/24'].join(separator));
+    expect(output()).toBe('203.0.113.0/26\n203.0.113.128/25');
+    expect(screen.getByText('4 entries')).toBeDefined();
+    expect(screen.getByText('Remaining addresses').nextElementSibling?.textContent).toBe('192');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('simplifies an empty exclusion list exactly while preserving gaps', () => {
     render(<App />);
-    enter('203.0.113.0/26\n203.0.113.32/27\n203.0.113.128/26');
+    enter('203.0.113.0/26\n203.0.113.32/27\n203.0.113.128/26', ',， \t\n');
     expect(output()).toBe('203.0.113.0/26\n203.0.113.128/26');
     expect(screen.getByText('Addresses removed').nextElementSibling?.textContent).toBe('0');
   });
@@ -98,18 +113,21 @@ describe('browser-local CIDR subtraction', () => {
 
   it('rejects empty inclusion with a useful list-specific error', () => {
     render(<App />);
-    enter('\n  \n');
+    enter('\n ,， \t\n');
     expect(screen.getByRole('alert').textContent).toContain('Include: Include at least one IP address or CIDR range.');
     expect(screen.getByLabelText(includeLabel).getAttribute('aria-invalid')).toBe('true');
     expect(screen.getByLabelText(excludeLabel).getAttribute('aria-invalid')).not.toBe('true');
   });
 
-  it.each(['\n', '\r\n'])('reports the correct list and physical line with %j separators', separator => {
+  it.each(['\n', '\r\n', '\u2028', '\u2029'])('reports the correct list and physical line with %j separators', separator => {
     render(<App />);
-    enter(['', '203.0.113.0/24', 'bad'].join(separator), ['', '', '203.0.113.1', '', '::/129'].join(separator));
+    enter(['', '203.0.113.0/24, 203.0.113.7/24', 'bad，broken'].join(separator),
+      ['', '', '203.0.113.1\t203.0.113.2', ',， ', '::/129'].join(separator));
     const errors = within(screen.getByRole('alert')).getAllByRole('listitem');
+    expect(errors).toHaveLength(3);
     expect(errors[0]?.textContent).toMatch(/^Include, line 3:/);
-    expect(errors[1]?.textContent).toMatch(/^Exclude, line 5:/);
+    expect(errors[1]?.textContent).toMatch(/^Include, line 3:/);
+    expect(errors[2]?.textContent).toMatch(/^Exclude, line 5:/);
     for (const label of [includeLabel, excludeLabel]) {
       const input = screen.getByLabelText(label);
       expect(input.getAttribute('aria-invalid')).toBe('true');
@@ -126,10 +144,16 @@ describe('browser-local CIDR subtraction', () => {
     expect(screen.queryByLabelText('Remaining CIDRs')).toBeNull();
   });
 
-  it('shows an input limit error with no result', () => {
+  it('enforces the combined entry limit for mixed separators, including duplicates', () => {
     render(<App />);
-    enter(new Array(501).fill('203.0.113.1').join('\n'), new Array(500).fill('203.0.113.2').join('\n'));
+    const include = new Array(500).fill('203.0.113.1').join(', ');
+    enter(include, new Array(500).fill('203.0.113.1').join('\t'));
+    expect(screen.getByText('1,000 entries')).toBeDefined();
+    expect(screen.getByText('No addresses remain')).toBeDefined();
+    enter(include, new Array(501).fill('203.0.113.1').join('\t'));
+    expect(screen.getByText('1,001 entries')).toBeDefined();
     expect(screen.getByRole('alert').textContent).toContain('Use at most 1000 entries across both lists.');
+    expect(screen.queryByText('No addresses remain')).toBeNull();
     expect(screen.queryByLabelText('Remaining CIDRs')).toBeNull();
   });
 
@@ -192,11 +216,11 @@ describe('copy formats and retained subtraction state', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('copies the complete list using the separators named by each button', async () => {
+  it('copies the complete list and accepts the copied format in either CIDR tool', async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText');
     render(<App />);
-    enter('::/0', '2001:db8::1');
+    enter('::/0，::/0', '2001:db8::1\t2001:db8::1');
     const all = output();
     expect(all.split('\n')).toHaveLength(128);
     await user.click(screen.getByRole('button', { name: 'Copy with newlines' }));
@@ -206,6 +230,14 @@ describe('copy formats and retained subtraction state', () => {
     expect(writeText).toHaveBeenLastCalledWith(all.split('\n').join(', '));
     expect(screen.getByText('Copied with commas.')).toBeDefined();
     expect(screen.queryByText('Copied with newlines.')).toBeNull();
+    const copied = writeText.mock.calls.at(-1)![0];
+    enter(copied);
+    expect(output()).toBe(all);
+    fireEvent.click(screen.getByRole('link', { name: 'Smallest Covering CIDR' }));
+    fireEvent.change(screen.getByLabelText('IP addresses or CIDR ranges'), { target: { value: copied } });
+    fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
+    expect(screen.getByText('::/0')).toBeDefined();
+    expect(screen.getByText('Additional addresses').nextElementSibling?.textContent).toBe('1');
   });
 
   it('keeps the complete list selectable when copying fails', async () => {

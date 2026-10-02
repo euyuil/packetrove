@@ -29,6 +29,10 @@ firewall rules.
 | `203.0.113.1`, `203.0.113.2`, `203.0.113.6` | `203.0.113.0/29` | 8 addresses: your 3 plus 5 additional addresses |
 | `203.0.113.0/25`, `203.0.113.128/25` | `203.0.113.0/24` | 256 addresses, with no additional coverage |
 
+In either web CIDR tool, separate entries with commas (`,` or `，`), spaces,
+tabs, or line breaks. Mixed and repeated separators are accepted; empty entries
+are ignored.
+
 Use up to 1,000 entries of one address family per calculation. Overlapping
 ranges and duplicate addresses count once. A covering CIDR can allow or block
 addresses outside your original list; review that expansion before applying it.
