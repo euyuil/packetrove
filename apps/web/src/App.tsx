@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
+import { IconHome } from '@tabler/icons-react';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { CidrSubtractTool, type CidrSubtractDraft } from './CidrSubtractTool';
@@ -83,6 +84,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       <Divider />
       <Group component="nav" aria-label={t($ => $.common.navigation)} gap="sm">
         <Button component="a" href={href('/')} onClick={navigate} variant={homePage ? 'light' : 'subtle'}
+          leftSection={<IconHome size={18} stroke={1.75} aria-hidden="true" focusable="false" />}
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
         <Button component="a" href={href('/cidr')} onClick={navigate} variant={cidrPage ? 'light' : 'subtle'}
           leftSection={<ToolIcon tool="cidr" size={18} />}
