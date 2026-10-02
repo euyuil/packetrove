@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import {
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
-  PublicIpRequestSchema, PublicIpResultSchema, tools as catalogTools,
+  PublicIpRequestSchema, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
 } from '@packetrove/contracts';
 import { smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { App } from './App';
@@ -36,6 +36,11 @@ describe('MCP examples in production HTML', () => {
         .toEqual(expected.map(tool => tool.mcp.name));
       for (const section of tools) {
         const name = section.getAttribute('data-mcp-tool');
+        const definition = catalogTools.find(tool => tool.mcp.name === name)!;
+        const guidance = resources[page.locale].translation.discovery[definition.page].result
+          .replaceAll('{{maximumOutputs}}', new Intl.NumberFormat(page.locale).format(MAX_SUBTRACTION_OUTPUTS));
+        expect(section.textContent).toContain(guidance);
+        expect(section.textContent).not.toMatch(/\{\{[^{}]*\}\}/);
         const args = JSON.parse(section.querySelector('[data-mcp-example="arguments"]')!.textContent!);
         const result = JSON.parse(section.querySelector('[data-mcp-example="result"]')!.textContent!);
         if (name === mcpExamples.cidr.name) {

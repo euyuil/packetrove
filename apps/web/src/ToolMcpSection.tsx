@@ -28,13 +28,15 @@ export function ToolMcpSection({ tool, onNavigate, guide = false }: {
       </Stack>
       <Text size="sm">{t($ => $.discovery[tool].inputs, {
           maximumInputs: new Intl.NumberFormat(locale).format(tool === 'subtract' ? MAX_SUBTRACTION_INPUTS : MAX_INPUTS),
-          maximumLength: MAX_INPUT_LENGTH, maximumOutputs: new Intl.NumberFormat(locale).format(MAX_SUBTRACTION_OUTPUTS),
+          maximumLength: MAX_INPUT_LENGTH,
       })}</Text>
       <Text size="sm" fw={600}>{t($ => $.mcp.arguments)}</Text>
       <Code block data-mcp-example="arguments">{JSON.stringify(example.arguments, null, 2)}</Code>
       <Text size="sm" fw={600}>{t($ => $.mcp.exampleResult)}</Text>
       <Code block data-mcp-example="result">{JSON.stringify(example.result, null, 2)}</Code>
-      <Text size="sm" c="dimmed">{t($ => $.discovery[tool].result)}</Text>
+      <Text size="sm" c="dimmed">{t($ => $.discovery[tool].result, {
+        maximumOutputs: new Intl.NumberFormat(locale).format(MAX_SUBTRACTION_OUTPUTS),
+      })}</Text>
       <Text size="sm" c="dimmed">{t($ => $.discovery[tool].boundary)}</Text>
       <Anchor href={localizedPath(guide ? pagePaths[tool] : pagePaths.mcp, locale)} onClick={onNavigate}>
         {guide ? t($ => $.discovery[tool].openTool) : t($ => $.home.mcpGuide)}

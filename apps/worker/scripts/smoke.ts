@@ -5,7 +5,7 @@ import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextp
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
-  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, tools as catalogTools,
+  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
 } from '@packetrove/contracts';
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
@@ -53,6 +53,7 @@ for (const page of websitePages) {
     assert.equal(response.status, 200, `Page status: ${path}`);
     assert.match(response.headers.get('content-type') ?? '', /text\/html/);
     const pageHtml = await response.text();
+    assert(!/\{\{[^{}]*\}\}/.test(pageHtml), `Unresolved translation placeholder: ${path}`);
     const metadata = getPageMetadata(page.locale, page.page, page.path);
     assert(pageHtml.includes('<html lang="' + metadata.lang + '"'), `Page language: ${path}`);
     assert(pageHtml.includes('<title>' + escapeHtml(metadata.title) + '</title>'), `Page title: ${path}`);
@@ -94,6 +95,9 @@ for (const page of websitePages) {
       assert(pageHtml.includes('data-mcp-tool="' + example.name + '"'), `MCP tool name: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.arguments, null, 2))), `MCP example arguments: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.result, null, 2))), `MCP example result: ${path}`);
+      const guidance = text.discovery[tool].result
+        .replaceAll('{{maximumOutputs}}', new Intl.NumberFormat(page.locale).format(MAX_SUBTRACTION_OUTPUTS));
+      assert(pageHtml.includes(escapeHtml(guidance)), `MCP result guidance: ${path}`);
       assert(pageHtml.includes(escapeHtml(text.discovery[tool].boundary)), `MCP tool limitations: ${path}`);
     }
   }
