@@ -35,6 +35,9 @@ sorted, non-overlapping minimal CIDR representation of
 `union(include) - union(exclude)`. It never replaces the include list with its
 single covering CIDR, which could introduce addresses between disjoint ranges.
 
+Paste lists from configurations, spreadsheets, or either copy format directly
+into either input without manually putting every value on a separate line.
+
 These stories follow [issue #39](https://github.com/euyuil/packetrove/issues/39).
 Its linked discussions motivate the use cases; they are qualitative examples,
 not evidence of market size.
@@ -46,9 +49,11 @@ The tool is available at `/cidr/subtract` and under the existing `/zh`, `/es`,
 descriptions, and metadata in all ten website languages. The homepage and
 navigation link to it. All ten pages are prerendered and included in the sitemap.
 
-Enter one IPv4 or IPv6 address or CIDR per line. Blank lines are ignored; invalid
-entries report the affected list and original physical line number. Individual
-addresses become `/32` or `/128`. CIDRs with host bits follow the covering
+Separate IPv4 or IPv6 addresses or CIDRs with commas (ASCII `,` or full-width
+`，`), spaces, tabs, or line breaks, in any combination. Empty entries are ignored;
+invalid entries report the affected list and original physical line number,
+including when several entries share a line. Individual addresses become `/32`
+or `/128`. CIDRs with host bits follow the covering
 calculator's normalization behavior. One calculation uses one address family
 across both lists, including exclusions that fall outside the included space.
 
@@ -94,7 +99,7 @@ The counts are 16 included addresses, 4 removed, and 12 remaining.
 ## Limits, privacy, and implementation
 
 Include and exclude together allow at most 1,000 entries, including duplicates.
-Each entry may contain at most 64 characters after browser input trimming.
+Each parsed entry may contain at most 64 characters.
 The shared core also validates raw entry length when called directly.
 Output may contain at most 10,000 CIDRs. Larger exact results produce an explicit
 error and no partial result; the user must reduce exclusions or included ranges.
@@ -127,7 +132,8 @@ These questions are present in prerendered HTML.
 
 Focused tests cover interval boundaries, `/0`, `/32`, `/128`, canonicalization,
 overlaps on both sides, disjoint ranges, spanning exclusions, complete removal,
-input and output limits, exact IPv6 counts, copy formats, local calculation,
+input and output limits, mixed input separators, original error lines, exact
+IPv6 counts, copy formats and paste round trips, local calculation,
 language and navigation state, prerendering, and hydration. A deterministic
 small-set oracle checks both address families against independent set membership
 and recursive minimal CIDR partitioning. Run `pnpm check` before submission.

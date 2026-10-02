@@ -78,6 +78,14 @@ lines are ignored. The combined list accepts 1 to 1,000 entries, each up to 64
 characters. Use IPv4 throughout or IPv6 throughout. CIDR host bits are normalized.
 Overlapping or duplicate inputs count once in the address union.
 
+Standard input is read with bounded line buffering. Once a trimmed entry is
+known to exceed 64 characters, its remaining characters are discarded while
+the CLI continues reading subsequent lines. The shared validation then reports
+all length issues together, preserving their positions in the combined input
+list. Leading and trailing whitespace does not count toward the limit.
+The bounded representative is internal: error issues contain an index and
+validation message, without echoing an input value or adding a truncation field.
+
 For a newline-separated file:
 
 ```sh

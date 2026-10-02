@@ -44,6 +44,11 @@ range permits additional addresses in an allowlist or blocks additional
 addresses in a blocklist. The command calculates a range without applying
 firewall rules.
 
+Each entry accepts at most 64 characters. Standard-input lines are trimmed and
+blank lines are ignored. Line buffering stays bounded even for a very long
+entry or surrounding whitespace; length issues retain their combined input
+indexes, without echoing input values. See the CLI guide for error details.
+
 With `--json`, success writes the shared result object to stdout. Errors write
 the shared error object to stderr and exit with status `1`. Address counts are
 decimal strings, including IPv6 counts beyond JavaScript's safe integer limit.

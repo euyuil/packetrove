@@ -89,6 +89,24 @@ describe('bundled offline CLI', () => {
     expect(execution.stdout).toBe('');
     expect(JSON.parse(execution.stderr).error.code).toBe('INVALID_INPUT');
   });
+  it('returns every piped length issue after positional inputs without echoing truncated values', () => {
+    const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin', '--json'],
+      ' \r\n' + 'x'.repeat(65) + '\r\n203.0.113.2\n203.0.113.6' + ' '.repeat(100) + 'x');
+    expect(execution.status).toBe(1);
+    expect(execution.stdout).toBe('');
+    const response = ErrorResponseSchema.parse(JSON.parse(execution.stderr));
+    expect(response.error.code).toBe('INVALID_INPUT');
+    expect(response.error.issues?.map(issue => issue.index)).toEqual([1, 3]);
+    expect(response.error.issues?.every(issue => Object.keys(issue).sort().join(',') === 'index,message')).toBe(true);
+  });
+  it('reports the one-based input number for a piped overlong entry in readable errors', () => {
+    const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin'], 'x'.repeat(65));
+    expect(execution.status).toBe(1);
+    expect(execution.stdout).toBe('');
+    expect(execution.stderr).toMatch(/^INVALID_INPUT:/);
+    expect(execution.stderr.match(/^Input \d+:/gm)).toEqual(['Input 2:']);
+    expect(execution.stderr).not.toContain('x'.repeat(65));
+  });
   it('shows usage without needing inputs', () => {
     const execution = run(['--help']);
     expect(execution.status).toBe(0);

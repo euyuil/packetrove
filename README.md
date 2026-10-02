@@ -29,6 +29,10 @@ firewall rules.
 | `203.0.113.1`, `203.0.113.2`, `203.0.113.6` | `203.0.113.0/29` | 8 addresses: your 3 plus 5 additional addresses |
 | `203.0.113.0/25`, `203.0.113.128/25` | `203.0.113.0/24` | 256 addresses, with no additional coverage |
 
+In either web CIDR tool, separate entries with commas (`,` or `，`), spaces,
+tabs, or line breaks. Mixed and repeated separators are accepted; empty entries
+are ignored.
+
 Use up to 1,000 entries of one address family per calculation. Overlapping
 ranges and duplicate addresses count once. A covering CIDR can allow or block
 addresses outside your original list; review that expansion before applying it.
@@ -140,9 +144,9 @@ also generate `sitemap.xml` with those canonical URLs and `robots.txt` with
 its sitemap location. These URLs use the public `https://packetrove.com` origin;
 change `WEBSITE_ORIGIN` in `apps/web/src/i18n/page-metadata.ts` when self-hosting.
 
-The tool pages include localized questions about common tasks. The covering-CIDR
-and public-IP pages also include examples for their MCP tools. Subtraction
-currently runs in the browser and shared core. The [MCP connection guide](https://packetrove.com/docs/mcp)
+The tool pages include localized questions about common tasks and examples for
+their MCP tools, including exact CIDR subtraction. The
+[MCP connection guide](https://packetrove.com/docs/mcp)
 centralizes Claude Code and Codex setup, arguments, results, errors, and limits.
 These sections are present in the prerendered HTML and use documentation addresses;
 reading the guide makes no tool calls and does not connect an AI client.
@@ -180,13 +184,13 @@ connection making the request.
 ### Connect an AI agent
 
 Add `https://api.packetrove.com/mcp` to a client that supports Streamable HTTP.
-The server provides `smallest_covering_cidr` and `public-ip` without
-authentication. The repository also includes a
+The server provides covering CIDRs, exact CIDR subtraction, and public-IP
+diagnostics without authentication. The repository also includes a
 [CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) for calculating ranges
 and explaining additional allowlist or blocklist coverage.
 
 Use the [MCP connection guide](https://packetrove.com/docs/mcp) for Claude Code
-and Codex commands. Once configured, clients discover the two tools through
+and Codex commands. Once configured, clients discover all catalog tools through
 `tools/list`, including their input/output schemas and usage limits. Remote CIDR
 calls send inputs to the server; the browser and built CLI calculate locally.
 

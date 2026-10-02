@@ -144,10 +144,23 @@ describe('browser calculator', () => {
     expect(screen.getByText('This CIDR adds 5 addresses. Applying it expands the addresses allowed or blocked by your list.')).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
   });
+  it.each([
+    ['commas', ', '], ['spaces', ' '], ['tabs', '\t'], ['full-width commas', '，'],
+    ['Unicode spaces', '\u00a0\u3000'], ['mixed repeated separators', ',， \t\r\n, '],
+  ])('accepts pasted ranges separated by %s', (_, separator) => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    enter(['203.0.113.7/25', '203.0.113.128/25'].join(separator));
+    expect(screen.getByText('203.0.113.0/24')).toBeDefined();
+    expect(screen.getByText('2 entries')).toBeDefined();
+    expect(screen.getByText('Exact coverage: this CIDR adds no addresses.')).toBeDefined();
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it('displays precise IPv6 counts and canonical inputs', async () => {
     const user = userEvent.setup();
     render(<App />);
-    enter('2001:DB8::7/64\n2001:db8:0:1::/64');
+    enter('2001:DB8::7/64,\t2001:db8:0:1::/64');
     expect(screen.getByText('2001:db8::/63')).toBeDefined();
     expect(screen.getAllByText('36,893,488,147,419,103,232')).toHaveLength(2);
     const normalizedInputs = screen.getByRole('button', { name: 'Normalized inputs (2)' });
@@ -189,7 +202,7 @@ describe('browser calculator', () => {
     render(<App />);
     const input = screen.getByRole('textbox', { name: 'IP addresses or CIDR ranges' });
     expect(input.getAttribute('aria-describedby')).toBe('input-help');
-    expect(document.getElementById('input-help')?.textContent).toContain('One entry per line.');
+    expect(document.getElementById('input-help')?.textContent).toContain('commas, spaces, tabs, or line breaks');
     enter('invalid');
     expect(input.getAttribute('aria-invalid')).toBe('true');
     expect(input.getAttribute('aria-describedby')?.trim().split(/\s+/).sort()).toEqual(['input-error', 'input-help']);
@@ -204,27 +217,42 @@ describe('browser calculator', () => {
     enter('\n::1\n\nbad');
     expect(within(screen.getByRole('alert')).getByText(/^Line 4:/)).toBeDefined();
   });
-  it.each(['\n', '\r\n'])('shows all invalid physical lines with %j separators without uploading inputs', separator => {
+  it.each(['\n', '\r\n', '\u2028', '\u2029'])('shows all invalid physical lines with %j separators without uploading inputs', separator => {
     const calculation = vi.spyOn(core, 'smallestCoveringCidr');
     const fetch = vi.fn(() => { throw new Error('Unexpected API request'); });
     vi.stubGlobal('fetch', fetch);
     render(<App />);
-    enter(['', '203.0.113.1', 'bad', '  ', '203.0.113.2', '::/129', ''].join(separator));
-    expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', 'bad', '203.0.113.2', '::/129'] });
+    enter(['', '203.0.113.1, 203.0.113.2', 'bad，broken', ',， \t', '203.0.113.6', '::/129', ''].join(separator));
+    expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', '203.0.113.2', 'bad', 'broken', '203.0.113.6', '::/129'] });
     const alert = within(screen.getByRole('alert'));
     const issues = alert.getAllByRole('listitem');
-    expect(issues).toHaveLength(2);
+    expect(issues).toHaveLength(3);
     expect(issues[0]?.textContent).toMatch(/^Line 3:/);
-    expect(issues[1]?.textContent).toMatch(/^Line 6:/);
+    expect(issues[1]?.textContent).toMatch(/^Line 3:/);
+    expect(issues[2]?.textContent).toMatch(/^Line 6:/);
     expect(screen.queryByText('203.0.113.0/30')).toBeNull();
     expect(fetch).not.toHaveBeenCalled();
   });
   it('rejects an empty list and a mixed address family', () => {
     render(<App />);
-    enter('\n  \n');
+    enter('\n ,， \t\n');
     expect(screen.getByRole('alert')).toBeDefined();
-    enter('::1\n203.0.113.1');
+    enter('::1, 203.0.113.1');
     expect(screen.getByText('Use either IPv4 or IPv6 throughout one calculation.')).toBeDefined();
+  });
+  it('enforces the entry limit for comma-separated lists, including duplicates', () => {
+    const calculation = vi.spyOn(core, 'smallestCoveringCidr');
+    render(<App />);
+    enter(new Array(1000).fill('203.0.113.1').join(', '));
+    expect(screen.getByText('1,000 entries')).toBeDefined();
+    expect(screen.getAllByText('203.0.113.1/32').length).toBeGreaterThan(0);
+    enter(new Array(1001).fill('203.0.113.1').join(', '));
+    expect(screen.getByText('1,001 entries')).toBeDefined();
+    expect(screen.getByRole('alert')).toBeDefined();
+    expect(calculation.mock.results.at(-1)?.value).toMatchObject({
+      code: 'INVALID_INPUT', details: [{ reason: 'TOO_MANY_INPUTS', limit: 1000 }],
+    });
+    expect(screen.queryByText('203.0.113.1/32')).toBeNull();
   });
   it('clears results as soon as input changes', () => {
     render(<App />);
