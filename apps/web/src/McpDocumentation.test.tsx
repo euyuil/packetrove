@@ -20,7 +20,7 @@ import { getMcpGuide } from './mcp-guide';
 vi.mock('./ApiReference', () => ({ default: () => <div>Interactive API reference</div> }));
 
 afterEach(() => {
-  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
+  cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
   window.history.replaceState({}, '', '/');
   document.documentElement.lang = 'en';
 });
@@ -77,6 +77,8 @@ describe('localized MCP guide navigation', () => {
   it.each(supportedLocales)('opens the %s guide and API reference from shared navigation while preserving a calculator error', async locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
+    vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
+    vi.stubEnv('VITE_GIT_COMMIT', '0123456789abcdef0123456789abcdef01234567');
     const text = resources[locale].translation;
     window.history.replaceState({}, '', localizedPath(pagePaths.cidr, locale));
     render(<App />);
@@ -89,7 +91,7 @@ describe('localized MCP guide navigation', () => {
     const main = screen.getByRole('main', { name: text.mcp.title });
     expect(document.activeElement).toBe(main);
     expect(within(main).getByRole('link', { name: text.common.source }).getAttribute('href'))
-      .toBe('https://github.com/euyuil/packetrove');
+      .toBe('https://github.com/example-owner/packetrove/tree/0123456789abcdef0123456789abcdef01234567');
     const apiLink = within(main).getByRole('link', { name: text.home.apiGuide });
     expect(apiLink.getAttribute('href')).toBe(localizedPath(pagePaths.api, locale));
     fireEvent.click(apiLink);
