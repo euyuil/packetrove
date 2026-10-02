@@ -1,6 +1,10 @@
 import type { TranslationResource } from '../resources';
 
 export const ja = {
+  languageSuggestion: {
+    title: 'このページを日本語で表示しますか？',
+    switch: '日本語に切り替える', dismiss: '今はしない',
+  },
   common: {
     home: 'ホーム', homeLabel: 'Packetrove ホーム', navigation: 'メインナビゲーション',
     language: '言語', tools: 'IP アドレスツール', copied: 'コピー済み', dismissCopy: 'コピーエラーを閉じる',

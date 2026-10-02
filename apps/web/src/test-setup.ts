@@ -1,4 +1,6 @@
-import { vi } from 'vitest';
+import { beforeEach, vi } from 'vitest';
+
+beforeEach(() => { window.sessionStorage.clear(); });
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

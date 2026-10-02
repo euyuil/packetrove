@@ -22,6 +22,10 @@
   the user has requested.
 - Build web interfaces with Mantine components and the shared theme. Prefer
   component props and layout components before adding custom CSS.
+- Give buttons a visible background or border in their default state. Use
+  Mantine Button variants such as `filled`, `light`, `outline`, or `default`.
+  Avoid `subtle` and equivalent text-only button styles; users must be able to
+  recognize buttons without hovering over them.
 - Accept common pasted forms in multi-value text inputs. When individual values
   cannot contain commas or whitespace, accept commas, spaces, tabs, line breaks,
   and mixtures of these as separators; ignore empty entries. Share parsing rules

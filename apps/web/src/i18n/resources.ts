@@ -17,6 +17,10 @@ export const en = {
     feedbackPrompt: 'Found a bug or have an idea? Tell us on GitHub.', reportBug: 'Report a bug', requestFeature: 'Request a feature',
     notFound: 'Page not found', notFoundDescription: 'The page you requested does not exist.', returnHome: 'Return to home',
   },
+  languageSuggestion: {
+    title: 'Would you like to read this page in English?',
+    switch: 'Switch to English', dismiss: 'Not now',
+  },
   footer: { project: 'Project', contact: 'Contact & feedback', sendEmail: 'Send an email' },
   home: {
     description: 'Open source network utilities for your browser, terminal, and AI agents. Use the navigation to open a tool, or connect Packetrove to your own workflow below.',
@@ -245,6 +249,9 @@ export const zhHans = {
     source: '在 GitHub 查看 Packetrove', sourceCommit: '在 GitHub 查看提交 {{commit}} 的源代码', sourceLicense: '源代码：MIT',
     feedbackPrompt: '发现问题或有新想法？欢迎在 GitHub 告诉我们。', reportBug: '报告问题', requestFeature: '功能建议',
     notFound: '页面不存在', notFoundDescription: '你访问的页面不存在。', returnHome: '返回首页',
+  },
+  languageSuggestion: {
+    title: '想使用中文浏览吗？', switch: '切换为中文', dismiss: '暂不切换',
   },
   footer: { project: '项目资源', contact: '联系与反馈', sendEmail: '发送邮件' },
   home: {

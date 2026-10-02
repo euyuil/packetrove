@@ -9,6 +9,10 @@ export const de = {
     feedbackPrompt: 'Einen Fehler gefunden oder eine Idee? Schreiben Sie uns auf GitHub.', reportBug: 'Fehler melden', requestFeature: 'Funktion vorschlagen',
     notFound: 'Seite nicht gefunden', notFoundDescription: 'Die angeforderte Seite existiert nicht.', returnHome: 'Zur Startseite',
   },
+  languageSuggestion: {
+    title: 'Möchten Sie diese Seite auf Deutsch lesen?',
+    switch: 'Zu Deutsch wechseln', dismiss: 'Jetzt nicht',
+  },
   footer: { project: 'Projekt', contact: 'Kontakt und Feedback', sendEmail: 'E-Mail senden' },
   home: {
     description: 'Open-Source-Netzwerkwerkzeuge für Ihren Browser, Ihr Terminal und Ihre KI-Agenten. Öffnen Sie ein Werkzeug über die Navigation oder integrieren Sie Packetrove mithilfe der folgenden Anleitungen in Ihren Arbeitsablauf.',
