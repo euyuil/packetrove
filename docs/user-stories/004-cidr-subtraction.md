@@ -9,8 +9,8 @@ excluded networks from my intended tunnel address space, so that I can copy a
 positive CIDR list into `AllowedIPs` without manually splitting ranges.
 
 The user enters their intended address space in **Include** and exceptions in
-**Exclude**. **Copy AllowedIPs** copies the complete result separated by commas,
-as a setting value rather than a configuration file. The user reviews the result
+**Exclude**. **Copy with commas** copies the complete result separated by commas
+and spaces for the `AllowedIPs` setting value. The user reviews the result
 before applying it. Packetrove does not configure WireGuard or change routes.
 
 ### Remaining address space
@@ -60,7 +60,7 @@ Including `203.0.113.0/24` and excluding `203.0.113.64/26` returns:
 ```
 
 The counts are 256 included addresses, 64 actually removed, and 192 remaining.
-The `AllowedIPs` copy value is `203.0.113.0/26, 203.0.113.128/25`.
+The comma-separated copy value is `203.0.113.0/26, 203.0.113.128/25`.
 
 Including `2001:db8::/124` and excluding `2001:db8::4/126` returns:
 
@@ -80,9 +80,12 @@ The counts are 16 included addresses, 4 removed, and 12 remaining.
   included range's addresses.
 - Complete removal is a successful empty result: zero CIDRs and zero remaining
   addresses. It displays **No addresses remain** and disables both copy actions.
-- **Copy list** copies every output CIDR separated by newlines. **Copy AllowedIPs**
-  copies every CIDR separated by commas and spaces. Neither format truncates the
-  result. If clipboard access fails, the read-only result remains selectable.
+- **Copy with newlines** copies every output CIDR with one CIDR per line.
+  **Copy with commas** separates CIDRs with a comma and a space. Button labels,
+  helper text, and success feedback describe the separator so users can choose
+  a format without knowing a specific application's setting. Neither format
+  truncates the result. If clipboard access fails, the read-only result remains
+  selectable.
 - Editing either input clears the result, error, and copy feedback. Switching
   language or navigating away and back in the same tab preserves both drafts,
   the result, or the validation error without recalculating. Reloading starts

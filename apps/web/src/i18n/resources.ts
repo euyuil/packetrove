@@ -64,9 +64,9 @@ export const en = {
     excludeHelp: 'One entry per line. Leave empty to simplify the include list without removing addresses.',
     calculate: 'Subtract CIDRs', result: 'Remaining address space', output: 'Remaining CIDRs',
     included: 'Included addresses', removed: 'Addresses removed', remaining: 'Remaining addresses', blocks: 'Result CIDRs',
-    copyList: 'Copy list', copyAllowed: 'Copy AllowedIPs', copySuccess: 'CIDR list copied.', allowedSuccess: 'AllowedIPs value copied.',
+    copyList: 'Copy with newlines', copyAllowed: 'Copy with commas', copySuccess: 'Copied with newlines.', allowedSuccess: 'Copied with commas.',
     copyFailure: 'Copy is unavailable. Select and copy the list above.',
-    formats: 'Copy list separates CIDRs with newlines. Copy AllowedIPs separates them with commas for the WireGuard setting value.',
+    formats: 'Newlines put one CIDR on each line. Commas separate CIDRs with a comma and a space.',
     emptyTitle: 'No addresses remain', emptyDescription: 'The exclusions removed every included address. There is no CIDR list to copy.',
     pendingTitle: 'Your result will appear here', pendingDescription: 'Enter an include list and optional exclusions to calculate the exact remainder.',
     explanationTitle: 'What the result means',
@@ -103,7 +103,7 @@ export const en = {
       questions: {
         wireguard: {
           question: "How do I prepare WireGuard AllowedIPs exceptions?",
-          answer: "Put the intended tunnel ranges in Include and the exceptions in Exclude. Copy AllowedIPs copies the exact remaining CIDRs as a setting value. Review it before applying; Packetrove does not configure WireGuard or change routes."
+          answer: "Put the intended tunnel ranges in Include and the exceptions in Exclude. Use Copy with commas to copy the exact remaining CIDRs as the value for the WireGuard AllowedIPs setting. Review it before applying; Packetrove does not configure WireGuard or change routes."
         },
         remaining: {
           question: "Do remaining ranges prove that addresses are unused?",
@@ -285,9 +285,9 @@ export const zhHans = {
     excludeHelp: '每行输入一项。留空时只精简包含列表，不移除地址。',
     calculate: '计算 CIDR 相减', result: '剩余地址空间', output: '剩余 CIDR 列表',
     included: '包含地址数', removed: '实际移除地址数', remaining: '剩余地址数', blocks: '结果 CIDR 数',
-    copyList: '复制列表', copyAllowed: '复制 AllowedIPs', copySuccess: '已复制 CIDR 列表。', allowedSuccess: '已复制 AllowedIPs 值。',
+    copyList: '复制（换行分隔）', copyAllowed: '复制（逗号分隔）', copySuccess: '已按换行分隔复制。', allowedSuccess: '已按逗号分隔复制。',
     copyFailure: '无法使用剪贴板，请选中并复制上方列表。',
-    formats: '复制列表以换行分隔 CIDR；复制 AllowedIPs 以逗号分隔，可用于 WireGuard 设置的值。',
+    formats: '换行分隔：每行一个 CIDR。逗号分隔：CIDR 之间使用逗号和一个空格。',
     emptyTitle: '没有剩余地址', emptyDescription: '排除列表已移除全部包含地址，没有可复制的 CIDR 列表。',
     pendingTitle: '计算结果将在这里显示', pendingDescription: '输入包含列表和可选的排除列表，计算精确的剩余范围。',
     explanationTitle: '如何理解结果',
@@ -324,7 +324,7 @@ export const zhHans = {
       questions: {
         wireguard: {
           question: "如何生成 WireGuard AllowedIPs 的例外列表？",
-          answer: "在包含列表中填写希望进入隧道的地址范围，在排除列表中填写例外。复制 AllowedIPs 会得到精确剩余 CIDR 列表的配置值。应用前请检查；Packetrove 不会配置 WireGuard 或修改路由。"
+          answer: "在包含列表中填写希望进入隧道的地址范围，在排除列表中填写例外。选择“复制（逗号分隔）”，即可将精确剩余 CIDR 列表用作 WireGuard 的 AllowedIPs 设置值。应用前请检查；Packetrove 不会配置 WireGuard 或修改路由。"
         },
         remaining: {
           question: "剩余范围能证明这些地址未被使用吗？",

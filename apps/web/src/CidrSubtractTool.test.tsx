@@ -87,13 +87,13 @@ describe('browser-local CIDR subtraction', () => {
     enter('203.0.113.0/26', '203.0.113.0/24');
     expect(screen.getByText('No addresses remain')).toBeDefined();
     expect(screen.queryByLabelText('Remaining CIDRs')).toBeNull();
-    for (const name of ['Copy list', 'Copy AllowedIPs']) {
+    for (const name of ['Copy with newlines', 'Copy with commas']) {
       const button = screen.getByRole('button', { name }) as HTMLButtonElement;
       expect(button.disabled).toBe(true);
       fireEvent.click(button);
     }
     expect(writeText).not.toHaveBeenCalled();
-    expect(screen.queryByText('CIDR list copied.')).toBeNull();
+    expect(screen.queryByText('Copied with newlines.')).toBeNull();
   });
 
   it('rejects empty inclusion with a useful list-specific error', () => {
@@ -115,7 +115,7 @@ describe('browser-local CIDR subtraction', () => {
       expect(input.getAttribute('aria-invalid')).toBe('true');
       expect(input.getAttribute('aria-describedby')).toContain('subtraction-errors');
     }
-    expect(screen.queryByRole('button', { name: 'Copy list' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copy with newlines' })).toBeNull();
   });
 
   it('rejects mixed address families even for an exclusion outside the include set', () => {
@@ -141,18 +141,18 @@ describe('browser-local CIDR subtraction', () => {
     expect(screen.queryByLabelText('Remaining CIDRs')).toBeNull();
     await chooseLanguage(locales['zh-Hans'].name);
     expect(screen.getByRole('alert').textContent).toContain('不会返回部分结果');
-    expect(screen.queryByRole('button', { name: '复制列表' })).toBeNull();
+    expect(screen.queryByRole('button', { name: '复制（换行分隔）' })).toBeNull();
   });
 
   it.each([includeLabel, excludeLabel])('clears old results and feedback when editing %s', async label => {
     const user = userEvent.setup();
     render(<App />);
     enter('203.0.113.0/24', '203.0.113.64/26');
-    await user.click(screen.getByRole('button', { name: 'Copy list' }));
-    expect(screen.getByText('CIDR list copied.')).toBeDefined();
+    await user.click(screen.getByRole('button', { name: 'Copy with newlines' }));
+    expect(screen.getByText('Copied with newlines.')).toBeDefined();
     fireEvent.change(screen.getByLabelText(label), { target: { value: '203.0.113.1' } });
     expect(screen.queryByLabelText('Remaining CIDRs')).toBeNull();
-    expect(screen.queryByText('CIDR list copied.')).toBeNull();
+    expect(screen.queryByText('Copied with newlines.')).toBeNull();
   });
 
   it('loads both documented examples and clears both drafts', () => {
@@ -192,20 +192,20 @@ describe('copy formats and retained subtraction state', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it('copies the complete list in newline and AllowedIPs formats', async () => {
+  it('copies the complete list using the separators named by each button', async () => {
     const user = userEvent.setup();
     const writeText = vi.spyOn(navigator.clipboard, 'writeText');
     render(<App />);
     enter('::/0', '2001:db8::1');
     const all = output();
     expect(all.split('\n')).toHaveLength(128);
-    await user.click(screen.getByRole('button', { name: 'Copy list' }));
+    await user.click(screen.getByRole('button', { name: 'Copy with newlines' }));
     expect(writeText).toHaveBeenLastCalledWith(all);
-    expect(screen.getByText('CIDR list copied.')).toBeDefined();
-    await user.click(screen.getByRole('button', { name: 'Copy AllowedIPs' }));
+    expect(screen.getByText('Copied with newlines.')).toBeDefined();
+    await user.click(screen.getByRole('button', { name: 'Copy with commas' }));
     expect(writeText).toHaveBeenLastCalledWith(all.split('\n').join(', '));
-    expect(screen.getByText('AllowedIPs value copied.')).toBeDefined();
-    expect(screen.queryByText('CIDR list copied.')).toBeNull();
+    expect(screen.getByText('Copied with commas.')).toBeDefined();
+    expect(screen.queryByText('Copied with newlines.')).toBeNull();
   });
 
   it('keeps the complete list selectable when copying fails', async () => {
@@ -213,7 +213,7 @@ describe('copy formats and retained subtraction state', () => {
     vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('Denied'));
     render(<App />);
     enter('203.0.113.0/24', '203.0.113.64/26');
-    await user.click(screen.getByRole('button', { name: 'Copy AllowedIPs' }));
+    await user.click(screen.getByRole('button', { name: 'Copy with commas' }));
     const list = screen.getByLabelText('Remaining CIDRs') as HTMLTextAreaElement;
     expect(list.readOnly).toBe(true);
     list.focus(); list.select();

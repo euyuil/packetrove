@@ -66,12 +66,12 @@ export const es = {
     removed: 'Direcciones eliminadas',
     remaining: 'Direcciones restantes',
     blocks: 'CIDR del resultado',
-    copyList: 'Copiar lista',
-    copyAllowed: 'Copiar AllowedIPs',
-    copySuccess: 'Lista CIDR copiada.',
-    allowedSuccess: 'Valor de AllowedIPs copiado.',
+    copyList: 'Copiar con saltos de línea',
+    copyAllowed: 'Copiar con comas',
+    copySuccess: 'Copiado con saltos de línea.',
+    allowedSuccess: 'Copiado con comas.',
     copyFailure: 'No se puede copiar. Selecciona y copia la lista de arriba.',
-    formats: 'Copiar lista separa los CIDR con saltos de línea. Copiar AllowedIPs los separa con comas para el valor de la opción de WireGuard.',
+    formats: 'Con saltos de línea, cada CIDR ocupa una línea. Con comas, los CIDR se separan por una coma y un espacio.',
     emptyTitle: 'No quedan direcciones',
     emptyDescription: 'Las exclusiones eliminaron todas las direcciones incluidas. No hay ninguna lista CIDR que copiar.',
     pendingTitle: 'Tu resultado aparecerá aquí',
@@ -112,7 +112,7 @@ export const es = {
       questions: {
         wireguard: {
           question: "¿Cómo preparo excepciones para AllowedIPs de WireGuard?",
-          answer: "Introduce los rangos del túnel en Incluir y las excepciones en Excluir. Copiar AllowedIPs copia los CIDR restantes exactos como valor de configuración. Revísalo antes de aplicarlo; Packetrove no configura WireGuard ni cambia rutas."
+          answer: "Introduce los rangos del túnel en Incluir y las excepciones en Excluir. Usa Copiar con comas para copiar los CIDR restantes exactos como valor de AllowedIPs de WireGuard. Revísalo antes de aplicarlo; Packetrove no configura WireGuard ni cambia rutas."
         },
         remaining: {
           question: "¿Los rangos restantes prueban que las direcciones están libres?",
