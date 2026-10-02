@@ -1,5 +1,6 @@
 import type { MouseEventHandler } from 'react';
 import { Anchor, Box, Flex, Group, Stack, Text, Title } from '@mantine/core';
+import { IconBrandGithub } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 
@@ -24,7 +25,10 @@ export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, 
           <Title order={2} size="sm" fw={600} id="footer-project-heading">{t($ => $.footer.project)}</Title>
           <Anchor size="sm" href={sourceUrl} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover"
             title={commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source)}>
-            GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
+            <Group component="span" gap={6} wrap="nowrap">
+              <IconBrandGithub size={16} stroke={1.75} aria-hidden="true" focusable="false" />
+              <span>GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}</span>
+            </Group>
           </Anchor>
           <Anchor size="sm" href={apiDocumentationHref} onClick={onNavigate} c="dimmed" underline="hover">
             {t($ => $.api.title)}
