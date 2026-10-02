@@ -13,8 +13,12 @@ can understand network results and share a link in my preferred language.
   and the application-rendered not-found page.
 - Keep existing English URLs. Serve Chinese at `/zh/`, `/zh/cidr`, `/zh/ip`,
   and `/zh/docs/api`, with the locale identifier `zh-Hans`.
-- Let the URL determine the language. Provide explicit `English` and
-  `简体中文` controls, without browser-language redirects or persistent storage.
+- Let the URL determine the language. Provide a header dropdown with `English`
+  and `简体中文` entries, without browser-language redirects or persistent storage.
+  Show the current language on its button and mark the current menu entry.
+  Precede English with a British flag and Simplified Chinese with a Chinese flag.
+  Keep flags decorative and language names accessible. Support keyboard opening,
+  arrow-key navigation, selection, and Escape to close and return focus.
 - Switch the current page in place, preserving calculator input, results, and
   validation errors. Retranslate stored errors and clipboard feedback.
 - Keep an ongoing or completed public IP lookup when switching languages.
@@ -43,6 +47,18 @@ structure; the Chinese resource must satisfy the same structure. Selector-based
 translation calls are checked by TypeScript through `i18next.d.ts`. English is
 the fallback language. No translation backend or language-detection dependency
 is enabled.
+
+`apps/web/src/LanguageSelector.tsx` maps supported locales to their native names
+and flags and renders the entries with Mantine `Menu`. Tabler Icons supplies the
+chevron and selection check; `country-flag-icons` supplies the British and Chinese
+SVG flags. Both dependencies use the MIT license, with notices in
+`apps/web/public/third-party-notices.txt`. Icons are bundled locally and do not
+require an external image service.
+
+When adding a locale, add its translations, route mapping, static HTML entries,
+metadata and alternate links, and language selector entry together. The menu
+renders the configured entries without adding another header button. Preserve
+the existing page, query string, and fragment in every language link.
 
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while
