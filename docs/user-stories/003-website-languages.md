@@ -38,6 +38,10 @@ network results and share a link in my preferred language.
   arrow-key navigation, selection, and Escape to close and return focus.
 - Switch the current page in place, preserving calculator input, results, and
   validation errors. Retranslate stored errors and clipboard feedback.
+- Link to API documentation in the shared footer on every page, between GitHub
+  and the license in the Project section. Translate the label and use the current
+  page's locale. Same-tab navigation preserves calculator drafts, results, and
+  errors; modified clicks retain native browser behavior.
 - After navigating to a different page in the same tab, including browser back
   and forward, focus the named main content region without drawing an outline
   around the entire region. Keep it outside the sequential tab order and preserve
