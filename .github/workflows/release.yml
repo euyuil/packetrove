@@ -1,4 +1,4 @@
-name: Prepare CLI release
+name: Prepare Packetrove release
 
 on:
   workflow_run:
@@ -12,12 +12,12 @@ permissions:
   actions: read
 
 concurrency:
-  group: cli-release-preparation
+  group: packetrove-release-preparation
   cancel-in-progress: false
 
 jobs:
   prepare:
-    name: Maintain CLI release pull request
+    name: Maintain Packetrove release pull request
     if: >-
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' &&
@@ -37,7 +37,7 @@ jobs:
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "CLI release preparation awaits GitHub App secrets. See docs/cli-publishing.md." >> "$GITHUB_STEP_SUMMARY"
+            echo "Packetrove release preparation awaits GitHub App secrets. See docs/cli-publishing.md." >> "$GITHUB_STEP_SUMMARY"
           fi
 
       - name: Check out validated main revision
@@ -84,4 +84,4 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         env:
           RELEASE_TOKEN: ${{ steps.app.outputs.token }}
-        run: node scripts/cli-release-please.ts
+        run: node scripts/release-please.ts

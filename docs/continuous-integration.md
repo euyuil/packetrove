@@ -117,19 +117,22 @@ Each job has a ten-minute timeout. A branch push alone does not run this workflo
 unless it updates `main`; opening, reopening, or updating a pull request targeting
 `main` triggers validation. Manual validation and deployment require `main`.
 
-## CLI publication
+## Product releases and CLI publication
 
-After one-time setup, [`release-cli.yml`](../.github/workflows/release-cli.yml)
+After one-time setup, [`release.yml`](../.github/workflows/release.yml)
 runs after successful current `main` validation, deployment, and production
-checks. Release-please maintains a separate pull request with the next CLI
-version and changelog, including bundled core and contracts changes. Website-only
-changes do not produce a CLI release. A repository-scoped GitHub App allows the
+checks. Release-please maintains one product release pull request with the next
+version, root changelog, all workspace versions, and generated OpenAPI version.
+Website, API, MCP, CLI, core, and contracts changes contribute to that version.
+The release tag and npm version use the same plain number, such as `0.1.1`.
+A repository-scoped GitHub App allows the
 release pull request to run the same required validation as other pull requests.
 
 The owner decides when to approve and squash-merge the release pull request.
 After main CI succeeds, release-please creates its tag and GitHub Release;
 [`publish-cli.yml`](../.github/workflows/publish-cli.yml) then validates and
-publishes the tagged CLI to npm. Publication does not build a later main revision.
+publishes the tagged CLI to npm at the product version, even for a release with
+website-only changes. Publication does not build a later main revision.
 The release pull request is never automatically merged. Leaving it open holds
 npm publication while ordinary feature merges continue to deploy the services.
 

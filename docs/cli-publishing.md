@@ -10,10 +10,15 @@ After the one-time setup below, maintainers merge ordinary feature pull
 requests as usual. The existing `CI and deployment` workflow validates and
 deploys the website, API, and MCP on `main`.
 
-[`release-cli.yml`](../.github/workflows/release-cli.yml) runs after a successful
+Packetrove uses one product version for the website, API, MCP, CLI, core, and
+contracts. Shared calculations and contracts keep corresponding capabilities
+aligned. Release numbers identify a source snapshot; deployed services can
+contain newer unreleased changes, identified by their Git commit SHA.
+
+[`release.yml`](../.github/workflows/release.yml) runs after a successful
 current `main` validation, deployment, and production check. Release-please
-maintains a separate `chore(cli): release <version>` pull request containing the
-CLI changelog and version updates. This pull request also runs the required
+maintains a separate `chore: release <version>` pull request containing the
+product changelog and all workspace version updates. This pull request also runs the required
 `Validate project` check and must be up to date with `main`. It is never
 automatically merged. Leave it open to accumulate changes without publishing
 npm.
@@ -22,7 +27,7 @@ The owner's approval to squash-merge that release pull request authorizes its
 npm release. Complete the public-material and package review required by
 [AGENTS.md](../AGENTS.md) before approving it; there is no second publishing
 prompt after the release pull request is merged. After the merged revision passes CI, release-please creates
-`cli-<version>` and a GitHub Release. The release event triggers
+the plain `<version>` tag, such as `0.1.1`, and a GitHub Release. The release event triggers
 [`publish-cli.yml`](../.github/workflows/publish-cli.yml), which validates, packs,
 publishes through npm trusted publishing, and verifies the exact npm version.
 Ordinary feature merges continue to deploy the services; they do not themselves
@@ -31,40 +36,45 @@ publish npm.
 ### Versions and release scope
 
 Version numbers, Git tags, and GitHub release names omit the `v` prefix.
+Tags also omit component prefixes. A formal product release publishes the CLI
+at the same version, including releases whose changes only affect the website
+or API. Publishing a product version does not restrict ordinary service
+deployments to release tags.
 
 Use Conventional Commit titles for squash-merged pull requests:
 
-| Change affecting the CLI | Title example | Result from 0.1.0 |
+| Change affecting the product | Title example | Result from 0.1.0 |
 | --- | --- | --- |
 | Fix, packaging correction, or dependency update | `fix(cli): correct JSON error output` | 0.1.1 |
-| Feature in the CLI, core, or contracts | `feat(core): support another calculation` | 0.2.0 |
+| Feature in the website, API, MCP, CLI, core, or contracts | `feat(core): support another calculation`, `feat(web): add a tool` | 0.2.0 |
 | Breaking change before 1.0 | `feat(cli)!: change the input format` | 0.2.0 |
-| Documentation, chores, or website-only changes | `docs: clarify installation`, `feat(web): improve navigation` | No CLI release |
+| Documentation or chores | `docs: clarify installation`, `chore: update tooling` | No product release |
 
 For a stable version of 1.0.0 or later, breaking changes bump the major version.
 Use release-please's documented [Release-As override](https://github.com/googleapis/release-please#how-do-i-change-the-version-number)
 when deliberately graduating to 1.0.0. Routine releases require no manual
-version edits or workflow version input. Give CLI dependency and packaging fixes
+version edits or workflow version input. Give dependency and packaging fixes
 a `fix` title; an ordinary `chore` title does not request a release.
 
 The release component uses the pinned `release-please` development dependency
-and the Node strategy with a small file filter in `scripts/cli-release-please.ts`.
-This handles root files exactly, including website-only lockfile changes, which
-the upstream directory exclusion does not handle. This tooling is not bundled
-in the CLI. The release component is rooted at `.`, so changes in `packages/cli`,
-`packages/core`, and `packages/contracts` all contribute to the CLI. Shared
-build inputs such as `package.json`, `pnpm-workspace.yaml`, `.node-version`,
-`tsconfig.base.json`, and `LICENSE` also contribute. Website and Worker changes,
-documentation, agent skills, repository scripts, workflow files, and a lockfile
-change by itself are excluded. A mixed commit that also changes CLI inputs still
-contributes. Update the relevant package manifest when changing a CLI dependency
+and the Node strategy with a small file filter in `scripts/release-please.ts`.
+The filter handles root files exactly; the upstream directory exclusion does
+not. This tooling is not bundled in the CLI. One component rooted at `.` groups
+`packages/cli`, `packages/core`, `packages/contracts`, `apps/web`, and
+`apps/worker`. Shared manifests, the lockfile, `.node-version`,
+`tsconfig.base.json`, `LICENSE`, and the OpenAPI and API-asset build scripts also
+contribute. Documentation, agent skills, other repository scripts, and workflow
+files are excluded. A mixed commit that changes product inputs still
+contributes. Update the relevant package manifest when changing a dependency
 and regenerate the lockfile together.
 
-Release-please updates `packages/cli/package.json`, the private root
-`package.json`, `.release-please-manifest.json`, and
-`packages/cli/CHANGELOG.md`. The root version tracks CLI release bookkeeping;
-the root, core, contracts, website, and Worker packages remain private. The other
-workspace package versions are not automatically changed.
+Release-please updates the root and every workspace's `package.json`,
+`.release-please-manifest.json`, `docs/api/openapi.json`, and `CHANGELOG.md`
+together. API and MCP version metadata comes from the shared contracts package
+version. The generated OpenAPI version is updated in the release PR so the
+required consistency check continues to pass. Only the CLI is published to npm;
+the other packages remain private. Publication checks every workspace version,
+the OpenAPI version, and the release manifest against the tag before uploading.
 
 ## One-time GitHub App setup
 
@@ -150,7 +160,7 @@ ordinary validation and service deployment still run.
    initial GitHub Release at the exact commit used for the npm archive:
 
    ```sh
-   gh release create cli-0.1.0 --repo euyuil/packetrove --target <release-commit> --title "CLI 0.1.0" --notes "Initial public CLI release."
+   gh release create 0.1.0 --repo euyuil/packetrove --target <release-commit> --title "0.1.0" --notes "Initial Packetrove release."
    ```
 
    Replace `<release-commit>` with the recorded SHA. Do not tag a later commit
@@ -158,13 +168,13 @@ ordinary validation and service deployment still run.
    it detects the identical existing npm archive and verifies without uploading
    it again. Review the workflow result.
 
-The initial `cli-0.1.0` GitHub Release is release-please's baseline. Preparation
+The initial `0.1.0` GitHub Release is release-please's baseline. Preparation
 skips until it exists, so installing this automation does not silently publish
 the first npm package. Once setup is complete, the next successful `main` run
 maintains the next release pull request. To prepare immediately, run:
 
 ```sh
-gh workflow run release-cli.yml --repo euyuil/packetrove --ref main
+gh workflow run release.yml --repo euyuil/packetrove --ref main
 ```
 
 After npm publication is verified, update the release-pending wording in the
@@ -216,10 +226,10 @@ public. Inspect the registry and workflow logs, then rerun the failed job or
 request recovery of the existing GitHub Release:
 
 ```sh
-gh workflow run publish-cli.yml --repo euyuil/packetrove --ref main -f tag=cli-0.1.1
+gh workflow run publish-cli.yml --repo euyuil/packetrove --ref main -f tag=0.1.1
 ```
 
 Recovery uses the original tag, runs all publication checks, and never bumps a
 version or overwrites a published package. If release preparation failed, fix
-the configuration or recover main CI first, then rerun `release-cli.yml`.
+the configuration or recover main CI first, then rerun `release.yml`.
 A failed GitHub Release or npm upload does not undo service deployment.

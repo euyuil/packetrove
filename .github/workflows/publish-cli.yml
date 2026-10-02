@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing stable GitHub release tag to recover (for example cli-0.1.1)
+        description: Existing stable Packetrove release tag to recover (for example 0.1.1)
         required: true
         type: string
 
@@ -23,7 +23,7 @@ jobs:
     name: Validate and publish CLI
     if: >-
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
-      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'cli-') &&
+      (github.event_name == 'release' &&
       !github.event.release.draft && !github.event.release.prerelease)
     runs-on: ubuntu-26.04
     timeout-minutes: 15
@@ -42,10 +42,10 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Require a stable CLI tag on main before running repository code
+      - name: Require a stable Packetrove tag on main before running repository code
         run: |
-          if [[ ! "$RELEASE_TAG" =~ ^cli-(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-            echo "::error::A stable CLI release tag is required."
+          if [[ ! "$RELEASE_TAG" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::A stable Packetrove release tag is required."
             exit 1
           fi
           tag_sha="$(git rev-parse "refs/tags/$RELEASE_TAG^{commit}")"

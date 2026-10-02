@@ -1,14 +1,14 @@
 import { McpServer, type McpRequestContext } from '@modelcontextprotocol/server';
 import { createMcpHandler } from 'agents/mcp/server';
 import {
-  CidrCoverRequestSchema, CidrCoverResultSchema, MCP_TOOL_NAME,
+  CidrCoverRequestSchema, CidrCoverResultSchema, MCP_TOOL_NAME, PACKETROVE_VERSION,
   PUBLIC_IP_TOOL_NAME, PublicIpRequestSchema, PublicIpResultSchema,
 } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { getPublicIp } from './ip';
 
 export function createMcpServer(context: McpRequestContext) {
-  const server = new McpServer({ name: 'Packetrove', version: '0.1.0' });
+  const server = new McpServer({ name: 'Packetrove', version: PACKETROVE_VERSION });
   server.registerTool(MCP_TOOL_NAME, {
     title: 'Smallest Covering CIDR',
     description: 'Find the smallest single canonical CIDR covering all IPv4 or all IPv6 inputs. Accept IP addresses or CIDRs; normalize host bits. The result may include additional addresses. Exact address counts are decimal strings, with overlapping inputs counted once. This read-only calculation does not modify firewall rules or make network requests.',

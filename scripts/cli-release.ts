@@ -5,6 +5,10 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const packageName = '@packetrove/cli';
+export const productManifests = [
+  'package.json', 'packages/cli/package.json', 'packages/core/package.json',
+  'packages/contracts/package.json', 'apps/web/package.json', 'apps/worker/package.json',
+] as const;
 const stableVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const deploymentSteps = [
   'Run project validation', 'Deploy API and MCP Worker', 'Deploy website and static assets',
@@ -31,17 +35,18 @@ export interface WorkflowJob {
 }
 
 export function releaseVersion(tag: string): string {
-  const version = tag.startsWith('cli-') ? tag.slice(4) : '';
+  const version = tag;
   if (!stableVersion.test(version)) {
-    throw new Error('A stable CLI release tag such as cli-0.1.1 is required.');
+    throw new Error('A stable Packetrove release tag such as 0.1.1 is required.');
   }
   return version;
 }
 
-export function assertReleaseVersions(tag: string, root: string, cli: string, manifest: string): string {
+export function assertReleaseVersions(tag: string, versions: Record<string, unknown>): string {
   const version = releaseVersion(tag);
-  if ([root, cli, manifest].some(candidate => candidate !== version)) {
-    throw new Error('The tag, root version, CLI version, and release manifest must agree.');
+  if ([...productManifests, '.release-please-manifest.json', 'docs/api/openapi.json']
+    .some(path => versions[path] !== version)) {
+    throw new Error('The tag, all workspace versions, OpenAPI version, and release manifest must agree.');
   }
   return version;
 }
@@ -141,14 +146,14 @@ async function prepare(): Promise<void> {
   const main = (await github<{ object: { sha: string } }>('git/ref/heads/main'))!.object.sha;
   if (sha !== main) {
     output('ready', 'false');
-    summary('CLI release preparation skipped: this revision has been superseded on main.');
+    summary('Packetrove release preparation skipped: this revision has been superseded on main.');
     return;
   }
   await requireValidatedRun(sha, event.workflow_run?.id, true);
-  const baseline = await github<{ draft: boolean; prerelease: boolean }>('releases/tags/cli-0.1.0', true);
+  const baseline = await github<{ draft: boolean; prerelease: boolean }>('releases/tags/0.1.0', true);
   if (!baseline || baseline.draft || baseline.prerelease) {
     output('ready', 'false');
-    summary('CLI release preparation awaits the initial cli-0.1.0 GitHub release. See docs/cli-publishing.md.');
+    summary('Packetrove release preparation awaits the initial 0.1.0 GitHub release. See docs/cli-publishing.md.');
     return;
   }
   output('ready', 'true');
@@ -170,10 +175,12 @@ async function validateRelease(tag: string): Promise<void> {
     throw new Error('The checkout must match the existing release tag.');
   }
   git('merge-base', '--is-ancestor', sha, 'origin/main');
-  const root = JSON.parse(readFileSync('package.json', 'utf8'));
   const cli = JSON.parse(readFileSync('packages/cli/package.json', 'utf8'));
   const manifest = JSON.parse(readFileSync('.release-please-manifest.json', 'utf8'));
-  assertReleaseVersions(tag, root.version, cli.version, manifest['.']);
+  const versions = Object.fromEntries(productManifests.map(path =>
+    [path, JSON.parse(readFileSync(path, 'utf8')).version]));
+  assertReleaseVersions(tag, { ...versions, '.release-please-manifest.json': manifest['.'],
+    'docs/api/openapi.json': JSON.parse(readFileSync('docs/api/openapi.json', 'utf8')).info?.version });
   if (cli.name !== packageName || cli.private === true || cli.publishConfig?.access !== 'public') {
     throw new Error('The release must contain the public @packetrove/cli package.');
   }

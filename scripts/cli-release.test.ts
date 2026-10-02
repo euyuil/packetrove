@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  assertPublishedCalculation, assertReleaseVersions, isValidatedMainRun, publicationRequired, registryIntegrity, releaseVersion,
+  assertPublishedCalculation, assertReleaseVersions, isValidatedMainRun, productManifests,
+  publicationRequired, registryIntegrity, releaseVersion,
 } from './cli-release';
 import type { WorkflowJob, WorkflowRun } from './cli-release';
 
@@ -21,19 +22,26 @@ const job: WorkflowJob = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('CLI release validation', () => {
-  it.each(['cli-0.1.0', 'cli-0.1.1', 'cli-0.2.0', 'cli-1.0.0'])('accepts stable CLI tag %s', tag => {
-    expect(releaseVersion(tag)).toBe(tag.slice(4));
+  it.each(['0.1.0', '0.1.1', '0.2.0', '1.0.0'])('accepts stable product tag %s', tag => {
+    expect(releaseVersion(tag)).toBe(tag);
   });
-  it.each(['v0.1.0', 'cli-v0.1.0', 'web-0.1.0', 'cli-01.1.0', 'cli-0.1', 'cli-0.1.0-beta.1', 'cli-0.1.0+build', 'cli-0.1.0\n'])(
+  it.each(['v0.1.0', 'cli-v0.1.0', 'cli-0.1.0', 'web-0.1.0', '01.1.0', '0.1', '0.1.0-beta.1', '0.1.0+build', '0.1.0\n'])(
     'rejects malformed or unrelated release tag %s', tag => {
       expect(() => releaseVersion(tag)).toThrow();
     },
   );
   it('requires matching versions in every release file', () => {
-    expect(assertReleaseVersions('cli-0.2.0', '0.2.0', '0.2.0', '0.2.0')).toBe('0.2.0');
-    for (const versions of [['0.1.0', '0.2.0', '0.2.0'], ['0.2.0', '0.1.0', '0.2.0'], ['0.2.0', '0.2.0', '0.1.0']]) {
-      expect(() => assertReleaseVersions('cli-0.2.0', versions[0]!, versions[1]!, versions[2]!)).toThrow();
+    const versions = Object.fromEntries(
+      [...productManifests, '.release-please-manifest.json', 'docs/api/openapi.json'].map(path => [path, '0.2.0']),
+    );
+    expect(assertReleaseVersions('0.2.0', versions)).toBe('0.2.0');
+    for (const path of Object.keys(versions)) {
+      expect(() => assertReleaseVersions('0.2.0', { ...versions, [path]: '0.1.0' }), path).toThrow();
+      const missing = { ...versions };
+      delete missing[path];
+      expect(() => assertReleaseVersions('0.2.0', missing), path).toThrow();
     }
+    expect(() => assertReleaseVersions('0.2.0', {})).toThrow();
   });
   it('accepts completed validation and deployment of the exact main revision', () => {
     expect(isValidatedMainRun(run, [job], repository, sha, true)).toBe(true);

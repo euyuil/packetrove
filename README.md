@@ -162,6 +162,12 @@ for first-release setup and automatic release pull requests. Maintainers choose
 when to publish by approving and merging the separate release pull request;
 ordinary feature merges still deploy the website and API.
 
+Packetrove uses one product version across its website, API, MCP, CLI, core, and
+contracts. Formal releases use plain tags such as `0.1.0`, without `v` or a
+component prefix. The release pull request updates all workspace versions and
+the root [changelog](CHANGELOG.md) together. The CLI is published to npm at that
+same version; service deployments continue to be identified by their Git commit.
+
 ## Development
 
 The web interface uses React, Vite, and Mantine. Prefer Mantine components and

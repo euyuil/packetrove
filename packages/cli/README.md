@@ -4,8 +4,11 @@ Network calculations and IP diagnostics for humans, scripts, and agents.
 
 The `@packetrove/cli` package contains the `packetrove` executable and bundles
 its runtime dependencies. CIDR calculations run locally without a network
-connection. The `ip` command queries the public IP observed for this machine's
+connection. The `public-ip` command queries the public IP observed for this machine's
 connection.
+
+CLI versions follow Packetrove's product releases. npm versions and Git tags
+use the same plain number, such as `0.1.0`.
 
 ## Installation
 
@@ -50,13 +53,13 @@ using a result.
 ## Check the current public IP
 
 ```sh
-packetrove ip
-packetrove ip --json
-packetrove ip --api-origin http://localhost:8787 --json
+packetrove public-ip
+packetrove public-ip --json
+packetrove public-ip --api-origin http://localhost:8787 --json
 ```
 
 Without `--json`, stdout contains just the address and a newline. The default
-endpoint is `https://api.packetrove.com/v1/ip`; a lookup makes a network request
+endpoint is `https://api.packetrove.com/v1/public-ip`; a lookup makes a network request
 with a 10-second timeout, no cache, and no redirects. `--api-origin` supports a
 self-hosted HTTP or HTTPS origin without credentials, a path, query, or fragment.
 
