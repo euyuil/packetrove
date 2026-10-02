@@ -12,7 +12,7 @@ scripts, or an AI agent.
 
 **[Explore Packetrove](https://packetrove.com) ·
 [Try the CIDR calculator](https://packetrove.com/cidr) ·
-[Check your public IP](https://packetrove.com/ip)**
+[Check your public IP](https://packetrove.com/public-ip)**
 
 ## What you can do
 
@@ -35,7 +35,7 @@ addresses outside your original list; review that expansion before applying it.
 
 ### Check your connection's public IP
 
-Open [My Public IP](https://packetrove.com/ip) to see and copy the IPv4 or IPv6
+Open [My Public IP](https://packetrove.com/public-ip) to see and copy the IPv4 or IPv6
 address used by your current connection. Refresh after changing networks, VPNs,
 or proxy settings.
 
@@ -71,7 +71,7 @@ CIDR calculator, public IP tool, API documentation shell, and MCP connection gui
 | Deutsch | [German homepage](https://packetrove.com/de/) | `/de` |
 | 日本語 | [Japanese homepage](https://packetrove.com/ja/) | `/ja` |
 
-For example, Spanish tools are at `/es/cidr` and `/es/ip`, and API documentation
+For example, Spanish tools are at `/es/cidr` and `/es/public-ip`, and API documentation
 is at `/es/docs/api`. The Spanish MCP guide is at `/es/docs/mcp`.
 Use the language dropdown in the header to switch the current page. It shows
 the current language, with a British flag for English and a Chinese flag for
@@ -114,7 +114,7 @@ the scope and contributor instructions.
 
 | Interface | Get started |
 | --- | --- |
-| Website | [Project overview](https://packetrove.com) · [CIDR calculator](https://packetrove.com/cidr) · [My Public IP](https://packetrove.com/ip) |
+| Website | [Project overview](https://packetrove.com) · [CIDR calculator](https://packetrove.com/cidr) · [My Public IP](https://packetrove.com/public-ip) |
 | Web API | [Interactive API documentation](https://packetrove.com/docs/api) · [API guide](docs/api/README.md) · [OpenAPI specification](https://api.packetrove.com/openapi.json) |
 | Command-line interface (CLI) | [CLI guide](docs/integrations/cli.md), with offline CIDR calculations and JSON output |
 | AI agents | [MCP connection guide](https://packetrove.com/docs/mcp) · [Technical MCP guide](docs/integrations/mcp.md) · [CIDR covering skill setup](docs/integrations/skill.md) |
@@ -131,13 +131,13 @@ curl https://api.packetrove.com/v1/cidr/cover \
 
 The result includes `cidr: "203.0.113.0/29"` and
 `additionalAddressCount: "5"`. Address counts are decimal strings to preserve
-exact IPv6 values. Use `GET https://api.packetrove.com/v1/ip` to check the
+exact IPv6 values. Use `GET https://api.packetrove.com/v1/public-ip` to check the
 connection making the request.
 
 ### Connect an AI agent
 
 Add `https://api.packetrove.com/mcp` to a client that supports Streamable HTTP.
-The server provides `smallest_covering_cidr` and `get_public_ip` without
+The server provides `smallest_covering_cidr` and `public-ip` without
 authentication. The repository also includes a
 [CIDR covering skill](skills/packetrove-cidr-cover/SKILL.md) for calculating ranges
 and explaining additional allowlist or blocklist coverage.
@@ -160,10 +160,10 @@ repository:
 pnpm install
 pnpm build
 node packages/cli/dist/cli.js cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
-node packages/cli/dist/cli.js ip
+node packages/cli/dist/cli.js public-ip
 ```
 
-CIDR calculations run locally; `ip` calls the public API from the machine
+CIDR calculations run locally; `public-ip` calls the public API from the machine
 running the command. The CLI is supplied in this repository and has not been
 published to npm. See the [CLI guide](docs/integrations/cli.md) for file input,
 JSON errors, and packaging.

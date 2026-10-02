@@ -1,5 +1,5 @@
 import { supportedLocales } from './i18n/locales';
-import { localizedPath, pagePaths } from './i18n/routes';
+import { legacyPagePaths, localizedPath, pagePaths } from './i18n/routes';
 import { getPageMetadata, WEBSITE_ORIGIN } from './i18n/page-metadata';
 
 export const websitePages = supportedLocales.flatMap(locale =>
@@ -8,6 +8,12 @@ export const websitePages = supportedLocales.flatMap(locale =>
     return { locale, page: page as keyof typeof pagePaths, path, pathname,
       entry: pathname.endsWith('/') ? pathname.slice(1) + 'index.html' : pathname.slice(1) + '.html' };
   }));
+
+export const websiteRedirects = supportedLocales.flatMap(locale =>
+  Object.entries(legacyPagePaths).flatMap(([from, to]) =>
+    ['', '/', '.html'].map(suffix => ({
+      from: localizedPath(from, locale) + suffix, to: localizedPath(to, locale),
+    }))));
 
 export function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, character => ({

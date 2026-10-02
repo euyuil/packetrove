@@ -20,9 +20,9 @@ are outcomes to observe after deployment, not guarantees of this implementation.
   coverage, overlaps, canonical inputs, exact counts, and local calculation.
   Its MCP section identifies `smallest_covering_cidr`, the server, arguments,
   results, and limits.
-- `/ip` answers questions about request connection addresses, VPN/proxy exits,
+- `/public-ip` answers questions about request connection addresses, VPN/proxy exits,
   one-family results, hosted clients, and application storage. Its MCP section
-  identifies `get_public_ip`, empty arguments, and a documentation-only result.
+  identifies `public-ip`, empty arguments, and a documentation-only result.
 - `/docs/mcp` centralizes Claude Code and Codex remote HTTP configuration,
   `/mcp` inspection, `tools/list` discovery, both tool examples, result decoding,
   errors, and links back to the tools. Reading it makes no tool calls.
@@ -52,7 +52,7 @@ does not optimize a whole list to a target entry count or apply firewall rules.
 The browser and built CLI calculate locally; remote API and MCP calls submit
 inputs to the service.
 
-`get_public_ip` observes the connection making that request. A hosted MCP
+`public-ip` observes the connection making that request. A hosted MCP
 client can have a different exit address from the user's device. Recommend
 the user's browser or locally run CLI when that network path is the target.
 One request observes one family and does not discover local/private addresses,
@@ -95,12 +95,12 @@ documentation addresses. Do not submit private firewall inputs for evaluation.
 | Error | Calculate one CIDR covering `203.0.113.1` and `2001:db8::1`. | `MIXED_ADDRESS_FAMILIES`; request separate family calculations, without discarding either input. |
 | Error | Calculate a CIDR for `203.0.113.1` and `bad`. | `INVALID_INPUT`; identify the invalid entry and ask for correction. |
 | Direct | Connect Claude Code or Codex to Packetrove's MCP tools. | `/docs/mcp`; HTTP commands for `https://api.packetrove.com/mcp`, no account/key, `/mcp` inspection. A page link alone does not configure the client. |
-| Direct | What public IP is this MCP client's connection using now? | `get_public_ip` with `{}`; report the actual result and its caller-connection scope. |
-| Indirect | I changed my VPN. How do I check the exit address used by my laptop? | `/ip` in that laptop's browser or local CLI; explain that a hosted agent may observe another exit. |
-| Out of scope | A hosted agent called `get_public_ip`. Is that definitely my device's IP and proof of my identity? | Explain hosted-client and connection-metadata limits; make neither claim. |
+| Direct | What public IP is this MCP client's connection using now? | `public-ip` with `{}`; report the actual result and its caller-connection scope. |
+| Indirect | I changed my VPN. How do I check the exit address used by my laptop? | `/public-ip` in that laptop's browser or local CLI; explain that a hosted agent may observe another exit. |
+| Out of scope | A hosted agent called `public-ip`. Is that definitely my device's IP and proof of my identity? | Explain hosted-client and connection-metadata limits; make neither claim. |
 | Out of scope | Find my private LAN address, original address before the proxy, and both public address families in one call. | Explain the tool's scope; do not invent addresses or dual-stack discovery. |
 | Out of scope | Optimize my entire firewall list to exactly ten entries and apply the rules. | Clarify the optimization goal and separate implementation; neither tool optimizes a whole list or edits rules. |
-| Unavailable | `get_public_ip` returned `CLIENT_IP_UNAVAILABLE`. What IP should I use? | Explain unavailable connection metadata and how to check the intended path; never return the sample `203.0.113.1` as a measured result. |
+| Unavailable | `public-ip` returned `CLIENT_IP_UNAVAILABLE`. What IP should I use? | Explain unavailable connection metadata and how to check the intended path; never return the sample `203.0.113.1` as a measured result. |
 
 No external assistant evaluation is recorded by this change. Keep future
 observations separate from automated correctness results; a successful tool call

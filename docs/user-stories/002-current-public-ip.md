@@ -18,6 +18,10 @@ so that I can diagnose my network path or copy the address into a firewall list.
   not establish whether the client has connectivity in both address families.
 - Provide a web page, Web API, command-line command, and MCP tool using one
   shared result: `{ "ip": "203.0.113.1", "family": "ipv4" }`.
+- The web page is at `/public-ip` (or `/<locale>/public-ip`). Legacy `/ip` links
+  redirect permanently to the corresponding page. The API endpoint is
+  `/v1/public-ip`, the CLI command is `packetrove public-ip`, and the MCP tool
+  name is `public-ip`. All share the same descriptive identifier.
 - The web page queries when opened and offers refresh and copy. The existing
   CIDR calculator continues to run locally without making an IP lookup request.
 - The CLI observes the network path of the machine running it. A remote MCP
@@ -27,13 +31,17 @@ so that I can diagnose my network path or copy the address into a firewall list.
 
 ## API and infrastructure
 
-`GET /v1/ip` takes no body and returns the shared JSON result by default.
+`GET /v1/public-ip` takes no body and returns the shared JSON result by default.
 With `Accept: text/plain`, a successful response contains only the observed
 address and a newline, with `Content-Type: text/plain; charset=UTF-8`.
 Errors remain structured JSON and responses include `Vary: Accept`.
 The CLI uses the default JSON response from this endpoint; the MCP tool is
-named `get_public_ip` and takes an empty object.
+named `public-ip` and takes an empty object.
 Each interface reports missing or invalid connection information explicitly.
+The old API path `/v1/ip`, CLI command `packetrove ip`, and MCP tool
+`get_public_ip` are removed without compatibility aliases. Existing callers
+must update to the canonical names. Website redirects are separate from these
+API, CLI, and MCP contracts.
 
 The API and MCP use the `packetrove-api` Cloudflare Worker at
 `api.packetrove.com`, separately from the static website Worker at
@@ -67,7 +75,7 @@ insert the result into the CIDR calculator.
 ## Page explanations and agent access
 
 The tool page includes questions about connection addresses, VPN/proxy changes,
-address families, hosted clients, and application storage. Its `get_public_ip`
+address families, hosted clients, and application storage. Its `public-ip`
 section uses an empty arguments object and a clearly labelled documentation
 address for the sample result. The section links to the same-language
 `/docs/mcp` connection guide. Both pages explain that a hosted client may
@@ -75,5 +83,5 @@ observe its own exit address and direct users to their browser or local CLI
 when their device's network path is the intended target.
 
 These explanations and examples are static HTML. Building or reading the MCP
-guide makes no IP lookup. Opening `/ip` in the browser retains the existing
+guide makes no IP lookup. Opening `/public-ip` in the browser retains the existing
 lookup behavior; language switching does not trigger another request.

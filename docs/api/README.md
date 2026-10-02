@@ -59,11 +59,14 @@ addresses. The tool calculates a result and does not edit firewall rules.
 
 ## Current public IP
 
-`GET /v1/ip` takes no request body and returns the address observed for the
+The public IP endpoint is `/v1/public-ip`. The former `/v1/ip` path is removed
+without a compatibility alias or redirect; update existing callers.
+
+`GET /v1/public-ip` takes no request body and returns the address observed for the
 current request. For a plain-text address suitable for shell commands:
 
 ```sh
-curl -fsS https://api.packetrove.com/v1/ip \
+curl -fsS https://api.packetrove.com/v1/public-ip \
   -H 'Accept: text/plain'
 ```
 

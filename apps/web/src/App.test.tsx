@@ -27,7 +27,7 @@ describe('web page routing', () => {
     expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('aria-current')).toBeNull();
     expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBeNull();
     expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('href')).toBe('/cidr');
-    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('href')).toBe('/ip');
+    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('href')).toBe('/public-ip');
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Calculate covering CIDR' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Refresh IP' })).toBeNull();
@@ -43,11 +43,11 @@ describe('web page routing', () => {
     vi.stubGlobal('fetch', fetch);
     render(<App />);
     const api = screen.getByRole('region', { name: 'Web API' });
-    expect(api.textContent).toContain('curl -fsS https://api.service.example/v1/ip');
+    expect(api.textContent).toContain('curl -fsS https://api.service.example/v1/public-ip');
     expect(api.textContent).toContain("-H 'Accept: text/plain'");
     const cli = screen.getByRole('region', { name: 'Command-line interface' });
     expect(cli.textContent).toContain('git clone https://github.com/example-owner/packetrove.git');
-    expect(within(cli).getByText('packetrove ip')).toBeDefined();
+    expect(within(cli).getByText('packetrove public-ip')).toBeDefined();
     const mcp = screen.getByRole('region', { name: 'Model Context Protocol' });
     expect(mcp.textContent).toContain('https://api.service.example/mcp');
     const guide = within(mcp).getByRole('link', { name: 'Read the MCP connection guide' });
@@ -61,7 +61,7 @@ describe('web page routing', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it.each(['/missing-page', '/ip/missing-page', '/cidr/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {
+  it.each(['/missing-page', '/public-ip/missing-page', '/cidr/missing-page', '/missing-page/'])('shows a missing page for %s without querying an API', path => {
     window.history.replaceState({}, '', path);
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
@@ -89,15 +89,20 @@ describe('web page routing', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it.each(['/ip/', '/ip.html'])('recognizes the public IP page at %s', async path => {
-    window.history.replaceState({}, '', path);
-    vi.stubGlobal('fetch', async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
-    render(<App />);
-    expect(screen.getByRole('heading', { name: 'My Public IP', level: 1 })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBe('page');
-    expect(document.title).toBe('What Is My IP? Public IP Lookup — Packetrove');
-    expect(await screen.findByText('203.0.113.1')).toBeDefined();
-  });
+  it.each(['/public-ip', '/public-ip/', '/public-ip.html', '/ip', '/ip/', '/ip.html'])(
+    'recognizes the public IP page at %s with canonical navigation and metadata', async path => {
+      window.history.replaceState({}, '', path);
+      vi.stubGlobal('fetch', async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+      render(<App />);
+      expect(screen.getByRole('heading', { name: 'My Public IP', level: 1 })).toBeDefined();
+      expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBe('page');
+      expect(document.title).toBe('What Is My IP? Public IP Lookup — Packetrove');
+      expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('href')).toBe('/public-ip');
+      expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href'))
+        .toBe('https://packetrove.com/public-ip');
+      expect(await screen.findByText('203.0.113.1')).toBeDefined();
+    },
+  );
 });
 
 describe('GitHub source link', () => {

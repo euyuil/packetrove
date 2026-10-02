@@ -15,7 +15,7 @@ client; clients discover tools through `tools/list` after configuration.
 | Local URL | `http://localhost:8787/mcp` |
 | Transport | Streamable HTTP |
 | Authentication | None |
-| Tools | `smallest_covering_cidr`, `get_public_ip` |
+| Tools | `smallest_covering_cidr`, `public-ip` |
 
 Use your client's remote HTTP server configuration and set the production URL
 above. Configuration keys vary by client. GitHub Actions publishes the configured
@@ -107,12 +107,15 @@ For local development, replace the URL with `http://localhost:8787/mcp`.
 
 ## Current public IP tool
 
-Use `get_public_ip` to inspect the connection making the MCP request, including
+Use `public-ip` to inspect the connection making the MCP request, including
 checks after a network, VPN, or proxy change. Call it with an empty arguments object:
 
 ```ts
-const result = await client.callTool({ name: 'get_public_ip', arguments: {} });
+const result = await client.callTool({ name: 'public-ip', arguments: {} });
 ```
+
+The former `get_public_ip` tool name is removed without a compatibility alias.
+Update saved tool calls and refresh tool discovery to use `public-ip`.
 
 Success returns the same result in `structuredContent` and a text JSON block,
 for example `{ "ip": "203.0.113.1", "family": "ipv4" }`. Tool discovery is

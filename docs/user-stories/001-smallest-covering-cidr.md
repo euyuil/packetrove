@@ -74,7 +74,7 @@ The web app performs the calculation locally. The API returns a structured
 result with exact counts represented as decimal strings; MCP uses the same result.
 
 The homepage introduces Packetrove and links to its tools. The calculator has
-its own page at `/cidr`; My Public IP is at `/ip`. The calculator includes
+its own page at `/cidr`; My Public IP is at `/public-ip`. The calculator includes
 questions about firewall entry limits, extra coverage, overlaps, exact counts,
 and local input processing. Its MCP section shows `smallest_covering_cidr`
 arguments and results, and links to the same-language `/docs/mcp` guide.
