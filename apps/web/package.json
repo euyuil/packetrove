@@ -9,6 +9,7 @@
     "@mantine/core": "9.6.3",
     "@mantine/hooks": "9.6.3",
     "@packetrove/contracts": "workspace:*", "@packetrove/core": "workspace:*",
+    "@scalar/api-reference-react": "0.9.76",
     "react": "19.3.0", "react-dom": "19.3.0"
   },
   "devDependencies": {

@@ -41,14 +41,16 @@ assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
 const html = await website.text();
 assert.match(html, /<title>Packetrove — Network tools for humans and agents<\/title>/);
-for (const path of ['/cidr', '/cidr/', '/ip', '/ip/']) {
+for (const path of ['/cidr', '/cidr/', '/ip', '/ip/', '/docs/api', '/docs/api/']) {
   const toolPage = await timedFetch(`${origin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });
   assert.equal(toolPage.status, 200, `Tool page status: ${path}`);
   assert.match(toolPage.headers.get('content-type') ?? '', /text\/html/);
   assert.match(await toolPage.text(), path.startsWith('/cidr')
-    ? /<title>Smallest Covering CIDR — Packetrove<\/title>/ : /<title>My Public IP — Packetrove<\/title>/);
+    ? /<title>Smallest Covering CIDR — Packetrove<\/title>/
+    : path.startsWith('/docs/api') ? /<title>API documentation — Packetrove<\/title>/
+    : /<title>My Public IP — Packetrove<\/title>/);
 }
 const missingPage = await timedFetch(`${origin}/missing-page`, {
   headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
@@ -72,7 +74,7 @@ for (const path of ['/api/v1/cidr/cover', '/mcp']) {
   assert.equal(response.status, 405, `Website must reject tool-call POST requests: ${path}`);
   await response.body?.cancel();
 }
-for (const path of ['/', '/cidr', '/ip', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
+for (const path of ['/', '/cidr', '/ip', '/docs/api', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/openapi.json']) {
   const response = await timedFetch(`${apiOrigin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });
@@ -110,8 +112,13 @@ if (expectedCommit) {
 const health = await timedFetch(`${apiOrigin}/health`);
 assert.equal(health.status, 200, 'Health status');
 assert.deepEqual(await health.json(), { status: 'ok' });
-const specification = await timedFetch(`${apiOrigin}/openapi.json`);
+const specification = await timedFetch(`${apiOrigin}/openapi.json`, { headers: { origin } });
 assert.equal(specification.status, 200, 'Specification status');
+assert.equal(specification.headers.get('access-control-allow-origin'), '*', 'Specification must allow browser access.');
+assert.equal(specification.headers.get('access-control-allow-credentials'), null);
+assert.equal(specification.headers.get('set-cookie'), null);
+assert(specification.headers.get('etag'), 'Static specification must have an ETag.');
+assert.match(specification.headers.get('cache-control') ?? '', /\bmust-revalidate\b/);
 const document = await specification.json() as { openapi: string; paths: Record<string, unknown> };
 assert.equal(document.openapi, '3.1.0');
 assert(document.paths[CIDR_COVER_PATH], 'Missing calculator endpoint in the specification.');

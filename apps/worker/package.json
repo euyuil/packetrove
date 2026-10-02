@@ -5,9 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --local",
-    "build": "wrangler deploy --dry-run --outdir dist/api && wrangler deploy --config wrangler.website.jsonc --dry-run --outdir dist/website",
-    "deploy": "wrangler deploy",
+    "assets:build": "tsx ../../scripts/api-assets.ts",
+    "dev": "pnpm assets:build && wrangler dev --local",
+    "build": "pnpm assets:build && wrangler deploy --dry-run --outdir dist/api && wrangler deploy --config wrangler.website.jsonc --dry-run --outdir dist/website",
+    "deploy": "pnpm assets:build && wrangler deploy",
     "deploy:website": "wrangler deploy --config wrangler.website.jsonc",
     "smoke": "tsx scripts/smoke.ts",
     "typecheck": "tsc --noEmit"
