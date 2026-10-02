@@ -84,4 +84,4 @@ jobs:
         if: steps.gate.outputs.ready == 'true'
         env:
           RELEASE_TOKEN: ${{ steps.app.outputs.token }}
-        run: node scripts/release-please.ts
+        run: pnpm exec tsx scripts/release-please.ts
