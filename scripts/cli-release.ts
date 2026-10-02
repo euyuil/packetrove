@@ -219,8 +219,9 @@ async function checkRegistry(tag: string, archive: string, verify: boolean): Pro
       return;
     }
     if (!publish) return;
-    if (attempt >= 4) throw new Error('The published npm version is not yet visible in the registry.');
-    await new Promise(resolveWait => setTimeout(resolveWait, 2_000));
+    // Registry metadata can lag behind a successful npm upload.
+    if (attempt >= 12) throw new Error('The published npm version is not yet visible in the registry.');
+    await new Promise(resolveWait => setTimeout(resolveWait, 10_000));
   }
 }
 

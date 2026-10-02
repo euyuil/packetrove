@@ -235,8 +235,9 @@ preview and publication; an identical existing archive skips both and proceeds
 to verification; different contents fail. Even `npm publish --dry-run` rejects
 an already published version, so it runs only when the version is absent.
 Registry errors are failures, not evidence that a version is absent. After
-publication it checks registry integrity, installs the exact version with a
-fresh npm cache outside the workspace, and verifies its calculation.
+publication it allows up to two minutes of polling delays for the new version
+to become visible, then checks registry integrity, installs the exact version
+with a fresh npm cache outside the workspace, and verifies its calculation.
 
 If upload succeeds but later verification fails, the version may already be
 public. Inspect the registry and workflow logs, then rerun the failed job or
