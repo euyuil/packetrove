@@ -44,12 +44,12 @@ export function getMcpToolContent(tool: McpExampleTool, locale: Locale) {
   };
 }
 
-export function getMcpSdkExample(serverUrl: string) {
+export function getMcpSdkExample(serverUrl: string, productVersion = PACKETROVE_VERSION) {
   const example = mcpExamples.cidr;
   return `import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
 const client = new Client(
-  { name: 'packetrove-example', version: ${JSON.stringify(PACKETROVE_VERSION)} },
+  { name: 'packetrove-example', version: ${JSON.stringify(productVersion)} },
   { versionNegotiation: { mode: 'auto' } },
 );
 try {
@@ -67,7 +67,7 @@ try {
 }
 
 // Both the localized website and the generated repository guide consume this content.
-export function getMcpGuide(locale: Locale, serverUrl: string) {
+export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = PACKETROVE_VERSION) {
   const t = guideTranslator(locale);
   const toolContent = tools.map(tool => getMcpToolContent(tool.page, locale));
   const sdkVersion = workerManifest.dependencies['@modelcontextprotocol/client'];
@@ -97,7 +97,7 @@ export function getMcpGuide(locale: Locale, serverUrl: string) {
     httpErrors: t($ => $.mcp.httpErrors),
     sdk: {
       title: t($ => $.mcp.sdkTitle), description: t($ => $.mcp.sdkDescription, { version: sdkVersion }),
-      code: getMcpSdkExample(serverUrl),
+      code: getMcpSdkExample(serverUrl, productVersion),
       command: `npm init -y\nnpm install @modelcontextprotocol/client@${sdkVersion}\nnode packetrove-example.mjs`,
       local: t($ => $.mcp.sdkLocal, { localUrl: new URL(MCP_PATH, 'http://localhost:8787').href }),
     },

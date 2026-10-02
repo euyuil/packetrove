@@ -72,11 +72,13 @@ and regenerate the lockfile together.
 
 Release-please updates the root and every workspace's `package.json`,
 `.release-please-manifest.json`, `docs/api/openapi.json`, and `CHANGELOG.md`
-together. API and MCP version metadata comes from the shared contracts package
-version. The generated OpenAPI version is updated in the release PR so the
-required consistency check continues to pass. Only the CLI is published to npm;
-the other packages remain private. Publication checks every workspace version,
-the OpenAPI version, and the release manifest against the tag before uploading.
+together. It also regenerates `docs/integrations/mcp.md` from the shared MCP
+guide content using the candidate version. API and MCP version metadata comes
+from the shared contracts package version. The generated OpenAPI version and
+MCP guide are updated in the release PR so the required consistency checks
+continue to pass. Only the CLI is published to npm; the other packages remain
+private. Publication checks every workspace version, the OpenAPI version, and
+the release manifest against the tag before uploading.
 
 ## One-time GitHub App setup
 
