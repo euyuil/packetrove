@@ -65,12 +65,12 @@ export const de = {
     removed: 'Entfernte Adressen',
     remaining: 'Verbleibende Adressen',
     blocks: 'CIDRs im Ergebnis',
-    copyList: 'Liste kopieren',
-    copyAllowed: 'AllowedIPs kopieren',
-    copySuccess: 'CIDR-Liste kopiert.',
-    allowedSuccess: 'AllowedIPs-Wert kopiert.',
+    copyList: 'Mit Zeilenumbrüchen kopieren',
+    copyAllowed: 'Mit Kommas kopieren',
+    copySuccess: 'Mit Zeilenumbrüchen kopiert.',
+    allowedSuccess: 'Mit Kommas kopiert.',
     copyFailure: 'Kopieren ist nicht möglich. Wähle die Liste oben aus und kopiere sie.',
-    formats: 'Liste kopieren trennt CIDRs durch Zeilenumbrüche. AllowedIPs kopieren trennt sie durch Kommas für den Wert der WireGuard-Einstellung.',
+    formats: 'Zeilenumbrüche setzen jeden CIDR in eine eigene Zeile. Bei Kommas steht zwischen den CIDRs ein Komma und ein Leerzeichen.',
     emptyTitle: 'Keine Adressen verbleiben',
     emptyDescription: 'Die Ausschlüsse haben alle eingeschlossenen Adressen entfernt. Es gibt keine CIDR-Liste zum Kopieren.',
     pendingTitle: 'Dein Ergebnis erscheint hier',
@@ -111,7 +111,7 @@ export const de = {
       questions: {
         wireguard: {
           question: "Wie erstelle ich WireGuard-Ausnahmen für AllowedIPs?",
-          answer: "Tragen Sie die gewünschten Tunnelbereiche unter Einschließen und die Ausnahmen unter Ausschließen ein. AllowedIPs kopieren liefert die exakten verbleibenden CIDRs als Einstellungswert. Prüfen Sie ihn vor der Anwendung; Packetrove konfiguriert weder WireGuard noch Routen."
+          answer: "Tragen Sie die gewünschten Tunnelbereiche unter Einschließen und die Ausnahmen unter Ausschließen ein. Mit Kommas kopieren liefert die exakten verbleibenden CIDRs als Wert für die WireGuard-Einstellung AllowedIPs. Prüfen Sie ihn vor der Anwendung; Packetrove konfiguriert weder WireGuard noch Routen."
         },
         remaining: {
           question: "Beweisen verbleibende Bereiche, dass Adressen ungenutzt sind?",

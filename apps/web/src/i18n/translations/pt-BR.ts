@@ -57,9 +57,9 @@ export const ptBR = {
     excludeHelp: 'Uma entrada por linha. Deixe em branco para simplificar a lista incluída sem remover endereços.',
     calculate: 'Subtrair CIDRs', result: 'Espaço de endereços restante', output: 'CIDRs restantes',
     included: 'Endereços incluídos', removed: 'Endereços removidos', remaining: 'Endereços restantes', blocks: 'CIDRs do resultado',
-    copyList: 'Copiar lista', copyAllowed: 'Copiar AllowedIPs', copySuccess: 'Lista de CIDRs copiada.', allowedSuccess: 'Valor de AllowedIPs copiado.',
+    copyList: 'Copiar com quebras de linha', copyAllowed: 'Copiar com vírgulas', copySuccess: 'Copiado com quebras de linha.', allowedSuccess: 'Copiado com vírgulas.',
     copyFailure: 'A cópia está indisponível. Selecione e copie a lista acima.',
-    formats: 'Copiar lista separa os CIDRs por quebras de linha. Copiar AllowedIPs separa os CIDRs por vírgulas para o valor da configuração do WireGuard.',
+    formats: 'Com quebras de linha, cada CIDR fica em uma linha. Com vírgulas, os CIDRs são separados por uma vírgula e um espaço.',
     emptyTitle: 'Nenhum endereço restante', emptyDescription: 'As exclusões removeram todos os endereços incluídos. Não há lista de CIDRs para copiar.',
     pendingTitle: 'Seu resultado aparecerá aqui', pendingDescription: 'Digite uma lista de inclusão e exclusões opcionais para calcular o restante exato.',
     explanationTitle: 'O que o resultado significa',
@@ -96,7 +96,7 @@ export const ptBR = {
       questions: {
         wireguard: {
           question: "Como preparo exceções AllowedIPs do WireGuard?",
-          answer: "Coloque os intervalos desejados do túnel em Incluir e as exceções em Excluir. Copiar AllowedIPs copia os CIDRs restantes exatos como valor de configuração. Confira antes de aplicar; o Packetrove não configura o WireGuard nem altera rotas."
+          answer: "Coloque os intervalos desejados do túnel em Incluir e as exceções em Excluir. Use Copiar com vírgulas para copiar os CIDRs restantes exatos como valor de AllowedIPs do WireGuard. Confira antes de aplicar; o Packetrove não configura o WireGuard nem altera rotas."
         },
         remaining: {
           question: "Os intervalos restantes provam que os endereços estão livres?",
