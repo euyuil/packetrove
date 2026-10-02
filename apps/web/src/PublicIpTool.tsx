@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Badge, Button, Group, Loader, Paper, Stack, Text, Title } from '@mantine/core';
+import { Alert, Badge, Button, Group, Loader, Paper, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { PUBLIC_IP_PATH, type PublicIpResult } from '@packetrove/contracts';
 import { lookupPublicIp, ToolError } from '@packetrove/core';
 import { getApiUrl } from './api';
@@ -10,6 +10,7 @@ import { errorMessage } from './i18n/errors';
 import { resolveLocale } from './i18n/locales';
 import { ToolQuestions } from './ToolQuestions';
 import { ToolMcpSection } from './ToolMcpSection';
+import { ToolIcon } from './ToolIcon';
 
 export function PublicIpTool({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> } = {}) {
   const { t, i18n } = useTranslation();
@@ -53,7 +54,10 @@ export function PublicIpTool({ onNavigate }: { onNavigate?: MouseEventHandler<HT
   return <Stack gap="xl">
     <Stack component="section" aria-labelledby="tool-title" gap="sm">
       <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>{t($ => $.common.tools)}</Text>
-      <Title order={1} id="tool-title">{t($ => $.ip.title)}</Title>
+      <Group gap="md" wrap="nowrap">
+        <ThemeIcon variant="light" size={48} flex="0 0 auto"><ToolIcon tool="ip" size={28} /></ThemeIcon>
+        <Title order={1} id="tool-title" flex={1}>{t($ => $.ip.title)}</Title>
+      </Group>
       <Text c="dimmed">{t($ => $.ip.description)}</Text>
       <Text size="sm" c="var(--mantine-primary-color-filled)">{t($ => $.ip.online)}</Text>
     </Stack>

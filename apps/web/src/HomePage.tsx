@@ -1,11 +1,12 @@
 import type { MouseEventHandler } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
-import { Anchor, Badge, Code, Group, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Anchor, Badge, Code, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title } from '@mantine/core';
 import { MCP_PATH, PUBLIC_IP_PATH } from '@packetrove/contracts';
 import cliPackage from '../../../packages/cli/package.json';
 import { getApiUrl } from './api';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
+import { ToolIcon } from './ToolIcon';
 
 export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
   documentationUrl: string; repositoryUrl: string; onNavigate: MouseEventHandler<HTMLAnchorElement>;
@@ -37,6 +38,7 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
     <SimpleGrid cols={{ base: 1, md: 3 }} spacing="lg">
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-cidr-heading">
         <Stack gap="md">
+          <ThemeIcon variant="light" size={48}><ToolIcon tool="cidr" size={28} /></ThemeIcon>
           <Title order={2} size="h3" id="home-cidr-heading">{t($ => $.cidr.title)}</Title>
           <Text c="dimmed">{t($ => $.home.cidrDescription)}</Text>
           <Anchor href={localizedPath('/cidr', locale)} onClick={onNavigate}>{t($ => $.home.cidrLink)}</Anchor>
@@ -44,6 +46,7 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
       </Paper>
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-subtract-heading">
         <Stack gap="md">
+          <ThemeIcon variant="light" size={48}><ToolIcon tool="subtract" size={28} /></ThemeIcon>
           <Title order={2} size="h3" id="home-subtract-heading">{t($ => $.subtract.title)}</Title>
           <Text c="dimmed">{t($ => $.home.subtractDescription)}</Text>
           <Anchor href={localizedPath('/cidr/subtract', locale)} onClick={onNavigate}>{t($ => $.home.subtractLink)}</Anchor>
@@ -51,6 +54,7 @@ export function HomePage({ documentationUrl, repositoryUrl, onNavigate }: {
       </Paper>
       <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="home-ip-heading">
         <Stack gap="md">
+          <ThemeIcon variant="light" size={48}><ToolIcon tool="ip" size={28} /></ThemeIcon>
           <Title order={2} size="h3" id="home-ip-heading">{t($ => $.ip.title)}</Title>
           <Text c="dimmed">{t($ => $.home.ipDescription)}</Text>
           <Anchor href={localizedPath(pagePaths.ip, locale)} onClick={onNavigate}>{t($ => $.home.ipLink)}</Anchor>

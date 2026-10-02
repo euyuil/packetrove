@@ -1,7 +1,7 @@
 import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Accordion, Alert, Badge, Button, DataList, Group, List, Paper, ScrollArea, SimpleGrid, Stack, Text, Textarea, Title,
+  Accordion, Alert, Badge, Button, DataList, Group, List, Paper, ScrollArea, SimpleGrid, Stack, Text, Textarea, ThemeIcon, Title,
 } from '@mantine/core';
 import { CIDR_COVER_EXAMPLES, MAX_INPUTS, type CidrCoverResult } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
@@ -12,6 +12,7 @@ import { resolveLocale } from './i18n/locales';
 import { CidrExamples } from './CidrExamples';
 import { ToolQuestions } from './ToolQuestions';
 import { ToolMcpSection } from './ToolMcpSection';
+import { ToolIcon } from './ToolIcon';
 
 function inputRows(text: string) {
   return text.split(/\r?\n/).map((value, index) => ({ value: value.trim(), line: index + 1 }))
@@ -57,7 +58,10 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
     <Stack gap="xl">
       <Stack component="section" aria-labelledby="tool-title" gap="sm">
         <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>{t($ => $.common.tools)}</Text>
-        <Title order={1} id="tool-title">{t($ => $.cidr.title)}</Title>
+        <Group gap="md" wrap="nowrap">
+          <ThemeIcon variant="light" size={48} flex="0 0 auto"><ToolIcon tool="cidr" size={28} /></ThemeIcon>
+          <Title order={1} id="tool-title" flex={1}>{t($ => $.cidr.title)}</Title>
+        </Group>
         <Text c="dimmed">{t($ => $.cidr.description)}</Text>
         <Text size="sm" c="var(--mantine-primary-color-filled)">{t($ => $.cidr.local)}</Text>
       </Stack>
