@@ -8,15 +8,13 @@ body {
   min-width: 0;
 }
 
-.tool-gallery {
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  padding-bottom: var(--mantine-spacing-sm);
+/* Replace Carousel's English-only announcement with the localized status. */
+.tool-gallery > [role='status'] {
+  display: none;
 }
 
-.tool-gallery > article {
-  scroll-snap-align: start;
+.tool-gallery [data-inactive] {
+  opacity: 0.4;
 }
 
 .api-reference {

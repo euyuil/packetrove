@@ -24,7 +24,7 @@ export const en = {
   footer: { project: 'Project', contact: 'Contact & feedback', sendEmail: 'Send an email' },
   home: {
     galleryTitle: "Explore the tools",
-    galleryDescription: "Scroll or use the arrows to browse examples, then open a tool.",
+    galleryDescription: "Choose a tool or swipe through the example previews, then open the one you need.",
     galleryPrevious: "Previous tool",
     galleryNext: "Next tool",
     galleryPosition: "{{current}} of {{total}}",
@@ -281,7 +281,7 @@ export const zhHans = {
   footer: { project: '项目资源', contact: '联系与反馈', sendEmail: '发送邮件' },
   home: {
     galleryTitle: "工具预览",
-    galleryDescription: "滚动或使用箭头浏览示例，再打开需要的工具。",
+    galleryDescription: "点击工具名称或滑动卡片浏览示例，再打开需要的工具。",
     galleryPrevious: "上一个工具",
     galleryNext: "下一个工具",
     galleryPosition: "第 {{current}} 项，共 {{total}} 项",
