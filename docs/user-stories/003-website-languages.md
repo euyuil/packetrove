@@ -25,7 +25,7 @@ network results and share a link in my preferred language.
 - Let the URL determine the language. Provide a header dropdown with `English`,
   `Deutsch`, `Español`, `Français`, `Italiano`, `Português`, `Русский`,
   `中文`, `日本語`, and `한국어` entries in that fixed order, without
-  browser-language redirects or persistent storage.
+  browser-language redirects or a persistently stored language preference.
   Keep English first, group Chinese, Japanese, and Korean in that order, and
   retain the same order when switching languages.
   Show the current language on its button and mark the current menu entry.
@@ -36,6 +36,24 @@ network results and share a link in my preferred language.
   `pt-BR` page metadata and number formatting. Flags are decorative visual cues.
   Keep flags decorative and language names accessible. Support keyboard opening,
   arrow-key navigation, selection, and Escape to close and return focus.
+- After hydration, match the browser's preferred languages in order against
+  supported languages and writing systems, falling back to `navigator.language`
+  when the preferred-language list is empty. Regional English and Portuguese
+  variants share the existing generic language entries. Traditional Chinese
+  does not match the current Simplified Chinese resource.
+  When the first supported preference differs from the URL's language, show a
+  dismissible suggestion beside the header language selector, written in the
+  suggested language. Keep the page language and URL until the user follows
+  its switch link, preserving the page, query string, fragment, and tool state.
+  Hide the suggestion while the language menu is open without moving focus or
+  preventing interaction with the page.
+- Dismissing the suggestion or explicitly selecting a language records only an
+  handled flag in `sessionStorage`. Subsequent navigation, history traversal,
+  and reloads in the current tab do not repeat the suggestion. A new independent
+  tab evaluates its own browser preferences; duplicated or restored tabs may
+  retain the flag. When session storage is blocked, retain the flag in memory
+  for the currently loaded application. Do not store browser preferences,
+  calculator input, IP results, or a language override.
 - Switch the current page in place, preserving calculator input, results, and
   validation errors. Retranslate stored errors and clipboard feedback.
 - Link to API documentation in the shared footer on every page, between GitHub
@@ -73,8 +91,7 @@ network results and share a link in my preferred language.
 The interactive API reference and specification, repository integration guides,
 CLI, MCP descriptions, and repository documentation remain in English in this
 phase. API fields, error codes, serialized messages, and address counts retain
-their existing contracts. Browser-language suggestions and further locales
-are future work.
+their existing contracts. Further locales are future work.
 
 ## Implementation and contribution
 
@@ -93,6 +110,11 @@ selection check; `country-flag-icons` supplies the ten SVG flags. Both
 dependencies use the MIT license, with notices in
 `apps/web/public/third-party-notices.txt`. Icons are bundled locally and do not
 require an external image service.
+
+`i18n/browser-language.ts` matches browser language tags with `Intl.Locale`.
+`useLanguageSuggestion.ts` reads preferences only after hydration and handles
+the tab's reminder flag; `LanguageSelector.tsx` displays the suggestion with
+Mantine `Popover`. No detection request or additional dependency is needed.
 
 When adding a locale, add its registry entry, complete translations and metadata,
 static HTML entries, and flag import together. The menu

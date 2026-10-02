@@ -16,6 +16,7 @@ import { locales, supportedLocales } from './i18n/locales';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { en, resources } from './i18n/resources';
 import { createI18n } from './i18n';
+import { languageSuggestionStorageKey } from './useLanguageSuggestion';
 
 vi.mock('./ApiReference', () => ({ default: () => <div>Interactive API reference</div> }));
 
@@ -143,7 +144,8 @@ describe('localized MCP guide navigation', () => {
         expect(screen.getByText(text.cidr.exact)).toBeDefined();
       }
       expect(fetch).not.toHaveBeenCalled();
-      expect(storage).not.toHaveBeenCalled();
+      expect(storage).toHaveBeenCalledExactlyOnceWith(languageSuggestionStorageKey, '1');
+      expect(storage.mock.contexts).toEqual([window.sessionStorage]);
     },
   );
 });

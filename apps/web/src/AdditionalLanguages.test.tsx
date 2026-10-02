@@ -7,6 +7,7 @@ import { createI18n } from './i18n';
 import { locales, supportedLocales, type Locale } from './i18n/locales';
 import { localizedPath, resolveRoute } from './i18n/routes';
 import { en, resources } from './i18n/resources';
+import { languageSuggestionStorageKey } from './useLanguageSuggestion';
 
 const reference = vi.hoisted(() => ({ fail: false }));
 vi.mock('@scalar/api-reference-react', () => ({ ApiReferenceReact: () => {
@@ -107,7 +108,8 @@ describe('additional website languages', () => {
     expect(screen.getAllByText(count, { normalizer: text => text })).toHaveLength(2);
     chooseLanguage('en');
     expect(screen.getByText(en.cidr.exact)).toBeDefined();
-    expect(storage).not.toHaveBeenCalled();
+    expect(storage).toHaveBeenCalledExactlyOnceWith(languageSuggestionStorageKey, '1');
+    expect(storage.mock.contexts).toEqual([window.sessionStorage]);
     expect(fetch).not.toHaveBeenCalled();
   });
 

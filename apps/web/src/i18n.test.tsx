@@ -5,6 +5,7 @@ import { MAX_INPUT_LENGTH, MAX_INPUTS } from '@packetrove/contracts';
 import { App } from './App';
 import { render } from './test-utils';
 import { createI18n } from './i18n';
+import { languageSuggestionStorageKey } from './useLanguageSuggestion';
 
 vi.mock('@scalar/api-reference-react', () => ({ ApiReferenceReact: () => <div>English API reference</div> }));
 
@@ -12,6 +13,7 @@ afterEach(() => {
   cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
   window.history.replaceState({}, '', '/');
   document.documentElement.lang = 'en';
+  window.sessionStorage.clear();
 });
 
 function openLanguageMenu() {
@@ -147,7 +149,8 @@ describe('web internationalization', () => {
     chooseLanguage('English');
     expect(screen.getByText('Exact coverage: this CIDR adds no addresses.')).toBeDefined();
     expect(document.documentElement.lang).toBe('en');
-    expect(storage).not.toHaveBeenCalled();
+    expect(storage).toHaveBeenCalledExactlyOnceWith(languageSuggestionStorageKey, '1');
+    expect(storage.mock.contexts).toEqual([window.sessionStorage]);
     expect(fetch).not.toHaveBeenCalled();
   });
 
