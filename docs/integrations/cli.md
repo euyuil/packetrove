@@ -4,6 +4,25 @@ The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
 locally without a Worker, Cloudflare account, or network connection. The `ip`
 command queries the current connection through an IP lookup API.
 
+## Install from source
+
+The CLI is not published to npm. With Git, Node.js, and pnpm installed, clone
+the repository, build a package, and install that local archive:
+
+```sh
+git clone https://github.com/euyuil/packetrove.git
+cd packetrove
+pnpm install
+pnpm --filter @packetrove/cli pack --pack-destination "$PWD"
+npm install --global ./packetrove-cli-0.1.0.tgz
+packetrove ip
+```
+
+Use the Node.js version in `.node-version` and the pnpm version in `package.json`.
+The pack command builds the bundled executable before creating the archive.
+`packetrove ip` prints the current public IP and a newline; `packetrove ip --json`
+prints the shared JSON result.
+
 ## Run from the repository
 
 Install dependencies and build once using a supported Node.js version:
@@ -114,8 +133,8 @@ pnpm --filter @packetrove/cli pack --pack-destination /tmp/packetrove-artifacts
 ```
 
 The package declares a `packetrove` executable for clients that install the
-tarball. No package has been published to npm, and this delivery does not
-install it globally.
+tarball. Packing alone does not install it; the source-install commands above
+install the archive globally. No package has been published to npm.
 
 `pnpm check` also packs the CLI in a temporary workspace, installs that archive
 offline in an isolated consumer, and runs the installed `packetrove` command.

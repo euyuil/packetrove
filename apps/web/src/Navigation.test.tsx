@@ -163,7 +163,7 @@ describe('tool navigation in one page session', () => {
     expect(window.location.pathname).toBe('/');
     expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
-    fireEvent.click(screen.getByRole('link', { name: 'Open CIDR calculator' }));
+    openTool('Smallest Covering CIDR');
     expect(window.location.pathname).toBe('/cidr');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
     expect(fetch).not.toHaveBeenCalled();
@@ -178,7 +178,7 @@ describe('tool navigation in one page session', () => {
     expect(window.location.pathname).toBe('/');
     expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
-    fireEvent.click(screen.getByRole('link', { name: 'Open CIDR calculator' }));
+    openTool('Smallest Covering CIDR');
     expect(window.location.pathname).toBe('/cidr');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
   });
@@ -225,7 +225,7 @@ describe('navigation request and clipboard lifetimes', () => {
     vi.stubGlobal('fetch', fetch);
     render(<App />);
     expect(fetch).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('link', { name: 'Open public IP tool' }));
+    openTool('My Public IP');
     expect(window.location.pathname).toBe('/ip');
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(signal.aborted).toBe(false);

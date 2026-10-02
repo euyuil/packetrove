@@ -63,7 +63,7 @@ export function App() {
           aria-current={ipPage ? 'page' : undefined}>My Public IP</Button>
       </Group>
       <Box component="main">
-        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} />
+        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} repositoryUrl={`https://github.com/${repository}`} />
           : ipPage ? <PublicIpTool /> : cidrPage ? <CidrCoverTool draft={draft} onDraftChange={setDraft} />
           : apiPage ? <Suspense fallback={<Group role="status"><Loader size="sm" /><Text>Loading API documentation…</Text></Group>}>
             <ApiDocumentation />
