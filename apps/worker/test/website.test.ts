@@ -59,14 +59,14 @@ describe('website in the Workers runtime', () => {
     expect(logo).toBeDefined();
     expect((await exports.default.fetch('http://localhost' + logo)).status).toBe(200);
   });
-  it('publishes a sitemap of only the 20 canonical pages and an allow-all robots policy', async () => {
+  it('publishes a sitemap of only the 28 canonical pages and an allow-all robots policy', async () => {
     const sitemap = await exports.default.fetch('http://localhost/sitemap.xml');
     expect(sitemap.status).toBe(200);
     expect(sitemap.headers.get('content-type')).toContain('xml');
     const xml = await sitemap.text();
     expect(xml).toContain('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
     const urls = Array.from(xml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]);
-    expect(urls).toHaveLength(20);
+    expect(urls).toHaveLength(28);
     expect(urls).toEqual(supportedLocales.flatMap(locale => Object.values(pagePaths)
       .map(path => 'https://packetrove.com' + localizedPath(path, locale))));
     expect(xml).not.toMatch(/\.html|api\.packetrove|<lastmod>/);
@@ -114,6 +114,7 @@ describe('website in the Workers runtime', () => {
   it.each(['/missing-page', '/missing-page/', '/cidr/missing-page', '/ip/missing-page', '/zh/missing-page',
     '/zh/cidr/missing-page', '/es/missing-page', '/de/missing-page', '/ja/missing-page',
     '/es/cidr/missing-page', '/de/docs/api/missing-page', '/ja/ip/missing-page',
+    '/fr/missing-page', '/pt/missing-page', '/fr/docs/api/missing-page', '/pt/cidr/missing-page',
     '/assets/missing.js', '/assets/missing.css'])('returns a real static 404 for %s', async path => {
     for (const headers of [{}, { 'sec-fetch-mode': 'navigate', accept: 'text/html' }]) {
       const response = await exports.default.fetch(`http://localhost${path}`, { headers });

@@ -3,9 +3,9 @@
 ## User story
 
 As a user of Packetrove, I want to read the website in English, Simplified Chinese,
-Spanish, German, or Japanese and switch languages without losing my current
-calculation, so that I can understand network results and share a link in my
-preferred language.
+Spanish, German, Japanese, French, or Brazilian Portuguese and switch languages
+without losing my current calculation, so that I can understand network results
+and share a link in my preferred language.
 
 ## Website scope
 
@@ -13,14 +13,15 @@ preferred language.
   documentation shell, loading states, clipboard feedback, accessible labels,
   and the application-rendered not-found page.
 - Keep existing English URLs. Use `/zh` for Simplified Chinese (`zh-Hans`),
-  `/es` for Spanish (`es`), `/de` for German (`de`), and `/ja` for Japanese (`ja`).
+  `/es` for Spanish (`es`), `/de` for German (`de`), `/ja` for Japanese (`ja`),
+  `/fr` for French (`fr`), and `/pt` for Brazilian Portuguese (`pt-BR`).
   Each prefix has a homepage, `/cidr`, `/ip`, and `/docs/api` page.
 - Let the URL determine the language. Provide a header dropdown with `English`,
-  `简体中文`, `Español`, `Deutsch`, and `日本語` entries, without browser-language
-  redirects or persistent storage.
+  `简体中文`, `Español`, `Deutsch`, `日本語`, `Français`, and `Português (Brasil)`
+  entries, without browser-language redirects or persistent storage.
   Show the current language on its button and mark the current menu entry.
   Precede each language with its configured flag: British, Chinese, Spanish,
-  German, or Japanese.
+  German, Japanese, French, or Brazilian.
   Keep flags decorative and language names accessible. Support keyboard opening,
   arrow-key navigation, selection, and Escape to close and return focus.
 - Switch the current page in place, preserving calculator input, results, and
@@ -32,10 +33,10 @@ preferred language.
 - Format displayed counts for the selected language using `Intl.NumberFormat`.
   Parse decimal-string address counts as `BigInt` to retain exact IPv6 values.
 - Include translated titles, descriptions, and social metadata in static HTML
-  entries. Use self-referencing canonical URLs and reciprocal links for all five
+  entries. Use self-referencing canonical URLs and reciprocal links for all seven
   locales, plus `x-default` pointing to English. Update metadata during in-page
   navigation.
-- Prerender the 20 localized pages at build time, including their headings,
+- Prerender the 28 localized pages at build time, including their headings,
   explanations, links, and examples. Hydrate the same React components in the
   browser without losing page state during navigation or language changes.
 - Generate `sitemap.xml` from the canonical page list and reference it in
@@ -65,7 +66,7 @@ language-detection dependency is enabled.
 flag. Routing, supported translation languages, alternate links, Vite inputs,
 the sitemap, and the language menu use this registry. `LanguageSelector.tsx`
 renders the entries with Mantine `Menu`. Tabler Icons supplies the chevron and
-selection check; `country-flag-icons` supplies the five SVG flags. Both
+selection check; `country-flag-icons` supplies the seven SVG flags. Both
 dependencies use the MIT license, with notices in
 `apps/web/public/third-party-notices.txt`. Icons are bundled locally and do not
 require an external image service.
@@ -80,9 +81,11 @@ for values and `Trans` for inline components. Translate display text while
 preserving command examples, endpoint paths, IP addresses, CIDRs, and exact
 counts. English entry counts use singular and plural forms; large address
 counts are never converted to JavaScript `Number` for display or plural selection.
-Spanish also defines the CLDR `many` entry-count form; Japanese uses the same
-counter for singular and plural entries. Preserve interpolation names and inline
-code tokens in every translation.
+Spanish, French, and Brazilian Portuguese also define the CLDR `many` entry-count
+form. French and Brazilian Portuguese use the singular form for zero entries;
+Japanese uses the same counter for singular and plural entries. French uses
+narrow non-breaking spaces for digit grouping; Brazilian Portuguese uses dots.
+Preserve interpolation names and inline code tokens in every translation.
 
 The calculation core provides structured local issue reasons separately from
 its serialized errors. Translate these reasons in the web layer rather than
@@ -95,7 +98,7 @@ the Vite HTML transform and browser navigation. Keep the `<!--page-metadata-->`
 and empty root placeholders in the HTML entries; `scripts/build.ts` fills them
 from the metadata and React render. `websitePages` derives the Vite inputs and
 sitemap entries from the locale registry and page paths. The production smoke
-check validates all 20 localized entries.
+check validates all 28 localized entries.
 
 Run `pnpm check` before submitting changes. The checks cover language switching,
 retained calculator drafts, physical-line validation errors, clipboard status,

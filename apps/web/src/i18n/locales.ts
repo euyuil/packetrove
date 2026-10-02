@@ -4,6 +4,8 @@ export const locales = {
   es: { name: 'Español', prefix: '/es', flag: 'ES' },
   de: { name: 'Deutsch', prefix: '/de', flag: 'DE' },
   ja: { name: '日本語', prefix: '/ja', flag: 'JP' },
+  fr: { name: 'Français', prefix: '/fr', flag: 'FR' },
+  'pt-BR': { name: 'Português (Brasil)', prefix: '/pt', flag: 'BR' },
 } as const;
 
 export type Locale = keyof typeof locales;

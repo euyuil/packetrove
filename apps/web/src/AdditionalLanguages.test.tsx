@@ -17,6 +17,8 @@ const additionalLanguages = [
   { locale: 'es', prefix: '/es', heading: 'Herramientas de red para personas y agentes de IA', count: '340.282.366.920.938.463.463.374.607.431.768.211.456' },
   { locale: 'de', prefix: '/de', heading: 'Netzwerkwerkzeuge für Menschen und KI-Agenten', count: '340.282.366.920.938.463.463.374.607.431.768.211.456' },
   { locale: 'ja', prefix: '/ja', heading: '人と AI エージェントのためのネットワークツール', count: '340,282,366,920,938,463,463,374,607,431,768,211,456' },
+  { locale: 'fr', prefix: '/fr', heading: 'Des outils réseau pour les utilisateurs et les agents IA', count: '340\u202f282\u202f366\u202f920\u202f938\u202f463\u202f463\u202f374\u202f607\u202f431\u202f768\u202f211\u202f456' },
+  { locale: 'pt-BR', prefix: '/pt', heading: 'Ferramentas de rede para pessoas e agentes de IA', count: '340.282.366.920.938.463.463.374.607.431.768.211.456' },
 ] as const;
 
 afterEach(() => {
@@ -61,14 +63,14 @@ describe('additional website languages', () => {
     expect(document.title).toBe(translation.meta.home.title);
     expect(document.head.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(translation.meta.home.description);
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://packetrove.com' + prefix + '/');
-    expect(document.head.querySelectorAll('link[rel="alternate"][hreflang]')).toHaveLength(6);
+    expect(document.head.querySelectorAll('link[rel="alternate"][hreflang]')).toHaveLength(supportedLocales.length + 1);
     for (const language of supportedLocales) {
       expect(document.head.querySelector(`link[hreflang="${language}"]`)?.getAttribute('href'))
         .toBe('https://packetrove.com' + localizedPath('/', language));
     }
     fireEvent.click(screen.getByRole('button', { name: translation.common.language + ': ' + locales[locale].name }));
     const menu = screen.getByRole('menu');
-    expect(within(menu).getAllByRole('menuitem')).toHaveLength(5);
+    expect(within(menu).getAllByRole('menuitem')).toHaveLength(supportedLocales.length);
     for (const language of supportedLocales) {
       const link = within(menu).getByRole('menuitem', { name: locales[language].name });
       expect(link.getAttribute('href')).toBe(localizedPath('/', language));
@@ -91,12 +93,12 @@ describe('additional website languages', () => {
     expect(window.location.search).toBe('?source=example');
     expect(window.location.hash).toBe('#tool');
     expect((screen.getByLabelText(translation.cidr.inputLabel) as HTMLTextAreaElement).value).toBe('::/0');
-    expect(screen.getAllByText(count)).toHaveLength(2);
+    expect(screen.getAllByText(count, { normalizer: text => text })).toHaveLength(2);
     expect(screen.getByText(translation.cidr.exact)).toBeDefined();
     expect(document.title).toBe(translation.meta.cidr.title);
     fireEvent.click(screen.getByRole('link', { name: translation.common.home }));
     fireEvent.click(screen.getByRole('link', { name: translation.cidr.title }));
-    expect(screen.getAllByText(count)).toHaveLength(2);
+    expect(screen.getAllByText(count, { normalizer: text => text })).toHaveLength(2);
     chooseLanguage('en');
     expect(screen.getByText(en.cidr.exact)).toBeDefined();
     expect(storage).not.toHaveBeenCalled();
@@ -172,7 +174,7 @@ describe('additional website languages', () => {
     expect(await screen.findByRole('heading', { name: translation.api.unavailableTitle })).toBeDefined();
     fireEvent.click(screen.getByRole('link', { name: translation.api.returnToCalculator }));
     expect(window.location.pathname).toBe(prefix + '/cidr');
-    expect(screen.getAllByText(count)).toHaveLength(2);
+    expect(screen.getAllByText(count, { normalizer: text => text })).toHaveLength(2);
   });
 
   it.each(additionalLanguages)('renders unknown $locale routes with localized text and no canonical metadata', ({ locale, prefix }) => {
@@ -206,5 +208,16 @@ describe('additional website languages', () => {
     expect(instance.t($ => $.cidr.entryCount, { count: 1, total: '1' })).toBe(one);
     expect(instance.t($ => $.cidr.entryCount, { count: 2, total: '2' })).toBe(other);
     expect(instance.t($ => $.cidr.entryCount, { count: 1_000_000, total: formatter.format(1_000_000) })).toBe(many);
+  });
+
+  it.each([
+    { locale: 'fr', zero: '0 entrée', one: '1 entrée', other: '2 entrées', many: '1\u202f000\u202f000 entrées' },
+    { locale: 'pt-BR', zero: '0 entrada', one: '1 entrada', other: '2 entradas', many: '1.000.000 entradas' },
+  ] as const)('handles zero, singular, plural, and million counts in $locale', ({ locale, zero, one, other, many }) => {
+    const instance = createI18n(locale);
+    const formatter = new Intl.NumberFormat(locale);
+    for (const [count, expected] of [[0, zero], [1, one], [2, other], [1_000_000, many]] as const) {
+      expect(instance.t($ => $.cidr.entryCount, { count, total: formatter.format(count) })).toBe(expected);
+    }
   });
 });

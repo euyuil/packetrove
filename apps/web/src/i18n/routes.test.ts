@@ -21,14 +21,14 @@ describe('localized website routes', () => {
       .toEqual({ locale, page: 'notFound', path: '/missing-page' });
   });
 
-  it.each(['/esoteric', '/deutsch', '/japan', '/zhang', '/fr/', '/es-ES/cidr'])(
+  it.each(['/esoteric', '/deutsch', '/japan', '/zhang', '/french', '/portugal', '/it/', '/es-ES/cidr'])(
     'does not treat %s as a supported locale prefix', pathname => {
       expect(resolveRoute(pathname)).toEqual({ locale: 'en', page: 'notFound', path: pathname.replace(/\/+$/, '') });
     },
   );
 
   it('falls back to English for an unknown or missing resolved language', () => {
-    for (const language of [undefined, 'fr', 'constructor', 'toString']) expect(resolveLocale(language)).toBe('en');
+    for (const language of [undefined, 'it', 'pt-PT', 'constructor', 'toString']) expect(resolveLocale(language)).toBe('en');
     for (const locale of supportedLocales) expect(resolveLocale(locale)).toBe(locale);
   });
 });
