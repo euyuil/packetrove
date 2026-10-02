@@ -6,8 +6,9 @@ import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
 import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
+import { SiteFooter } from './SiteFooter';
 import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
-import { localizedPath, resolveRoute } from './i18n/routes';
+import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 import ApiDocumentation from './ApiDocumentation';
 
@@ -72,7 +73,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
           aria-current={homePage ? 'page' : undefined}>{t($ => $.common.home)}</Button>
         <Button component="a" href={href('/cidr')} onClick={navigate} variant={cidrPage ? 'light' : 'subtle'}
           aria-current={cidrPage ? 'page' : undefined}>{t($ => $.cidr.title)}</Button>
-        <Button component="a" href={href('/ip')} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
+        <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
       <Box component="main">
@@ -94,37 +95,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         </Stack>}
       </Box>
       <Divider />
-      <Stack component="footer" gap="sm">
-        <Group gap="xs">
-          <Text size="sm" c="dimmed">{t($ => $.common.feedbackPrompt)}</Text>
-          <Group gap="xs">
-            <Anchor size="sm" href={`${newIssueUrl}?template=bug-report.yml`} target="_blank" rel="noopener noreferrer">
-              {t($ => $.common.reportBug)} <span aria-hidden="true">↗</span>
-            </Anchor>
-            <Text component="span" size="sm" c="dimmed" aria-hidden="true">·</Text>
-            <Anchor size="sm" href={`${newIssueUrl}?template=feature-request.yml`} target="_blank" rel="noopener noreferrer">
-              {t($ => $.common.requestFeature)} <span aria-hidden="true">↗</span>
-            </Anchor>
-          </Group>
-        </Group>
-        <Group justify="space-between">
-          <Text size="xs" c="dimmed">Packetrove · {t($ => $.common.tagline)}</Text>
-          <Group gap="xs">
-            <Anchor size="xs" href="mailto:hello@packetrove.com">
-              hello@packetrove.com
-            </Anchor>
-            <Text component="span" size="xs" c="dimmed" aria-hidden="true">·</Text>
-            <Anchor size="xs" href={sourceUrl} target="_blank" rel="noopener noreferrer"
-              title={commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source)}>
-              GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}
-            </Anchor>
-            <Text component="span" size="xs" c="dimmed" aria-hidden="true">·</Text>
-            <Anchor size="xs" href={`${documentationUrl}/LICENSE`} target="_blank" rel="noopener noreferrer">
-              {t($ => $.common.sourceLicense)}
-            </Anchor>
-          </Group>
-        </Group>
-      </Stack>
+      <SiteFooter sourceUrl={sourceUrl} documentationUrl={documentationUrl} newIssueUrl={newIssueUrl} commit={commit} />
     </Stack>
   </Container>;
 }

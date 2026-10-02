@@ -12,9 +12,13 @@ preferred language.
 - Translate the homepage, navigation, CIDR calculator, public IP tool, API
   documentation shell, loading states, clipboard feedback, accessible labels,
   and the application-rendered not-found page.
-- Keep existing English URLs. Use `/zh` for Simplified Chinese (`zh-Hans`),
+- English pages have no language prefix. Use `/zh` for Simplified Chinese (`zh-Hans`),
   `/es` for Spanish (`es`), `/de` for German (`de`), and `/ja` for Japanese (`ja`).
-  Each prefix has a homepage, `/cidr`, `/ip`, and `/docs/api` page.
+  Each prefix has a homepage, `/cidr`, `/public-ip`, and `/docs/api` page.
+  Reserve short language codes and language-tag names for locale prefixes;
+  choose descriptive tool URL names according to `AGENTS.md`. Legacy `/ip`,
+  `/ip/`, and `/ip.html` links redirect permanently to `/public-ip` in each
+  supported locale, preserving query strings. Aliases are not canonical pages.
 - Let the URL determine the language. Provide a header dropdown with `English`,
   `简体中文`, `Español`, `Deutsch`, and `日本語` entries, without browser-language
   redirects or persistent storage.

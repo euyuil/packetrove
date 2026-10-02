@@ -1,7 +1,7 @@
 # Command-line interface
 
 The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
-locally without a Worker, Cloudflare account, or network connection. The `ip`
+locally without a Worker, Cloudflare account, or network connection. The `public-ip`
 command queries the current connection through an IP lookup API.
 
 ## Install from npm after the first release
@@ -38,12 +38,12 @@ cd packetrove
 pnpm install
 pnpm --filter @packetrove/cli pack --out "$PWD/packetrove-cli.tgz"
 npm install --global ./packetrove-cli.tgz
-packetrove ip
+packetrove public-ip
 ```
 
 Use the Node.js version in `.node-version` and the pnpm version in `package.json`.
 The pack command builds the bundled executable before creating the archive.
-`packetrove ip` prints the current public IP and a newline; `packetrove ip --json`
+`packetrove public-ip` prints the current public IP and a newline; `packetrove public-ip --json`
 prints the shared JSON result.
 
 ## Run from the repository
@@ -109,9 +109,12 @@ an allowlist or blocks additional addresses in a blocklist.
 
 ## Current public IP
 
+Use `packetrove public-ip`. The former `packetrove ip` command is removed
+without a compatibility alias; update existing scripts.
+
 ```sh
-node packages/cli/dist/cli.js ip
-node packages/cli/dist/cli.js ip --json
+node packages/cli/dist/cli.js public-ip
+node packages/cli/dist/cli.js public-ip --json
 ```
 
 Without `--json`, stdout contains just the IP address and a newline for shell
@@ -119,16 +122,16 @@ use. With `--json`, stdout contains the shared result, for example
 `{ "ip": "203.0.113.1", "family": "ipv4" }`. Errors follow the same stderr and
 exit-status convention as the calculator.
 
-The command queries `https://api.packetrove.com/v1/ip` without authentication,
+The command queries `https://api.packetrove.com/v1/public-ip` without authentication,
 with a 10-second timeout, no cache, and no redirects. It rejects invalid or
 inconsistent result JSON. It does not read standard input or take address
 arguments. For a self-hosted deployment or local integration test:
 
 ```sh
-node packages/cli/dist/cli.js ip --api-origin http://localhost:8787 --json
+node packages/cli/dist/cli.js public-ip --api-origin http://localhost:8787 --json
 ```
 
-`--api-origin` is supported only by `ip`. Use an HTTP or HTTPS origin without
+`--api-origin` is supported only by `public-ip`. Use an HTTP or HTTPS origin without
 credentials, a path, query, or fragment. An endpoint without Cloudflare connection
 metadata returns `CLIENT_IP_UNAVAILABLE`. The command does not print underlying
 network exception details or an invalid response body.
@@ -140,7 +143,7 @@ When HTTP proxy environment variables are configured, the pinned Node.js
 version can opt into them with `--use-env-proxy`:
 
 ```sh
-node --use-env-proxy packages/cli/dist/cli.js ip --json
+node --use-env-proxy packages/cli/dist/cli.js public-ip --json
 ```
 
 This uses Node.js's `HTTP_PROXY`, `HTTPS_PROXY`, and `NO_PROXY` support; it does

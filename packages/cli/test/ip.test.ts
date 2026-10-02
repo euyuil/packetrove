@@ -47,12 +47,12 @@ describe('bundled public IP CLI', () => {
       response.setHeader('content-type', 'application/json');
       response.end(JSON.stringify(result));
     }, async origin => {
-      const execution = await run(['ip', '--api-origin', origin, '--json']);
+      const execution = await run(['public-ip', '--api-origin', origin, '--json']);
       expect(execution.status).toBe(0);
       expect(execution.stderr).toBe('');
       expect(PublicIpResultSchema.parse(JSON.parse(execution.stdout))).toEqual(result);
     });
-    expect(requestedPath).toBe('/v1/ip');
+    expect(requestedPath).toBe('/v1/public-ip');
     expect(accept).toBe('application/json');
   });
 
@@ -61,7 +61,7 @@ describe('bundled public IP CLI', () => {
       response.setHeader('content-type', 'application/json');
       response.end(JSON.stringify({ ip: '203.0.113.1', family: 'ipv4' }));
     }, async origin => {
-      const execution = await run(['ip', '--api-origin', origin]);
+      const execution = await run(['public-ip', '--api-origin', origin]);
       expect(execution.status).toBe(0);
       expect(execution.stdout).toBe('203.0.113.1\n');
       expect(execution.stderr).toBe('');
@@ -76,7 +76,7 @@ describe('bundled public IP CLI', () => {
       response.writeHead(status as number, { 'content-type': 'application/json' });
       response.end(JSON.stringify(body));
     }, async origin => {
-      const execution = await run(['ip', '--api-origin', origin, '--json']);
+      const execution = await run(['public-ip', '--api-origin', origin, '--json']);
       expect(execution.status).toBe(1);
       expect(execution.stdout).toBe('');
       expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error.code).toBe(code);
@@ -90,7 +90,7 @@ describe('bundled public IP CLI', () => {
         response.write('{');
       }
     }, async origin => {
-      const execution = await run(['ip', '--api-origin', origin, '--json']);
+      const execution = await run(['public-ip', '--api-origin', origin, '--json']);
       expect(execution.status).toBe(1);
       expect(execution.stdout).toBe('');
       expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error).toEqual({
@@ -109,7 +109,7 @@ describe('bundled public IP CLI', () => {
       if (complete) response.end();
       else setTimeout(() => response.destroy(), 50);
     }, async origin => {
-      const execution = await run(['ip', '--api-origin', origin, '--json']);
+      const execution = await run(['public-ip', '--api-origin', origin, '--json']);
       expect(execution.status).toBe(1);
       expect(execution.stdout).toBe('');
       expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error.code).toBe(code);
@@ -117,11 +117,12 @@ describe('bundled public IP CLI', () => {
   });
 
   it.each([
-    ['ip', '--stdin'], ['ip', '203.0.113.1'],
-    ['ip', '--api-origin', 'not-a-url'], ['ip', '--api-origin', 'file:///tmp/ip'],
-    ['ip', '--api-origin', 'https://example.com/api'],
-    ['ip', '--api-origin', ['https://', 'test', ':', 'test', '@example.com'].join('')],
-    ['ip', '--api-origin', 'https://example.com?ip=203.0.113.1'],
+    ['ip'],
+    ['public-ip', '--stdin'], ['public-ip', '203.0.113.1'],
+    ['public-ip', '--api-origin', 'not-a-url'], ['public-ip', '--api-origin', 'file:///tmp/ip'],
+    ['public-ip', '--api-origin', 'https://example.com/api'],
+    ['public-ip', '--api-origin', ['https://', 'test', ':', 'test', '@example.com'].join('')],
+    ['public-ip', '--api-origin', 'https://example.com?ip=203.0.113.1'],
     ['cidr', 'cover', '203.0.113.1', '--api-origin', 'https://example.com'],
   ].map(args => ({ args })))('rejects invalid lookup arguments without contacting a service: $args', async ({ args }) => {
     const execution = await run([...args, '--json']);

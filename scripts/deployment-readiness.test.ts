@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CIDR_COVER_EXAMPLES } from '../packages/contracts/src/index';
-import { websitePages } from '../apps/web/src/seo';
+import { websitePages, websiteRedirects } from '../apps/web/src/seo';
 import { waitForDeployment } from './deployment-readiness';
 
 const origin = 'https://service.example';
@@ -173,6 +173,12 @@ describe('readiness followed by the production smoke check across separate origi
       const path = request.url!;
       requested.push(path);
       if (request.method === 'POST') return send(response, 'text/plain', '', 405);
+      const url = new URL(path, 'http://localhost');
+      const redirect = websiteRedirects.find(candidate => candidate.from === url.pathname);
+      if (redirect) {
+        response.writeHead(301, { location: redirect.to + url.search });
+        return response.end();
+      }
       const page = builtPages.get(path) ?? builtPages.get(path.replace(/\/$/, ''));
       if (page) return send(response, 'text/html', page);
       if (path === '/sitemap.xml' || path === '/robots.txt') return send(response,
@@ -192,10 +198,10 @@ describe('readiness followed by the production smoke check across separate origi
         response.setHeader('etag', '"specification"');
         response.setHeader('cache-control', 'public, max-age=0, must-revalidate');
         return send(response, 'application/json', JSON.stringify({
-          openapi: '3.1.0', paths: { '/v1/cidr/cover': {}, '/v1/ip': {} },
+          openapi: '3.1.0', paths: { '/v1/cidr/cover': {}, '/v1/public-ip': {} },
         }));
       }
-      if (path === '/v1/ip') {
+      if (path === '/v1/public-ip') {
         response.setHeader('cache-control', 'no-store');
         response.setHeader('vary', 'Accept');
         if (request.headers.accept === 'text/plain') return send(response, 'text/plain; charset=UTF-8', '203.0.113.1\n');
@@ -227,6 +233,7 @@ describe('readiness followed by the production smoke check across separate origi
       const execution = await smoke(target, apiTarget);
       expect(execution.status).toBe(1);
       expect(execution.stdout).toContain('PASS 20 prerendered localized pages');
+      expect(execution.stdout).toContain('PASS legacy public IP redirects');
       for (const page of websitePages) expect(requested).toContain(page.pathname);
       expect(execution.stdout).toContain('PASS website build commit matches the deployment');
       expect(execution.stdout).toContain('PASS website and API origin separation');
