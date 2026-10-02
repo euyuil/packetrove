@@ -36,8 +36,8 @@ describe('shared public IP HTTP client', () => {
     hideAbortMethods(missing);
     const fetch = vi.fn(async () => Response.json(result));
     vi.stubGlobal('fetch', fetch);
-    expect(await lookupPublicIp('/v1/ip')).toEqual(result);
-    expect(fetch).toHaveBeenCalledWith('/v1/ip', expect.objectContaining({
+    expect(await lookupPublicIp('/v1/public-ip')).toEqual(result);
+    expect(fetch).toHaveBeenCalledWith('/v1/public-ip', expect.objectContaining({
       cache: 'no-store', credentials: 'omit', redirect: 'error', headers: { accept: 'application/json' },
       signal: expect.any(AbortSignal),
     }));
@@ -46,18 +46,18 @@ describe('shared public IP HTTP client', () => {
     vi.stubGlobal('fetch', async () => Response.json({
       error: { code: 'CLIENT_IP_UNAVAILABLE', message: 'Connection metadata is unavailable.' },
     }, { status: 503 }));
-    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({ code: 'CLIENT_IP_UNAVAILABLE' });
+    await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'CLIENT_IP_UNAVAILABLE' });
   });
   it.each([
     Response.json({ ip: '2001:db8::1', family: 'ipv4' }),
     new Response('<html>Unavailable</html>'),
   ])('rejects malformed JSON or a mismatched IP family', async response => {
     vi.stubGlobal('fetch', async () => response);
-    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+    await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
   });
   it('reports network failures without leaking exception details', async () => {
     vi.stubGlobal('fetch', async () => { throw new Error('private network detail'); });
-    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({
+    await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({
       code: 'NETWORK_ERROR', message: 'Unable to reach the IP lookup service. Check your connection and try again.',
     });
   });
@@ -65,7 +65,7 @@ describe('shared public IP HTTP client', () => {
     vi.stubGlobal('fetch', async () => new Response(new ReadableStream({
       start(controller) { controller.error(new Error('private transfer detail')); },
     })));
-    await expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({
+    await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({
       code: 'NETWORK_ERROR', message: 'Unable to reach the IP lookup service. Check your connection and try again.',
     });
   });
@@ -82,7 +82,7 @@ describe.each(apiModes)('IP request cancellation with $name', ({ missing }) => {
         request.addEventListener('abort', () => reject(request.reason), { once: true });
       });
     });
-    const failure = expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
+    const failure = expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
     await vi.advanceTimersByTimeAsync(9_999);
     expect(request.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
@@ -99,7 +99,7 @@ describe.each(apiModes)('IP request cancellation with $name', ({ missing }) => {
         setTimeout(() => resolve(unfinishedBody(request)), 6_000);
       });
     });
-    const failure = expect(lookupPublicIp('/v1/ip')).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
+    const failure = expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
     await vi.advanceTimersByTimeAsync(9_999);
     expect(request.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(1);
@@ -117,7 +117,7 @@ describe.each(apiModes)('IP request cancellation with $name', ({ missing }) => {
         request.addEventListener('abort', () => reject(request.reason), { once: true });
       });
     });
-    const failure = expect(lookupPublicIp('/v1/ip', caller.signal)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
+    const failure = expect(lookupPublicIp('/v1/public-ip', caller.signal)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
     await vi.advanceTimersByTimeAsync(1_000);
     caller.abort();
     await failure;
@@ -132,7 +132,7 @@ describe.each(apiModes)('IP request cancellation with $name', ({ missing }) => {
       expect(options.signal?.aborted).toBe(true);
       throw options.signal!.reason;
     });
-    await expect(lookupPublicIp('/v1/ip', caller.signal)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
+    await expect(lookupPublicIp('/v1/public-ip', caller.signal)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
     expect(vi.getTimerCount()).toBe(0);
   });
 
@@ -145,7 +145,7 @@ describe.each(apiModes)('IP request cancellation with $name', ({ missing }) => {
       if (outcome === 'network failure') throw new Error('private network detail');
       return outcome === 'invalid JSON' ? new Response('{') : Response.json({ ip: '203.0.113.1', family: 'ipv4' });
     });
-    const pending = lookupPublicIp('/v1/ip', caller.signal);
+    const pending = lookupPublicIp('/v1/public-ip', caller.signal);
     if (outcome === 'success') await expect(pending).resolves.toMatchObject({ family: 'ipv4' });
     else await expect(pending).rejects.toMatchObject({ code: outcome === 'invalid JSON' ? 'INVALID_RESPONSE' : 'NETWORK_ERROR' });
     expect(removeListener).toHaveBeenCalledWith('abort', expect.any(Function));

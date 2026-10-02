@@ -9,7 +9,7 @@ import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
 import { SiteFooter } from './SiteFooter';
 import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
-import { localizedPath, resolveRoute } from './i18n/routes';
+import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
 import ApiDocumentation from './ApiDocumentation';
 
@@ -78,7 +78,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
           aria-current={cidrPage ? 'page' : undefined}>{t($ => $.cidr.title)}</Button>
         <Button component="a" href={href('/cidr/subtract')} onClick={navigate} variant={subtractPage ? 'light' : 'subtle'}
           aria-current={subtractPage ? 'page' : undefined}>{t($ => $.subtract.title)}</Button>
-        <Button component="a" href={href('/ip')} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
+        <Button component="a" href={href(pagePaths.ip)} onClick={navigate} variant={ipPage ? 'light' : 'subtle'}
           aria-current={ipPage ? 'page' : undefined}>{t($ => $.ip.title)}</Button>
       </Group>
       <Box component="main">

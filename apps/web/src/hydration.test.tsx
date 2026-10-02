@@ -80,7 +80,7 @@ describe('hydration of production HTML', () => {
     await hydrate(page.pathname);
     if (page.page === 'ip') {
       expect(await screen.findByText('203.0.113.1')).toBeDefined();
-      expect(fetch).toHaveBeenCalledWith('https://api.packetrove.com/v1/ip', expect.objectContaining({
+      expect(fetch).toHaveBeenCalledWith('https://api.packetrove.com/v1/public-ip', expect.objectContaining({
         credentials: 'omit', cache: 'no-store',
       }));
     } else {
@@ -149,7 +149,7 @@ describe('hydration of production HTML', () => {
       pending.push({ resolve, signal: options.signal! });
     }));
     vi.stubGlobal('fetch', fetch);
-    await hydrate('/ip');
+    await hydrate('/public-ip');
     const requestCount = fetch.mock.calls.length;
     const request = pending.at(-1)!;
     expect(requestCount).toBeGreaterThan(0);
@@ -168,11 +168,11 @@ describe('hydration of production HTML', () => {
     vi.stubGlobal('fetch', fetch);
     await hydrate('/docs/api', '?source=initial#previous');
     act(() => {
-      window.history[method](null, '', '/docs/api?source=selected#tag/Current-public-IP/get/v1/ip');
+      window.history[method](null, '', '/docs/api?source=selected#tag/Current-public-IP/get/v1/public-ip');
     });
     await chooseLanguage('zh-Hans');
     expect(window.location.pathname + window.location.search + window.location.hash)
-      .toBe('/zh/docs/api?source=selected#tag/Current-public-IP/get/v1/ip');
+      .toBe('/zh/docs/api?source=selected#tag/Current-public-IP/get/v1/public-ip');
     expect(fetch).not.toHaveBeenCalled();
   });
 });

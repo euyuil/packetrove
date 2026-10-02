@@ -29,7 +29,7 @@ describe('API documentation requests', () => {
       calls.push(new Request(input, init));
       return Response.json({});
     });
-    await fetchApiReference('https://api.example/v1/ip', { cache: 'force-cache', credentials: 'include' });
+    await fetchApiReference('https://api.example/v1/public-ip', { cache: 'force-cache', credentials: 'include' });
     await fetchApiReference('https://api.example/openapi.json');
     expect(calls[0]!.cache).toBe('no-store');
     expect(calls[1]!.cache).toBe('default');

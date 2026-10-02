@@ -27,7 +27,7 @@ describe('website in the Workers runtime', () => {
     expect(html).toContain('<main');
     expect(html).toContain('href="' + localizedPath('/cidr', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/cidr/subtract', locale) + '"');
-    expect(html).toContain('href="' + localizedPath('/ip', locale) + '"');
+    expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
       expect(html).toContain(text.home.subtractDescription);
@@ -121,10 +121,32 @@ describe('website in the Workers runtime', () => {
       expect(await destination.text()).toContain(`<title>${resources[locale].translation.meta[page].title}</title>`);
     },
   );
-  it.each(['/missing-page', '/missing-page/', '/cidr/missing-page', '/ip/missing-page', '/zh/missing-page',
+  it.each(supportedLocales)('redirects legacy public IP links within %s while preserving queries', async locale => {
+    const destinationPath = localizedPath('/public-ip', locale);
+    for (const suffix of ['', '/', '.html']) {
+      const source = localizedPath('/ip', locale) + suffix;
+      for (const method of ['GET', 'HEAD']) {
+        const response = await exports.default.fetch(`http://localhost${source}?source=example&source=second`, {
+          method, redirect: 'manual', headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
+        });
+        expect(response.status).toBe(301);
+        const location = new URL(response.headers.get('location')!, 'http://localhost');
+        expect(location.pathname).toBe(destinationPath);
+        expect(location.search).toBe('?source=example&source=second');
+        const destination = await exports.default.fetch(location.href);
+        expect(destination.status).toBe(200);
+        expect(await destination.text()).toContain('href="https://packetrove.com' + destinationPath + '"');
+      }
+    }
+  });
+  it.each(supportedLocales)('returns 404 for unmatched legacy public IP descendants within %s', async locale => {
+    const response = await exports.default.fetch('http://localhost' + localizedPath('/ip/missing-page', locale));
+    expect(response.status).toBe(404);
+  });
+  it.each(['/missing-page', '/missing-page/', '/cidr/missing-page', '/public-ip/missing-page', '/zh/missing-page',
     '/zh/cidr/missing-page', '/es/missing-page', '/de/missing-page', '/ja/missing-page',
-    '/es/cidr/missing-page', '/de/docs/api/missing-page', '/ja/ip/missing-page',
-    '/assets/missing.js', '/assets/missing.css'])('returns a real static 404 for %s', async path => {
+    '/es/cidr/missing-page', '/de/docs/api/missing-page', '/ja/public-ip/missing-page',
+    '/assets/missing.js', '/assets/missing.css', '/_redirects'])('returns a real static 404 for %s', async path => {
     for (const headers of [{}, { 'sec-fetch-mode': 'navigate', accept: 'text/html' }]) {
       const response = await exports.default.fetch(`http://localhost${path}`, { headers });
       expect(response.status).toBe(404);
@@ -139,7 +161,7 @@ describe('website in the Workers runtime', () => {
     expect(response.status).toBe(404);
     expect(await response.text()).toBe('');
   });
-  it.each(['/api/v1/ip', '/api/v1/cidr/cover', '/api/openapi.json', '/mcp', '/health', '/v1/ip', '/openapi.json'])(
+  it.each(['/api/v1/ip', '/api/v1/public-ip', '/api/v1/cidr/cover', '/api/openapi.json', '/mcp', '/health', '/v1/ip', '/v1/public-ip', '/openapi.json'])(
     'does not expose an API or MCP endpoint at %s', async path => {
       const response = await exports.default.fetch(`http://localhost${path}`);
       expect(response.status).toBe(404);
