@@ -1,10 +1,9 @@
 import type { MouseEventHandler } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
 import { Anchor, Code, Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { MCP_PATH } from '@packetrove/contracts';
+import { MCP_PATH, tools } from '@packetrove/contracts';
 import { getApiUrl } from './api';
 import { ToolMcpSection } from './ToolMcpSection';
-import { mcpExamples } from './mcp-examples';
 
 export function McpDocumentation({ onNavigate, documentationUrl }: {
   onNavigate: MouseEventHandler<HTMLAnchorElement>;
@@ -35,13 +34,12 @@ export function McpDocumentation({ onNavigate, documentationUrl }: {
             <Anchor size="sm" href="https://developers.openai.com/codex/mcp/">{t($ => $.mcp.clientGuide, { client: 'Codex' })}</Anchor>
           </Stack>
         </SimpleGrid>
-        <Text><Trans i18nKey={$ => $.mcp.check} values={{ cidrTool: mcpExamples.cidr.name, ipTool: mcpExamples.ip.name }}
+        <Text><Trans i18nKey={$ => $.mcp.check} values={{ tools: tools.map(tool => tool.mcp.name).join(', ') }}
           components={{ code: <Code /> }} /></Text>
         <Text size="sm" c="dimmed">{t($ => $.mcp.discovery)}</Text>
       </Stack>
     </Paper>
-    <ToolMcpSection tool="cidr" onNavigate={onNavigate} guide />
-    <ToolMcpSection tool="ip" onNavigate={onNavigate} guide />
+    {tools.map(tool => <ToolMcpSection key={tool.id} tool={tool.page} onNavigate={onNavigate} guide />)}
     <Stack component="section" gap="sm" aria-labelledby="mcp-errors-heading">
       <Title order={2} size="h3" id="mcp-errors-heading">{t($ => $.mcp.errorsTitle)}</Title>
       <Text><Trans i18nKey={$ => $.mcp.results} components={{ code: <Code /> }} /></Text>

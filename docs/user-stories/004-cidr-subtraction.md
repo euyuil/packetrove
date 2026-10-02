@@ -111,15 +111,19 @@ Counts include all addresses, including network and broadcast addresses.
 The browser calls the shared core locally. Inputs and results remain in memory;
 they are not uploaded, logged, persisted, or added to URLs. Prerendering starts
 with empty inputs and makes no network requests. There are no new dependencies
-or external services. The API, CLI, MCP, and covering-calculator skill expose
-their existing operations; subtraction is currently a core and website tool.
+or external services. The Web API at `POST /v1/cidr/subtract` and MCP tool
+`subtract_cidrs` call the same shared calculation. Remote calls submit inputs to the server; the
+website remains local. The CLI and covering-calculator skill retain their
+existing operations. Shared errors identify the include/exclude list and entry
+index for invalid subtraction inputs.
 
 The page includes localized questions about WireGuard exceptions, allocation
 gaps, overlapping/outside exclusions, exact subtraction versus covering CIDRs,
-and interface availability. It explicitly describes subtraction as browser/core
-only and links to the same-language MCP guide for the available covering-CIDR
-and public-IP operations. Visiting the guide in the same tab preserves both
-lists and the result. These questions are present in prerendered HTML.
+and interface availability. It describes website, Web API, and MCP access and
+links to the same-language MCP guide. A shared `ToolMcpSection` shows the
+subtraction name, arguments, exact result, and limits from the tool catalog.
+Visiting the guide in the same tab preserves both lists and the result.
+These questions are present in prerendered HTML.
 
 Focused tests cover interval boundaries, `/0`, `/32`, `/128`, canonicalization,
 overlaps on both sides, disjoint ranges, spanning exclusions, complete removal,

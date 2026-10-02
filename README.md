@@ -55,8 +55,8 @@ it. See the [user stories](docs/user-stories/004-cidr-subtraction.md).
 Calculations run locally in the browser. Use one address family, at most 1,000
 entries across both lists, and at most 64 characters per entry. Output allows up
 to 10,000 CIDRs; larger results report an error without a partial list.
-Subtraction is available in the shared core and website; the API, CLI, MCP, and
-agent skill currently provide their existing operations.
+Subtraction is available in the shared core, website, Web API, and MCP. The CLI
+and covering-calculator skill continue to provide their existing operations.
 
 ### Check your connection's public IP
 
@@ -81,6 +81,12 @@ address family; it does not separately discover both IPv4 and IPv6 addresses.
 
 Public IP checks make a network request. The application does not store or log
 the returned address, and lookup results and errors are not cached.
+
+All product tools have website, Web API, and MCP access. Their identities,
+paths, schemas, metadata, and example references are maintained in one
+[shared tool catalog](packages/contracts/src/tools.ts). Website navigation,
+localized tool paths, API documentation, and MCP discovery and guides consume
+that catalog. See [how to add or change a tool](docs/tool-catalog.md).
 
 ## Website languages
 

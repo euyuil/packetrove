@@ -89,10 +89,18 @@ export const ptBR = {
     cidrSummary: 'Envie endereços IPv4 ou IPv6 e intervalos CIDR em JSON. A resposta inclui o menor CIDR de cobertura, as entradas normalizadas e contagens exatas de endereços como strings decimais. Esta requisição à API envia suas entradas ao servidor.',
     cidrResponse: 'Este exemplo retorna {{cidr}} com {{additional}} endereços adicionais. Confira additionalAddressCount antes de usar o resultado em uma lista de endereços permitidos ou bloqueados.',
     ipSummary: 'Retorna o IP público observado nesta conexão HTTP. Solicite text/plain para um endereço seguido de uma quebra de linha, ou application/json para um endereço e sua família. As respostas não são armazenadas em cache. Uma VPN ou um proxy altera o endereço de saída observado.',
+    subtractSummary: "Subtraia exclude de include de forma exata. Retorna a lista mínima de CIDRs canônicos e contagens exatas como strings decimais. Esta chamada envia os dados ao servidor.",
+    subtractResponse: "Este exemplo retorna {{cidrs}}, com {{remaining}} endereços restantes e sem cobertura adicional.",
   },
   discovery: {
     subtract: {
       title: "Perguntas sobre a subtração de CIDRs",
+      mcpTitle: "Usar a subtração pelo MCP",
+      purpose: "Peça a um agente de IA para subtrair as redes excluídas do espaço incluído e retornar os CIDRs restantes exatos.",
+      inputs: "Envie arrays include e exclude de uma só família. include não pode estar vazio; exclude pode. Use no máximo {{maximumInputs}} entradas no total, com {{maximumLength}} caracteres por entrada.",
+      result: "Leia cidrs e as contagens decimais exatas includedAddressCount, removedAddressCount e remainingAddressCount. A remoção completa retorna uma lista vazia. Mais de {{maximumOutputs}} CIDRs gera um erro sem lista parcial.",
+      boundary: "Chamadas remotas de API e MCP enviam os dados ao servidor; o navegador calcula localmente. As faixas restantes dependem das entradas e não comprovam disponibilidade real. Nenhuma configuração do WireGuard ou regra de firewall é alterada.",
+      openTool: "Abrir a subtração no navegador",
       questions: {
         wireguard: {
           question: "Como preparo exceções AllowedIPs do WireGuard?",
@@ -112,7 +120,7 @@ export const ptBR = {
         },
         access: {
           question: "Posso chamar a subtração via MCP, API web ou CLI?",
-          answer: "A subtração funciona atualmente no navegador e no núcleo de cálculo compartilhado. As entradas do navegador ficam locais. MCP, API web e CLI oferecem cobertura CIDR e IP público, sem expor subtração. O guia MCP documenta essas operações disponíveis."
+          answer: "A subtração está disponível no site, na API web e no MCP. Os dados do navegador ficam locais; API e MCP os enviam ao servidor. A CLI ainda não oferece subtração."
         }
       }
     },
@@ -181,12 +189,12 @@ export const ptBR = {
   },
   mcp: {
     title: "Conectar o Packetrove a um agente de IA",
-    explanation: "Conecte um cliente MCP compatível para calcular CIDRs de cobertura ou consultar a conexão usada por esse cliente. Configure o cliente abaixo e use os exemplos das ferramentas.",
+    explanation: "Conecte um cliente MCP compatível para usar as ferramentas de rede do Packetrove. Comece pela configuração abaixo e consulte os exemplos.",
     connection: "Streamable HTTP · Sem conta nem chave de API",
     connectTitle: "Conectar seu cliente",
     connectDescription: "Com o Claude Code ou o Codex instalado, adicione este servidor remoto. Os comandos configuram o cliente; eles não instalam um servidor Packetrove local.",
     clientGuide: "Documentação MCP do {{client}}",
-    check: "Use <code>/mcp</code> no cliente para consultar a conexão. Confirme que <code>{{cidrTool}}</code> e <code>{{ipTool}}</code> estão disponíveis.",
+    check: "Use <code>/mcp</code> no cliente para verificar a conexão. Confirme que estas ferramentas estão disponíveis: <code>{{tools}}</code>.",
     discovery: "Após a configuração, o cliente descobre as ferramentas com tools/list. As descrições e os esquemas orientam a escolha e os argumentos. Ler uma página web não configura um cliente nem dá acesso às ferramentas.",
     toolName: "Nome da ferramenta",
     arguments: "Exemplo de argumentos",

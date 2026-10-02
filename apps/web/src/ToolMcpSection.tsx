@@ -1,7 +1,7 @@
 import type { MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Code, Paper, Stack, Text, Title } from '@mantine/core';
-import { MAX_INPUTS, MAX_INPUT_LENGTH, MCP_PATH } from '@packetrove/contracts';
+import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH } from '@packetrove/contracts';
 import { getApiUrl } from './api';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
@@ -27,7 +27,8 @@ export function ToolMcpSection({ tool, onNavigate, guide = false }: {
         <Text size="sm" c="dimmed">{t($ => $.mcp.connection)}</Text>
       </Stack>
       <Text size="sm">{t($ => $.discovery[tool].inputs, {
-        maximumInputs: new Intl.NumberFormat(locale).format(MAX_INPUTS), maximumLength: MAX_INPUT_LENGTH,
+          maximumInputs: new Intl.NumberFormat(locale).format(tool === 'subtract' ? MAX_SUBTRACTION_INPUTS : MAX_INPUTS),
+          maximumLength: MAX_INPUT_LENGTH, maximumOutputs: new Intl.NumberFormat(locale).format(MAX_SUBTRACTION_OUTPUTS),
       })}</Text>
       <Text size="sm" fw={600}>{t($ => $.mcp.arguments)}</Text>
       <Code block data-mcp-example="arguments">{JSON.stringify(example.arguments, null, 2)}</Code>

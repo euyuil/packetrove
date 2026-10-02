@@ -89,10 +89,18 @@ export const it = {
     cidrSummary: 'Invia indirizzi IPv4 o IPv6 e intervalli CIDR in formato JSON. La risposta include il CIDR minimo di copertura, le voci normalizzate e i conteggi esatti degli indirizzi come stringhe decimali. Questa richiesta API invia i dati al server.',
     cidrResponse: 'Questo esempio restituisce {{cidr}} con {{additional}} indirizzi aggiuntivi. Controlla additionalAddressCount prima di usare il risultato in un elenco di indirizzi consentiti o bloccati.',
     ipSummary: 'Restituisce l’IP pubblico osservato per questa connessione HTTP. Richiedi text/plain per un indirizzo seguito da un carattere di nuova riga oppure application/json per un indirizzo e la sua famiglia. Le risposte non vengono memorizzate nella cache. Una VPN o un proxy cambia l’indirizzo di uscita osservato.',
+    subtractSummary: "Sottrai esattamente exclude da include. Restituisce un elenco minimo di CIDR canonici e conteggi esatti come stringhe decimali. Questa chiamata invia i dati al server.",
+    subtractResponse: "Questo esempio restituisce {{cidrs}}, con {{remaining}} indirizzi rimanenti e nessuna copertura aggiuntiva.",
   },
   discovery: {
     subtract: {
       title: 'Domande sulla sottrazione CIDR',
+      mcpTitle: "Usare la sottrazione tramite MCP",
+      purpose: "Chiedi a un agente IA di sottrarre le reti escluse dallo spazio incluso e restituire i CIDR rimanenti esatti.",
+      inputs: "Passa array include ed exclude di una sola famiglia. include non può essere vuoto; exclude sì. Usa al massimo {{maximumInputs}} voci totali, con {{maximumLength}} caratteri ciascuna.",
+      result: "Leggi cidrs e i conteggi decimali esatti includedAddressCount, removedAddressCount e remainingAddressCount. La rimozione completa restituisce un elenco vuoto. Oltre {{maximumOutputs}} CIDR si riceve un errore senza elenco parziale.",
+      boundary: "Le chiamate remote API e MCP inviano i dati al server; il browser calcola localmente. Gli intervalli rimanenti dipendono dai dati e non dimostrano disponibilità reale. Non vengono modificati WireGuard né le regole del firewall.",
+      openTool: "Aprire la sottrazione nel browser",
       questions: {
         wireguard: {
           question: 'Come preparo eccezioni per AllowedIPs di WireGuard?',
@@ -112,7 +120,7 @@ export const it = {
         },
         access: {
           question: 'Posso usare la sottrazione tramite MCP, API web o CLI?',
-          answer: 'La sottrazione funziona attualmente nel browser e nel nucleo di calcolo condiviso. I dati del browser rimangono locali. MCP, API web e CLI offrono il calcolo del CIDR di copertura e la verifica dell’IP pubblico, senza esporre la sottrazione. La guida MCP documenta queste operazioni disponibili.',
+          answer: "La sottrazione è disponibile sul sito, tramite Web API e MCP. I dati del browser restano locali; API e MCP li inviano al server. La CLI non offre ancora la sottrazione."
         },
       },
     },
@@ -181,12 +189,12 @@ export const it = {
   },
   mcp: {
     title: 'Collega Packetrove a un agente IA',
-    explanation: 'Collega un client MCP compatibile per calcolare CIDR di copertura o verificare la connessione usata dal client. Inizia con la configurazione seguente, poi usa gli esempi degli strumenti.',
+    explanation: "Collega un client MCP compatibile per usare gli strumenti di rete Packetrove. Inizia dalla configurazione qui sotto, poi consulta gli esempi.",
     connection: 'Streamable HTTP · Non servono account né chiave API',
     connectTitle: 'Collega il client',
     connectDescription: 'Con Claude Code o Codex installato, aggiungi questo server remoto. I comandi configurano il client; non installano un server Packetrove locale.',
     clientGuide: 'Documentazione MCP di {{client}}',
-    check: 'Usa <code>/mcp</code> nel client per verificare la connessione. Controlla che <code>{{cidrTool}}</code> e <code>{{ipTool}}</code> siano disponibili.',
+    check: "Usa <code>/mcp</code> nel client per verificare la connessione. Conferma che siano disponibili questi strumenti: <code>{{tools}}</code>.",
     discovery: 'Dopo la configurazione, il client scopre gli strumenti tramite tools/list. Descrizioni e schemi guidano la scelta e gli argomenti. Leggere una pagina web non configura il client e non concede accesso agli strumenti.',
     toolName: 'Nome dello strumento',
     arguments: 'Argomenti di esempio',

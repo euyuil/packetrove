@@ -32,23 +32,84 @@
   "security": [],
   "components": {
     "schemas": {
-      "CidrCoverRequest": {
+      "ErrorResponse": {
         "type": "object",
         "properties": {
-          "inputs": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 64
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "INVALID_INPUT",
+                  "MIXED_ADDRESS_FAMILIES",
+                  "INVALID_JSON",
+                  "PAYLOAD_TOO_LARGE",
+                  "UNSUPPORTED_MEDIA_TYPE",
+                  "NOT_FOUND",
+                  "METHOD_NOT_ALLOWED",
+                  "INTERNAL_ERROR",
+                  "CLIENT_IP_UNAVAILABLE",
+                  "NETWORK_ERROR",
+                  "INVALID_RESPONSE"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "issues": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "index": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Zero-based index in inputs, or in the identified include/exclude list."
+                    },
+                    "list": {
+                      "type": "string",
+                      "enum": [
+                        "include",
+                        "exclude"
+                      ],
+                      "description": "The subtraction list containing the invalid entry."
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
             },
-            "minItems": 1,
-            "maxItems": 1000,
-            "description": "IP addresses or CIDRs from one address family. Surrounding whitespace is ignored during parsing; CIDRs with host bits are normalized."
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
-          "inputs"
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "HealthResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
         ],
         "additionalProperties": false
       },
@@ -124,76 +185,119 @@
         ],
         "additionalProperties": false
       },
-      "ErrorResponse": {
+      "CidrCoverRequest": {
         "type": "object",
         "properties": {
-          "error": {
-            "type": "object",
-            "properties": {
-              "code": {
-                "type": "string",
-                "enum": [
-                  "INVALID_INPUT",
-                  "MIXED_ADDRESS_FAMILIES",
-                  "INVALID_JSON",
-                  "PAYLOAD_TOO_LARGE",
-                  "UNSUPPORTED_MEDIA_TYPE",
-                  "NOT_FOUND",
-                  "METHOD_NOT_ALLOWED",
-                  "INTERNAL_ERROR",
-                  "CLIENT_IP_UNAVAILABLE",
-                  "NETWORK_ERROR",
-                  "INVALID_RESPONSE"
-                ]
-              },
-              "message": {
-                "type": "string"
-              },
-              "issues": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "index": {
-                      "type": "integer",
-                      "minimum": 0,
-                      "description": "Zero-based index in the inputs array, when an entry is responsible for the error."
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "message"
-                  ],
-                  "additionalProperties": false
-                }
-              }
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
             },
-            "required": [
-              "code",
-              "message"
-            ],
-            "additionalProperties": false
+            "minItems": 1,
+            "maxItems": 1000,
+            "description": "IP addresses or CIDRs from one address family. Surrounding whitespace is ignored during parsing; CIDRs with host bits are normalized."
           }
         },
         "required": [
-          "error"
+          "inputs"
         ],
         "additionalProperties": false
       },
-      "HealthResult": {
+      "CidrSubtractResult": {
         "type": "object",
         "properties": {
-          "status": {
+          "family": {
             "type": "string",
             "enum": [
-              "ok"
+              "ipv4",
+              "ipv6"
             ]
+          },
+          "normalizedInclude": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 1000
+          },
+          "normalizedExclude": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 1000
+          },
+          "cidrs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 10000
+          },
+          "includedAddressCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "Exact number of addresses as a base-10 string, including network and broadcast addresses."
+          },
+          "removedAddressCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "Exact number of addresses as a base-10 string, including network and broadcast addresses."
+          },
+          "remainingAddressCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "Exact number of addresses as a base-10 string, including network and broadcast addresses."
           }
         },
         "required": [
-          "status"
+          "family",
+          "normalizedInclude",
+          "normalizedExclude",
+          "cidrs",
+          "includedAddressCount",
+          "removedAddressCount",
+          "remainingAddressCount"
+        ],
+        "additionalProperties": false
+      },
+      "CidrSubtractRequest": {
+        "type": "object",
+        "properties": {
+          "include": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 1000,
+            "description": "The nonempty included address space. Use at most 1,000 entries across include and exclude, from one address family."
+          },
+          "exclude": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "maxItems": 1000,
+            "description": "Ranges to remove from the included address space. An empty array simplifies the exact include union."
+          }
+        },
+        "required": [
+          "include",
+          "exclude"
         ],
         "additionalProperties": false
       },
@@ -297,7 +401,7 @@
         },
         "responses": {
           "200": {
-            "description": "The covering CIDR and exact address counts.",
+            "description": "The calculated result and exact address counts.",
             "content": {
               "application/json": {
                 "examples": {
@@ -364,7 +468,154 @@
             }
           },
           "400": {
-            "description": "Invalid JSON, invalid input, or mixed address families. Entry-specific issues include a zero-based input index.",
+            "description": "Invalid JSON, invalid input, or mixed address families. Input issues include a zero-based index.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method is not supported for this endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 64 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected an application/json request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/cidr/subtract": {
+      "post": {
+        "operationId": "subtractCidrs",
+        "tags": [
+          "CIDR"
+        ],
+        "summary": "Subtract excluded networks from included address space exactly",
+        "description": "Return the minimal sorted canonical CIDR list for union(include) minus union(exclude), without adding addresses. Use one address family and at most 1000 entries across both lists, with at most 64 characters per entry. Include must be nonempty; exclude may be empty. Overlaps count once and host bits are normalized. Results include exact decimal-string counts; complete removal succeeds with an empty list. Results exceeding 10000 CIDRs fail without returning a partial list. The request body must not exceed 65536 bytes. Calls send inputs to the server; no firewall or WireGuard configuration is changed and remaining ranges do not prove live availability.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "summary": "IPv4",
+                  "value": {
+                    "include": [
+                      "203.0.113.0/24"
+                    ],
+                    "exclude": [
+                      "203.0.113.64/26"
+                    ]
+                  }
+                },
+                "example2": {
+                  "summary": "IPv6",
+                  "value": {
+                    "include": [
+                      "2001:db8::/124"
+                    ],
+                    "exclude": [
+                      "2001:db8::4/126"
+                    ]
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CidrSubtractRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The calculated result and exact address counts.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "IPv4",
+                    "value": {
+                      "family": "ipv4",
+                      "normalizedInclude": [
+                        "203.0.113.0/24"
+                      ],
+                      "normalizedExclude": [
+                        "203.0.113.64/26"
+                      ],
+                      "cidrs": [
+                        "203.0.113.0/26",
+                        "203.0.113.128/25"
+                      ],
+                      "includedAddressCount": "256",
+                      "removedAddressCount": "64",
+                      "remainingAddressCount": "192"
+                    }
+                  },
+                  "example2": {
+                    "summary": "IPv6",
+                    "value": {
+                      "family": "ipv6",
+                      "normalizedInclude": [
+                        "2001:db8::/124"
+                      ],
+                      "normalizedExclude": [
+                        "2001:db8::4/126"
+                      ],
+                      "cidrs": [
+                        "2001:db8::/126",
+                        "2001:db8::8/125"
+                      ],
+                      "includedAddressCount": "16",
+                      "removedAddressCount": "4",
+                      "remainingAddressCount": "12"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CidrSubtractResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, invalid input, mixed address families, or output limit exceeded. Entry issues include a zero-based index and identify the include/exclude list.",
             "content": {
               "application/json": {
                 "schema": {
@@ -447,13 +698,15 @@
             "content": {
               "application/json": {
                 "examples": {
-                  "ipv4": {
+                  "example1": {
+                    "summary": "IPv4",
                     "value": {
                       "ip": "203.0.113.1",
                       "family": "ipv4"
                     }
                   },
-                  "ipv6": {
+                  "example2": {
+                    "summary": "IPv6",
                     "value": {
                       "ip": "2001:db8::1",
                       "family": "ipv6"

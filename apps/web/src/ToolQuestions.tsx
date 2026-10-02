@@ -1,15 +1,13 @@
 import type { MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Anchor, Stack, Text, Title } from '@mantine/core';
+import { Stack, Text, Title } from '@mantine/core';
 import type { McpExampleTool } from './mcp-examples';
-import { resolveLocale } from './i18n/locales';
-import { localizedPath, pagePaths } from './i18n/routes';
 
-export function ToolQuestions({ tool, onNavigate }: {
-  tool: McpExampleTool | 'subtract';
+export function ToolQuestions({ tool }: {
+  tool: McpExampleTool;
   onNavigate?: MouseEventHandler<HTMLAnchorElement> | undefined;
 }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const questions = tool === 'cidr'
     ? (['firewall', 'covering', 'overlap', 'counts', 'privacy'] as const).map(key => ({
       question: t($ => $.discovery.cidr.questions[key].question),
@@ -30,8 +28,5 @@ export function ToolQuestions({ tool, onNavigate }: {
       <Title order={3} size="h4">{question}</Title>
       <Text size="sm" c="dimmed">{answer}</Text>
     </Stack>)}
-    {tool === 'subtract' && <Anchor href={localizedPath(pagePaths.mcp, resolveLocale(i18n.resolvedLanguage))} onClick={onNavigate}>
-      {t($ => $.home.mcpGuide)}
-    </Anchor>}
   </Stack>;
 }
