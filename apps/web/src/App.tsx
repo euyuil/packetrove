@@ -64,7 +64,8 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
             <Text component="span" size="xl" fw={700}>Packetrove</Text>
           </Group>
         </Anchor>
-        <LanguageSelector locale={locale} path={path} urlSuffix={urlSuffix} onNavigate={navigate} />
+        <LanguageSelector locale={locale} path={path} urlSuffix={urlSuffix}
+          onOpen={() => setUrlSuffix(window.location.search + window.location.hash)} onNavigate={navigate} />
       </Group>
       <Divider />
       <Group component="nav" aria-label={t($ => $.common.navigation)} gap="sm">
