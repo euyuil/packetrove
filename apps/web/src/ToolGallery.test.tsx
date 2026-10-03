@@ -94,35 +94,55 @@ describe('homepage tool gallery', () => {
     expect(document.activeElement).toBe(indicators[lastIndex]);
   });
 
-  it('keeps bounded controls and keyboard navigation in sync without moving focus', () => {
+  it('wraps controls and keyboard navigation while keeping selection and focus in sync', () => {
     render(<App />);
     const carousel = document.getElementById('tool-gallery-carousel')!;
     const previous = screen.getByRole('button', { name: 'Previous tool' }) as HTMLButtonElement;
     const next = screen.getByRole('button', { name: 'Next tool' }) as HTMLButtonElement;
-    expect(previous.getAttribute('aria-disabled')).toBe('true');
-    expect(next.getAttribute('aria-disabled')).toBe('false');
+    const indicators = screen.getAllByRole('tab');
+    const lastIndex = featuredTools.length - 1;
+    const expectSelectedTool = (index: number) => {
+      expect(position()).toContain(expectedPosition(index + 1));
+      expect(position()).toContain(resources.en.translation[featuredTools[index]!.page].title);
+      expect(screen.getByRole('article').getAttribute('data-tool-id')).toBe(featuredTools[index]!.id);
+      expect(indicators.map(indicator => indicator.getAttribute('aria-selected')))
+        .toEqual(featuredTools.map((_, selected) => String(selected === index)));
+      for (const button of [previous, next]) {
+        expect(button.getAttribute('aria-disabled')).toBe('false');
+        expect(button.tabIndex).toBe(0);
+      }
+    };
+
+    expectSelectedTool(0);
+    previous.focus();
+    fireEvent.click(previous);
+    expectSelectedTool(lastIndex);
+    expect(document.activeElement).toBe(previous);
     next.focus();
     fireEvent.click(next);
+    expectSelectedTool(0);
     expect(document.activeElement).toBe(next);
-    expect(position()).toContain(expectedPosition(2));
-    expect(position()).toContain(resources.en.translation.subtract.title);
+    fireEvent.click(next);
+    expectSelectedTool(1);
+    fireEvent.click(previous);
+    expectSelectedTool(0);
+    expect(document.activeElement).toBe(next);
+
     carousel.focus();
     fireEvent.keyDown(carousel, { key: 'End' });
-    expect(next.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(next);
-    expect(position()).toContain(expectedPosition(featuredTools.length));
-    fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
-    expect(position()).toContain(expectedPosition(featuredTools.length - 1));
-    fireEvent.keyDown(carousel, { key: 'Home' });
-    expect(previous.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(previous);
-    expect(position()).toContain(expectedPosition(1));
+    expectSelectedTool(lastIndex);
     fireEvent.keyDown(carousel, { key: 'ArrowRight' });
-    expect(position()).toContain(expectedPosition(2));
-    fireEvent.click(next);
-    expect(position()).toContain(expectedPosition(3));
-    fireEvent.click(previous);
-    expect(position()).toContain(expectedPosition(2));
+    expectSelectedTool(0);
+    expect(document.activeElement).toBe(carousel);
+    fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
+    expectSelectedTool(lastIndex);
+    expect(document.activeElement).toBe(carousel);
+    fireEvent.keyDown(carousel, { key: 'Home' });
+    expectSelectedTool(0);
+    fireEvent.keyDown(carousel, { key: 'ArrowRight' });
+    expectSelectedTool(1);
+    fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
+    expectSelectedTool(0);
     expect(document.activeElement).toBe(carousel);
   });
 
