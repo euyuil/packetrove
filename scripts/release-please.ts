@@ -7,7 +7,9 @@ import { RawContent } from 'release-please/build/src/updaters/raw-content.js';
 import { createMcpGuideMarkdown } from './mcp-guide-markdown';
 import { createMcpRegistryJson } from './mcp-registry-manifest';
 
-const productDirectories = ['packages/cli', 'packages/core', 'packages/contracts', 'apps/web', 'apps/worker'];
+const productDirectories = [
+  'packages/cli', 'packages/core', 'packages/contracts', 'apps/web', 'apps/worker', 'plugins/packetrove',
+];
 const sharedBuildInputs = new Set([
   'package.json', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', '.node-version', 'tsconfig.base.json', 'LICENSE',
   'scripts/openapi.ts', 'scripts/api-assets.ts', 'server.json',

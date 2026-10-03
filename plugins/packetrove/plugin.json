@@ -1,0 +1,33 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "packetrove",
+  "version": "0.3.0",
+  "description": "Open-source IP address and CIDR tools for network calculations and public IP lookup.",
+  "author": {
+    "email": "hello@packetrove.com",
+    "url": "https://packetrove.com"
+  },
+  "homepage": "https://packetrove.com",
+  "repository": "https://github.com/euyuil/packetrove",
+  "license": "MIT",
+  "keywords": ["network", "cidr", "ipv4", "ipv6", "ip"],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Packetrove",
+        "shortDescription": "IP and CIDR calculations",
+        "longDescription": "Packetrove provides IPv4 and IPv6 network calculations for developers and network administrators.\n\nFind the smallest single CIDR covering a set of addresses or networks, with the exact number of additional addresses it covers. Subtract excluded networks from included address space exactly, without adding addresses. Convert an inclusive IP range to its minimal exact CIDR list. Review additional coverage before using a covering CIDR in an allowlist or blocklist.\n\nInspect the public IP address observed for the connection making the MCP tool call. A hosted AI client may return its own exit address rather than your device's address. A VPN or proxy also changes the observed connection. Each call observes one address family. Use the Packetrove website or a CLI running on your computer to inspect that connection.\n\nNo account or API key is required. Remote MCP calculations send your inputs to Packetrove's server; website CIDR calculations run locally in your browser. The tools perform calculations and connection lookups without changing firewall rules, configuring WireGuard, or inspecting live address allocation.",
+        "category": "Developer Tools",
+        "capabilities": ["CIDR calculations", "Public IP lookup"],
+        "websiteURL": "https://packetrove.com",
+        "defaultPrompt": [
+          "Find the smallest CIDR covering 203.0.113.1, 203.0.113.2, and 203.0.113.6; explain any extra coverage.",
+          "Subtract 203.0.113.64/26 from 203.0.113.0/24 and return the exact remaining CIDRs.",
+          "Convert the inclusive range from 203.0.113.11 to 203.0.113.23 into its minimal exact CIDR list."
+        ],
+        "composerIcon": "./assets/logo.png",
+        "logo": "./assets/logo.png"
+      }
+    }
+  }
+}

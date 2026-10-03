@@ -8,6 +8,7 @@ const packageName = '@packetrove/cli';
 export const productManifests = [
   'package.json', 'packages/cli/package.json', 'packages/core/package.json',
   'packages/contracts/package.json', 'apps/web/package.json', 'apps/worker/package.json',
+  'plugins/packetrove/plugin.json',
 ] as const;
 const stableVersion = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const deploymentSteps = [
@@ -46,7 +47,7 @@ export function assertReleaseVersions(tag: string, versions: Record<string, unkn
   const version = releaseVersion(tag);
   if ([...productManifests, '.release-please-manifest.json', 'docs/api/openapi.json', 'server.json']
     .some(path => versions[path] !== version)) {
-    throw new Error('The tag, all workspace versions, OpenAPI version, release manifest, and MCP Registry version must agree.');
+    throw new Error('The tag, all workspace versions, OpenAI plugin version, OpenAPI version, release manifest, and MCP Registry version must agree.');
   }
   return version;
 }

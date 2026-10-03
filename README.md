@@ -57,6 +57,7 @@ API address counts are decimal strings to preserve exact IPv6 values.
 | Web API | [Interactive reference](https://packetrove.com/docs/api) · [API contract](docs/api/README.md) |
 | Command-line interface (CLI) | `npm install --global @packetrove/cli` · [CLI guide](docs/integrations/cli.md) |
 | Model Context Protocol (MCP) | [Connection guide](https://packetrove.com/docs/mcp) · [Technical guide](docs/integrations/mcp.md) |
+| OpenAI plugin package | [Source draft and status](docs/integrations/openai-plugin.md) · Not published |
 
 The website's main navigation opens browser tools. Its footer groups the API,
 MCP, and CLI guides; the CLI guide is in English.

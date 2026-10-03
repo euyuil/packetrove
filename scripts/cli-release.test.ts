@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   assertPublishedCalculation, assertReleaseVersions, isValidatedMainRun, productManifests,
@@ -42,6 +43,17 @@ describe('CLI release validation', () => {
       expect(() => assertReleaseVersions('0.2.0', missing), path).toThrow();
     }
     expect(() => assertReleaseVersions('0.2.0', {})).toThrow();
+  });
+  it('keeps checked-in release metadata on the root product version', () => {
+    const readJson = (path: string) => JSON.parse(readFileSync(path, 'utf8'));
+    const version = readJson('package.json').version;
+    const versions = Object.fromEntries(productManifests.map(path => [path, readJson(path).version]));
+    expect(assertReleaseVersions(version, {
+      ...versions,
+      '.release-please-manifest.json': readJson('.release-please-manifest.json')['.'],
+      'docs/api/openapi.json': readJson('docs/api/openapi.json').info.version,
+      'server.json': readJson('server.json').version,
+    })).toBe(version);
   });
   it('accepts completed validation and deployment of the exact main revision', () => {
     expect(isValidatedMainRun(run, [job], repository, sha, true)).toBe(true);
