@@ -12,7 +12,7 @@ or writing a script.
 
 These stories implement [issue #77](https://github.com/euyuil/packetrove/issues/77).
 The initial version handles one endpoint pair, in one address family. Multiple
-pairs, bulk imports, vendor-specific ACL exports, CLI or agent-skill operations,
+pairs, bulk imports, vendor-specific ACL exports, CLI operations,
 live allocation checks, and configuration changes are outside this version.
 
 ## Inputs and results
@@ -106,8 +106,8 @@ replace located errors with plain text. HTTP-level errors retain their existing
 JSON, content-type, size-limit, and method semantics.
 
 See the [API contract](../api/README.md#ip-range-to-cidrs) and generated
-[MCP guide](../integrations/mcp.md) for remote call examples. CLI and skill scope
-remain unchanged. There are no new dependencies or external services.
+[MCP guide](../integrations/mcp.md) for remote call examples. CLI scope remains
+unchanged. There are no new dependencies or external services.
 
 The shared greedy interval decomposition emits the largest aligned block that
 fits each step, using `BigInt` and never enumerating addresses. CIDR subtraction

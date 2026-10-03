@@ -72,6 +72,14 @@ node packages/cli/dist/cli.js cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --j
 
 Alternatively, use `pnpm --silent cli` with the same arguments.
 
+When an agent invokes the CLI, pass addresses as argument values or standard-input
+data, never as executable shell text. Check the exit status and report validation
+errors rather than silently dropping invalid entries. Read exact counts from the
+result as decimal strings or arbitrary-precision integers; do not estimate or
+enumerate IPv6 ranges. Calculations explain address coverage and do not apply
+firewall configuration. The [covering-CIDR user story](../user-stories/001-smallest-covering-cidr.md)
+defines the calculation and its limits.
+
 ## Version and help
 
 This source revision supports offline version queries:

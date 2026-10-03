@@ -30,8 +30,7 @@ or connect AI agents through Model Context Protocol (MCP).
 
 The website supports ten languages. Hosted tools require no account or API key.
 All four tools are available through the website, Web API, and MCP. The CLI
-provides covering-CIDR calculations and public IP lookup; the agent skill provides
-covering-CIDR calculations.
+provides covering-CIDR calculations and public IP lookup.
 
 Browse example results in the homepage gallery, then open a tool to enter your
 own inputs. Gallery previews use documentation addresses and make no live lookups.
@@ -58,7 +57,6 @@ API address counts are decimal strings to preserve exact IPv6 values.
 | Web API | [Interactive reference](https://packetrove.com/docs/api) · [API contract](docs/api/README.md) |
 | Command-line interface (CLI) | `npm install --global @packetrove/cli` · [CLI guide](docs/integrations/cli.md) |
 | Model Context Protocol (MCP) | [Connection guide](https://packetrove.com/docs/mcp) · [Technical guide](docs/integrations/mcp.md) |
-| Agent skill | [Covering-CIDR skill setup](docs/integrations/skill.md) |
 
 Tools share flat public names across interfaces. For changes to existing calls
 and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-flat-names).

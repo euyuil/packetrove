@@ -160,7 +160,7 @@ export const ja = {
       "purpose": "両端を含む IP 範囲を最小の正確な CIDR リストで表すよう AI エージェントに依頼します。",
       "inputs": "start と end に同じ種類の IPv4 または IPv6 アドレスを指定します。CIDR プレフィックスなしで各 {{maximumLength}} 文字以内、end は start 以上にしてください。",
       "result": "正規化された range.first と range.last、並べ替えた cidrs、cidrCount、正確な十進数文字列 addressCount を読み取ります。同じ端点は /32 または /128、全アドレス空間は /0 になります。エラーは start または end を示します。",
-      "boundary": "ブラウザーはローカルで計算します。API とリモート MCP は端点をサーバーに送信します。実際の割り当てを調べたり、ファイアウォール・ルーティング・VPN 設定を変更したりしません。CLI とエージェントスキルでは範囲変換は利用できません。",
+      "boundary": "ブラウザーはローカルで計算します。API とリモート MCP は端点をサーバーに送信します。実際の割り当てを調べたり、ファイアウォール・ルーティング・VPN 設定を変更したりしません。CLI では範囲変換は利用できません。",
       "openTool": "ブラウザーで範囲変換を開く",
       "questions": {
         "exact": {
