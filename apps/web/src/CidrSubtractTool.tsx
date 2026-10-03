@@ -1,7 +1,7 @@
-import { useState, type FormEvent, type MouseEventHandler } from 'react';
+import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Alert, Badge, Button, DataList, Group, List, SimpleGrid, Stack, Text, Textarea, Title,
+  Alert, Badge, Button, DataList, Group, SimpleGrid, Stack, Text, Textarea, Title,
 } from '@mantine/core';
 import {
   CIDR_SUBTRACT_EXAMPLES, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, type CidrSubtractResult,
@@ -17,6 +17,9 @@ import { ToolPanel } from './ToolPanel';
 import { CidrSubtractExamples } from './CidrSubtractExamples';
 import { ToolMcpSection } from './ToolMcpSection';
 import { parseAddressEntries } from './parseAddressEntries';
+import { ToolErrorSummary } from './ToolErrorSummary';
+import { ToolResultCounts } from './ToolResultCounts';
+import { useCalculationFeedback } from './useCalculationFeedback';
 
 export type CidrSubtractDraft = { include: string; exclude: string; result: CidrSubtractResult | null; error: ToolError | null };
 
@@ -29,8 +32,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   const formatter = new Intl.NumberFormat(locale);
   const formatCount = (count: string | number) => formatter.format(typeof count === 'string' ? BigInt(count) : count);
   const { result, error } = draft;
-  // Identical successful calculations still refresh the short status content.
-  const [completionVersion, setCompletionVersion] = useState(0);
+  const feedback = useCalculationFeedback();
   const entries = { include: parseAddressEntries(draft.include), exclude: parseAddressEntries(draft.exclude) };
   const listCopy = useClipboardFeedback();
   const allowedCopy = useClipboardFeedback();
@@ -48,10 +50,11 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
       onDraftChange({ ...draft, error: null, result: subtractCidrs({
         include: entries.include.map(entry => entry.value), exclude: entries.exclude.map(entry => entry.value),
       }) });
-      setCompletionVersion(version => version + 1);
+      feedback.complete(false);
     } catch (failure) {
       onDraftChange({ ...draft, result: null, error: failure instanceof ToolError ? failure
         : new ToolError('INTERNAL_ERROR', 'Unable to calculate this input. Please try again.') });
+      feedback.complete(true);
     }
   }
 
@@ -69,23 +72,24 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   const issueItems = error?.issues?.map((issue, index) => {
     const detail = error.details?.[index];
     const message = issueMessage(issue, detail, t, locale);
-    if (!detail?.list) return message;
+    if (!detail?.list) return { message };
     const inputList = detail.list;
     const list = t($ => inputList === 'include' ? $.subtract.include : $.subtract.exclude);
-    return issue.index === undefined ? t($ => $.subtract.listIssue, { list, message })
-      : t($ => $.subtract.line, { list, line: formatCount(entries[inputList][issue.index]?.line ?? issue.index + 1), message });
+    return { inputId: 'subtract-' + inputList,
+      message: issue.index === undefined ? t($ => $.subtract.listIssue, { list, message })
+        : t($ => $.subtract.line, { list, line: formatCount(entries[inputList][issue.index]?.line ?? issue.index + 1), message }) };
   });
 
   return <Stack gap="xl">
     <ToolPageHeader tool="subtract" notice={t($ => $.cidr.local)} />
-    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg">
+    <SimpleGrid cols={{ base: 1, md: 2 }} spacing="lg" style={{ alignItems: 'start' }}>
       <ToolPanel headingId="input-heading" title={t($ => $.subtract.inputs)}>
         <form onSubmit={calculate}>
           <Stack gap="md">
-            {error && <Alert color="red" id="subtraction-errors" role="alert" title={
+            {error && <ToolErrorSummary ref={feedback.errorSummary} id="subtraction-errors" title={
               error.details?.some(detail => detail.reason === 'TOO_MANY_OUTPUTS')
                 ? t($ => $.subtract.outputLimitTitle) : errorMessage(error, t, locale)
-            }>{issueItems && <List size="sm">{issueItems.map((message, index) => <List.Item key={index}>{message}</List.Item>)}</List>}</Alert>}
+            } issues={issueItems} />}
             {(['include', 'exclude'] as const).map(list => {
               // Associate each input with the shared error summary instead of Mantine's own error element.
               const affected = Boolean(error && (!error.details?.length || error.details.some(detail => !detail.list || detail.list === list)));
@@ -94,7 +98,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
                 description={t($ => list === 'include' ? $.subtract.includeHelp : $.subtract.excludeHelp)}
                 descriptionProps={{ id: 'subtract-' + list + '-help' }}
                 attributes={{ input: { 'aria-describedby': 'subtract-' + list + '-help' + (affected ? ' subtraction-errors' : '') } }}
-                error={affected} value={draft[list]} rows={6} resize="vertical"
+                error={affected} value={draft[list]} autosize minRows={3} maxRows={8}
                 spellCheck={false} autoCapitalize="off" autoCorrect="off" classNames={{ input: 'network-value' }}
                 placeholder={CIDR_SUBTRACT_EXAMPLES[0]!.request[list].join('\n')}
                 onChange={event => replaceLists(list === 'include' ? event.currentTarget.value : draft.include,
@@ -119,27 +123,21 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
           </Stack>
         </form>
       </ToolPanel>
-      <ToolPanel headingId="result-heading" title={t($ => $.subtract.result)}
+      <ToolPanel ref={feedback.resultPanel} headingId="result-heading" title={t($ => $.subtract.result)}
         headerAside={result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}>
-        <Text size="sm" role="status" aria-label={t($ => $.subtract.result)} aria-live="polite" aria-atomic="true">
-          {result && result.cidrs.length > 0 && <span key={completionVersion}>{t($ => $.subtract.completed, {
+        <Text size="sm" role="status" aria-label={t($ => $.subtract.result)} aria-live="polite" aria-atomic="true"
+          style={{ overflowWrap: 'anywhere' }}>
+          {result && result.cidrs.length > 0 && <span key={feedback.completionVersion}>{t($ => $.subtract.completed, {
             addresses: formatCount(result.remainingAddressCount), cidrs: formatCount(result.cidrs.length),
           })}</span>}
         </Text>
         {result ? <>
-          <DataList orientation="vertical" withDivider>
-            {[
-              [t($ => $.subtract.included), result.includedAddressCount],
-              [t($ => $.subtract.removed), result.removedAddressCount],
-              [t($ => $.subtract.remaining), result.remainingAddressCount],
-              [t($ => $.subtract.blocks), result.cidrs.length],
-            ].map(([label, count]) => <DataList.Item key={label}>
-              <DataList.ItemLabel>{label}</DataList.ItemLabel>
-              <DataList.ItemValue className="network-value">{formatCount(count!)}</DataList.ItemValue>
-            </DataList.Item>)}
-          </DataList>
+          <ToolResultCounts items={[
+            { label: t($ => $.subtract.remaining), value: formatCount(result.remainingAddressCount), emphasis: true },
+            { label: t($ => $.subtract.blocks), value: formatCount(result.cidrs.length) },
+          ]} />
           {result.cidrs.length ? <Textarea label={t($ => $.subtract.output)} value={result.cidrs.join('\n')}
-            readOnly rows={10} resize="vertical" spellCheck={false} classNames={{ input: 'network-value' }} />
+            readOnly autosize minRows={2} maxRows={10} spellCheck={false} classNames={{ input: 'network-value' }} />
             : <Alert color="teal" role="status" title={t($ => $.subtract.emptyTitle)}>{t($ => $.subtract.emptyDescription)}</Alert>}
           <Group gap="sm">
             <ClipboardCopyButton label={t($ => $.subtract.copyList)} feedback={listCopy.copyFeedback}
@@ -150,6 +148,15 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
               onCopy={() => copy('allowed')} onDismiss={allowedCopy.clearCopyFeedback} disabled={!result.cidrs.length} />
           </Group>
           <Text size="xs" c="dimmed">{t($ => $.subtract.formats)}</Text>
+          <DataList withDivider>
+            {[
+              [t($ => $.subtract.included), result.includedAddressCount],
+              [t($ => $.subtract.removed), result.removedAddressCount],
+            ].map(([label, count]) => <DataList.Item key={label}>
+              <DataList.ItemLabel>{label}</DataList.ItemLabel>
+              <DataList.ItemValue className="network-value">{formatCount(count!)}</DataList.ItemValue>
+            </DataList.Item>)}
+          </DataList>
         </> : <Stack align="center" py="xl" gap="sm">
           <Title order={3} size="h4">{t($ => $.subtract.pendingTitle)}</Title>
           <Text size="sm" c="dimmed" ta="center">{t($ => $.subtract.pendingDescription)}</Text>

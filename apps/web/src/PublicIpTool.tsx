@@ -12,6 +12,7 @@ import { ToolQuestions } from './ToolQuestions';
 import { ToolMcpSection } from './ToolMcpSection';
 import { ToolPageHeader } from './ToolPageHeader';
 import { ToolPanel } from './ToolPanel';
+import { NetworkValue } from './NetworkValue';
 
 export function PublicIpTool({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> } = {}) {
   const { t, i18n } = useTranslation();
@@ -56,25 +57,29 @@ export function PublicIpTool({ onNavigate }: { onNavigate?: MouseEventHandler<HT
     <ToolPageHeader tool="ip" notice={t($ => $.ip.online)} />
     <ToolPanel headingId="ip-result-heading" title={t($ => $.ip.connection)} maw={780} aria-busy={loading}
       headerAside={result && <Badge variant="light">{result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>}>
-      <Stack gap="sm" aria-live="polite" mih={100}>
+      <Stack gap="sm" aria-live="polite" mih={{ base: 136, sm: 112 }} justify="center">
         {loading && <Group c="dimmed">
           <Loader size="sm" aria-hidden="true" />
           <Text size="sm">{t($ => $.ip.checking)}</Text>
         </Group>}
         {error && <Alert color="red" role="alert">{errorMessage(error, t, locale)}</Alert>}
         {result && <>
-          <Text size="xs" c="dimmed">{t($ => $.ip.resultLabel)}</Text>
-          <Group justify="space-between">
-            <Text component="code" className="network-value" size="xl" fw={600} c="var(--mantine-primary-color-filled)">{result.ip}</Text>
-            <ClipboardCopyButton label={t($ => $.ip.copy)} feedback={copyFeedback}
-              successMessage={t($ => $.ip.copySuccess)} failureMessage={t($ => $.ip.copyFailure)}
-              onCopy={copyIp} onDismiss={clearCopyFeedback} />
-          </Group>
+          <Text size="sm" c="dimmed">{t($ => $.ip.resultLabel)}</Text>
+          <Text component="code" className="network-value" fz={{ base: 22, sm: 28 }} fw={600} c="var(--mantine-primary-color-filled)">
+            <NetworkValue value={result.ip} />
+          </Text>
         </>}
       </Stack>
-      <Button type="button" fullWidth loading={loading} disabled={loading} onClick={() => void lookup()}>
-        {loading ? t($ => $.ip.checkingButton) : error ? t($ => $.ip.retry) : t($ => $.ip.refresh)}
-      </Button>
+      <Group gap="sm">
+        <ClipboardCopyButton label={t($ => $.ip.copy)} feedback={copyFeedback} variant="filled" disabled={!result || loading}
+          successMessage={t($ => $.ip.copySuccess)} failureMessage={t($ => $.ip.copyFailure)}
+          onCopy={copyIp} onDismiss={clearCopyFeedback} />
+        <Button type="button" variant="default" aria-disabled={loading} {...(loading ? { 'data-disabled': true } : {})}
+          leftSection={loading ? <Loader size={16} aria-hidden="true" /> : undefined}
+          onClick={() => { if (!loading) void lookup(); }}>
+          {loading ? t($ => $.ip.checkingButton) : error ? t($ => $.ip.retry) : t($ => $.ip.refresh)}
+        </Button>
+      </Group>
     </ToolPanel>
     <Stack component="section" aria-labelledby="explanation-heading" gap="sm">
       <Title order={2} size="h4" id="explanation-heading">{t($ => $.ip.explanationTitle)}</Title>

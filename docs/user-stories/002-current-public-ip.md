@@ -67,6 +67,13 @@ See [Cloudflare's header documentation](https://developers.cloudflare.com/fundam
   analytics, or log the IP in application logs or production verification.
   Cloudflare still processes the request under the operator's platform settings.
 - Set a request timeout and provide useful loading, error, and retry behavior.
+  Emphasize the address and copy action; present refresh as a secondary action.
+  Reserve address space across loading and address-family changes, and prefer
+  IPv6 line breaks between groups while preserving the exact copy value.
+  Refresh/retry remains focusable while busy, reports `aria-disabled`, and ignores
+  repeated activation until the current lookup finishes. It clears the old
+  address and disables copy during loading. Keyboard focus stays on the control
+  through completion or error.
 - Perform no background polling. Each lookup invokes the API Worker and
   counts toward its request allowance; the static page uses static asset hosting.
   See [Workers pricing](https://developers.cloudflare.com/workers/platform/pricing/).

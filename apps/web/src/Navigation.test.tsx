@@ -307,9 +307,9 @@ describe('navigation request and clipboard lifetimes', () => {
       if (outcome === 'success') pending.resolve();
       else pending.reject(new Error('Denied'));
     });
-    expect(screen.getByRole('status').textContent).toBe('');
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe('');
     await act(async () => { fireEvent.click(screen.getByRole('button', { name: copy })); });
-    expect(screen.getByRole('status').textContent).toBe(success);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(success);
     expect(writeText).toHaveBeenCalledTimes(2);
   });
 });
