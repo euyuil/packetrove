@@ -33,6 +33,30 @@
   error locations accurate. If values can contain separators, use an unambiguous
   parser appropriate to that format.
 
+## Tool icons and headings
+
+- Treat each tool's icon and localized name as one visual identity. Place the
+  icon immediately to the left of the name in homepage tool cards, tool page
+  headings, and navigation. Keep this relationship on narrow screens.
+- Use a 40-pixel themed icon container, a 24-pixel icon, and a 12-pixel gap for
+  homepage and tool page headings. Use the shared theme's light icon variant,
+  colors, and radius. Navigation uses smaller 18-pixel icons suited to its
+  controls.
+- Center the heading icon vertically against the first line of the tool name.
+  Keep the icon container from shrinking. Allow long or localized names to wrap
+  beside the icon without moving the icon above the name or centering it against
+  the entire multiline title.
+- Put descriptions and notices below the icon-and-name row, aligned with the
+  content area's left edge. Preserve their full reading width rather than
+  indenting them to the name's left edge.
+- Reuse the same heading component in homepage tool cards and tool page headers.
+  Preserve each context's semantic heading level, identifier, and typography.
+  Get tool identities and localized names from the shared catalog and translation
+  resources, and reuse the existing tool icon mapping.
+- Keep identification icons decorative and out of the accessibility tree. The
+  visible tool name provides their meaning; identification icons are not separate
+  click targets.
+
 ## Tool catalog and interface coverage
 
 - Every product tool must have a website page, a Web API endpoint, and an MCP
@@ -155,6 +179,8 @@
 
 - Use the Node.js version in .node-version and the pnpm version in package.json.
   Read docs/git-checks.md when preparing a development checkout.
+- Start website development with `pnpm dev:web`. Keep its Vite configuration
+  loader able to resolve shared TypeScript workspace source imports.
 - Keep dependency build scripts limited to reviewed `allowBuilds` entries in
   pnpm-workspace.yaml. Scalar's vue-demi adapter selection script is approved;
   review new scripts before enabling them.

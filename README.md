@@ -90,7 +90,7 @@ pnpm install
 pnpm dev:web
 ```
 
-Open `http://localhost:5173`. For the API and MCP, run `pnpm dev:api` in another
+Open `http://127.0.0.1:5173`. For the API and MCP, run `pnpm dev:api` in another
 terminal; they listen at `http://localhost:8787`. Local public IP lookup requires
 Cloudflare connection metadata and reports `CLIENT_IP_UNAVAILABLE` without it.
 See [Contributing](CONTRIBUTING.md) for complete setup, checks, and Git hooks.

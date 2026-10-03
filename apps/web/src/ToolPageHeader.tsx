@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
-import { Group, Stack, Text, ThemeIcon, Title } from '@mantine/core';
+import { Stack, Text } from '@mantine/core';
 import { toolCatalog, type ToolPage } from '@packetrove/contracts';
 import { useTranslation } from 'react-i18next';
-import { ToolIcon } from './ToolIcon';
+import { ToolHeading } from './ToolHeading';
 
 export function ToolPageHeader({ tool, notice }: { tool: ToolPage; notice: ReactNode }) {
   const { t } = useTranslation();
@@ -10,10 +10,7 @@ export function ToolPageHeader({ tool, notice }: { tool: ToolPage; notice: React
 
   return <Stack component="section" aria-labelledby="tool-title" gap="xs">
     <Text size="xs" c="var(--mantine-primary-color-filled)" fw={700}>{t($ => $.common.tools)}</Text>
-    <Group gap="sm" wrap="nowrap">
-      <ThemeIcon variant="light" size={40} flex="0 0 auto"><ToolIcon tool={page} size={24} /></ThemeIcon>
-      <Title order={1} id="tool-title" flex={1} fz={{ base: 26, sm: 32 }}>{t($ => $[page].title)}</Title>
-    </Group>
+    <ToolHeading tool={tool} order={1} id="tool-title" fz={{ base: 26, sm: 32 }} />
     <Text c="dimmed">{t($ => $[page].description)}</Text>
     <Text size="sm" c="var(--mantine-primary-color-filled)">{notice}</Text>
   </Stack>;
