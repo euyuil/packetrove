@@ -15,8 +15,16 @@ import { ToolResultCounts } from './ToolResultCounts';
 import { ToolExamples, ToolExampleCard } from './ToolExamples';
 import { ToolQuestions } from './ToolQuestions';
 import { ToolMcpSection } from './ToolMcpSection';
+import { useToolDraft } from './ToolDraftProvider';
 
 export type RangeToCidrsDraft = { start: string; end: string; result: RangeToCidrsResult | null; error: ToolError | null };
+
+const draftDefinition = { createInitialDraft: (): RangeToCidrsDraft => ({ start: '', end: '', result: null, error: null }) };
+
+export function RangeToCidrsPage({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> }) {
+  const [draft, onDraftChange] = useToolDraft(draftDefinition);
+  return <RangeToCidrsTool draft={draft} onDraftChange={onDraftChange} {...(onNavigate ? { onNavigate } : {})} />;
+}
 
 export function RangeToCidrsTool({ draft, onDraftChange, onNavigate }: {
   draft: RangeToCidrsDraft; onDraftChange: (draft: RangeToCidrsDraft) => void;

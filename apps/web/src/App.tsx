@@ -1,12 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
-import { isToolPage, type ToolPage } from '@packetrove/contracts';
+import { isToolPage } from '@packetrove/contracts';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
-import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
-import { CidrSubtractTool, type CidrSubtractDraft } from './CidrSubtractTool';
-import { PublicIpTool } from './PublicIpTool';
-import { RangeToCidrsTool, type RangeToCidrsDraft } from './RangeToCidrsTool';
+import { ToolDraftProvider } from './ToolDraftProvider';
+import { ToolPageView } from './ToolPageView';
 import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
 import { SiteFooter } from './SiteFooter';
@@ -21,9 +19,6 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const { t, i18n } = useTranslation();
   const [pathname, setPathname] = useState(initialPathname);
   const [urlSuffix, setUrlSuffix] = useState('');
-  const [draft, setDraft] = useState<CidrCoverDraft>({ input: '', result: null, error: null });
-  const [subtractDraft, setSubtractDraft] = useState<CidrSubtractDraft>({ include: '', exclude: '', result: null, error: null });
-  const [rangeDraft, setRangeDraft] = useState<RangeToCidrsDraft>({ start: '', end: '', result: null, error: null });
   const { locale, page, path } = resolveRoute(pathname);
   const main = useRef<HTMLElement>(null);
   const previousPath = useRef(path);
@@ -68,14 +63,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
     setUrlSuffix(window.location.search + window.location.hash);
   }
 
-  const toolPages: Record<ToolPage, ReactNode> = {
-    cidr: <CidrCoverTool draft={draft} onDraftChange={setDraft} onNavigate={navigate} />,
-    subtract: <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} onNavigate={navigate} />,
-    range: <RangeToCidrsTool draft={rangeDraft} onDraftChange={setRangeDraft} onNavigate={navigate} />,
-    ip: <PublicIpTool onNavigate={navigate} />,
-  };
-
-  return <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
+  return <ToolDraftProvider><Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
     <Stack gap="lg">
       <Group component="header" justify="space-between">
         <Anchor href={href('/')} onClick={navigate} aria-label={t($ => $.common.homeLabel)} underline="never" c="var(--mantine-color-text)">
@@ -93,7 +81,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         aria-label={homePage ? t($ => $.common.home) : isToolPage(page) ? t($ => $[page].title)
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
         {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} />
-          : isToolPage(page) ? toolPages[page]
+          : isToolPage(page) ? <ToolPageView page={page} onNavigate={navigate} />
           : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
@@ -114,5 +102,5 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       <SiteFooter sourceUrl={sourceUrl} documentationUrl={documentationUrl} locale={locale} page={page}
         newIssueUrl={newIssueUrl} commit={commit} onNavigate={navigate} />
     </Stack>
-  </Container>;
+  </Container></ToolDraftProvider>;
 }

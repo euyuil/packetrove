@@ -21,8 +21,16 @@ import { ToolErrorSummary } from './ToolErrorSummary';
 import { ToolResultCounts } from './ToolResultCounts';
 import { NormalizedInputs } from './NormalizedInputs';
 import { useCalculationFeedback } from './useCalculationFeedback';
+import { useToolDraft } from './ToolDraftProvider';
 
 export type CidrSubtractDraft = { include: string; exclude: string; result: CidrSubtractResult | null; error: ToolError | null };
+
+const draftDefinition = { createInitialDraft: (): CidrSubtractDraft => ({ include: '', exclude: '', result: null, error: null }) };
+
+export function CidrSubtractPage({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> }) {
+  const [draft, onDraftChange] = useToolDraft(draftDefinition);
+  return <CidrSubtractTool draft={draft} onDraftChange={onDraftChange} {...(onNavigate ? { onNavigate } : {})} />;
+}
 
 export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   draft: CidrSubtractDraft; onDraftChange: (draft: CidrSubtractDraft) => void;

@@ -103,7 +103,13 @@ and `ToolPanel` for labelled input and result sections. Pass the tool's localize
 processing notice to the header and its fields or result content to the panel.
 `ToolExamples` and `ToolExampleCard` provide the shared example layout; keep
 example inputs and results sourced from the catalog. Calculation, lookup,
-validation, draft, and result state belong to each tool's view.
+validation, draft, and result state belong to each tool's view. Each calculation
+page declares its draft initializer and uses `useToolDraft`; `ToolDraftProvider`
+retains drafts only within the current `App` instance. Switching tools or
+languages preserves drafts, results, and errors without storage or recalculation.
+A reload or a new application instance starts fresh. Register the page component
+in the exhaustive map in `apps/web/src/ToolPageView.tsx`; the application shell
+does not declare tool-specific state.
 
 The website MCP guide and `docs/integrations/mcp.md` consume the shared content
 model in `apps/web/src/mcp-guide.ts`. It combines catalog entries and examples
@@ -140,7 +146,7 @@ for observed compatibility and presentation limits.
    compatibility paths separately from removed API, MCP, and CLI names.
 3. Implement the shared calculation or lookup. Add the server handler to the
    exhaustive `ToolPage` map in `apps/worker/src/tools.ts`, and the website view
-   to the exhaustive map in `apps/web/src/App.tsx`. Reuse the shared page header,
+   to the exhaustive map in `apps/web/src/ToolPageView.tsx`. Reuse the shared page header,
    panels, and example components. Use only current-request connection metadata
    for lookups.
 4. Add the title, homepage description and link, API summary, and MCP guidance
