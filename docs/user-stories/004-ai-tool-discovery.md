@@ -134,28 +134,41 @@ presentation. The protocol permits optional
 A client can display a link, use it as context, ignore it, or leave it unopened;
 Packetrove does not require attribution or promise automatic citations.
 
-The 2026-10-03 local verification uses the pinned server
-`@modelcontextprotocol/server@2.0.0`, with the following observations. SDK
-acceptance and text-only decoding establish compatibility; they do not establish
-how a target application's interface presents the link.
+The following 2026-10-03 observations cover a local feature build reporting
+service version `0.2.0`, production service version `0.3.0`, and a separate
+user-prompted Codex desktop chat. The local verification uses the pinned server
+`@modelcontextprotocol/server@2.0.0`. SDK acceptance and text-only decoding
+establish compatibility; they do not establish how a target application's
+interface presents the link.
 
 | Client | Observed response handling | Link presentation |
 | --- | --- | --- |
 | `@modelcontextprotocol/client@2.0.0` | All catalog tools retain valid structured results and exact JSON text; optional resource links survive tool calls. | Returned to the caller; no application interface evaluated. |
 | `@modelcontextprotocol/sdk@1.30.0` | Legacy initialization, discovery, and all catalog tool calls accept the additive content. A text-only consumer can ignore the link and decode the unchanged complete answer. | Returned to the caller; no application interface evaluated. |
-| Codex CLI `0.160.0` | Actual calls through experimental app-server `mcpServer/tool/call` retain the structured result, JSON text, and `resource_link` for all four tools. Calculation calls use documentation-address inputs; the public-IP call uses a documentation-only header injected into the local test endpoint. | Present in raw app-server responses. TUI and desktop rendering unverified; do not assume displayed or ignored. |
+| Codex CLI `0.160.0`, local app-server probe | Actual calls through experimental app-server `mcpServer/tool/call` retain the structured result, JSON text, and `resource_link` for all four tools. Calculation calls use documentation-address inputs; the public-IP call uses a documentation-only header injected into the local test endpoint. | Present in raw app-server responses. TUI result presentation was not evaluated. |
+| Codex CLI `0.160.0`, production app-server probe | Connected to Packetrove service `0.3.0` and discovered all four catalog tools. One actual documentation-address `cidr-cover` call retained the structured result, exact JSON text, and `resource_link`. No production `public-ip` call was made. | Present in the raw app-server response, including `https://packetrove.com/cidr-cover`. TUI result presentation was not evaluated. |
+| Codex desktop, app version not recorded | A user-prompted `cidr-cover` call completed with documentation-address inputs. The final answer correctly reported `203.0.113.0/29`, three input addresses, eight covered addresses, and five additional addresses. | The final answer included a Markdown link using the returned `https://packetrove.com/cidr-cover` URI. Native tool-card presentation and actual link opening were not observed. |
 | Claude Code `2.1.288` | The npm-cached CLI reports `Connected` with `claude mcp get` using a fresh temporary configuration and the local feature endpoint. A configured tool-result call was not evaluated. | Unverified; the isolated interactive client requires account login. No login or model request performed. |
 
-The Codex check uses an ephemeral context, command-line MCP overrides, and
-temporary state and log directories; it does not modify persisted client
-configuration or make model requests. The injected `203.0.113.1` public-IP test
-is a compatibility check of a documentation-only local request context, not an
-observation of a real user's network connection.
+The Codex app-server probes use ephemeral contexts, command-line MCP overrides,
+and temporary state and log directories; the probes do not modify persisted
+client configuration or make model requests. The injected `203.0.113.1`
+public-IP test is a compatibility check of a documentation-only local request
+context, not an observation of a real user's network connection.
 
-After deployment, record the target client and exact version, date, tool,
-documentation-only input, retained answer, and whether the link was displayed,
-ignored, or available only in raw content. Opening `public-ip` observes a new
-browser connection rather than replaying the MCP caller's returned address.
+The separate desktop prompt requested an actual `cidr-cover` call with
+`{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}` and asked the assistant to
+use the original `resource_link` URI as a link if one was supplied. The final
+answer included that link and explained that opening the page does not carry
+the MCP inputs or result into the browser. This establishes one completed
+desktop tool call and the requested link in its final answer. It does not
+establish automatic citations, native tool-card rendering, or an actual click.
+
+For future observations, record the target client and version when available,
+date, tool, documentation-only input, retained answer, and whether the link was
+displayed, ignored, or available only in raw content. Opening `public-ip`
+observes a new browser connection rather than replaying the MCP caller's
+returned address.
 
 ## Manual prompt checks
 
@@ -186,6 +199,8 @@ documentation addresses. Do not submit private firewall inputs for evaluation.
 | Indirect | Prepare WireGuard AllowedIPs for `203.0.113.0/24` excluding `203.0.113.64/26`. | `/cidr-subtract`; `203.0.113.0/26, 203.0.113.128/25`, 192 remaining addresses; browser calculation and review before applying. |
 | Out of scope | Call Packetrove's MCP subtraction tool and prove the remaining subnets are unused. | Use `cidr-subtract` for the exact remainder and explain that gaps are relative to supplied inputs; do not claim live availability. |
 
-No external assistant evaluation is recorded by this change. Keep future
-observations separate from automated correctness results; a successful tool call
-does not establish search visibility or recommendation frequency.
+The controlled Codex desktop invocation recorded above covers one direct tool
+call and its requested answer link. The broader prompt set remains prospective.
+Keep assistant observations separate from automated correctness results; this
+single successful tool call does not establish search visibility,
+recommendation frequency, or automatic citations.
