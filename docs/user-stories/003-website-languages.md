@@ -128,6 +128,15 @@ conventions. Store each role's intended wording in translation resources; the
 footer's `API Documentation` label is separate from the page heading's
 `API documentation` text.
 
+On wide screens, place the footer's brand name and short description beside the
+project resources, integrations, and contact sections. Give the brand more width
+than an individual link section and keep the three link sections equally wide.
+On tablets and narrower windows, place the brand above the link sections. Their
+grid adapts to the navigation area's available width: three columns when space
+allows, two on phones, and one on the narrowest screens or with larger text.
+Keep each heading with its links and allow localized text to wrap. Footer links
+have a minimum 44-pixel click height on narrow screens.
+
 Use the shared theme for readable secondary text on white cards and the page
 background. Buttons keep visible default backgrounds or borders. On narrow
 screens and coarse-pointer devices, button and menu-item targets are at least
