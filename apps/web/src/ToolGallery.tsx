@@ -22,7 +22,7 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
   const [embla, setEmbla] = useState<EmblaCarouselType | null>(null);
   const [active, setActive] = useState(0);
   const reducedMotion = useReducedMotion();
-  const emblaOptions = useMemo(() => ({ align: 'start' as const, loop: false, duration: reducedMotion ? 0 : 25 }), [reducedMotion]);
+  const emblaOptions = useMemo(() => ({ align: 'start' as const, loop: true, duration: reducedMotion ? 0 : 25 }), [reducedMotion]);
 
   const handleSlideChange = useCallback((index: number) => {
     const root = carousel.current;
