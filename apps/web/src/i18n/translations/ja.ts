@@ -290,6 +290,7 @@ export const ja = {
     toolMigration: "旧ツール名に互換エイリアスはありません：{{toolRenames}}。ツール検出と保存済みの呼び出しを更新してください。",
     endpointMigration: "ウェブサイトの <code>/mcp</code> はサービスではなく、GET は 404、POST は 405 を返し、呼び出しを転送しません。クライアントには <code>{{serverUrl}}</code> を設定してください。独自デプロイではドメインと、Host およびブラウザー Origin の個別の完全一致許可リストを更新します。Origin ヘッダーのないクライアントも対応します。",
     deploymentGuide: "デプロイ、セルフホスティング、本番確認",
+    registryGuide: "MCP Registry への公開とバージョン方針",
     title: "Packetrove を AI エージェントに接続する",
     explanation: "互換性のある MCP クライアントを接続して Packetrove のネットワークツールを利用します。以下の設定を済ませてから、ツールの例を参照してください。",
     connection: "Streamable HTTP · アカウントや API キーは不要",

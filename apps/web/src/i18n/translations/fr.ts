@@ -275,6 +275,7 @@ export const fr = {
     toolMigration: "Les anciens noms n’ont pas d’alias de compatibilité : {{toolRenames}}. Actualise la découverte des outils et les appels enregistrés.",
     endpointMigration: "Le chemin <code>/mcp</code> du site n’est pas le service : GET renvoie 404 et POST 405, sans proxy ni redirection des appels. Configure les clients avec <code>{{serverUrl}}</code>. Pour ton déploiement, adapte les domaines et les listes exactes distinctes de Host et d’Origin du navigateur ; les clients sans en-tête Origin sont acceptés.",
     deploymentGuide: "Déploiement, auto-hébergement et vérification en production",
+    registryGuide: "Publication dans MCP Registry et politique de versions",
     title: "Connecter Packetrove à un agent IA",
     explanation: "Connectez un client MCP compatible pour utiliser les outils réseau Packetrove. Commencez par la configuration ci-dessous, puis consultez les exemples.",
     connection: "Streamable HTTP · Aucun compte ni clé API nécessaire",

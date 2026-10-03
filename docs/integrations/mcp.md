@@ -349,6 +349,8 @@ The website’s `/mcp` path is not the service endpoint: GET returns 404 and POS
 
 [Deployment, self-hosting, and production verification](../deployment.md)
 
+[MCP Registry publication and version policy](../cli-publishing.md#publish-to-the-official-mcp-registry)
+
 ## Client presentation check
 
 Checked on 2026-10-03 against a local feature build reporting service version 0.2.0. These observations describe the tested surfaces, not a promise about other client versions or interfaces.

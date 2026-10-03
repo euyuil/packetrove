@@ -98,7 +98,7 @@ See [Contributing](CONTRIBUTING.md) for complete setup, checks, and Git hooks.
 - [Contribute or report an issue](CONTRIBUTING.md)
 - [Self-hosting](docs/deployment.md)
 - [Continuous integration and deployment](docs/continuous-integration.md)
-- [CLI publishing and product releases](docs/cli-publishing.md) · [Changelog](CHANGELOG.md)
+- [Product releases, CLI publishing, and MCP Registry publication](docs/cli-publishing.md) · [Changelog](CHANGELOG.md)
 
 ## License
 

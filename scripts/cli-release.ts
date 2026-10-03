@@ -44,9 +44,9 @@ export function releaseVersion(tag: string): string {
 
 export function assertReleaseVersions(tag: string, versions: Record<string, unknown>): string {
   const version = releaseVersion(tag);
-  if ([...productManifests, '.release-please-manifest.json', 'docs/api/openapi.json']
+  if ([...productManifests, '.release-please-manifest.json', 'docs/api/openapi.json', 'server.json']
     .some(path => versions[path] !== version)) {
-    throw new Error('The tag, all workspace versions, OpenAPI version, and release manifest must agree.');
+    throw new Error('The tag, all workspace versions, OpenAPI version, release manifest, and MCP Registry version must agree.');
   }
   return version;
 }
@@ -180,7 +180,8 @@ async function validateRelease(tag: string): Promise<void> {
   const versions = Object.fromEntries(productManifests.map(path =>
     [path, JSON.parse(readFileSync(path, 'utf8')).version]));
   assertReleaseVersions(tag, { ...versions, '.release-please-manifest.json': manifest['.'],
-    'docs/api/openapi.json': JSON.parse(readFileSync('docs/api/openapi.json', 'utf8')).info?.version });
+    'docs/api/openapi.json': JSON.parse(readFileSync('docs/api/openapi.json', 'utf8')).info?.version,
+    'server.json': JSON.parse(readFileSync('server.json', 'utf8')).version });
   if (cli.name !== packageName || cli.private === true || cli.publishConfig?.access !== 'public') {
     throw new Error('The release must contain the public @packetrove/cli package.');
   }

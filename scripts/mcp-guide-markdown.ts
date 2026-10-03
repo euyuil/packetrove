@@ -39,7 +39,8 @@ export function createMcpGuideMarkdown(productVersion?: string) {
   parts.push(`## ${guide.errorsTitle}`, text(guide.results), text(guide.resultLinks), text(guide.errors), guide.httpErrors,
     `## ${guide.sdk.title}`, text(guide.sdk.description), code('js', guide.sdk.code), code('sh', guide.sdk.command), text(guide.sdk.local),
     `## ${guide.deployment.title}`, ...guide.deployment.paragraphs.map(text),
-    `[${guide.deployment.label}](../deployment.md)`);
+    `[${guide.deployment.label}](../deployment.md)`,
+    `[${guide.deployment.registryLabel}](../cli-publishing.md#publish-to-the-official-mcp-registry)`);
   parts.push('## Client presentation check',
     'Checked on 2026-10-03 against a local feature build reporting service version 0.2.0. These observations describe the tested surfaces, not a promise about other client versions or interfaces.',
     '| Client and version | Checked surface | Observed presentation |\n'

@@ -5,6 +5,7 @@ import type { Commit, GitHub, PullRequest } from 'release-please';
 import { createOpenApiDocument } from '../packages/contracts/src/openapi';
 import { productManifests } from './cli-release';
 import { createMcpGuideMarkdown } from './mcp-guide-markdown';
+import { createMcpRegistryJson } from './mcp-registry-manifest';
 import { isProductReleaseInput, registerPacketroveRelease } from './release-please';
 
 const baselineSha = 'a'.repeat(40);
@@ -58,6 +59,9 @@ describe('release-please unified product', () => {
     ['feat(mcp)!: change a tool', ['apps/worker/src/mcp.ts'], '0.2.0'],
     ['fix(deps): update dependencies', ['pnpm-lock.yaml'], '0.1.1'],
     ['fix(api): correct generated assets', ['scripts/api-assets.ts'], '0.1.1'],
+    ['fix(mcp): correct Registry metadata', ['server.json'], '0.1.1'],
+    ['fix(mcp): correct Registry generation', ['scripts/mcp-registry-manifest.ts'], '0.1.1'],
+    ['fix(mcp): correct Registry checks', ['scripts/mcp-registry.ts'], '0.1.1'],
   ])('builds the actual candidate for %s', async (message, files, version) => {
     const pullRequest = await candidate(message as string, files as string[]);
     expect(pullRequest?.version?.toString()).toBe(version);
@@ -86,6 +90,10 @@ describe('release-please unified product', () => {
     expect(markdown).toBe(createMcpGuideMarkdown(version));
     expect(markdown).toContain(`{ name: 'packetrove-example', version: "${version}" }`);
     expect(createMcpGuideMarkdown()).toBe(readFileSync('docs/integrations/mcp.md', 'utf8'));
+    const registry = pullRequest?.updates.find(update => update.path === 'server.json');
+    expect(registry).toBeDefined();
+    const outdated = JSON.stringify({ version: '0.0.0', description: 'Obsolete identity' });
+    expect(registry!.updater.updateContent(outdated)).toBe(createMcpRegistryJson(version));
   });
   it('combines website and calculation changes in one product release while omitting tooling changes', async () => {
     const github = fixtureGithub([
@@ -137,7 +145,7 @@ describe('release-please unified product', () => {
     expect(await candidate('feat(web): empty website change', [])).toBeUndefined();
   });
   it('checks shared build inputs without matching similar unrelated paths', () => {
-    for (const path of ['package.json', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', '.node-version', 'tsconfig.base.json', 'LICENSE', 'scripts/openapi.ts', 'scripts/api-assets.ts']) {
+    for (const path of ['package.json', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', '.node-version', 'tsconfig.base.json', 'LICENSE', 'scripts/openapi.ts', 'scripts/api-assets.ts', 'server.json', 'scripts/mcp-registry.ts', 'scripts/mcp-registry-manifest.ts']) {
       expect(isProductReleaseInput(path), path).toBe(true);
     }
     expect(isProductReleaseInput('package.json.backup')).toBe(false);

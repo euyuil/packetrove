@@ -274,6 +274,7 @@ export const ko = {
     toolMigration: "기존 도구 이름에는 호환 별칭이 없습니다: {{toolRenames}}. 도구 검색과 저장된 호출을 업데이트하세요.",
     endpointMigration: "웹사이트의 <code>/mcp</code>는 서비스가 아닙니다. GET은 404, POST는 405를 반환하며 도구 호출을 프록시하거나 리디렉션하지 않습니다. 클라이언트에 <code>{{serverUrl}}</code>을 설정하세요. 직접 배포할 때는 도메인과 별도의 정확한 Host 및 브라우저 Origin 허용 목록을 갱신하세요. Origin 헤더가 없는 클라이언트도 지원합니다.",
     deploymentGuide: "배포, 자체 호스팅 및 운영 검증",
+    registryGuide: "MCP Registry 게시 및 버전 정책",
     title: 'Packetrove를 AI 에이전트에 연결하기',
     explanation: "호환되는 MCP 클라이언트를 연결해 Packetrove 네트워크 도구를 사용하세요. 아래에서 연결을 설정한 후 도구 예시를 참고하세요.",
     connection: 'Streamable HTTP · 계정이나 API 키 불필요',
