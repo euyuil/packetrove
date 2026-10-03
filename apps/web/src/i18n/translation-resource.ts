@@ -6,5 +6,5 @@ type EntryCountTranslations = { entryCount_other: string }
   & Partial<Record<`entryCount_${Exclude<Intl.LDMLPluralRule, 'other'>}`, string>>;
 
 export type TranslationResource = Omit<EnglishStructure, 'cidr'> & {
-  cidr: Omit<EnglishStructure['cidr'], 'entryCount_one' | 'entryCount_other'> & EntryCountTranslations;
+  cidr: Omit<EnglishStructure['cidr'], keyof EntryCountTranslations> & EntryCountTranslations;
 };
