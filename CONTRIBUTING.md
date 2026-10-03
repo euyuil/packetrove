@@ -36,7 +36,11 @@ Start the website with hot reload:
 pnpm dev:web
 ```
 
-Open `http://localhost:5173`. CIDR calculations and IP range conversion work
+The web script uses Vite's module runner to load the configuration and shared
+TypeScript workspace imports. Pass Vite command-line options through the root
+command, for example `pnpm dev:web --port 5180 --strictPort`.
+
+Open `http://127.0.0.1:5173`. CIDR calculations and IP range conversion work
 with the web development server alone. For public IP lookup, API calls, and
 MCP development, use another terminal:
 

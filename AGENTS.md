@@ -179,6 +179,8 @@
 
 - Use the Node.js version in .node-version and the pnpm version in package.json.
   Read docs/git-checks.md when preparing a development checkout.
+- Start website development with `pnpm dev:web`. Keep its Vite configuration
+  loader able to resolve shared TypeScript workspace source imports.
 - Keep dependency build scripts limited to reviewed `allowBuilds` entries in
   pnpm-workspace.yaml. Scalar's vue-demi adapter selection script is approved;
   review new scripts before enabling them.

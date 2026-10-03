@@ -56,6 +56,10 @@ pnpm hooks:install
 Explicit setup reports configuration conflicts or missing Gitleaks as errors.
 It is available for manual repair; fresh clones normally need only `pnpm install`.
 
+After installation, start the website with `pnpm dev:web`. See
+[local development](../CONTRIBUTING.md#run-locally) for the development server
+address and command-line options.
+
 Gitleaks is a globally installed tool, with no repository-local download or
 version pin. Commit checks do not download anything or require network access.
 Update it when needed with `brew upgrade gitleaks`, then run
