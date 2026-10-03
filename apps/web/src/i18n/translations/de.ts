@@ -67,6 +67,10 @@ export const de = {
     lineEntry: 'Zeile {{line}}, Eintrag {{entry}}: {{message}}',
   },
   subtract: {
+    normalizedInclude: "Normalisierte eingeschlossene Eingaben ({{total}})",
+    normalizedExclude: "Normalisierte ausgeschlossene Eingaben ({{total}})",
+    normalizedHelp: "Jeder Eintrag wird einzeln normalisiert. Die Eingabereihenfolge, doppelte Einträge und verschachtelte Bereiche bleiben erhalten.",
+    noExcludedInputs: "Keine ausgeschlossenen Eingaben.",
     title: 'CIDR-Subtraktion',
     description: 'Ziehe ausgeschlossene IPv4- oder IPv6-Netze vom eingeschlossenen Adressraum ab. Erhalte die kleinste exakte CIDR-Liste, ohne zusätzliche Adressen.',
     inputs: 'Deine Adresslisten',

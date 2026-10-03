@@ -68,6 +68,10 @@ export const es = {
     lineEntry: 'Línea {{line}}, entrada {{entry}}: {{message}}',
   },
   subtract: {
+    normalizedInclude: "Entradas incluidas normalizadas ({{total}})",
+    normalizedExclude: "Entradas excluidas normalizadas ({{total}})",
+    normalizedHelp: "Cada entrada se normaliza por separado. Se conservan el orden de entrada, las entradas repetidas y los rangos anidados.",
+    noExcludedInputs: "No hay entradas excluidas.",
     title: 'Resta de CIDR',
     description: 'Resta las redes IPv4 o IPv6 excluidas del espacio de direcciones incluido. Obtén la lista CIDR exacta más pequeña, sin añadir direcciones.',
     inputs: 'Tus listas de direcciones',

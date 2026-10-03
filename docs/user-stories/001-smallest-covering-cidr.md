@@ -118,6 +118,9 @@ storage or URLs, or uploaded to the service.
 
 - Support both IPv4 and IPv6, rejecting mixed address families in one calculation.
 - Normalize CIDRs with host bits set and show canonical inputs in the result.
+- Keep normalized inputs in an initially collapsed, scrollable ordered list.
+  Preserve input order and duplicates; this disclosure shares its display with
+  the subtraction page without changing the calculation or address counts.
 - Use shared Zod schemas to generate the OpenAPI specification.
 - Accept 1 to 1,000 entries per calculation, with a 64 KiB HTTP request body limit.
 - Deliver a local CLI in addition to the web app, API, and MCP.
