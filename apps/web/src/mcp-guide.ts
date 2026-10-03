@@ -119,6 +119,7 @@ export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = 
       paragraphs: [t($ => $.mcp.serverBehavior), t($ => $.mcp.connectionPrivacy),
         t($ => $.mcp.toolMigration, { toolRenames }), t($ => $.mcp.endpointMigration, { serverUrl })],
       label: t($ => $.mcp.deploymentGuide),
+      registryLabel: t($ => $.mcp.registryGuide),
     },
   };
 }

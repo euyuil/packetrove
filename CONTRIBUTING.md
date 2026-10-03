@@ -104,6 +104,15 @@ pnpm docs:mcp:generate
 `pnpm docs:mcp:check` rejects stale or manually edited output and runs as part
 of `pnpm build` and `pnpm check`.
 
+The remote-only MCP Registry manifest in [server.json](server.json) is generated
+from the shared server identity, endpoint, and product version. After changing
+that source, run `pnpm registry:generate`. `pnpm registry:check` checks the
+supported manifest fields and rejects drift without network access; it also
+runs during `pnpm build` and `pnpm check`. The separate official publisher
+validation requires network access. See the
+[manual Registry publication procedure](docs/cli-publishing.md#publish-to-the-official-mcp-registry)
+for release prerequisites, authorization, and readback verification.
+
 Run checks appropriate to your change. Pure documentation changes usually need
 `git diff --check`; behavior changes need relevant tests and the full check:
 

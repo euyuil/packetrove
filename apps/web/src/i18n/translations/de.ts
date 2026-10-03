@@ -290,6 +290,7 @@ export const de = {
     toolMigration: "Frühere Werkzeugnamen haben keine Kompatibilitätsaliase: {{toolRenames}}. Aktualisiere die Werkzeugerkennung und gespeicherte Aufrufe.",
     endpointMigration: "Der Website-Pfad <code>/mcp</code> ist kein Dienstendpunkt: GET liefert 404 und POST 405, ohne Werkzeugaufrufe weiterzuleiten. Konfiguriere Clients mit <code>{{serverUrl}}</code>. Passe bei eigener Bereitstellung Domains sowie die getrennten exakten Host- und Browser-Origin-Freigaben an. Clients ohne Origin-Header werden unterstützt.",
     deploymentGuide: "Bereitstellung, Selbsthosting und Produktionsprüfung",
+    registryGuide: "Veröffentlichung in der MCP Registry und Versionsregeln",
     title: "Packetrove mit einem KI-Agenten verbinden",
     explanation: "Verbinde einen kompatiblen MCP-Client, um die Netzwerkwerkzeuge von Packetrove zu verwenden. Beginne mit der Einrichtung und nutze anschließend die Beispiele.",
     connection: "Streamable HTTP · Kein Konto oder API-Schlüssel erforderlich",

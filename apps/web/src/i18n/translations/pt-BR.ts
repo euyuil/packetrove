@@ -275,6 +275,7 @@ export const ptBR = {
     toolMigration: "Os nomes anteriores não têm aliases de compatibilidade: {{toolRenames}}. Atualize a descoberta de ferramentas e as chamadas salvas.",
     endpointMigration: "O caminho <code>/mcp</code> do site não é o serviço: GET retorna 404 e POST 405, sem proxy ou redirecionamento. Configure os clientes com <code>{{serverUrl}}</code>. Na sua implantação, atualize domínios e listas exatas separadas de Host e Origin do navegador; clientes sem cabeçalho Origin são aceitos.",
     deploymentGuide: "Implantação, hospedagem própria e verificação em produção",
+    registryGuide: "Publicação no MCP Registry e política de versões",
     title: "Conectar o Packetrove a um agente de IA",
     explanation: "Conecte um cliente MCP compatível para usar as ferramentas de rede do Packetrove. Comece pela configuração abaixo e consulte os exemplos.",
     connection: "Streamable HTTP · Sem conta nem chave de API",
