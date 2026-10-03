@@ -41,6 +41,7 @@ export function createMcpGuideMarkdown(productVersion?: string) {
     `## ${guide.sdk.title}`, text(guide.sdk.description), code('js', guide.sdk.code), code('sh', guide.sdk.command), text(guide.sdk.local),
     `## ${guide.deployment.title}`, ...guide.deployment.paragraphs.map(text),
     `[${guide.deployment.label}](../deployment.md)`,
+    `[${guide.deployment.privacyLabel}](${WEBSITE_ORIGIN}${pagePaths.privacy})`,
     `[${guide.deployment.registryLabel}](../cli-publishing.md#publish-to-the-official-mcp-registry)`);
   parts.push('## Client presentation check',
     'The following server-identity checks were performed on 2026-10-03 against a local feature build reporting service version 0.2.0. These observations describe the listed surfaces, not a promise about other client versions or interfaces.',

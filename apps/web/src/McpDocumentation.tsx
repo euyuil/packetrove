@@ -73,6 +73,7 @@ export function McpDocumentation({ onNavigate, documentationUrl, sourceUrl }: {
       <Title order={2} size="h3" id="mcp-deployment-heading">{guide.deployment.title}</Title>
       {guide.deployment.paragraphs.map(text => <Text size="sm" c="dimmed" key={text}><InlineCode text={text} /></Text>)}
       <Anchor href={`${documentationUrl}/docs/deployment.md`}>{guide.deployment.label}</Anchor>
+      <Anchor href={localizedPath(pagePaths.privacy, locale)} onClick={onNavigate}>{guide.deployment.privacyLabel}</Anchor>
       <Anchor href={`${documentationUrl}/docs/cli-publishing.md#publish-to-the-official-mcp-registry`}>{guide.deployment.registryLabel}</Anchor>
       <Anchor href={`${documentationUrl}/docs/integrations/mcp.md`}>{guide.labels.technicalGuide}</Anchor>
     </Stack>

@@ -1,6 +1,6 @@
 import type { MouseEventHandler, ReactNode } from 'react';
 import { Anchor, Box, Flex, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { IconBook, IconBrandGithub, IconBug, IconBulb, IconExternalLink, IconMail, IconScale, IconTerminal2, type TablerIcon } from '@tabler/icons-react';
+import { IconBook, IconBrandGithub, IconBug, IconBulb, IconExternalLink, IconMail, IconScale, IconShieldLock, IconTerminal2, type TablerIcon } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { localizedPath, pagePaths, type Locale, type Page } from './i18n/routes';
@@ -49,6 +49,9 @@ export function SiteFooter({ sourceUrl, documentationUrl, locale, page, newIssue
             </FooterLink>
             <FooterLink href={`${documentationUrl}/LICENSE`} icon={IconScale} external>
               {t($ => $.common.sourceLicense)}
+            </FooterLink>
+            <FooterLink href={localizedPath(pagePaths.privacy, locale)} icon={IconShieldLock} current={page === 'privacy'} onClick={onNavigate}>
+              {t($ => $.privacy.title)}
             </FooterLink>
           </Stack>
           <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-integrations-heading">

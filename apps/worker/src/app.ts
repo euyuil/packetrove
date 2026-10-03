@@ -6,6 +6,7 @@ import { ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
 import { mcpHandler } from './mcp';
 import { executeTool } from './tools';
+import { logUnexpectedRequestFailure } from './operational-logs';
 
 export function createApp() {
   const app = new Hono<{ Bindings: Cloudflare.Env }>();
@@ -27,7 +28,7 @@ export function createApp() {
         : error.code === 'UNSUPPORTED_MEDIA_TYPE' ? 415 : 400;
       return context.json(error.toResponse(), status);
     }
-    console.error('Unexpected request failure:', error);
+    logUnexpectedRequestFailure();
     return context.json({ error: {
       code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.',
     } } satisfies ErrorResponse, 500);

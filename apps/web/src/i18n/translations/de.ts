@@ -14,6 +14,42 @@ export const de = {
     title: 'Möchten Sie diese Seite auf Deutsch lesen?',
     switch: 'Zu Deutsch wechseln', dismiss: 'Jetzt nicht',
   },
+  privacy: {
+    "title": "Datenschutzerklärung",
+    "updated": "Zuletzt aktualisiert: 3. Oktober 2026.",
+    "introduction": "Diese Erklärung gilt für die Website, Web API, CLI und den entfernten MCP-Dienst von Packetrove, einschließlich der Nutzung über KI-Plugins. Packetrove wird von Liu Yue betreut. Ein Konto oder API-Schlüssel ist nicht erforderlich.",
+    "cloudflarePolicy": "Datenschutzerklärung von Cloudflare",
+    "sections": {
+        "local": {
+            "title": "Lokale Berechnungen und Browserspeicher",
+            "body": "Browserberechnungen und Offline-Berechnungen mit der CLI behalten Eingaben und Ergebnisse auf deinem Gerät. Berechnungsentwürfe bleiben im Seitenspeicher. Die Website speichert in sessionStorage nur eine Markierung für einen bereits behandelten Sprachvorschlag im aktuellen Tab, keine Adressen oder Ergebnisse. Beim Kopieren wird das Ergebnis in der Systemzwischenablage abgelegt."
+        },
+        "remote": {
+            "title": "Eingaben und Ergebnisse entfernter Werkzeuge",
+            "body": "Berechnungen über die API und entferntes MCP senden die angegebenen IP-Adressen, CIDRs oder Bereichsgrenzen an Packetrove. Wir verarbeiten sie im Arbeitsspeicher und geben das Ergebnis zurück, ohne Datenbank oder gespeicherten Berechnungsverlauf. Wir verlangen weder Gesprächsverläufe noch Kontozugangsdaten. Der aufrufende Client erhält das Ergebnis und kann es nach seinen eigenen Richtlinien speichern."
+        },
+        "connection": {
+            "title": "Abfragen der öffentlichen IP",
+            "body": "Eine Abfrage liest die von Cloudflare bereitgestellten Verbindungsinformationen und gibt eine beobachtete Adresse zurück. Die Anwendung speichert weder einen Abfrageverlauf noch die zurückgegebene IP in Protokollen. Ein gehosteter KI-Client kann seine eigene Ausgangsadresse sehen. Prüfe die Verbindung deines Geräts mit dessen Browser oder einer lokalen CLI."
+        },
+        "logs": {
+            "title": "Betriebsprotokolle der Anwendung",
+            "body": "Unerwartete Anfragefehler erzeugen einen festen Ereignisnamen und Fehlercode zur Dienstdiagnose. Diese von der Anwendung erzeugten Ereignisse enthalten keine Werkzeugeingaben, Ergebnisse, zurückgegebenen IP-Adressen, Anfrageheader oder ungefilterten Ausnahmedetails. Wir erstellen keine Nutzerprofile, verfolgen Nutzer nicht über Websites hinweg, verkaufen keine Werkzeugdaten und verwenden sie weder für Werbung noch für Modelltraining."
+        },
+        "providers": {
+            "title": "Hosting, Empfänger und Aufbewahrung",
+            "body": "Cloudflare hostet den Dienst und verarbeitet Anfragen einschließlich Verbindungsadressen, Headern und Argumenten entfernter Werkzeuge. Plattformprotokolle können Zeitstempel, URLs, Anfragekennungen und technische Metadaten ergänzen. Für Betreiber zugängliche Workers Logs sind bei Aktivierung bis zu sieben Tage abrufbar: derzeit drei Tage im Free-Tarif, mit angekündigten sieben Tagen ab dem 1. Dezember 2026. Das verspricht keine Löschung aller Netzwerk- oder Sicherheitsaufzeichnungen von Cloudflare innerhalb von sieben Tagen. Die Infrastrukturverarbeitung von Cloudflare folgt dessen eigener Richtlinie und kann außerhalb deines Landes stattfinden. Die Verantwortlichen von Packetrove können aktivierte Betriebsprotokolle zur Dienstdiagnose einsehen."
+        },
+        "controls": {
+            "title": "Deine Wahlmöglichkeiten",
+            "body": "Nutze Browserberechnungen oder Offline-Berechnungen mit der CLI, um Berechnungseingaben nicht an einen entfernten Server zu senden. Öffentliche IP-Abfragen benötigen weiterhin eine Netzwerkanfrage. Deaktiviere das Plugin oder entferne die MCP-Verbindung, um zukünftige Aufrufe zu stoppen. Bereits beim KI-Client gespeicherte Ergebnisse werden dadurch nicht gelöscht. Wir bieten weder einen kontobezogenen Aufrufverlauf noch eine Protokollierungsabwahl für einzelne Aufrufe an."
+        },
+        "contact": {
+            "title": "Datenschutzfragen und Anträge",
+            "body": "Kontaktiere die betreuende Person über die unten stehende E-Mail-Adresse für Datenschutzfragen und anwendbare Auskunfts- oder Löschanträge. Da Werkzeugaufrufe keinem Konto zugeordnet sind, können wir einen einzelnen Aufruf möglicherweise nicht identifizieren. Freiwillige E-Mail- und GitHub-Kommunikation bleibt in diesen Diensten und unterliegt deren Aufbewahrungskontrollen. Öffentliche GitHub-Issues sollen keine privaten Netzwerkdaten oder Geheimnisse enthalten. Änderungen dieser Erklärung werden auf dieser Seite veröffentlicht."
+        }
+    }
+},
   footer: {
     project: 'Projektressourcen', integrations: 'Integrationen', contact: 'Kontakt und Feedback',
     apiDocumentation: 'API-Dokumentation', cliGuide: 'CLI-Anleitung (Englisch)', sendEmail: 'E-Mail senden',
@@ -330,6 +366,7 @@ export const de = {
     tooManyOutputs: 'Das vollständige Ergebnis überschreitet {{limit}} CIDRs. Verwende weniger Ausschlüsse oder kleinere eingeschlossene Bereiche. Es wird kein Teilergebnis zurückgegeben.',
   },
   meta: {
+    privacy: {"title": "Packetrove Datenschutzerklärung", "description": "Erfahre, wie Packetrove lokale Berechnungen, entfernte Eingaben, Verbindungsadressen, Betriebsprotokolle und Hostingdaten verarbeitet, einschließlich Aufbewahrung und Wahlmöglichkeiten."},
     range: {
       "title": "IP-Bereich in CIDRs umwandeln — Packetrove",
       "description": "Wandle inklusive IPv4- oder IPv6-Endpunkte lokal in eine minimale exakte CIDR-Liste um. Kopiere alle Blöcke und prüfe exakte Zahlen ohne zusätzliche Abdeckung."
