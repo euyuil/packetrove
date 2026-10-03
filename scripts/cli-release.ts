@@ -107,7 +107,7 @@ async function github<T>(path: string, allowMissing = false): Promise<T | null> 
   return await response.json() as T;
 }
 
-async function requireValidatedRun(sha: string, runId?: number, requireDeployment = false): Promise<void> {
+export async function requireValidatedRun(sha: string, runId?: number, requireDeployment = false): Promise<void> {
   const repository = requiredEnvironment('GITHUB_REPOSITORY');
   const runs = runId
     ? [await github<WorkflowRun>(`actions/runs/${runId}`)]
@@ -126,7 +126,7 @@ async function requireValidatedRun(sha: string, runId?: number, requireDeploymen
     }
     if (isValidatedMainRun(run, jobs, repository, sha, requireDeployment)) return;
   }
-  throw new Error('The exact release revision needs a successful main CI run with the required steps.');
+  throw new Error('The exact revision needs a successful main CI run with the required steps.');
 }
 
 async function prepare(): Promise<void> {
