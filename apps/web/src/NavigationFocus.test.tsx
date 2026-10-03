@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
-import { featuredTools } from './ToolGallery';
 import { render } from './test-utils';
 import { locales, supportedLocales, type Locale } from './i18n/locales';
 import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
@@ -157,10 +156,7 @@ describe('focus after navigation to a different page', () => {
     }));
     vi.stubGlobal('fetch', fetch);
     render(<App />);
-    for (let index = 0; index < featuredTools.findIndex(tool => tool.page === 'ip'); index++) {
-      fireEvent.click(screen.getByRole('button', { name: 'Next tool' }));
-    }
-    fireEvent.click(screen.getByRole('link', { name: 'Check my public IP' }));
+    fireEvent.click(screen.getByRole('link', { name: 'My Public IP' }));
     expect(window.location.pathname).toBe(pagePaths.ip);
     const main = screen.getByRole('main', { name: 'My Public IP' });
     expect(document.activeElement).toBe(main);

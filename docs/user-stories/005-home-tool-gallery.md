@@ -28,6 +28,10 @@ catalog. It controls selection and order, without defining tool names, paths,
 schemas, or examples again. Adding a catalog tool does not automatically add
 another homepage card. Localized prose uses each catalog entry's page key.
 
+The gallery contains at most three tools. The current selection is smallest
+covering CIDR, CIDR subtraction, and IP range conversion. My Public IP remains
+available from the shared tool navigation.
+
 Each card places the tool icon to the left of its localized title, using the same
 heading layout as the tool page. Long titles wrap beside the icon, which remains
 aligned with the first line. Explanations sit below that row and retain the
@@ -37,9 +41,8 @@ content area's full width. The shared presentation rules live in
 Each card also contains a clearly marked example preview and a link to the
 localized tool page. Covering CIDRs show extra coverage; subtraction
 shows exact remaining ranges and counts; range conversion shows inclusive
-endpoints and their exact CIDR list and address count. The public IP preview uses a
-documentation address and explicitly asks visitors to open the tool for a real
-connection check. No example is a user's observed result.
+endpoints and their exact CIDR list and address count. No example is a user's
+observed result.
 
 The gallery has no automatic rotation or random initial selection. Visitors can
 drag or swipe the cards, use labeled previous/next buttons, or focus the gallery
@@ -71,7 +74,8 @@ order, avoiding hydration changes caused by randomness.
 
 ## Verification
 
-Tests cover all ten locales, catalog-derived examples and links, no network or
+Tests cover all ten locales, the three-tool limit, the selected previews and
+retained public IP navigation, catalog-derived examples and links, no network or
 storage writes, localized arrow and indicator navigation controls, bounded button
 navigation, indicator selection and keyboard focus, container-only shortcuts,
 focus recovery before hiding a card, offscreen focus exclusion, and hydration.

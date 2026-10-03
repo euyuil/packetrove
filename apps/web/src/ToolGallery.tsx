@@ -14,7 +14,7 @@ import { ToolHeading } from './ToolHeading';
 import { ToolPreview } from './ToolPreview';
 
 // Curate homepage order without copying tool definitions or examples.
-export const featuredTools = [toolCatalog.cidr, toolCatalog.subtract, toolCatalog.range, toolCatalog.ip];
+export const featuredTools = [toolCatalog.cidr, toolCatalog.subtract, toolCatalog.range];
 export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTMLAnchorElement> }) {
   const { t, i18n } = useTranslation();
   const locale = resolveLocale(i18n.resolvedLanguage);

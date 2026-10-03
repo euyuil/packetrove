@@ -117,6 +117,7 @@
 - Homepage selection and ordering may reference catalog entries by their
   identifiers. Use shared documentation examples for previews; do not perform
   live lookups or send user inputs merely to render a gallery or documentation.
+- Limit the homepage "Explore the tools" carousel to at most three tools.
 - Adding or changing a tool requires parity checks across website, API, MCP,
   generated OpenAPI, translations, documentation, and production smoke checks.
 
