@@ -56,6 +56,7 @@ export function McpDocumentation({ onNavigate, documentationUrl, sourceUrl }: {
     <Stack component="section" gap="sm" aria-labelledby="mcp-errors-heading">
       <Title order={2} size="h3" id="mcp-errors-heading">{guide.errorsTitle}</Title>
       <Text><InlineCode text={guide.results} /></Text>
+      <Text><InlineCode text={guide.resultLinks} /></Text>
       <Text><InlineCode text={guide.errors} /></Text>
       <Text size="sm" c="dimmed">{guide.httpErrors}</Text>
     </Stack>

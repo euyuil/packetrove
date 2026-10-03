@@ -106,6 +106,19 @@ Accept 1 to 1,000 IPv4 or IPv6 addresses or CIDRs, up to 64 characters each. Use
 }
 ```
 
+### Optional tool page link in successful responses
+
+```json
+{
+  "type": "resource_link",
+  "uri": "https://packetrove.com/cidr-cover",
+  "name": "cidr-cover",
+  "title": "Smallest Covering CIDR",
+  "description": "Browser calculator and explanation of additional address coverage. Opens without your MCP inputs or result.",
+  "mimeType": "text/html"
+}
+```
+
 Read cidr and range for the covered network. Check additionalAddressCount before using it in firewall rules. All address counts are decimal strings so IPv6 values stay exact.
 
 Remote MCP calls send your inputs to the server. The browser calculator runs locally. This tool calculates one CIDR; choosing several merges to meet a whole-list entry limit requires a separate decision. It never changes firewall rules.
@@ -158,6 +171,19 @@ Pass include and exclude arrays from one address family. Include must be nonempt
 }
 ```
 
+### Optional tool page link in successful responses
+
+```json
+{
+  "type": "resource_link",
+  "uri": "https://packetrove.com/cidr-subtract",
+  "name": "cidr-subtract",
+  "title": "CIDR Subtraction",
+  "description": "Browser calculator for exact CIDR subtraction and its limits. Opens without your MCP inputs or result.",
+  "mimeType": "text/html"
+}
+```
+
 Read cidrs and the exact decimal-string includedAddressCount, removedAddressCount, and remainingAddressCount. Complete removal returns an empty list. Results exceeding 10,000 CIDRs fail without a partial list.
 
 Remote API and MCP calls send inputs to the server; the browser calculates locally. Remaining ranges are relative to your inputs and do not prove live availability. The tool does not configure WireGuard or change firewall rules.
@@ -202,6 +228,19 @@ Pass start and end as IPv4 or IPv6 addresses from the same family, without CIDR 
 }
 ```
 
+### Optional tool page link in successful responses
+
+```json
+{
+  "type": "resource_link",
+  "uri": "https://packetrove.com/range-to-cidrs",
+  "name": "range-to-cidrs",
+  "title": "IP Range to CIDRs",
+  "description": "Browser calculator for exact inclusive IP range conversion and its limits. Opens without your MCP inputs or result.",
+  "mimeType": "text/html"
+}
+```
+
 Read canonical range.first and range.last, sorted cidrs, cidrCount, and exact decimal-string addressCount. Equal endpoints produce one /32 or /128; a complete address space produces /0. Errors identify the start or end field.
 
 The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI range conversion is not available.
@@ -233,6 +272,19 @@ Pass an empty object, {}. The tool observes the request connection; it does not 
 }
 ```
 
+### Optional tool page link in successful responses
+
+```json
+{
+  "type": "resource_link",
+  "uri": "https://packetrove.com/public-ip",
+  "name": "public-ip",
+  "title": "Current Public IP",
+  "description": "Checks a new connection from your browser, which may differ from the MCP caller connection.",
+  "mimeType": "text/html"
+}
+```
+
 The example uses a documentation address. A real call returns the observed ip and its family, either ipv4 or ipv6, for that request.
 
 A hosted AI client can return its own exit address. To inspect your browser connection, use this web tool; to inspect your computer’s command-line connection, run the CLI on that computer. One call does not discover both families, private local addresses, or an address before a proxy. The result is not an identity proof.
@@ -242,6 +294,8 @@ A hosted AI client can return its own exit address. To inspect your browser conn
 ## Read results and handle errors
 
 Read `structuredContent`, or the JSON in the text content block. Keep address counts as decimal strings or arbitrary-precision integers; converting large IPv6 counts to floating-point numbers loses precision.
+
+Successful responses keep the result in `structuredContent` and the first JSON text block, then add an optional `resource_link` to the English tool page. Links contain no inputs or results and do not restore your calculation. Clients choose whether to display, ignore, or open links; automatic rendering or citation is not guaranteed. Opening the public-IP page checks a new browser connection, which may differ from the MCP caller connection. Errors contain no tool page link.
 
 If `isError` is true, read the error JSON before retrying. Correct `INVALID_INPUT` and `MIXED_ADDRESS_FAMILIES` using the user’s information. `CLIENT_IP_UNAVAILABLE` means trusted connection metadata is missing; do not invent an address.
 
@@ -268,6 +322,8 @@ try {
   });
   if (result.isError) throw new Error(JSON.stringify(result.content));
   console.log(serverInfo, tools.map(tool => tool.name), result.structuredContent);
+  const links = result.content?.filter(content => content.type === 'resource_link') ?? [];
+  console.log(links); // Optional links; opening or presenting them is the client's choice.
 } finally {
   await client.close();
 }
@@ -303,3 +359,5 @@ Checked on 2026-10-03 against a local feature build reporting service version 0.
 | Claude Code 2.1.288 | `claude mcp get` using a temporary isolated configuration | Connected. Displayed the local configuration name, scope, status, transport, and endpoint URL; did not display the advertised server title, release version, description, website, or PNG icon on this surface. Its interactive `/mcp` view was not checked because the isolated client stopped at account login. |
 
 The current `@modelcontextprotocol/client@2.0.0` and legacy `@modelcontextprotocol/sdk@1.30.0` integration tests separately verify complete serialized identity, discovery, exact tool results, and compatibility when optional identity fields are ignored. SDK acceptance does not establish visual rendering. No model prompt or new account authorization was used for the manual checks.
+
+Actual Codex app-server result handling and the remaining result-link presentation limits are recorded in the [discovery story](../user-stories/004-ai-tool-discovery.md#result-link-compatibility-observations). Links survive the tested raw client responses; TUI, desktop, and Claude Code result rendering remain unverified.

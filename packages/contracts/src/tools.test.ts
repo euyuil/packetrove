@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createOpenApiDocument } from './openapi';
-import { cliTools, legacyToolPagePaths, toolCatalog, tools } from './index';
+import { cliTools, legacyToolPagePaths, PUBLIC_WEBSITE_ORIGIN, toolCatalog, tools } from './index';
 
 describe('shared tool catalog contracts', () => {
   it('keeps interface identifiers unique and website names outside short locale prefixes', () => {
@@ -36,6 +36,21 @@ describe('shared tool catalog contracts', () => {
       for (const command of tool.removedInterfaces.cliCommands) expect(cliTools.map(candidate => candidate.cli.command)).not.toContain(command);
     }
     expect(toolCatalog.subtract.cli).toBeNull();
+  });
+  it.each(tools)('links $id results to its canonical English tool page with no payload', tool => {
+    const link = tool.mcp.resultLink;
+    expect(link).toMatchObject({
+      type: 'resource_link', name: tool.id, title: tool.title, mimeType: 'text/html',
+    });
+    expect(link.description.length).toBeGreaterThan(0);
+    const uri = new URL(link.uri);
+    expect(uri.protocol).toBe('https:');
+    expect(uri.origin).toBe(PUBLIC_WEBSITE_ORIGIN);
+    expect(uri.pathname).toBe(tool.webPath);
+    expect(uri.search).toBe('');
+    expect(uri.hash).toBe('');
+    expect(uri.username).toBe('');
+    expect(uri.password).toBe('');
   });
   it('documents exactly the catalog tool endpoints alongside platform metadata', () => {
     const document = createOpenApiDocument();

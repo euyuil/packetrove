@@ -1,4 +1,5 @@
 import { strict as assert } from 'node:assert';
+import { isDeepStrictEqual } from 'node:util';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
@@ -56,6 +57,13 @@ for (const icon of PACKETROVE_IDENTITY.icons) {
 }
 console.log('PASS project-owned MCP icon availability, MIME type, and image dimensions');
 
+function assertMcpSuccessContent(content: unknown, tool: (typeof catalogTools)[number], result: unknown) {
+  // Boolean checks avoid printing a real lookup address if a production assertion fails.
+  assert(isDeepStrictEqual(content, [
+    { type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink,
+  ]), `MCP must retain exact JSON text and a generic tool page link: ${tool.id}`);
+}
+
 const website = await timedFetch(`${origin}/`);
 assert.equal(website.status, 200, 'Website status');
 assert.match(website.headers.get('content-type') ?? '', /text\/html/);
@@ -102,7 +110,8 @@ for (const page of websitePages) {
     } else {
       assert(pageHtml.includes('claude mcp add --transport http --scope user packetrove'), `Claude Code setup: ${path}`);
       assert(pageHtml.includes('codex mcp add packetrove'), `Codex setup: ${path}`);
-      assert(pageHtml.includes('structuredContent') && pageHtml.includes('CLIENT_IP_UNAVAILABLE'), `MCP result and error guide: ${path}`);
+      assert(pageHtml.includes('structuredContent') && pageHtml.includes('CLIENT_IP_UNAVAILABLE')
+        && pageHtml.includes('resource_link'), `MCP result, optional link, and error guide: ${path}`);
       assert(pageHtml.includes('href="' + localizedPath(pagePaths.api, page.locale) + '"'), `MCP API reference link: ${path}`);
       assert(pageHtml.includes('data-mcp-sdk-example') && pageHtml.includes('client.listTools()')
         && pageHtml.includes('client.callTool('), `MCP SDK connection example: ${path}`);
@@ -110,8 +119,12 @@ for (const page of websitePages) {
     const documentedTools = catalogTools.filter(tool => page.page === 'mcp' || page.page === tool.page);
     assert.deepEqual(Array.from(pageHtml.matchAll(/data-mcp-tool="([^"]+)"/g), match => match[1]),
       documentedTools.map(tool => tool.mcp.name), `MCP documentation catalog coverage: ${path}`);
-    for (const { page: tool } of documentedTools) {
+    for (const definition of documentedTools) {
+      const tool = definition.page;
       const example = mcpExamples[tool];
+      assert(pageHtml.includes('data-mcp-example="resource-link"')
+        && pageHtml.includes(escapeHtml(JSON.stringify(definition.mcp.resultLink, null, 2))),
+        `MCP resource link example: ${path}`);
       assert(pageHtml.includes('data-mcp-tool="' + example.name + '"'), `MCP tool name: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.arguments, null, 2))), `MCP example arguments: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.result, null, 2))), `MCP example result: ${path}`);
@@ -297,8 +310,10 @@ try {
       const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
       assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
       assert.deepEqual(response.structuredContent, example.result);
+      assertMcpSuccessContent(response.content, tool, example.result);
     }
     const invalid = await client.callTool({ name: tool.mcp.name, arguments: {} });
+    assert.equal(invalid.content?.length, 1, `MCP failures must contain no optional tool page link: ${tool.id}`);
     assert.equal(invalid.isError, true, `MCP must reject an incomplete calculation: ${tool.id}`);
     const content = invalid.content?.[0];
     assert(content?.type === 'text', `MCP must return error content: ${tool.id}`);
@@ -307,6 +322,7 @@ try {
   const publicIp = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
   assert.notEqual(publicIp.isError, true, 'Public IP tool failed.');
   assert(PublicIpResultSchema.safeParse(publicIp.structuredContent).success, 'Invalid public IP tool result.');
+  assertMcpSuccessContent(publicIp.content, catalogTools.find(tool => tool.mcp.name === PUBLIC_IP_TOOL_NAME)!, publicIp.structuredContent);
 } finally { await client.close(); }
 console.log('PASS modern MCP discovery, calculation, and public IP without an Origin header');
 
@@ -328,8 +344,10 @@ try {
       const response = await legacyClient.callTool({ name: tool.mcp.name, arguments: example.request });
       assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
       assert.deepEqual(response.structuredContent, example.result);
+      assertMcpSuccessContent(response.content, tool, example.result);
     }
     const invalid = LegacyCallToolResultSchema.parse(await legacyClient.callTool({ name: tool.mcp.name, arguments: {} }));
+    assert.equal(invalid.content?.length, 1, `MCP failures must contain no optional tool page link: ${tool.id}`);
     assert.equal(invalid.isError, true, `Legacy MCP must reject an incomplete calculation: ${tool.id}`);
     const content = invalid.content?.[0];
     assert(content?.type === 'text', `Legacy MCP must return error content: ${tool.id}`);
@@ -338,6 +356,7 @@ try {
   const publicIp = await legacyClient.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
   assert.notEqual(publicIp.isError, true, 'Legacy public IP tool failed.');
   assert(PublicIpResultSchema.safeParse(publicIp.structuredContent).success, 'Invalid legacy public IP tool result.');
+  assertMcpSuccessContent(publicIp.content, catalogTools.find(tool => tool.mcp.name === PUBLIC_IP_TOOL_NAME)!, publicIp.structuredContent);
 } finally { await legacyClient.close(); }
 console.log('PASS legacy MCP initialization, discovery, calculation, and public IP with a website Origin header');
 

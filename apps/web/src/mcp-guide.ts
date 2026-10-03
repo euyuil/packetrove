@@ -1,4 +1,4 @@
-import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, tools } from '@packetrove/contracts';
+import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog, tools } from '@packetrove/contracts';
 import workerManifest from '../../worker/package.json' with { type: 'json' };
 import { createInstance } from 'i18next';
 import type {} from './i18n/i18next';
@@ -25,7 +25,7 @@ export function getMcpToolContent(tool: McpExampleTool, locale: Locale) {
   const t = guideTranslator(locale);
   const example = mcpExamples[tool];
   return {
-    tool, example,
+    tool, example, resourceLink: toolCatalog[tool].mcp.resultLink,
     title: t($ => $.discovery[tool].mcpTitle),
     purpose: t($ => $.discovery[tool].purpose),
     inputs: t($ => $.discovery[tool].inputs, {
@@ -62,6 +62,8 @@ try {
   });
   if (result.isError) throw new Error(JSON.stringify(result.content));
   console.log(serverInfo, tools.map(tool => tool.name), result.structuredContent);
+  const links = result.content?.filter(content => content.type === 'resource_link') ?? [];
+  console.log(links); // Optional links; opening or presenting them is the client's choice.
 } finally {
   await client.close();
 }`;
@@ -97,11 +99,13 @@ export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = 
     labels: {
       toolName: t($ => $.mcp.toolName), serverAddress: t($ => $.home.serverAddress),
       arguments: t($ => $.mcp.arguments), exampleResult: t($ => $.mcp.exampleResult),
+      resourceLink: t($ => $.mcp.resourceLinkLabel),
       website: t($ => $.home.mcpGuide), api: t($ => $.home.apiGuide),
       source: t($ => $.common.source), technicalGuide: t($ => $.mcp.technicalGuide),
     },
     errorsTitle: t($ => $.mcp.errorsTitle),
     results: t($ => $.mcp.results),
+    resultLinks: t($ => $.mcp.resultLinks),
     errors: t($ => $.mcp.errors),
     httpErrors: t($ => $.mcp.httpErrors),
     sdk: {
