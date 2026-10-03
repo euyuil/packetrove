@@ -149,7 +149,7 @@ export function RangeToCidrsTool({ draft, onDraftChange, onNavigate }: {
         <Code block>{example.result.cidrs.join('\n')}</Code>
       </ToolExampleCard>)}
     </ToolExamples>
-    <ToolQuestions tool="range" onNavigate={onNavigate} />
+    <ToolQuestions tool="range" />
     <ToolMcpSection tool="range" {...(onNavigate ? { onNavigate } : {})} />
   </Stack>;
 }
