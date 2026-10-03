@@ -146,6 +146,7 @@ export const de = {
     familyExplanation: 'Eine Verbindung verwendet entweder IPv4 oder IPv6. Diese Abfrage zeigt diese Adresse; sie ermittelt weder beide Adressfamilien noch Ihre private lokale Adresse. Aktualisieren Sie die Abfrage nach einem Netzwerkwechsel oder einer Änderung der Proxy-Einstellungen.',
   },
   api: {
+    examplesTitle: 'Endpunktübersichten und Beispiele',
     rangeSummary: "Sende start und end derselben Adressfamilie. Beide Endpunkte sind enthalten. Zurückgegeben werden kanonische Endpunkte, die minimale exakte CIDR-Liste, CIDR-Anzahl und Adressanzahl als Dezimalzeichenfolge. Die Anfrage sendet Eingaben an den Server.",
     rangeResponse: "Dieses Beispiel liefert {{cidrs}} für exakt {{addresses}} Adressen.",
     title: 'API-Dokumentation', loading: 'API-Dokumentation wird geladen…', specification: 'OpenAPI-Spezifikation',

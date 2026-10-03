@@ -4,10 +4,12 @@
 schemas and generator, then run `pnpm spec:generate`. `pnpm spec:check` verifies
 that the committed document matches its source and validates OpenAPI semantics.
 
-The [API documentation](https://packetrove.com/docs/api) includes prerendered
-endpoint summaries and curl examples in every supported website language. In the
-browser, it loads Scalar to render this specification and support interactive
-test calls. Test requests go directly to the configured API without cookies or
+The [API documentation](https://packetrove.com/docs/api) loads Scalar in the
+browser to render this specification and support interactive test calls.
+Prerendered endpoint summaries and curl examples in every supported website
+language appear below the interactive reference in a section that is collapsed
+by default. Its contents remain in the initial HTML while collapsed.
+Test requests go directly to the configured API without cookies or
 a third-party proxy. Calculation inputs entered into the documentation's test
 client are sent to the API; the website's CIDR calculator continues to run
 locally in the browser.

@@ -21,3 +21,10 @@ export function render(ui: ReactNode, options?: Omit<RenderOptions, 'wrapper'>) 
     wrapper: TestProviders,
   });
 }
+
+export function deferred<Value>() {
+  let resolve!: (value: Value) => void;
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<Value>((complete, fail) => { resolve = complete; reject = fail; });
+  return { promise, resolve, reject };
+}

@@ -138,6 +138,7 @@ export const en = {
     familyExplanation: 'A connection uses either IPv4 or IPv6. This check shows that address; it does not discover both families or your private local address. Refresh after changing networks or proxy settings.',
   },
   api: {
+    examplesTitle: 'Endpoint summaries and examples',
     rangeSummary: "Submit start and end IP addresses from one family. Both endpoints are inclusive. Return canonical endpoints, the minimal exact CIDR list, a CIDR count, and a decimal-string address count. This request sends inputs to the server.",
     rangeResponse: "This example returns {{cidrs}}, representing exactly {{addresses}} addresses.",
     title: 'API documentation', loading: 'Loading API documentation…', specification: 'OpenAPI specification',
@@ -467,6 +468,7 @@ export const zhHans = {
     familyExplanation: '一次连接使用 IPv4 或 IPv6 中的一种。本次查询显示该连接的地址，无法同时发现两种地址，也不会显示本地私有地址。切换网络或代理设置后，请刷新查询。',
   },
   api: {
+    examplesTitle: '接口概要与示例',
     rangeSummary: "提交属于同一地址族的 start 和 end IP 地址，范围包含两个端点。返回规范化端点、最少精确 CIDR 列表、CIDR 数量和十进制字符串地址数。请求会将输入发送到服务器。",
     rangeResponse: "此示例返回 {{cidrs}}，精确表示 {{addresses}} 个地址。",
     title: 'API 文档', loading: '正在加载 API 文档…', specification: 'OpenAPI 规范',

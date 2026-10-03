@@ -99,8 +99,10 @@ network results and share a link in my preferred language.
 - Generate `sitemap.xml` from the canonical page list and reference it in
   `robots.txt`. Do not include aliases, missing pages, or API origins.
 - Keep API endpoint summaries and curl examples in the prerendered HTML. Load
-  the interactive reference only on the client. Prerendering makes no network
-  requests and does not populate calculator input or public IP results.
+  the interactive reference only on the client, before those summaries and
+  examples. Group them in a localized Mantine accordion that is collapsed by
+  default and keeps its contents mounted in the initial HTML. Prerendering makes
+  no network requests and does not populate calculator input or public IP results.
 - Keep unknown routes as HTTP 404 responses. The shared static fallback is in
   English; application-rendered not-found pages use the selected locale.
 

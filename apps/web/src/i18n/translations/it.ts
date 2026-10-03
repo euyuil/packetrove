@@ -131,6 +131,7 @@ export const it = {
     familyExplanation: 'Una connessione usa IPv4 oppure IPv6. Questa verifica mostra l’indirizzo di quella connessione; non individua entrambe le famiglie né il tuo indirizzo locale privato. Aggiorna il risultato dopo aver cambiato rete o impostazioni del proxy.',
   },
   api: {
+    examplesTitle: 'Riepiloghi degli endpoint ed esempi',
     rangeSummary: "Invia start ed end della stessa famiglia. Entrambi gli estremi sono inclusi. Restituisce estremi canonici, lista CIDR minima esatta, numero di CIDR e conteggio indirizzi come stringa decimale. La richiesta invia dati al server.",
     rangeResponse: "Questo esempio restituisce {{cidrs}}, rappresentando esattamente {{addresses}} indirizzi.",
     title: 'Documentazione API', loading: 'Caricamento della documentazione API…', specification: 'Specifica OpenAPI',

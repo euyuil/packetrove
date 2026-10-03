@@ -1,16 +1,9 @@
 import type { ComponentType } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
-import { render } from './test-utils';
+import { deferred, render } from './test-utils';
 
 type DocumentationModule = { default: ComponentType };
-
-function deferred<Value>() {
-  let resolve!: (value: Value) => void;
-  let reject!: (reason: Error) => void;
-  const promise = new Promise<Value>((complete, fail) => { resolve = complete; reject = fail; });
-  return { promise, resolve, reject };
-}
 
 beforeEach(() => {
   vi.resetModules();
