@@ -62,6 +62,9 @@ describe('release-please unified product', () => {
     ['fix(mcp): correct Registry metadata', ['server.json'], '0.1.1'],
     ['fix(mcp): correct Registry generation', ['scripts/mcp-registry-manifest.ts'], '0.1.1'],
     ['fix(mcp): correct Registry checks', ['scripts/mcp-registry.ts'], '0.1.1'],
+    ['fix(plugin): correct listing text', ['plugins/packetrove/plugin.json'], '0.1.1'],
+    ['fix(plugin): replace artwork', ['plugins/packetrove/assets/logo.png'], '0.1.1'],
+    ['feat(plugin): extend connection configuration', ['plugins/packetrove/mcp.json'], '0.2.0'],
   ])('builds the actual candidate for %s', async (message, files, version) => {
     const pullRequest = await candidate(message as string, files as string[]);
     expect(pullRequest?.version?.toString()).toBe(version);
@@ -71,6 +74,7 @@ describe('release-please unified product', () => {
     ['README.md'],
     ['docs/cli-publishing.md'], ['.github/workflows/release.yml'], ['scripts/cli-release.ts'],
     ['scripts/release-please.ts'], ['packages/core-other/src/index.ts'],
+    ['plugins/packetrove-other/plugin.json'],
   ])('does not release a documentation or tooling feature changing %j', async (...files) => {
     expect(await candidate('feat: update tooling', files)).toBeUndefined();
   });
@@ -95,20 +99,22 @@ describe('release-please unified product', () => {
     const outdated = JSON.stringify({ version: '0.0.0', description: 'Obsolete identity' });
     expect(registry!.updater.updateContent(outdated)).toBe(createMcpRegistryJson(version));
   });
-  it('combines website and calculation changes in one product release while omitting tooling changes', async () => {
+  it('combines website, calculation, and plugin changes in one product release while omitting tooling changes', async () => {
     const github = fixtureGithub([
       { sha: releaseSha, message: 'feat(web): add a website widget', files: ['apps/web/package.json', 'pnpm-lock.yaml'] },
       { sha: 'c'.repeat(40), message: 'fix(core): correct calculation', files: ['packages/core/src/index.ts', 'apps/web/src/App.tsx'] },
       { sha: 'd'.repeat(40), message: 'feat: add release tooling', files: ['scripts/release-please.ts'] },
+      { sha: 'e'.repeat(40), message: 'fix(plugin): correct listing text', files: ['plugins/packetrove/plugin.json'] },
     ]);
     const manifest = await Manifest.fromManifest(github, 'main');
     const pullRequest = (await manifest.buildPullRequests())[0];
     expect(pullRequest?.version?.toString()).toBe('0.2.0');
     expect(pullRequest?.body.toString()).toContain('correct calculation');
     expect(pullRequest?.body.toString()).toContain('website widget');
+    expect(pullRequest?.body.toString()).toContain('listing text');
     expect(pullRequest?.body.toString()).not.toContain('release tooling');
   });
-  it('updates every workspace, OpenAPI, manifest, and changelog together and releases only a merged PR', async () => {
+  it('updates every workspace, plugin, OpenAPI, manifest, and changelog together and releases only a merged PR', async () => {
     const pullRequest = await candidate('fix(cli): correct output', ['packages/cli/src/cli.ts']);
     expect(pullRequest).toBeDefined();
     for (const [path, key] of [...productManifests.map(path => [path, 'version']), ['.release-please-manifest.json', '.']]) {
@@ -118,6 +124,9 @@ describe('release-please unified product', () => {
       const updated = JSON.parse(update!.updater.updateContent(readFileSync(path!, 'utf8')));
       expect(updated[key!]).toBe('0.1.1');
       expect(updated.private).toBe(original.private);
+      if (path === 'plugins/packetrove/plugin.json') {
+        expect(updated).toEqual({ ...original, version: '0.1.1' });
+      }
     }
     const specification = pullRequest!.updates.find(update => update.path === 'docs/api/openapi.json');
     const document = createOpenApiDocument();
@@ -151,5 +160,6 @@ describe('release-please unified product', () => {
     expect(isProductReleaseInput('package.json.backup')).toBe(false);
     expect(isProductReleaseInput('packages/core-other/package.json')).toBe(false);
     expect(isProductReleaseInput('apps/web-other/package.json')).toBe(false);
+    expect(isProductReleaseInput('plugins/packetrove-other/plugin.json')).toBe(false);
   });
 });

@@ -132,8 +132,9 @@ unless it updates `main`; opening, reopening, or updating a pull request targeti
 After one-time setup, [`release.yml`](../.github/workflows/release.yml)
 runs after successful current `main` validation, deployment, and production
 checks. Release-please maintains one product release pull request with the next
-version, root changelog, all workspace versions, and generated OpenAPI version.
-Website, API, MCP, CLI, core, and contracts changes contribute to that version.
+version, root changelog, all workspace versions, the OpenAI plugin version, and
+generated OpenAPI version. Website, API, MCP, CLI, core, contracts, and plugin
+changes contribute to that version.
 The release tag and npm version use the same plain number, such as `0.1.1`.
 A repository-scoped GitHub App allows the
 release pull request to run the same required validation as other pull requests.
@@ -145,6 +146,8 @@ publishes the tagged CLI to npm at the product version, even for a release with
 website-only changes. Publication does not build a later main revision.
 The release pull request is never automatically merged. Leaving it open holds
 npm publication while ordinary feature merges continue to deploy the services.
+The plugin source receives the same version; generating its ZIP and submitting
+it to OpenAI remain separate maintainer actions.
 
 The workflow uses npm trusted publishing with OpenID Connect (OIDC), with no npm
 write token in repository secrets. See the [CLI publishing guide](cli-publishing.md)

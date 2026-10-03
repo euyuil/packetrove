@@ -4,7 +4,7 @@ The CLI is published as `@packetrove/cli`, with the `packetrove` executable.
 The initial `0.1.0` release is available on
 [npm](https://www.npmjs.com/package/@packetrove/cli) and
 [GitHub](https://github.com/euyuil/packetrove/releases/tag/0.1.0). Only the CLI is
-published; it bundles the core, contracts, and runtime dependencies.
+published to npm; it bundles the core, contracts, and runtime dependencies.
 The [MCP Registry procedure](#publish-to-the-official-mcp-registry) separately
 registers the existing remote service. Registry publication is manual and is
 not triggered by merging a pull request or publishing the CLI.
@@ -16,7 +16,8 @@ requests as usual. The existing `CI and deployment` workflow validates and
 deploys the website, API, and MCP on `main`.
 
 Packetrove uses one product version for the website, API, MCP, CLI, core, and
-contracts, including the MCP Registry manifest. Shared calculations and
+contracts, including the MCP Registry manifest and the
+[OpenAI plugin package](integrations/openai-plugin.md). Shared calculations and
 contracts keep corresponding capabilities aligned. Release numbers identify a
 source snapshot; deployed services can
 contain newer unreleased changes, identified by their Git commit SHA.
@@ -24,7 +25,8 @@ contain newer unreleased changes, identified by their Git commit SHA.
 [`release.yml`](../.github/workflows/release.yml) runs after a successful
 current `main` validation, deployment, and production check. Release-please
 maintains a separate `chore: release <version>` pull request containing the
-product changelog and all workspace version updates. This pull request also runs the required
+product changelog, all workspace version updates, and the plugin version update.
+This pull request also runs the required
 `Validate project` check and must be up to date with `main`. It is never
 automatically merged. Leave it open to accumulate changes without publishing
 npm.
@@ -52,7 +54,7 @@ Use Conventional Commit titles for squash-merged pull requests:
 | Change affecting the product | Title example | Result from 0.1.0 |
 | --- | --- | --- |
 | Fix, packaging correction, or dependency update | `fix(cli): correct JSON error output` | 0.1.1 |
-| Feature in the website, API, MCP, CLI, core, or contracts | `feat(core): support another calculation`, `feat(web): add a tool` | 0.2.0 |
+| Feature in the website, API, MCP, CLI, core, contracts, or plugin | `feat(core): support another calculation`, `feat(web): add a tool` | 0.2.0 |
 | Breaking change before 1.0 | `feat(cli)!: change the input format` | 0.2.0 |
 | Documentation or chores | `docs: clarify installation`, `chore: update tooling` | No product release |
 
@@ -66,10 +68,11 @@ The release component uses the pinned `release-please` development dependency
 and the Node strategy with a small file filter in `scripts/release-please.ts`.
 The filter handles root files exactly; the upstream directory exclusion does
 not. This tooling is not bundled in the CLI. One component rooted at `.` groups
-`packages/cli`, `packages/core`, `packages/contracts`, `apps/web`, and
-`apps/worker`. Shared manifests, the lockfile, `.node-version`,
-`tsconfig.base.json`, `LICENSE`, and the OpenAPI and API-asset build scripts also
-contribute. The Registry `server.json`, generator, and manifest builder also
+`packages/cli`, `packages/core`, `packages/contracts`, `apps/web`,
+`apps/worker`, and `plugins/packetrove`. Plugin manifests, listing text, and
+assets therefore contribute to the same release. Shared manifests, the lockfile,
+`.node-version`, `tsconfig.base.json`, `LICENSE`, and the OpenAPI and API-asset
+build scripts also contribute. The Registry `server.json`, generator, and manifest builder also
 contribute, so a Registry-only `fix(mcp)` receives a formal patch release.
 Documentation, other repository scripts, and workflow files are excluded.
 A mixed commit that changes product inputs still
@@ -77,15 +80,18 @@ contributes. Update the relevant package manifest when changing a dependency
 and regenerate the lockfile together.
 
 Release-please updates the root and every workspace's `package.json`,
-`.release-please-manifest.json`, `docs/api/openapi.json`, and `CHANGELOG.md`
+`plugins/packetrove/plugin.json`, `.release-please-manifest.json`,
+`docs/api/openapi.json`, and `CHANGELOG.md`
 together. It also regenerates `docs/integrations/mcp.md` from the shared MCP
 guide content and `server.json` from the shared server identity and endpoint
 using the candidate version. API and MCP version metadata comes
 from the shared contracts package version. The generated OpenAPI version and
 MCP guide are updated in the release PR so the required consistency checks
 continue to pass. Only the CLI is published to npm; the other packages remain
-private. Publication checks every workspace version, the OpenAPI version, and
-the release and Registry manifests against the tag before uploading.
+private. Publication checks every workspace version, the plugin and OpenAPI
+versions, and the release and Registry manifests against the tag before uploading.
+OpenAI plugin ZIP generation and submission remain separate maintainer actions;
+a product release does not automatically upload or publish that package.
 
 ## One-time GitHub App setup
 
