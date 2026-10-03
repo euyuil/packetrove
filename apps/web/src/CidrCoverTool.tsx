@@ -1,7 +1,7 @@
 import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Accordion, Alert, Badge, Button, DataList, Group, List, ScrollArea, SimpleGrid, Stack, Text, Textarea, Title, VisuallyHidden,
+  Alert, Badge, Button, DataList, Group, SimpleGrid, Stack, Text, Textarea, Title, VisuallyHidden,
 } from '@mantine/core';
 import { CIDR_COVER_EXAMPLES, MAX_INPUTS, type CidrCoverResult } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
@@ -16,6 +16,7 @@ import { ToolPageHeader } from './ToolPageHeader';
 import { ToolPanel } from './ToolPanel';
 import { parseAddressEntries } from './parseAddressEntries';
 import { NetworkValue } from './NetworkValue';
+import { NormalizedInputs } from './NormalizedInputs';
 import { ToolErrorSummary } from './ToolErrorSummary';
 import { ToolResultCounts } from './ToolResultCounts';
 import { useCalculationFeedback } from './useCalculationFeedback';
@@ -144,18 +145,8 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
                   <DataList.ItemValue className="network-value"><NetworkValue value={result.range.last} /></DataList.ItemValue>
                 </DataList.Item>
               </DataList>
-              <Accordion variant="contained">
-                <Accordion.Item value="normalized-inputs">
-                  <Accordion.Control>{t($ => $.cidr.normalized, { total: formatCount(result.normalizedInputs.length) })}</Accordion.Control>
-                  <Accordion.Panel>
-                    <ScrollArea.Autosize mah={200} type="auto">
-                      <List type="ordered" size="sm">{result.normalizedInputs.map((entry, index) => <List.Item key={index}>
-                        <Text component="code" className="network-value" size="sm">{entry}</Text>
-                      </List.Item>)}</List>
-                    </ScrollArea.Autosize>
-                  </Accordion.Panel>
-                </Accordion.Item>
-              </Accordion>
+              <NormalizedInputs label={t($ => $.cidr.normalized, { total: formatCount(result.normalizedInputs.length) })}
+                entries={result.normalizedInputs} />
             </> : <Stack align="center" py="xl" gap="sm">
               <Title order={3} size="h4">{t($ => $.cidr.emptyTitle)}</Title>
               <Text size="sm" c="dimmed" ta="center">{t($ => $.cidr.emptyDescription)}</Text>

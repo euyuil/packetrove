@@ -67,6 +67,10 @@ export const ja = {
     lineEntry: '{{line}} 行目、{{entry}} 番目の項目：{{message}}',
   },
   subtract: {
+    normalizedInclude: "正規化した含める入力（{{total}} 件）",
+    normalizedExclude: "正規化した除外する入力（{{total}} 件）",
+    normalizedHelp: "各入力を個別に正規化します。入力順序、重複した項目、入れ子の範囲は保持されます。",
+    noExcludedInputs: "除外する入力はありません。",
     title: 'CIDR の差分',
     description: '含める IPv4 または IPv6 のアドレス空間から、除外するネットワークを取り除きます。余分なアドレスを含まない、最小の正確な CIDR リストを取得できます。',
     inputs: 'アドレスリスト',

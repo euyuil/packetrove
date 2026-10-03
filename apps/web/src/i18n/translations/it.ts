@@ -68,6 +68,10 @@ export const it = {
     lineEntry: 'Riga {{line}}, voce {{entry}}: {{message}}',
   },
   subtract: {
+    normalizedInclude: "Voci incluse normalizzate ({{total}})",
+    normalizedExclude: "Voci escluse normalizzate ({{total}})",
+    normalizedHelp: "Ogni voce viene normalizzata separatamente. L’ordine di inserimento, le voci ripetute e gli intervalli annidati vengono mantenuti.",
+    noExcludedInputs: "Nessuna voce esclusa.",
     title: 'Sottrazione CIDR', description: 'Sottrai le reti IPv4 o IPv6 escluse dal tuo spazio di indirizzi incluso. Ottieni il più piccolo elenco esatto di CIDR, senza aggiungere indirizzi.',
     inputs: 'I tuoi elenchi di indirizzi', include: 'Includi', exclude: 'Escludi',
     includeLabel: 'Indirizzi IP o CIDR da includere', excludeLabel: 'Indirizzi IP o CIDR da escludere',
