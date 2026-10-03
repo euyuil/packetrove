@@ -1,5 +1,5 @@
 import type { MouseEventHandler, ReactNode } from 'react';
-import { Anchor, Box, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
+import { Anchor, Box, Flex, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
 import { IconBook, IconBrandGithub, IconBug, IconBulb, IconExternalLink, IconMail, IconScale, IconTerminal2, type TablerIcon } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
@@ -11,6 +11,7 @@ function FooterLink({ href, icon: Icon, external = false, current = false, label
   onClick?: MouseEventHandler<HTMLAnchorElement>; children?: ReactNode;
 }) {
   return <Anchor size="sm" href={href} onClick={onClick} c="dimmed" underline="hover" display="inline-flex" maw="100%"
+    mih={{ base: 44, sm: 0 }}
     target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}
     aria-label={label} title={label} aria-current={current ? 'page' : undefined}>
     <Group component="span" gap={6} wrap="nowrap">
@@ -30,47 +31,52 @@ export function SiteFooter({ sourceUrl, documentationUrl, locale, page, newIssue
   const sourceLabel = commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source);
 
   return <Box component="footer" id="site-footer" pt="xs" pb="sm">
-    <SimpleGrid cols={{ base: 1, xs: 2, md: 4 }} spacing="xl" verticalSpacing="xl">
-      <Stack gap="sm" align="flex-start" maw={300} miw={0}>
+    <Flex direction={{ base: 'column', md: 'row' }} gap="xl" align="flex-start">
+      <Stack gap="sm" align="flex-start" flex={{ md: '1.4 1 0' }} w={{ base: '100%', md: 'auto' }} miw={0}>
         <Group gap="xs">
           <img src={packetroveLogo} width="28" height="28" alt="" />
           <Text size="md" fw={700}>Packetrove</Text>
         </Group>
-        <Text size="sm" c="dimmed">{t($ => $.common.tagline)}</Text>
+        <Text size="sm" c="dimmed" maw={300}>{t($ => $.common.tagline)}</Text>
       </Stack>
-      <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-project-heading">
-        <Title order={2} size="sm" fw={600} id="footer-project-heading">{t($ => $.footer.project)}</Title>
-        <FooterLink href={sourceUrl} icon={IconBrandGithub} external label={sourceLabel}>
-          {commit && <Text component="code" inherit ff="monospace">{commit.slice(0, 7)}</Text>}
-        </FooterLink>
-        <FooterLink href={`${documentationUrl}/LICENSE`} icon={IconScale} external>
-          {t($ => $.common.sourceLicense)}
-        </FooterLink>
-      </Stack>
-      <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-integrations-heading">
-        <Title order={2} size="sm" fw={600} id="footer-integrations-heading">{t($ => $.footer.integrations)}</Title>
-        <FooterLink href={localizedPath(pagePaths.api, locale)} icon={IconBook} current={page === 'api'} onClick={onNavigate}>
-          {t($ => $.footer.apiDocumentation)}
-        </FooterLink>
-        <FooterLink href={localizedPath(pagePaths.mcp, locale)} icon={IconBook} current={page === 'mcp'} onClick={onNavigate}>
-          {t($ => $.mcp.navigation)}
-        </FooterLink>
-        <FooterLink href={`${documentationUrl}/docs/integrations/cli.md`} icon={IconTerminal2} external>
-          {t($ => $.footer.cliGuide)}
-        </FooterLink>
-      </Stack>
-      <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-contact-heading">
-        <Title order={2} size="sm" fw={600} id="footer-contact-heading">{t($ => $.footer.contact)}</Title>
-        <FooterLink href={`${newIssueUrl}?template=bug-report.yml`} icon={IconBug} external>
-          {t($ => $.common.reportBug)}
-        </FooterLink>
-        <FooterLink href={`${newIssueUrl}?template=feature-request.yml`} icon={IconBulb} external>
-          {t($ => $.common.requestFeature)}
-        </FooterLink>
-        <FooterLink href="mailto:hello@packetrove.com" icon={IconMail}>
-          {t($ => $.footer.sendEmail)}
-        </FooterLink>
-      </Stack>
-    </SimpleGrid>
+      <Box flex={{ md: '3 1 0' }} w={{ base: '100%', md: 'auto' }} miw={0}>
+        <SimpleGrid type="container" cols={{ base: 1, '20rem': 2, '36rem': 3 }}
+          spacing={{ base: 'lg', '36rem': 'xl' }} verticalSpacing="xl">
+          <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-project-heading">
+            <Title order={2} size="sm" fw={600} id="footer-project-heading">{t($ => $.footer.project)}</Title>
+            <FooterLink href={sourceUrl} icon={IconBrandGithub} external label={sourceLabel}>
+              {commit && <Text component="code" inherit ff="monospace">{commit.slice(0, 7)}</Text>}
+            </FooterLink>
+            <FooterLink href={`${documentationUrl}/LICENSE`} icon={IconScale} external>
+              {t($ => $.common.sourceLicense)}
+            </FooterLink>
+          </Stack>
+          <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-integrations-heading">
+            <Title order={2} size="sm" fw={600} id="footer-integrations-heading">{t($ => $.footer.integrations)}</Title>
+            <FooterLink href={localizedPath(pagePaths.api, locale)} icon={IconBook} current={page === 'api'} onClick={onNavigate}>
+              {t($ => $.footer.apiDocumentation)}
+            </FooterLink>
+            <FooterLink href={localizedPath(pagePaths.mcp, locale)} icon={IconBook} current={page === 'mcp'} onClick={onNavigate}>
+              {t($ => $.mcp.navigation)}
+            </FooterLink>
+            <FooterLink href={`${documentationUrl}/docs/integrations/cli.md`} icon={IconTerminal2} external>
+              {t($ => $.footer.cliGuide)}
+            </FooterLink>
+          </Stack>
+          <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-contact-heading">
+            <Title order={2} size="sm" fw={600} id="footer-contact-heading">{t($ => $.footer.contact)}</Title>
+            <FooterLink href={`${newIssueUrl}?template=bug-report.yml`} icon={IconBug} external>
+              {t($ => $.common.reportBug)}
+            </FooterLink>
+            <FooterLink href={`${newIssueUrl}?template=feature-request.yml`} icon={IconBulb} external>
+              {t($ => $.common.requestFeature)}
+            </FooterLink>
+            <FooterLink href="mailto:hello@packetrove.com" icon={IconMail}>
+              {t($ => $.footer.sendEmail)}
+            </FooterLink>
+          </Stack>
+        </SimpleGrid>
+      </Box>
+    </Flex>
   </Box>;
 }
