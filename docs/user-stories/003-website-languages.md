@@ -82,9 +82,13 @@ network results and share a link in my preferred language.
   registered locales, plus `x-default` pointing to English. Update metadata during in-page
   navigation.
   The homepage title presents Packetrove as network tools for humans and agents,
-  using the localized project tagline. Homepage and API descriptions summarize
-  all current tool capabilities. API and MCP guide titles identify their
-  interfaces; individual tool titles identify the specific operation.
+  using the localized project tagline. Homepage, API, and MCP descriptions
+  explain the product purpose, intended audience, and interface workflows.
+  Do not enumerate individual tools, tool counts, or a growing capability list
+  in these descriptions. Adding a tool must not require expanding this prose.
+  The shared catalog and tool pages carry the inventory and operation details.
+  API and MCP guide titles identify their interfaces; individual tool titles
+  identify the specific operation.
 - Prerender every registered page in every supported locale at build time,
   including headings, explanations, links, and examples. Hydrate the same React components in the
   browser without losing page state during navigation or language changes.
