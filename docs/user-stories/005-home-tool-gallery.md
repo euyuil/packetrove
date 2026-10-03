@@ -11,10 +11,13 @@ instructions or a growing grid of every tool.
 The homepage keeps a fixed project introduction followed by a horizontal
 gallery built with Mantine Carousel. One complete card is visible at a time.
 Previous/next controls use Mantine's default circular buttons, icons, size, and
-position at the vertical center of the card's left and right edges. The gallery
-uses the default full-width slides and does not add visible position text or a
-separate selector for each tool. A localized position and tool name remain
-available to screen readers.
+position at the vertical center of the card's left and right edges. Card content
+has enough horizontal padding to clear the controls, with bottom padding reserved
+for Mantine's short-bar indicators. Indicators use the shared theme's primary
+color so they remain visible on the white cards, with the selected indicator at
+full opacity. Visitors can select a card directly through its indicator; indicator
+labels include the localized position and tool name. The gallery uses the default
+full-width slides, and a localized live status remains available to screen readers.
 The layout stacks each card's description and preview on smaller screens. Tool
 navigation remains available separately.
 
@@ -52,10 +55,11 @@ order, avoiding hydration changes caused by randomness.
 ## Verification
 
 Tests cover all ten locales, catalog-derived examples and links, no network or
-storage writes, arrow-only navigation controls, bounded button and keyboard
-navigation, offscreen focus exclusion, and hydration. Existing navigation and
-calculation tests continue to verify opening a tool, browser-local calculation,
-and retained drafts. Review desktop and mobile layouts, dragging, swiping,
+storage writes, localized arrow and indicator navigation controls, bounded button
+navigation, indicator selection and keyboard focus, offscreen focus exclusion,
+and hydration. Existing navigation and calculation tests continue to verify
+opening a tool, browser-local calculation, and retained drafts. Review desktop
+and mobile layouts, dragging, swiping,
 reduced motion, and the no-JavaScript fallback in a real browser, and run
 `pnpm check` before submission.
 

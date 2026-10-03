@@ -66,20 +66,26 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
     <Box miw={0}>
       <Carousel id="tool-gallery-carousel" className="tool-gallery mantine-focus-auto" role="group"
         aria-roledescription={undefined} aria-labelledby="tool-gallery-heading" aria-describedby="tool-gallery-help tool-gallery-status"
-        tabIndex={0} emblaOptions={emblaOptions} getEmblaApi={setEmbla} onSlideChange={setActive}
+        tabIndex={0} withIndicators emblaOptions={emblaOptions} getEmblaApi={setEmbla} onSlideChange={setActive}
         previousControlProps={{ 'aria-label': t($ => $.home.galleryPrevious) }}
         nextControlProps={{ 'aria-label': t($ => $.home.galleryNext) }}
+        attributes={{ indicators: { 'aria-labelledby': 'tool-gallery-heading' } }}
+        getIndicatorProps={index => ({
+          'aria-label': t($ => $.home.galleryPosition, { current: index + 1, total: featuredTools.length })
+            + ' · ' + t($ => $[featuredTools[index]!.page].title),
+        })}
         styles={{
           viewport: {
             overflowX: embla ? 'hidden' : 'auto', scrollSnapType: embla ? undefined : 'x mandatory',
             overscrollBehaviorX: 'contain', touchAction: embla ? 'pan-y pinch-zoom' : 'auto',
           },
           slide: { display: 'flex', minWidth: 0, scrollSnapAlign: 'start' },
+          indicator: { backgroundColor: 'var(--mantine-primary-color-filled)' },
         }}>
         {featuredTools.map((tool, index) => <Carousel.Slide key={tool.id} aria-roledescription={undefined}
           aria-label={t($ => $[tool.page].title)} aria-hidden={embla && active !== index ? true : undefined}
           inert={embla && active !== index ? true : undefined}>
-          <Paper component="article" withBorder p={{ base: 'lg', sm: 'xl' }} w="100%"
+          <Paper component="article" withBorder px={48} pt={{ base: 'lg', sm: 'xl' }} pb={48} w="100%"
             data-tool-id={tool.id} aria-labelledby={'home-' + tool.page + '-heading'}>
             <Stack gap="lg" h="100%">
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl" style={{ flex: 1 }}>

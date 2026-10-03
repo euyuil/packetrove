@@ -34,12 +34,17 @@ describe('homepage tool gallery', () => {
     expect(cards.map(card => card.getAttribute('data-tool-id'))).toEqual(featuredTools.map(tool => tool.id));
     const buttons = within(gallery).getAllByRole('button');
     expect(buttons.map(button => button.getAttribute('aria-label'))).toEqual([text.home.galleryPrevious, text.home.galleryNext]);
+    const indicators = within(within(gallery).getByRole('tablist', { name: text.home.galleryTitle })).getAllByRole('tab');
+    expect(indicators).toHaveLength(featuredTools.length);
     for (const [index, tool] of featuredTools.entries()) {
       const card = cards[index]!;
       expect(within(card).getByRole('link', { hidden: true }).getAttribute('href')).toBe(localizedPath(tool.webPath, locale));
       if (index > 0) fireEvent.click(within(gallery).getByRole('button', { name: text.home.galleryNext }));
       expect(within(gallery).getByRole('article')).toBe(card);
       expect(position()).toContain(text[tool.page].title);
+      expect(indicators[index]!.getAttribute('aria-label')).toContain(text[tool.page].title);
+      expect(indicators.map(indicator => indicator.getAttribute('aria-selected')))
+        .toEqual(featuredTools.map((_, selected) => String(selected === index)));
       expect(within(card).getByText(text.home.previewLabel)).toBeDefined();
       const preview = card.querySelector('[data-tool-preview]')!;
       if (tool.page === 'cidr') {
@@ -57,6 +62,26 @@ describe('homepage tool gallery', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(fetch).not.toHaveBeenCalled();
     expect(storage).not.toHaveBeenCalled();
+  });
+
+  it('selects cards with indicators and keeps keyboard focus and selection in sync', () => {
+    render(<App />);
+    const indicators = within(screen.getByRole('tablist', { name: 'Explore the tools' })).getAllByRole('tab');
+    fireEvent.click(indicators[2]!);
+    expect(position()).toContain('3 of 3');
+    expect(screen.getByRole('article').getAttribute('data-tool-id')).toBe(featuredTools[2]!.id);
+    expect(indicators[2]!.getAttribute('aria-selected')).toBe('true');
+    indicators[2]!.focus();
+    fireEvent.keyDown(indicators[2]!, { key: 'ArrowLeft' });
+    expect(position()).toContain('2 of 3');
+    expect(document.activeElement).toBe(indicators[1]);
+    expect(indicators[1]!.getAttribute('aria-selected')).toBe('true');
+    fireEvent.keyDown(indicators[1]!, { key: 'Home' });
+    expect(position()).toContain('1 of 3');
+    expect(document.activeElement).toBe(indicators[0]);
+    fireEvent.keyDown(indicators[0]!, { key: 'End' });
+    expect(position()).toContain('3 of 3');
+    expect(document.activeElement).toBe(indicators[2]);
   });
 
   it('keeps bounded controls and keyboard navigation in sync without moving focus', () => {
