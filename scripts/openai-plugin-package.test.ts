@@ -53,6 +53,9 @@ describe('OpenAI plugin package', () => {
       ],
     });
     expect(fetch).not.toHaveBeenCalled();
+    const cases = JSON.parse(Buffer.from(original['plugin.json']).toString()).extensions['com.openai'].review.test_cases;
+    expect(cases.positive).toHaveLength(5);
+    expect(cases.negative).toHaveLength(3);
     await expect(validatePackage(original, version, true)).rejects.toThrow('Listing fields remain incomplete');
   });
   it('accepts complete fixture listing fields without claiming account or review verification', async () => {
@@ -64,6 +67,71 @@ describe('OpenAI plugin package', () => {
       });
     });
     expect((await validatePackage(files, version, true)).pendingListingFields).toEqual([]);
+  });
+  it('accepts an older draft without review information', async () => {
+    await expect(validatePackage(manifest(value => {
+      delete value.extensions['com.openai'].review;
+    }), version)).resolves.toMatchObject({ version });
+  });
+  it('accepts documented case strings and negative cases without optional fields', async () => {
+    const files = manifest(value => {
+      const cases = value.extensions['com.openai'].review.test_cases;
+      cases.positive[0].tools_triggered = 'cidr-cover, range-to-cidrs';
+      cases.positive[0].description = 'x'.repeat(4000);
+      cases.positive[0].prompt = 'Calculate the range.\nExplain its exact coverage.';
+      cases.positive[0].expected_behavior = 'Return the CIDRs.\nExplain the address count.';
+      for (const reviewCase of cases.negative) delete reviewCase.expected_behavior;
+    });
+    await expect(validatePackage(files, version)).resolves.toMatchObject({ version });
+  });
+  it.each([
+    ['null review', (value: any) => { value.extensions['com.openai'].review = null; }, 'review must be an object'],
+    ['array review', (value: any) => { value.extensions['com.openai'].review = []; }, 'review must be an object'],
+    ['missing cases', (value: any) => { value.extensions['com.openai'].review = {}; }, 'test_cases must be an object'],
+    ['null cases', (value: any) => { value.extensions['com.openai'].review.test_cases = null; }, 'test_cases must be an object'],
+    ['partial positive list', (value: any) => { value.extensions['com.openai'].review.test_cases.positive.pop(); }, 'positive must contain exactly 5'],
+    ['extra positive case', (value: any) => { value.extensions['com.openai'].review.test_cases.positive.push({}); }, 'positive must contain exactly 5'],
+    ['missing positive list', (value: any) => { delete value.extensions['com.openai'].review.test_cases.positive; }, 'positive must contain exactly 5'],
+    ['non-array positive list', (value: any) => { value.extensions['com.openai'].review.test_cases.positive = {}; }, 'positive must contain exactly 5'],
+    ['partial negative list', (value: any) => { value.extensions['com.openai'].review.test_cases.negative.pop(); }, 'negative must contain exactly 3'],
+    ['extra negative case', (value: any) => { value.extensions['com.openai'].review.test_cases.negative.push({}); }, 'negative must contain exactly 3'],
+    ['missing negative list', (value: any) => { delete value.extensions['com.openai'].review.test_cases.negative; }, 'negative must contain exactly 3'],
+    ['non-array negative list', (value: any) => { value.extensions['com.openai'].review.test_cases.negative = 'three cases'; }, 'negative must contain exactly 3'],
+    ['credentials', (value: any) => { value.extensions['com.openai'].review.test_credentials = 'Example account'; }, 'review contains an unsupported field'],
+    ['reviewer instructions', (value: any) => { value.extensions['com.openai'].review.reviewer_instructions = 'Example instructions'; }, 'review contains an unsupported field'],
+    ['unreviewed demo field', (value: any) => { value.extensions['com.openai'].review.demo_recording_url = 'https://example.com/demo'; }, 'review contains an unsupported field'],
+    ['unknown case list', (value: any) => { value.extensions['com.openai'].review.test_cases.extra = []; }, 'test_cases contains an unsupported field'],
+    ['misplaced cases', (value: any) => {
+      value.extensions['com.openai'].interface.review = value.extensions['com.openai'].review;
+      delete value.extensions['com.openai'].review;
+    }, 'interface contains an unsupported field'],
+  ] as const)('rejects unsupported review metadata: %s', async (_name, change, error) => {
+    await expect(validatePackage(manifest(change), version)).rejects.toThrow(error);
+  });
+  it.each(['positive', 'negative'] as const)('rejects malformed %s cases with a useful field location', async kind => {
+    for (const [change, error] of [
+      [(cases: any[]) => { cases[0] = 'A case'; }, `${kind}[0] must be an object`],
+      [(cases: any[]) => { delete cases[0].description; }, `${kind}[0].description`],
+      [(cases: any[]) => { cases[0].description = 'x'.repeat(4001); }, `${kind}[0].description`],
+      [(cases: any[]) => { delete cases[0].prompt; }, `${kind}[0].prompt`],
+      [(cases: any[]) => { cases[0].prompt = '   '; }, `${kind}[0].prompt`],
+      [(cases: any[]) => { cases[0].prompt = 'Unsupported\u200Btext'; }, `${kind}[0].prompt`],
+      [(cases: any[]) => { cases[0].expected_behavior = null; }, `${kind}[0].expected_behavior`],
+      [(cases: any[]) => { cases[0].expected_behavior = 'Unsupported\ttext'; }, `${kind}[0].expected_behavior`],
+      [(cases: any[]) => { cases[0].tools_triggered = ['cidr-cover']; }, `${kind}[0].tools_triggered`],
+      [(cases: any[]) => { cases[0].tools_triggered = 'save-firewall'; }, `${kind}[0].tools_triggered must name catalog MCP tools`],
+      [(cases: any[]) => { cases[0].tools_triggered = 'cidr-cover,'; }, `${kind}[0].tools_triggered must name catalog MCP tools`],
+      [(cases: any[]) => { cases[0].file_attachment_urls = ['https://example.com/input.txt']; }, `${kind}[0] contains an unsupported field`],
+    ] as const) {
+      await expect(validatePackage(manifest(value => {
+        change(value.extensions['com.openai'].review.test_cases[kind]);
+      }), version)).rejects.toThrow(error);
+    }
+  });
+  it.each(['tools_triggered', 'expected_behavior'])('requires %s for positive cases', async field => {
+    await expect(validatePackage(manifest(value => {
+      delete value.extensions['com.openai'].review.test_cases.positive[0][field];
+    }), version)).rejects.toThrow(`positive[0].${field}`);
   });
   it.each([
     (value: any) => { value.$schema = 'https://example.com/unsupported.json'; },

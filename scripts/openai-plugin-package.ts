@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import sharp from 'sharp';
 import { Uint8ArrayReader, Uint8ArrayWriter, ZipReader, ZipWriter } from '@zip.js/zip.js';
-import { MCP_PATH, PACKETROVE_IDENTITY, PUBLIC_API_ORIGIN } from '../packages/contracts/src/index';
+import { MCP_PATH, PACKETROVE_IDENTITY, PUBLIC_API_ORIGIN, tools } from '../packages/contracts/src/index';
 import pluginSchema from './schemas/agent-plugins/1.0.0/plugin.schema.json' with { type: 'json' };
 import mcpSchema from './schemas/agent-plugins/1.0.0/mcp.schema.json' with { type: 'json' };
 import { releaseVersion } from './cli-release';
@@ -24,6 +24,8 @@ const interfaceFields = [
   'defaultPrompt', 'composerIcon', 'logo',
 ];
 const requiredListingFields = ['developerName', 'websiteURL', 'supportURL', 'privacyPolicyURL', 'termsOfServiceURL'];
+const reviewCaseFields = ['description', 'prompt', 'tools_triggered', 'expected_behavior'];
+const mcpToolNames = new Set<string>(tools.map(tool => tool.mcp.name));
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 const validatePluginSchema = ajv.compile(pluginSchema);
 const validateMcpSchema = ajv.compile(mcpSchema);
@@ -69,6 +71,39 @@ function https(value: unknown, field: string, limit = 1024): string {
 function json(bytes: Uint8Array, field: string): unknown {
   try { return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)); }
   catch { throw new Error(`${field} must be valid UTF-8 JSON.`); }
+}
+
+function validateReview(value: unknown): void {
+  const field = 'extensions.com.openai.review';
+  const review = object(value, field);
+  onlyFields(review, ['test_cases'], field);
+  const cases = object(review.test_cases, `${field}.test_cases`);
+  onlyFields(cases, ['positive', 'negative'], `${field}.test_cases`);
+  // This repository packages complete initial-review lists; the portal also accepts partial drafts.
+  for (const [kind, count] of [['positive', 5], ['negative', 3]] as const) {
+    const listField = `${field}.test_cases.${kind}`;
+    const list = cases[kind];
+    if (!Array.isArray(list) || list.length !== count) {
+      throw new Error(`${listField} must contain exactly ${count} review cases.`);
+    }
+    list.forEach((value, index) => {
+      const caseField = `${listField}[${index}]`;
+      const reviewCase = object(value, caseField);
+      onlyFields(reviewCase, reviewCaseFields, caseField);
+      text(reviewCase.description, `${caseField}.description`, 4000, true);
+      text(reviewCase.prompt, `${caseField}.prompt`, maxTextBytes, true);
+      if (kind === 'positive' || reviewCase.expected_behavior !== undefined) {
+        text(reviewCase.expected_behavior, `${caseField}.expected_behavior`, maxTextBytes, true);
+      }
+      if (kind === 'positive' || reviewCase.tools_triggered !== undefined) {
+        const names = text(reviewCase.tools_triggered, `${caseField}.tools_triggered`, maxTextBytes)
+          .split(',').map(name => name.trim());
+        if (names.some(name => !mcpToolNames.has(name))) {
+          throw new Error(`${caseField}.tools_triggered must name catalog MCP tools separated by commas.`);
+        }
+      }
+    });
+  }
 }
 
 function checkEntries(files: Record<string, Uint8Array>): asserts files is PackageFiles {
@@ -133,7 +168,8 @@ export async function validatePackage(
   const extensions = object(manifest.extensions, 'extensions');
   onlyFields(extensions, ['com.openai'], 'extensions');
   const openai = object(extensions['com.openai'], 'extensions.com.openai');
-  onlyFields(openai, ['interface'], 'extensions.com.openai');
+  onlyFields(openai, ['interface', 'review'], 'extensions.com.openai');
+  if (openai.review !== undefined) validateReview(openai.review);
   const listing = object(openai.interface, 'extensions.com.openai.interface');
   onlyFields(listing, interfaceFields, 'extensions.com.openai.interface');
   if (text(listing.displayName, 'displayName', 30) !== PACKETROVE_IDENTITY.title
