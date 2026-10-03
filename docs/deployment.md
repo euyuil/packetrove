@@ -84,9 +84,13 @@ not published to the API origin. Keep Workers Cache disabled and do not enable
 Worker-first routing for `/openapi.json` when free static-asset requests are
 desired.
 
-Vite builds `index.html`, `cidr-cover.html`, `cidr-subtract.html`, `public-ip.html`, `docs/api.html`,
-their localized counterparts, and `404.html` with shared
-JavaScript and styles. Cloudflare serves the project homepage at `/`, the CIDR
+Vite derives every canonical page and localized counterpart from the shared
+page catalog and one `apps/web/index.html` template. Virtual HTML inputs retain
+their existing static output paths, with page-specific language and metadata;
+the build prerenders their React content. No copied HTML source entries are
+needed when adding tools or locales. The independent `404.html` keeps its
+static fallback content. All pages share JavaScript and styles.
+Cloudflare serves the project homepage at `/`, the CIDR
 covering calculator at `/cidr-cover`, CIDR subtraction at `/cidr-subtract`,
 My Public IP at `/public-ip`, and API documentation at
 `/docs/api` directly, and uses `404-page`
