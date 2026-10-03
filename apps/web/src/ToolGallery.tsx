@@ -101,21 +101,19 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
           inert={embla && active !== index ? true : undefined}>
           <Paper component="article" withBorder px={48} pt={{ base: 'lg', sm: 'xl' }} pb={48} w="100%"
             data-tool-id={tool.id} aria-labelledby={'home-' + tool.page + '-heading'}>
-            <Stack gap="lg" h="100%">
-              <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl" style={{ flex: 1 }}>
-                <Stack gap="md">
-                  <ToolHeading tool={tool.page} order={3} size="h2" id={'home-' + tool.page + '-heading'} />
-                  <Text c="dimmed">{t($ => $.home[`${tool.page}Description`])}</Text>
-                </Stack>
-                <ToolPreview tool={tool} />
-              </SimpleGrid>
-              <Group>
-                <Button component="a" href={localizedPath(tool.webPath, locale)} onClick={onNavigate}
-                  rightSection={<IconArrowRight size={18} aria-hidden="true" />}>
-                  {t($ => $.home[`${tool.page}Link`])}
-                </Button>
-              </Group>
-            </Stack>
+            <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl">
+              <Stack gap="md">
+                <ToolHeading tool={tool.page} order={3} size="h2" id={'home-' + tool.page + '-heading'} />
+                <Text c="dimmed">{t($ => $.home[`${tool.page}Description`])}</Text>
+                <Group>
+                  <Button component="a" href={localizedPath(tool.webPath, locale)} onClick={onNavigate}
+                    rightSection={<IconArrowRight size={18} aria-hidden="true" />}>
+                    {t($ => $.home[`${tool.page}Link`])}
+                  </Button>
+                </Group>
+              </Stack>
+              <ToolPreview tool={tool} />
+            </SimpleGrid>
           </Paper>
         </Carousel.Slide>)}
       </Carousel>

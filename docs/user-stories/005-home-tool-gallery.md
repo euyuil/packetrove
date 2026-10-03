@@ -18,8 +18,10 @@ color so they remain visible on the white cards, with the selected indicator at
 full opacity. Visitors can select a card directly through its indicator; indicator
 labels include the localized position and tool name. The gallery uses the default
 full-width slides, and a localized live status remains available to screen readers.
-The layout stacks each card's description and preview on smaller screens. Tool
-navigation remains available separately.
+Each card's tool-opening button sits directly below its description in the same
+column, beside the example preview on larger screens. On smaller screens, the
+description and button appear before the preview. Tool navigation remains
+available separately.
 
 `featuredTools` in `apps/web/src/ToolGallery.tsx` curates references to the shared
 catalog. It controls selection and order, without defining tool names, paths,
