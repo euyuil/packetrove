@@ -87,6 +87,14 @@ included; third-party listings are not changed.
 | MCP guide and tool pages | Catalog-derived examples rendered by `ToolMcpSection` and the generated repository guide |
 | Tests and production smoke checks | Actual endpoint, discovery, and documentation coverage against the catalog |
 
+`websitePages` combines the catalog's page paths with the locale registry.
+`apps/web/scripts/page-entries.ts` supplies virtual Vite HTML entries from the
+single `apps/web/index.html` template, setting each page's language and metadata.
+Development serves the same entries for direct and localized routes; production
+builds preserve the static output paths and prerender every page. Do not copy
+HTML files when adding a tool or locale. Entry collisions fail explicitly.
+The separate `404.html` remains the static error fallback.
+
 The homepage gallery curates references to catalog entries in `featuredTools`
 inside `apps/web/src/ToolGallery.tsx`. It uses the catalog's shared examples for
 previews and has a stable initial order. New tools enter interface discovery

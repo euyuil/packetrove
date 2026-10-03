@@ -177,7 +177,8 @@ the tab's reminder flag; `LanguageSelector.tsx` displays the suggestion with
 Mantine `Popover`. No detection request or additional dependency is needed.
 
 When adding a locale, add its registry entry, complete translations and metadata,
-static HTML entries, and flag import together. The menu
+and flag import together. Static HTML entries are generated from the shared
+template and the registered page paths; no per-language HTML copies are needed. The menu
 renders the configured entries without adding another header button. Preserve
 the existing page, query string, and fragment in every language link.
 Refresh the links when opening the menu and when following or opening a link's
@@ -205,9 +206,10 @@ the existing shared error schema; local presentation details are omitted.
 
 When changing page titles or descriptions, update translation metadata in
 `apps/web/src/i18n/resources.ts`. `page-metadata.ts` supplies the same metadata to
-the Vite HTML transform and browser navigation. Keep the `<!--page-metadata-->`
-and empty root placeholders in the HTML entries; `scripts/build.ts` fills them
-from the metadata and React render. `websitePages` derives the Vite inputs and
+the virtual Vite HTML entries and browser navigation. Keep the `<!--page-metadata-->`
+and empty root placeholders in the single `apps/web/index.html` template;
+`scripts/page-entries.ts` supplies language and metadata, and `scripts/build.ts`
+fills the React root in production. `websitePages` derives the Vite inputs and
 sitemap entries from the locale registry and page paths. The production smoke
 check validates every registered localized entry, including the MCP guide and
 tool questions and examples. Complete all new page content for locales merged
