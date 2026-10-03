@@ -20,8 +20,16 @@ import { NormalizedInputs } from './NormalizedInputs';
 import { ToolErrorSummary } from './ToolErrorSummary';
 import { ToolResultCounts } from './ToolResultCounts';
 import { useCalculationFeedback } from './useCalculationFeedback';
+import { useToolDraft } from './ToolDraftProvider';
 
 export type CidrCoverDraft = { input: string; result: CidrCoverResult | null; error: ToolError | null };
+
+const draftDefinition = { createInitialDraft: (): CidrCoverDraft => ({ input: '', result: null, error: null }) };
+
+export function CidrCoverPage({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> }) {
+  const [draft, onDraftChange] = useToolDraft(draftDefinition);
+  return <CidrCoverTool draft={draft} onDraftChange={onDraftChange} {...(onNavigate ? { onNavigate } : {})} />;
+}
 
 export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
   draft: CidrCoverDraft; onDraftChange: (draft: CidrCoverDraft) => void;
