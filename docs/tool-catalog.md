@@ -161,6 +161,41 @@ public response. Keep domain reason unions and their translation resolvers
 with the domain modules, rather than extending the shared error class or a
 central tool switch. Existing tools preserve their public issue shapes.
 
+The Worker handler map in `apps/worker/src/tools.ts` derives each result type
+from that tool's catalog output schema and requires exhaustive coverage. Handlers
+accept unknown input and return a synchronous result or a Promise of that result.
+`createToolExecutor` provides the awaited execution boundary used by both API and
+MCP; it does not replace each domain's existing input validation. The browser's
+local calculations and the CLI continue to use the synchronous core directly.
+
+`tool-context.ts` snapshots only edge connection addresses and an AbortSignal
+for each invocation. It does not forward arbitrary headers, authorization data,
+or the raw Request to handlers. Missing connection metadata does not prevent
+local calculations; only the public-IP handler validates those addresses. MCP
+creates the context inside the tool callback, using its current HTTP request
+and its per-call SDK signal. HTTP and call cancellation are combined without
+sharing cancellation controllers or storing client context globally.
+
+Handlers must pass the signal to asynchronous I/O and clean up their work.
+Execution checks cancellation before starting and after either completion or
+rejection, so cancelled calls cannot return late successes. An internal fixed
+error hides arbitrary abort reasons; when a response remains possible, API uses
+the existing generic INTERNAL_ERROR with HTTP 500 and MCP uses the existing
+sanitized tool error. Expected cancellation is not logged. This does not
+interrupt already-running synchronous CPU work, impose a global timeout, or
+retry automatically. Production handlers keep their existing calculations and
+lookup semantics; no additional asynchronous product tool is introduced here.
+
+Stateless legacy MCP creates a new server for each POST. The legacy SDK's
+separate cancellation notification cannot locate another POST's running call;
+cancelling only that client's local wait may leave the server operation running.
+HTTP request abort and the SDK callback signal are supported, but end-to-end
+cancellation by every legacy client is not guaranteed. Tests separately verify
+modern HTTP cancellation, direct legacy HTTP abort, and isolated per-call SDK
+cancellation on a shared server, waiting for handler cleanup in each case.
+Test dependencies are supplied through executor and application instances,
+without mutable global hooks or extra catalog entries.
+
 The website MCP guide and `docs/integrations/mcp.md` consume the shared content
 model in `apps/web/src/mcp-guide.ts`. It combines catalog entries and examples
 with localized prose and client commands. Generate the English repository

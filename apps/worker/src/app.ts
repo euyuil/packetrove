@@ -4,11 +4,13 @@ import { cors } from 'hono/cors';
 import { tools, type ErrorResponse } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
-import { mcpHandler } from './mcp';
-import { executeTool } from './tools';
+import { createPacketroveMcpHandler } from './mcp';
+import { executeTool, type ToolExecutor } from './tools';
+import { createToolExecutionContext, ToolExecutionCancelledError } from './tool-context';
 
-export function createApp() {
+export function createApp(executor: ToolExecutor = executeTool) {
   const app = new Hono<{ Bindings: Cloudflare.Env }>();
+  const mcpHandler = createPacketroveMcpHandler(executor);
   for (const path of ['/v1/*', '/health', '/openapi.json']) {
     app.use(path, cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
   }
@@ -27,7 +29,7 @@ export function createApp() {
         : error.code === 'UNSUPPORTED_MEDIA_TYPE' ? 415 : 400;
       return context.json(error.toResponse(), status);
     }
-    console.error('Unexpected request failure:', error);
+    if (!(error instanceof ToolExecutionCancelledError)) console.error('Unexpected request failure:', error);
     return context.json({ error: {
       code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.',
     } } satisfies ErrorResponse, 500);
@@ -35,7 +37,7 @@ export function createApp() {
   for (const tool of tools) {
     app.on(tool.api.method.toUpperCase(), tool.api.path, async context => {
       const body = tool.api.method === 'post' ? await readJsonBody(context.req.raw) : {};
-      const result = executeTool(tool.page, body, context.req.raw.headers);
+      const result = await executor(tool.page, body, createToolExecutionContext(context.req.raw));
       const text = tool.api.response.text;
       if (text) {
         const format = accepts(context, {
