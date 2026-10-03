@@ -1,7 +1,8 @@
-import type { TranslationResource } from '../resources';
+import type { TranslationResource } from '../translation-resource';
 
 export const de = {
   common: {
+    pageLoading: "Seite wird geladen…", pageLoadFailure: "Diese Seite konnte nicht geladen werden. Bitte versuche es erneut.", retryPage: "Erneut versuchen",
     home: 'Startseite', homeLabel: 'Packetrove-Startseite', navigation: 'Hauptnavigation',
     language: 'Sprache', tools: 'WERKZEUGE FÜR IP-ADRESSEN', copied: 'Kopiert', dismissCopy: 'Kopierfehler schließen',
     tagline: 'Netzwerkwerkzeuge für Menschen und KI-Agenten',

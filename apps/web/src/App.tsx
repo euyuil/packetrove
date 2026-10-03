@@ -1,25 +1,30 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Anchor, Box, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
+import { Alert, Anchor, Box, Button, Container, Divider, Group, Loader, Stack, Text, Title } from '@mantine/core';
 import { isToolPage } from '@packetrove/contracts';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { ToolDraftProvider } from './ToolDraftProvider';
 import { ToolPageView } from './ToolPageView';
-import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
 import { SiteFooter } from './SiteFooter';
 import { ApiDocumentationBoundary } from './ApiDocumentationBoundary';
 import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
 import { updatePageMetadata } from './i18n/metadata';
-import ApiDocumentation from './ApiDocumentation';
-import { McpDocumentation } from './McpDocumentation';
 import { ToolNavigation } from './ToolNavigation';
+import { getPreparedPage, isRoutePrepared, prepareRoute } from './page-resources';
+import { installLocale } from './i18n/locale-resources';
+import { subscribeHistoryWrites } from './history-writes';
 
 export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
   const [pathname, setPathname] = useState(initialPathname);
   const [urlSuffix, setUrlSuffix] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [failedNavigation, setFailedNavigation] = useState<{ url: URL; mode: 'push' | 'replace' } | null>(null);
+  const navigationGeneration = useRef(0);
+  const committedUrl = useRef('');
   const { locale, page, path } = resolveRoute(pathname);
+  const committedRoute = useRef({ locale, path });
   const main = useRef<HTMLElement>(null);
   const previousPath = useRef(path);
   const homePage = page === 'home';
@@ -30,7 +35,11 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const sourceUrl = `https://github.com/${repository}${commit ? `/tree/${commit}` : ''}`;
   const documentationUrl = `https://github.com/${repository}/blob/${commit || 'main'}`;
   const newIssueUrl = `https://github.com/${repository}/issues/new`;
-  useLayoutEffect(() => { void i18n.changeLanguage(locale); }, [i18n, locale]);
+  useLayoutEffect(() => { committedRoute.current = { locale, path }; }, [locale, path]);
+  useLayoutEffect(() => {
+    installLocale(i18n, locale);
+    void i18n.changeLanguage(locale);
+  }, [i18n, locale]);
   useEffect(() => { updatePageMetadata(locale, page, path); }, [locale, page, path]);
   useEffect(() => {
     // Canonical paths identify content independently of language and URL fragments.
@@ -39,29 +48,76 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
     main.current?.focus({ preventScroll: true });
   }, [path]);
   useEffect(() => {
-    const updatePath = () => {
-      setPathname(window.location.pathname);
+    committedUrl.current = window.location.href;
+    const unsubscribeWrites = subscribeHistoryWrites(() => {
+      const route = resolveRoute(window.location.pathname);
+      if (route.locale !== committedRoute.current.locale || route.path !== committedRoute.current.path) return;
+      committedUrl.current = window.location.href;
       setUrlSuffix(window.location.search + window.location.hash);
-    };
+    });
+    const updatePath = () => loadNavigation(new URL(window.location.href), 'replace');
     updatePath();
     window.addEventListener('popstate', updatePath);
     window.addEventListener('hashchange', updatePath);
     return () => {
+      navigationGeneration.current++;
+      unsubscribeWrites();
       window.removeEventListener('popstate', updatePath);
       window.removeEventListener('hashchange', updatePath);
     };
   }, []);
 
+  function loadNavigation(url: URL, mode: 'push' | 'replace') {
+    const locationAtStart = new URL(window.location.href);
+    const generation = ++navigationGeneration.current;
+    setFailedNavigation(null);
+    const commitNavigation = () => {
+      if (generation !== navigationGeneration.current) return;
+      const currentLocation = new URL(window.location.href);
+      if (currentLocation.pathname === locationAtStart.pathname
+        && (mode === 'replace' || resolveRoute(url.pathname).path === resolveRoute(locationAtStart.pathname).path)
+        && currentLocation.href !== locationAtStart.href) {
+        url.search = currentLocation.search;
+        url.hash = currentLocation.hash;
+      }
+      if (window.location.href !== url.href) {
+        window.history[mode === 'push' ? 'pushState' : 'replaceState'](null, '', url.href);
+      }
+      committedUrl.current = url.href;
+      setPathname(url.pathname);
+      setUrlSuffix(url.search + url.hash);
+      setLoading(false);
+    };
+    if (isRoutePrepared(url.pathname)) {
+      commitNavigation();
+      return;
+    }
+    setLoading(true);
+    void prepareRoute(url.pathname).then(commitNavigation, () => {
+      if (generation !== navigationGeneration.current) return;
+      // A history event changes the address before loading. Keep it aligned with
+      // the retained page on failure; retry replaces that entry with the target.
+      if (mode === 'replace' && committedUrl.current) {
+        const currentLocation = new URL(window.location.href);
+        const restored = new URL(committedUrl.current);
+        if (currentLocation.pathname === locationAtStart.pathname && currentLocation.href !== locationAtStart.href) {
+          restored.search = currentLocation.search;
+          restored.hash = currentLocation.hash;
+        }
+        window.history.replaceState(null, '', restored);
+      }
+      setLoading(false);
+      setFailedNavigation({ url, mode });
+    });
+  }
+
   function navigate(event: MouseEvent<HTMLAnchorElement>) {
     if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    const destination = event.currentTarget.href;
-    if (window.location.href !== destination) {
-      window.history.pushState(null, '', destination);
-    }
-    setPathname(window.location.pathname);
-    setUrlSuffix(window.location.search + window.location.hash);
+    loadNavigation(new URL(event.currentTarget.href), 'push');
   }
+
+  const PageView = page === 'home' || page === 'api' || page === 'mcp' ? getPreparedPage(page) : null;
 
   return <ToolDraftProvider><Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
     <Stack gap="lg">
@@ -77,12 +133,23 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       </Group>
       <Divider />
       <ToolNavigation page={page} locale={locale} onNavigate={navigate} />
+      {loading && <Group role="status" aria-label={t($ => $.common.pageLoading)} gap="sm">
+        <Loader size="sm" /><Text>{t($ => $.common.pageLoading)}</Text>
+      </Group>}
+      {failedNavigation && <Alert role="alert" color="red">
+        <Stack gap="sm">
+          <Text>{t($ => $.common.pageLoadFailure)}</Text>
+          <Button variant="light" onClick={() => loadNavigation(failedNavigation.url, failedNavigation.mode)}>
+            {t($ => $.common.retryPage)}
+          </Button>
+        </Stack>
+      </Alert>}
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
         aria-label={homePage ? t($ => $.common.home) : isToolPage(page) ? t($ => $[page].title)
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
-        {homePage ? <HomePage onNavigate={navigate} documentationUrl={documentationUrl} />
+        {homePage && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : isToolPage(page) ? <ToolPageView page={page} onNavigate={navigate} />
-          : page === 'mcp' ? <McpDocumentation onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
+          : page === 'mcp' && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>
@@ -90,7 +157,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
               <Anchor href={href(pagePaths.cidr)} onClick={navigate}>{t($ => $.api.returnToCalculator)}</Anchor>
             </Stack>
           }>
-            <ApiDocumentation onNavigate={navigate} />
+            {PageView && <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />}
           </ApiDocumentationBoundary> : <Stack component="section" py="xl">
           <Text size="sm" c="var(--mantine-primary-color-filled)" fw={600}>404</Text>
           <Title order={1}>{t($ => $.common.notFound)}</Title>

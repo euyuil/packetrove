@@ -1,4 +1,4 @@
-import type { TranslationResource } from '../resources';
+import type { TranslationResource } from '../translation-resource';
 
 export const ptBR = {
   languageSuggestion: {
@@ -6,6 +6,7 @@ export const ptBR = {
     switch: 'Mudar para português', dismiss: 'Agora não',
   },
   common: {
+    pageLoading: "Carregando página…", pageLoadFailure: "Não foi possível carregar esta página. Tente novamente.", retryPage: "Tentar novamente",
     home: 'Início', homeLabel: 'Página inicial do Packetrove', navigation: 'Navegação principal',
     language: 'Idioma', tools: 'FERRAMENTAS DE ENDEREÇOS IP', copied: 'Copiado', dismissCopy: 'Fechar o erro de cópia',
     tagline: 'Ferramentas de rede para pessoas e agentes de IA',

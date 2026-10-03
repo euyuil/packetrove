@@ -28,14 +28,14 @@ it('isolates retained drafts between application instances', () => {
   expect((secondPage.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('');
 });
 
-it('prerenders fresh defaults without reading a mounted application draft', () => {
+it('prerenders fresh defaults without reading a mounted application draft', async () => {
   window.history.replaceState({}, '', '/cidr-cover');
   const mounted = render(<App />);
   fireEvent.change(within(mounted.container).getByLabelText('IP addresses or CIDR ranges'), {
     target: { value: '203.0.113.97' },
   });
   for (let index = 0; index < 2; index++) {
-    const html = new DOMParser().parseFromString(renderPage('/cidr-cover'), 'text/html');
+    const html = new DOMParser().parseFromString(await renderPage('/cidr-cover'), 'text/html');
     expect(html.querySelector<HTMLTextAreaElement>('#addresses')?.value).toBe('');
     expect(html.body.textContent).not.toContain('203.0.113.97');
   }

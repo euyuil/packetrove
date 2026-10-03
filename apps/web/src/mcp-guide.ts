@@ -2,18 +2,20 @@ import { MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog, tools, 
 import workerManifest from '../../worker/package.json' with { type: 'json' };
 import { createInstance } from 'i18next';
 import type {} from './i18n/i18next';
-import { resources } from './i18n/resources';
+import { getLocaleResources } from './i18n/locale-resources';
+import type { TranslationResource } from './i18n/translation-resource';
 import type { Locale } from './i18n/locales';
 import { getToolDocumentation } from './tool-documentation';
 
 const translations = new Map<Locale, ReturnType<typeof createInstance>>();
 
-function guideTranslator(locale: Locale) {
+function guideTranslator(locale: Locale, translation?: TranslationResource) {
   let instance = translations.get(locale);
   if (!instance) {
     instance = createInstance();
     void instance.init({
-      resources, lng: locale, fallbackLng: 'en', load: 'currentOnly',
+      resources: translation ? { [locale]: { translation } } : getLocaleResources(locale),
+      lng: locale, fallbackLng: 'en', load: 'currentOnly',
       initAsync: false, enableSelector: true, interpolation: { escapeValue: false },
     });
     translations.set(locale, instance);
@@ -21,8 +23,8 @@ function guideTranslator(locale: Locale) {
   return instance.t;
 }
 
-export function getMcpToolContent(tool: ToolPage, locale: Locale) {
-  const t = guideTranslator(locale);
+export function getMcpToolContent(tool: ToolPage, locale: Locale, translation?: TranslationResource) {
+  const t = guideTranslator(locale, translation);
   const definition = toolCatalog[tool];
   const documentation = getToolDocumentation(tool);
   const example = {
@@ -66,9 +68,10 @@ try {
 }
 
 // Both the localized website and the generated repository guide consume this content.
-export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = PACKETROVE_VERSION) {
-  const t = guideTranslator(locale);
-  const toolContent = tools.map(tool => getMcpToolContent(tool.page, locale));
+export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = PACKETROVE_VERSION,
+  translation?: TranslationResource) {
+  const t = guideTranslator(locale, translation);
+  const toolContent = tools.map(tool => getMcpToolContent(tool.page, locale, translation));
   const sdkVersion = workerManifest.dependencies['@modelcontextprotocol/client'];
   const toolRenames = tools.flatMap(tool => tool.removedInterfaces.mcpNames.map(name =>
     `<code>${name}</code> → <code>${tool.mcp.name}</code>`)).join(', ');

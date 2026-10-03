@@ -1,4 +1,4 @@
-import { useRef, useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { Box, Button, Group, Menu, Popover, Stack, Text } from '@mantine/core';
 import { IconCheck, IconChevronDown } from '@tabler/icons-react';
 import UnitedKingdomFlag from 'country-flag-icons/react/3x2/GB';
@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { localizedPath, type Locale } from './i18n/routes';
 import { locales, supportedLocales } from './i18n/locales';
 import { useLanguageSuggestion } from './useLanguageSuggestion';
+import { installLocale, isLocalePrepared, prepareLocale } from './i18n/locale-resources';
 
 const flags = {
   GB: UnitedKingdomFlag, CN: ChinaFlag, ES: SpainFlag, DE: GermanyFlag, JP: JapanFlag,
@@ -37,7 +38,21 @@ export function LanguageSelector({ locale, path, urlSuffix = '', onOpen, onNavig
   const suggestionDropdown = useRef<HTMLDivElement>(null);
   const [menuOpened, setMenuOpened] = useState(false);
   const { suggestedLocale, dismissSuggestion } = useLanguageSuggestion();
-  const suggestion = suggestedLocale !== locale ? suggestedLocale : null;
+  const requestedSuggestion = suggestedLocale !== locale ? suggestedLocale : null;
+  const [preparedSuggestion, setPreparedSuggestion] = useState<Locale | null>(null);
+  useEffect(() => {
+    let active = true;
+    if (!requestedSuggestion) return;
+    const ready = () => {
+      if (!active) return;
+      installLocale(i18n, requestedSuggestion);
+      setPreparedSuggestion(requestedSuggestion);
+    };
+    if (isLocalePrepared(requestedSuggestion)) ready();
+    else void prepareLocale(requestedSuggestion).then(ready, () => {});
+    return () => { active = false; };
+  }, [i18n, requestedSuggestion]);
+  const suggestion = preparedSuggestion === requestedSuggestion ? preparedSuggestion : null;
   const suggestionText = i18n.getFixedT(suggestion ?? locale);
   const suggestionTitle = suggestionText($ => $.languageSuggestion.title);
 

@@ -1,4 +1,4 @@
-import type { TranslationResource } from '../resources';
+import type { TranslationResource } from '../translation-resource';
 
 export const ko = {
   languageSuggestion: {
@@ -6,6 +6,7 @@ export const ko = {
     switch: '한국어로 전환', dismiss: '나중에',
   },
   common: {
+    pageLoading: "페이지를 불러오는 중…", pageLoadFailure: "페이지를 불러오지 못했습니다. 다시 시도해 주세요.", retryPage: "다시 시도",
     home: '홈', homeLabel: 'Packetrove 홈', navigation: '주 탐색 메뉴',
     language: '언어', tools: 'IP 주소 도구', copied: '복사됨', dismissCopy: '복사 오류 닫기',
     tagline: '사용자와 AI 에이전트를 위한 네트워크 도구',

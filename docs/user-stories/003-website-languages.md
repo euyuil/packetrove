@@ -155,8 +155,10 @@ stay visible.
 
 ## Implementation and contribution
 
-The web application uses `i18next` and `react-i18next`. Bundled translation
-resources are in `apps/web/src/i18n/resources.ts` and its `translations/` folder.
+The web application uses `i18next` and `react-i18next`. Translation resources are in `apps/web/src/i18n/translations/`.
+The browser prepares English fallback and the requested locale before rendering;
+other locales load only when navigating or showing a browser-language suggestion.
+`i18n/resources.ts` aggregates all languages for build scripts and tests.
 English defines the key structure; every other resource must satisfy the same
 structure. Selector-based translation calls are checked by TypeScript through
 `i18next.d.ts`. English is the fallback language. No translation backend or
@@ -177,13 +179,18 @@ the tab's reminder flag; `LanguageSelector.tsx` displays the suggestion with
 Mantine `Popover`. No detection request or additional dependency is needed.
 
 When adding a locale, add its registry entry, complete translations and metadata,
-and flag import together. Static HTML entries are generated from the shared
+its exhaustive loader in `i18n/locale-resources.ts`, and flag import together. Static HTML entries are generated from the shared
 template and the registered page paths; no per-language HTML copies are needed. The menu
 renders the configured entries without adding another header button. Preserve
 the existing page, query string, and fragment in every language link.
 Refresh the links when opening the menu and when following or opening a link's
 context menu, including after the interactive API reference updates the URL.
-Keep modified clicks and other native link actions available.
+Keep modified clicks and other native link actions available. While a page or
+locale loads, keep the current page editable and commit only the latest completed
+navigation. Loading failures keep drafts and metadata, offer localized retry,
+and align the address with the retained page. Locale changes do not remount a
+tool. Initial resource failures preserve the prerendered page and use its embedded
+localized retry wording; no language bundle is needed to display that error.
 
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while
@@ -205,7 +212,7 @@ matching English error messages. `ToolError.toResponse()` continues to return
 the existing shared error schema; local presentation details are omitted.
 
 When changing page titles or descriptions, update translation metadata in
-`apps/web/src/i18n/resources.ts`. `page-metadata.ts` supplies the same metadata to
+`apps/web/src/i18n/translations/`. `page-metadata.ts` supplies the same metadata to
 the virtual Vite HTML entries and browser navigation. Keep the `<!--page-metadata-->`
 and empty root placeholders in the single `apps/web/index.html` template;
 `scripts/page-entries.ts` supplies language and metadata, and `scripts/build.ts`

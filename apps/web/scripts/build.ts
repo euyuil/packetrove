@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'vite';
 import { escapeHtml, renderSitemap, robotsText, websitePages, websiteRedirects } from '../src/seo';
+import { resources } from '../src/i18n/resources';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 await build({ root });
@@ -22,16 +23,20 @@ try {
   globalThis.fetch = () => { throw new Error('Prerendering must not make network requests.'); };
   try {
     const { renderPage } = await import(pathToFileURL(join(renderDirectory, 'render.mjs')).href) as {
-      renderPage: (pathname: string) => string;
+      renderPage: (pathname: string) => Promise<string>;
     };
     for (const page of websitePages) {
       const filename = join(root, 'dist', page.entry);
       const html = await readFile(filename, 'utf8');
       const placeholder = '<div id="root"></div>';
       if (!html.includes(placeholder)) throw new Error('Missing prerender placeholder: ' + page.entry);
+      const content = await renderPage(page.pathname);
+      const copy = resources[page.locale].translation.common;
       await writeFile(filename, html.replace(placeholder, () =>
-        '<div id="root" data-prerendered-path="' + escapeHtml(page.pathname) + '">'
-        + renderPage(page.pathname) + '</div>'));
+        '<div id="root" data-prerendered-path="' + escapeHtml(page.pathname)
+        + '" data-load-failure="' + escapeHtml(copy.pageLoadFailure)
+        + '" data-load-retry="' + escapeHtml(copy.retryPage) + '">'
+        + content + '</div>'));
     }
   } finally {
     globalThis.fetch = originalFetch;
