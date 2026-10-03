@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createInstance } from 'i18next';
 import { supportedLocales } from './locales';
 import { en, resources } from './resources';
 import { validateTranslationResource } from './translation-validation';
@@ -47,14 +48,23 @@ describe('translation validation failures', () => {
     ['Read {{-name}} using <code>/v1/example</code> and <code>{{localUrl}}</code>.', 'invalid named interpolation'],
     ['Read {{name, number}} using <code>/v1/example</code> and <code>{{localUrl}}</code>.', 'invalid named interpolation'],
     ['Read $t(name) using <code>/v1/example</code> and <code>{{localUrl}}</code>.', 'incomplete or unsupported interpolation'],
+    ['Read {{{name}}} using <code>/v1/example</code> and <code>{{localUrl}}</code>.', 'incomplete or unsupported interpolation'],
   ])('rejects invalid or changed parameters (%#)', (label, error) => {
     expect(validate({ ...russian, common: { label } })).toContain(`common.label: ${error}`);
+  });
+
+  it.each(['\n', '\r', '\u2028', '\u2029'])('rejects a line terminator inside interpolation (%#)', separator => {
+    const label = `Read {{${separator}name${separator}}} using <code>/v1/example</code> and <code>{{localUrl}}</code>.`;
+    expect(validate({ ...russian, common: { label } })).toContain('common.label: incomplete or unsupported interpolation');
   });
 
   it.each([
     '<code>/v1/example', '</code>/v1/example', '<strong>/v1/example</strong>',
     '<code class="value">/v1/example</code>', '<code/>', '<code><code>/v1/example</code></code>',
     '<code>/v1/example</code',
+    '<!-- <code>/v1/example</code> -->', '<!-- <code>/v1/example</code>',
+    '<!DOCTYPE html>', '<?xml version="1.0"?>',
+    '<0><code>/v1/example</code></0>', '<1><code>/v1/example</code></1>', '<0/>',
   ])('rejects malformed or unsupported markers (%#)', label => {
     expect(validate({ ...russian, common: { label } })).toContain(
       'common.label: use only paired, non-nested code markers without attributes');
@@ -104,9 +114,26 @@ describe('translation validation failures', () => {
     }, 'ja')).toContain('count_visible_other: interpolation parameter names differ');
   });
 
+  it('validates known ordinary keys beside a plural family without treating them as suffixes', () => {
+    const original = {
+      count_one: '{{total}} entry', count_other: '{{total}} entries',
+      count_label: 'Entries', count_options: { label: 'Visible entries' },
+    };
+    const translated = {
+      count_other: '{{total}} 件', count_label: '項目', count_options: { label: '表示項目' },
+    };
+    expect(validateTranslationResource(original, translated, 'ja')).toEqual([]);
+    expect(validateTranslationResource(original, { ...translated, count_label: ' ' }, 'ja'))
+      .toContain('count_label: translation must not be blank');
+    expect(validateTranslationResource(original, { ...translated, count_options: {} }, 'ja'))
+      .toContain('count_options.label: missing translation');
+    expect(validateTranslationResource(original, { ...translated, count_fwe: '{{total}} 件' }, 'ja'))
+      .toContain('count_fwe: unknown plural suffix');
+  });
+
   it('allows reordered and repeated parameters, whole code fragments and ordinary comparison characters', () => {
     expect(validate({ ...russian, common: {
-      label: '<code>{{ localUrl }}</code> と <code>/v1/example</code>: {{ name }} {{name}}. a < b, c > d; {}.',
+      label: '<code>{{ localUrl }}</code> と <code>/v1/example</code>: {{\tname\t}} {{name}}. a < b, c > d; {}.',
     } })).toEqual([]);
   });
 
@@ -116,5 +143,13 @@ describe('translation validation failures', () => {
     expect(validate(russian)).toEqual([]);
     expect(JSON.stringify(reference)).toBe(originalBefore);
     expect(JSON.stringify(russian)).toBe(translatedBefore);
+  });
+
+  it('allows ordinary JSON braces after a named interpolation', async () => {
+    const translation = { cidr: { explanation: '{"total":{{total}}}' } };
+    expect(validateTranslationResource(translation, translation, 'en')).toEqual([]);
+    const instance = createInstance();
+    await instance.init({ lng: 'en', resources: { en: { translation } }, initAsync: false });
+    expect(instance.t($ => $.cidr.explanation, { total: 21 })).toBe('{"total":21}');
   });
 });

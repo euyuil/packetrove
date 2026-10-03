@@ -7,7 +7,7 @@ type MessageSignature = { parameters: string[]; code: string[] };
 
 function messageSignature(text: string, path: string, errors: string[]): MessageSignature {
   const parameters = new Set<string>();
-  const remainder = text.replace(/\{\{([^{}]*)\}\}/g, (_token, expression: string) => {
+  const remainder = text.replace(/(?<!\{)\{\{([^{}\r\n\u2028\u2029]*)\}\}/g, (_token, expression: string) => {
     const name = expression.trim();
     if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) errors.push(`${path}: invalid named interpolation`);
     else parameters.add(name);
@@ -18,15 +18,15 @@ function messageSignature(text: string, path: string, errors: string[]): Message
   const code: string[] = [];
   let codeStart: number | undefined;
   let validMarkers = true;
-  for (const marker of text.matchAll(/<\/?[A-Za-z][^<>]*>/g)) {
+  for (const marker of text.matchAll(/<\/?[A-Za-z0-9][^<>]*>/g)) {
     if (marker[0] === '<code>' && codeStart === undefined) codeStart = marker.index + marker[0].length;
     else if (marker[0] === '</code>' && codeStart !== undefined) {
       code.push(text.slice(codeStart, marker.index).replace(/\{\{\s*([A-Za-z_][A-Za-z0-9_]*)\s*\}\}/g, '{{$1}}'));
       codeStart = undefined;
     } else validMarkers = false;
   }
-  const withoutMarkers = text.replace(/<\/?[A-Za-z][^<>]*>/g, '');
-  if (codeStart !== undefined || /<\s*\/?\s*code\b/i.test(withoutMarkers)) validMarkers = false;
+  const withoutMarkers = text.replace(/<\/?[A-Za-z0-9][^<>]*>/g, '');
+  if (codeStart !== undefined || /<\s*\/?\s*code\b/i.test(withoutMarkers) || /<[!?]/.test(text)) validMarkers = false;
   if (!validMarkers) errors.push(`${path}: use only paired, non-nested code markers without attributes`);
   return { parameters: [...parameters].sort(), code: code.sort() };
 }
@@ -64,7 +64,12 @@ export function validateTranslationResource(reference: unknown, translation: unk
       if (key.endsWith('_other') && typeof text === 'string') families.set(key.slice(0, -6), text);
     }
     const familyNames = [...families.keys()].sort((left, right) => right.length - left.length);
-    const familyFor = (key: string) => familyNames.find(base => key.startsWith(`${base}_`));
+    const familyFor = (key: string) => {
+      const family = familyNames.find(base => key.startsWith(`${base}_`));
+      if (family !== undefined && Object.hasOwn(original, key)
+        && !pluralCategories.has(key.slice(family.length + 1))) return undefined;
+      return family;
+    };
 
     for (const [key, text] of Object.entries(original)) {
       const family = familyFor(key);
