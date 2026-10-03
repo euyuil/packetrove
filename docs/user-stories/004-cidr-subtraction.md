@@ -138,9 +138,8 @@ they are not uploaded, logged, persisted, or added to URLs. Prerendering starts
 with empty inputs and makes no network requests. There are no new dependencies
 or external services. The Web API at `POST /v1/cidr-subtract` and MCP tool
 `cidr-subtract` call the same shared calculation. Remote calls submit inputs to the server; the
-website remains local. The CLI and covering-calculator skill retain their
-existing operations. Shared errors identify the include/exclude list and entry
-index for invalid subtraction inputs.
+website remains local. The CLI retains its existing operations. Shared errors
+identify the include/exclude list and entry index for invalid subtraction inputs.
 
 The page includes localized questions about WireGuard exceptions, allocation
 gaps, overlapping/outside exclusions, exact subtraction versus covering CIDRs,

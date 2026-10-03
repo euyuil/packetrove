@@ -2,7 +2,7 @@
 
 Every Packetrove product tool has a website page, a Web API endpoint, and an
 MCP tool. All three use the same schemas, examples, calculation or lookup
-semantics, and structured errors. CLI and skill coverage is documented
+semantics, and structured errors. CLI coverage is documented
 separately; subtraction and IP range conversion are not currently CLI operations.
 
 `packages/contracts/src/tools.ts` is the authoritative catalog. It records each
@@ -28,8 +28,8 @@ Catalog definitions cannot override derived interface names.
 
 The `cli` declaration records implemented coverage. Enabled entries drive CLI
 discovery, usage, and an exhaustive handler map; disabled entries expose no
-command. Subtraction and IP range conversion remain unavailable in the CLI. Naming changes do not
-expand the CLI or skill's calculation scope.
+command. Subtraction and IP range conversion remain unavailable in the CLI.
+Naming changes do not expand the CLI's calculation scope.
 
 ## Migration to flat names
 
@@ -53,6 +53,26 @@ the canonical tool names. Request and result fields and calculation semantics
 are unchanged. Previously published npm versions keep their original commands;
 use a release containing this migration or build from source as described in the
 [CLI guide](integrations/cli.md).
+
+## Removal of the repository-provided skill
+
+The repository-provided `packetrove-cidr-cover` skill is removed from this source
+revision. Its workflow and maintenance value need a separate design decision
+before a future skill is introduced. This is a scope decision, without a claim
+about measured usage. Website, Web API, MCP, and CLI operations retain their
+existing calculations and contracts.
+
+The former `skills/packetrove-cidr-cover/SKILL.md` and
+`docs/integrations/skill.md` GitHub paths no longer resolve on `main` after this
+change is merged. The removed guide instructed users to copy the skill directory
+and provide an existing CLI or MCP connection. Use the
+[CLI guide](integrations/cli.md) for local covering-CIDR calculations, or the
+[MCP guide](integrations/mcp.md) to connect an agent to the remote tools. CLI
+calculations run offline; remote MCP calculations send inputs to the server.
+
+This removal does not update or delete skill files previously copied into an
+agent client. Historical Git revisions and releases retain the files they
+included; third-party listings are not changed.
 
 ## Catalog consumers
 
