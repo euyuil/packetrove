@@ -2,7 +2,7 @@ import { exports } from 'cloudflare:workers';
 import { describe, expect, it } from 'vitest';
 import { resources } from '../../web/src/i18n/resources';
 import { localizedPath, pagePaths, resolveRoute, type Locale } from '../../web/src/i18n/routes';
-import { escapeHtml, websitePages } from '../../web/src/seo';
+import { escapeHtml, websitePages, websiteRedirects } from '../../web/src/seo';
 import { mcpExamples } from '../../web/src/mcp-examples';
 import { supportedLocales } from '../../web/src/i18n/locales';
 import { tools as catalogTools } from '@packetrove/contracts';
@@ -27,8 +27,8 @@ describe('website in the Workers runtime', () => {
     const heading = page === 'home' ? text.common.tagline : text[page].title;
     expect(html).toMatch(new RegExp('<h1[^>]*>' + heading + '</h1>'));
     expect(html).toContain('<main');
-    expect(html).toContain('href="' + localizedPath('/cidr', locale) + '"');
-    expect(html).toContain('href="' + localizedPath('/cidr/subtract', locale) + '"');
+    expect(html).toContain('href="' + localizedPath('/cidr-cover', locale) + '"');
+    expect(html).toContain('href="' + localizedPath('/cidr-subtract', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
     const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? '';
     expect(navigation).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
@@ -151,34 +151,30 @@ describe('website in the Workers runtime', () => {
       expect(await destination.text()).toContain(`<title>${resources[locale].translation.meta[page].title}</title>`);
     },
   );
-  it.each(supportedLocales)('redirects legacy public IP links within %s while preserving queries', async locale => {
-    const destinationPath = localizedPath('/public-ip', locale);
-    for (const suffix of ['', '/', '.html']) {
-      const source = localizedPath('/ip', locale) + suffix;
-      for (const method of ['GET', 'HEAD']) {
-        const response = await exports.default.fetch(`http://localhost${source}?source=example&source=second`, {
-          method, redirect: 'manual', headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
-        });
-        expect(response.status).toBe(301);
-        const location = new URL(response.headers.get('location')!, 'http://localhost');
-        expect(location.pathname).toBe(destinationPath);
-        expect(location.search).toBe('?source=example&source=second');
-        const destination = await exports.default.fetch(location.href);
-        expect(destination.status).toBe(200);
-        expect(await destination.text()).toContain('href="https://packetrove.com' + destinationPath + '"');
-      }
+  it.each(websiteRedirects)('redirects legacy $from to $to while preserving queries', async ({ from: source, to: destinationPath }) => {
+    for (const method of ['GET', 'HEAD']) {
+      const response = await exports.default.fetch(`http://localhost${source}?source=example&source=second`, {
+        method, redirect: 'manual', headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
+      });
+      expect(response.status).toBe(301);
+      const location = new URL(response.headers.get('location')!, 'http://localhost');
+      expect(location.pathname).toBe(destinationPath);
+      expect(location.search).toBe('?source=example&source=second');
+      const destination = await exports.default.fetch(location.href);
+      expect(destination.status).toBe(200);
+      expect(await destination.text()).toContain('href="https://packetrove.com' + destinationPath + '"');
     }
   });
   it.each(supportedLocales)('returns 404 for unmatched legacy public IP descendants within %s', async locale => {
     const response = await exports.default.fetch('http://localhost' + localizedPath('/ip/missing-page', locale));
     expect(response.status).toBe(404);
   });
-  it.each(['/missing-page', '/missing-page/', '/cidr/missing-page', '/public-ip/missing-page', '/zh/missing-page',
-    '/zh/cidr/missing-page', '/es/missing-page', '/de/missing-page', '/ja/missing-page',
-    '/es/cidr/missing-page', '/de/docs/api/missing-page', '/ja/public-ip/missing-page', '/docs/mcp/missing-page',
-    '/fr/missing-page', '/pt/missing-page', '/fr/docs/api/missing-page', '/pt/cidr/missing-page',
+  it.each(['/missing-page', '/missing-page/', '/cidr-cover/missing-page', '/public-ip/missing-page', '/zh/missing-page',
+    '/zh/cidr-cover/missing-page', '/es/missing-page', '/de/missing-page', '/ja/missing-page',
+    '/es/cidr-cover/missing-page', '/de/docs/api/missing-page', '/ja/public-ip/missing-page', '/docs/mcp/missing-page',
+    '/fr/missing-page', '/pt/missing-page', '/fr/docs/api/missing-page', '/pt/cidr-cover/missing-page',
     '/ru/missing-page', '/ko/missing-page', '/it/missing-page',
-    '/ru/docs/api/missing-page', '/ko/public-ip/missing-page', '/it/cidr/missing-page',
+    '/ru/docs/api/missing-page', '/ko/public-ip/missing-page', '/it/cidr-cover/missing-page',
     '/assets/missing.js', '/assets/missing.css', '/_redirects'])('returns a real static 404 for %s', async path => {
     for (const headers of [{}, { 'sec-fetch-mode': 'navigate', accept: 'text/html' }]) {
       const response = await exports.default.fetch(`http://localhost${path}`, { headers });
@@ -194,7 +190,7 @@ describe('website in the Workers runtime', () => {
     expect(response.status).toBe(404);
     expect(await response.text()).toBe('');
   });
-  it.each(['/api/v1/ip', '/api/v1/public-ip', '/api/v1/cidr/cover', '/api/openapi.json', '/mcp', '/health', '/v1/ip', '/v1/public-ip', '/openapi.json'])(
+  it.each(['/api/v1/ip', '/api/v1/public-ip', '/api/v1/cidr-cover', '/api/openapi.json', '/mcp', '/health', '/v1/ip', '/v1/public-ip', '/openapi.json'])(
     'does not expose an API or MCP endpoint at %s', async path => {
       const response = await exports.default.fetch(`http://localhost${path}`);
       expect(response.status).toBe(404);
@@ -202,7 +198,7 @@ describe('website in the Workers runtime', () => {
       expect(response.headers.get('set-cookie')).toBeNull();
     },
   );
-  it.each(['/api/v1/cidr/cover', '/mcp'])('does not process POST requests at %s', async path => {
+  it.each(['/api/v1/cidr-cover', '/mcp'])('does not process POST requests at %s', async path => {
     const response = await exports.default.fetch(`http://localhost${path}`, {
       method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
     });

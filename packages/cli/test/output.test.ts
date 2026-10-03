@@ -30,8 +30,8 @@ async function closeOutput(args: string[], closeError = false) {
 
 describe('bundled CLI output streams', () => {
   it.each([
-    { name: 'CIDR JSON', args: ['cidr', 'cover', '203.0.113.1', '--json'], json: true },
-    { name: 'CIDR readable result', args: ['cidr', 'cover', '203.0.113.1'], json: false },
+    { name: 'CIDR JSON', args: ['cidr-cover', '203.0.113.1', '--json'], json: true },
+    { name: 'CIDR readable result', args: ['cidr-cover', '203.0.113.1'], json: false },
     { name: 'help', args: ['--help'], json: false },
     { name: 'help with JSON errors', args: ['--help', '--json'], json: true },
   ])('reports a closed stdout destination for $name without a native stack', async ({ args, json }) => {
@@ -44,15 +44,15 @@ describe('bundled CLI output streams', () => {
   });
 
   it('keeps validation errors when stdout closes before any output is attempted', async () => {
-    const execution = await closeOutput(['cidr', 'cover', 'invalid', '--json']);
+    const execution = await closeOutput(['cidr-cover', 'invalid', '--json']);
     expect(execution.status).toBe(1);
     expect(execution.signal).toBeNull();
     expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error.code).toBe('INVALID_INPUT');
   });
 
   it.each([
-    { name: 'output failure', args: ['cidr', 'cover', '203.0.113.1', '--json'] },
-    { name: 'validation failure', args: ['cidr', 'cover', 'invalid', '--json'] },
+    { name: 'output failure', args: ['cidr-cover', '203.0.113.1', '--json'] },
+    { name: 'validation failure', args: ['cidr-cover', 'invalid', '--json'] },
   ])('exits with the failure status when stderr is also unavailable for $name', async ({ args }) => {
     const execution = await closeOutput(args, true);
     expect(execution.status).toBe(1);
@@ -96,7 +96,7 @@ describe('bundled CLI output streams', () => {
       });
     `], { stdio: ['pipe', 'pipe', 'pipe'], timeout: 10_000 });
     const inputs = ['::/0'];
-    const sender = spawn(process.execPath, [bundle, 'cidr', 'cover', ...inputs, '--json'], {
+    const sender = spawn(process.execPath, [bundle, 'cidr-cover', ...inputs, '--json'], {
       stdio: ['ignore', receiver.stdin, 'pipe'], timeout: 10_000,
     });
     let stdout = '';

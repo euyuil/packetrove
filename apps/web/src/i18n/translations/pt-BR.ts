@@ -214,7 +214,7 @@ export const ptBR = {
     deploymentTitle: "Implantação e limites de conexão",
     serverBehavior: "O servidor aceita solicitações modernas sem estado e inicialização, descoberta e chamadas do Streamable HTTP anterior. Não oferece sessões persistentes nem fluxos de eventos independentes do servidor.",
     connectionPrivacy: "Os metadados de IP público são lidos em cada chamada, com instâncias isoladas entre clientes simultâneos. Resultados e erros MCP usam Cache-Control: no-store, no-transform. O aplicativo não armazena nem registra endereços consultados.",
-    toolMigration: "O nome anterior <code>get_public_ip</code> não tem alias de compatibilidade. Atualize a descoberta e use <code>{{ipTool}}</code> nas chamadas salvas.",
+    toolMigration: "Os nomes anteriores não têm aliases de compatibilidade: {{toolRenames}}. Atualize a descoberta de ferramentas e as chamadas salvas.",
     endpointMigration: "O caminho <code>/mcp</code> do site não é o serviço: GET retorna 404 e POST 405, sem proxy ou redirecionamento. Configure os clientes com <code>{{serverUrl}}</code>. Na sua implantação, atualize domínios e listas exatas separadas de Host e Origin do navegador; clientes sem cabeçalho Origin são aceitos.",
     deploymentGuide: "Implantação, hospedagem própria e verificação em produção",
     title: "Conectar o Packetrove a um agente de IA",

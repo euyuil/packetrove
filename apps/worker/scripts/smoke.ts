@@ -128,7 +128,7 @@ for (const { from, to } of websiteRedirects) {
   assert.equal(location.search, '?source=example', `Legacy website redirect query: ${from}`);
   await response.body?.cancel();
 }
-console.log('PASS legacy public IP redirects');
+console.log('PASS all localized legacy tool redirects');
 const missingPage = await timedFetch(`${origin}/missing-page`, {
   headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
 });
@@ -139,19 +139,21 @@ assert.match(missingHtml, /<h1>Page not found<\/h1>/);
 assert.match(missingHtml, /<a href="\/">Return to home<\/a>/);
 const missingAsset = await timedFetch(`${origin}/assets/missing.js`);
 assert.equal(missingAsset.status, 404, 'Missing asset status');
-for (const path of ['/api/v1/ip', '/api/v1/public-ip', '/api/v1/cidr/cover', '/api/openapi.json', '/mcp', '/health', '/v1/ip', '/v1/public-ip', '/openapi.json']) {
+for (const path of ['/api/v1/ip', '/api/v1/public-ip', '/api/openapi.json', '/mcp', '/health', '/openapi.json',
+  ...catalogTools.map(tool => tool.api.path)]) {
   const response = await timedFetch(`${origin}${path}`);
   assert.equal(response.status, 404, `Website must not serve an interface endpoint: ${path}`);
   await response.body?.cancel();
 }
-for (const path of ['/api/v1/cidr/cover', '/mcp']) {
+for (const path of ['/mcp', ...catalogTools.filter(tool => tool.api.method === 'post').map(tool => tool.api.path)]) {
   const response = await timedFetch(`${origin}${path}`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
   });
   assert.equal(response.status, 405, `Website must reject tool-call POST requests: ${path}`);
   await response.body?.cancel();
 }
-for (const path of ['/', '/cidr', '/ip', '/public-ip', '/docs/api', '/docs/mcp', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/v1/public-ip', '/api/openapi.json', '/v1/ip']) {
+for (const path of ['/', '/docs/api', '/docs/mcp', '/_headers', '/assets/missing.js', '/api/v1/ip', '/api/v1/public-ip', '/api/openapi.json',
+  ...catalogTools.flatMap(tool => [tool.webPath, ...tool.legacyWebPaths, ...tool.removedInterfaces.apiPaths])]) {
   const response = await timedFetch(`${apiOrigin}${path}`, {
     headers: { accept: 'text/html', 'sec-fetch-mode': 'navigate' },
   });
@@ -200,6 +202,7 @@ const document = await specification.json() as { openapi: string; paths: Record<
 assert.equal(document.openapi, '3.1.0');
 for (const tool of catalogTools) {
   assert(document.paths[tool.api.path], `Missing tool endpoint in the specification: ${tool.id}`);
+  for (const path of tool.removedInterfaces.apiPaths) assert(!document.paths[path], `Removed API path in the specification: ${path}`);
 }
 const publicIpResponse = await timedFetch(`${apiOrigin}${PUBLIC_IP_PATH}`, { cache: 'no-store', headers: { origin } });
 assert.equal(publicIpResponse.status, 200, 'Public IP API status');
@@ -257,6 +260,9 @@ try {
   assert.equal(client.getServerVersion()?.version, PACKETROVE_VERSION);
   const tools = (await client.listTools()).tools;
   assert.deepEqual(tools.map(tool => tool.name).sort(), catalogTools.map(tool => tool.mcp.name).sort(), 'MCP catalog coverage');
+  for (const name of catalogTools.flatMap(tool => [...tool.removedInterfaces.mcpNames])) {
+    await assert.rejects(client.callTool({ name, arguments: {} }), /not found/i, `Removed MCP tool must be rejected: ${name}`);
+  }
   const result = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);

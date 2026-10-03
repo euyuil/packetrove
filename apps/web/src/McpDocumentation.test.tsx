@@ -172,7 +172,7 @@ describe('localized MCP guide navigation', () => {
       const fetch = vi.fn();
       vi.stubGlobal('fetch', fetch);
       const storage = vi.spyOn(Storage.prototype, 'setItem');
-      window.history.replaceState({}, '', '/cidr');
+      window.history.replaceState({}, '', '/cidr-cover');
       render(<App />);
       fireEvent.change(screen.getByLabelText(en.cidr.inputLabel), { target: { value: input } });
       fireEvent.click(screen.getByRole('button', { name: en.cidr.calculate }));

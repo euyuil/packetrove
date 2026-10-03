@@ -66,7 +66,11 @@ translations, routes, prerendering, or page metadata, and the
 tool explanations or agent examples.
 
 The [shared tool catalog](packages/contracts/src/tools.ts) is the source of truth
-for tool identities, paths, schemas, MCP metadata, and examples. Every product
+for tool identities, paths, schemas, MCP metadata, CLI availability, and examples.
+Declare one canonical tool name; website paths, API paths, OpenAPI operation
+identifiers, MCP names, and enabled CLI commands are derived from it. Keep tool
+entry points flat and record website compatibility paths in the catalog.
+Every product
 tool requires website, Web API, and MCP coverage together. See
 [how to add or change a tool](docs/tool-catalog.md) for the required consumers
 and parity checks.

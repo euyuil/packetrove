@@ -88,7 +88,7 @@ describe('bounded standard-input lines', () => {
 });
 
 async function runWithLimitedHeap(chunks: Iterable<string | Buffer>) {
-  const child = spawn(process.execPath, ['--max-old-space-size=32', bundle, 'cidr', 'cover', '--stdin', '--json'], {
+  const child = spawn(process.execPath, ['--max-old-space-size=32', bundle, 'cidr-cover', '--stdin', '--json'], {
     stdio: ['pipe', 'pipe', 'pipe'], timeout: 15_000,
   });
   let stdout = '';

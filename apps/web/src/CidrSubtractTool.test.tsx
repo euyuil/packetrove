@@ -10,7 +10,7 @@ import { resources } from './i18n/resources';
 const includeLabel = 'Included IP addresses or CIDRs';
 const excludeLabel = 'Excluded IP addresses or CIDRs';
 
-beforeEach(() => { window.history.replaceState({}, '', '/cidr/subtract'); });
+beforeEach(() => { window.history.replaceState({}, '', '/cidr-subtract'); });
 afterEach(() => {
   cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
   window.history.replaceState({}, '', '/');
@@ -33,7 +33,7 @@ async function chooseLanguage(name: string) {
 }
 
 describe('browser-local CIDR subtraction', () => {
-  it.each(['/cidr/subtract', '/cidr/subtract/', '/cidr/subtract.html'])('opens directly at %s with metadata', pathname => {
+  it.each(['/cidr-subtract', '/cidr-subtract/', '/cidr-subtract.html'])('opens directly at %s with metadata', pathname => {
     window.history.replaceState({}, '', pathname);
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
@@ -63,7 +63,7 @@ describe('browser-local CIDR subtraction', () => {
     expect(fetch).not.toHaveBeenCalled();
     expect(storage).not.toHaveBeenCalled();
     expect(log).not.toHaveBeenCalled();
-    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/cidr/subtract');
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/cidr-subtract');
   });
 
   it.each([
@@ -207,7 +207,7 @@ describe('copy formats and retained subtraction state', () => {
     expect((screen.getByLabelText(text.subtract.output) as HTMLTextAreaElement).value).toBe(result);
     expect(screen.getByText(text.subtract.remaining).nextElementSibling?.textContent)
       .toBe(new Intl.NumberFormat(locale).format(340282366920938463463374607431768211455n));
-    expect(window.location.pathname).toBe(locales[locale].prefix + '/cidr/subtract');
+    expect(window.location.pathname).toBe(locales[locale].prefix + '/cidr-subtract');
     expect(calculation).toHaveBeenCalledTimes(1);
     fireEvent.change(screen.getByLabelText(text.subtract.excludeLabel), { target: { value: '\n\nbad' } });
     fireEvent.click(screen.getByRole('button', { name: text.subtract.calculate }));
@@ -265,7 +265,7 @@ describe('copy formats and retained subtraction state', () => {
     expect(screen.getByLabelText('包含的 IP 地址或 CIDR 网段')).toBe(input);
     expect((screen.getByLabelText('剩余 CIDR 列表') as HTMLTextAreaElement).value).toBe(result);
     expect(screen.getByText('340,282,366,920,938,463,463,374,607,431,768,211,455')).toBeDefined();
-    expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://packetrove.com/zh/cidr/subtract');
+    expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://packetrove.com/zh/cidr-subtract');
     fireEvent.click(screen.getByRole('link', { name: '最小覆盖 CIDR' }));
     expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('');
     fireEvent.click(screen.getByRole('link', { name: 'CIDR 相减' }));

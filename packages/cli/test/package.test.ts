@@ -101,12 +101,12 @@ it('packs a public CLI and installs its executable offline with npm and pnpm', (
         ? npm(['exec', '--offline', '--', 'packetrove', ...args], consumer)
         : pnpm(['--silent', 'exec', 'packetrove', ...args], consumer);
       const example = CIDR_COVER_EXAMPLES[1]!;
-      const success = run(['cidr', 'cover', ...example.request.inputs, '--json']);
+      const success = run(['cidr-cover', ...example.request.inputs, '--json']);
       expect(success.status, success.stderr).toBe(0);
       expect(success.stderr).toBe('');
       expect(CidrCoverResultSchema.parse(JSON.parse(success.stdout))).toEqual(example.result);
 
-      const failure = run(['cidr', 'cover', '203.0.113.1', '::1', '--json']);
+      const failure = run(['cidr-cover', '203.0.113.1', '::1', '--json']);
       expect(failure.status).toBe(1);
       expect(failure.stdout).toBe('');
       expect(ErrorResponseSchema.parse(JSON.parse(failure.stderr)).error.code).toBe('MIXED_ADDRESS_FAMILIES');

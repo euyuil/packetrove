@@ -9,7 +9,14 @@ import {
 type ToolDefinition = {
   id: string;
   page: string;
-  webPath: `/${string}`;
+  webPath?: never;
+  legacyWebPaths: readonly `/${string}`[];
+  removedInterfaces: {
+    apiPaths: readonly string[];
+    mcpNames: readonly string[];
+    cliCommands: readonly string[];
+  };
+  cli: boolean;
   title: string;
   execution: 'local' | 'connection';
   schemaName: string;
@@ -17,65 +24,93 @@ type ToolDefinition = {
   outputSchema: z.ZodType;
   examples: ReadonlyArray<{ name: string; request: unknown; result: unknown }>;
   example: { name: string; request: unknown; result: unknown };
-  api: { method: 'post' | 'get'; path: `/v1/${string}`; operationId: string; tag: string; summary: string; description: string };
+  api: { method: 'post' | 'get'; path?: never; operationId?: never; tag: string; summary: string; description: string };
   mcp: {
-    name: string;
+    name?: never;
     description: string;
     annotations: { readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean; openWorldHint: boolean };
   };
 };
 
+/** Declare one public name and derive every interface identifier from it. */
+function defineTool<const Definition extends ToolDefinition>(definition: Definition) {
+  if (!/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(definition.id)
+    || definition.id.split('-')[0]!.length < 4 || definition.id.length > 64) {
+    throw new Error('Tool names must use lowercase words separated by hyphens, start with at least four characters, and contain at most 64 characters.');
+  }
+  const { cli, api, mcp, ...metadata } = definition;
+  const id = definition.id as Definition['id'];
+  return {
+    ...metadata,
+    webPath: `/${id}` as `/${Definition['id']}`,
+    api: { ...api, path: `/v1/${id}` as `/v1/${Definition['id']}`, operationId: id },
+    mcp: { ...mcp, name: id },
+    cli: (cli ? { command: id } : null) as Definition['cli'] extends true
+      ? { command: Definition['id'] } : null,
+  };
+}
+
 export const toolCatalog = {
-  cidr: {
-    id: 'cidr-cover', page: 'cidr', webPath: '/cidr', title: 'Smallest Covering CIDR', execution: 'local',
+  cidr: defineTool({
+    id: 'cidr-cover', page: 'cidr', title: 'Smallest Covering CIDR', execution: 'local',
+    legacyWebPaths: ['/cidr'], cli: true,
+    removedInterfaces: { apiPaths: ['/v1/cidr/cover'], mcpNames: ['smallest_covering_cidr'], cliCommands: ['cidr cover'] },
     schemaName: 'CidrCover', inputSchema: CidrCoverRequestSchema, outputSchema: CidrCoverResultSchema,
     examples: CIDR_COVER_EXAMPLES, example: CIDR_COVER_EXAMPLES[1]!,
     api: {
-      method: 'post', path: '/v1/cidr/cover', operationId: 'smallestCoveringCidr', tag: 'CIDR',
+      method: 'post', tag: 'CIDR',
       summary: 'Find the smallest single CIDR covering all inputs',
       description: `Accepts IPv4 or IPv6 addresses and CIDRs from one address family. The output maximizes the prefix length while covering every input address, and may include additional addresses. Overlapping inputs are counted once. CIDRs with host bits are normalized. The request body must not exceed ${MAX_REQUEST_BYTES} bytes. This is a stateless calculation and does not modify firewall rules.`,
     },
     mcp: {
-      name: 'smallest_covering_cidr',
       description: `Use when combining a selected group of firewall allowlist or blocklist entries into one smallest covering CIDR, or when checking the exact extra coverage. Accept 1 to ${MAX_INPUTS.toLocaleString('en')} IP addresses or CIDRs from one address family, up to ${MAX_INPUT_LENGTH} characters each; normalize host bits and count overlaps once. Return the canonical CIDR, inclusive range, and exact decimal-string counts, including additionalAddressCount. The range may allow or block additional addresses. This computes one CIDR for the supplied inputs; it does not optimize an entire list against an entry limit or change firewall rules. Remote MCP calls submit inputs to this server; the calculation makes no outbound network requests.`,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
-  },
-  subtract: {
-    id: 'cidr-subtract', page: 'subtract', webPath: '/cidr/subtract', title: 'CIDR Subtraction', execution: 'local',
+  }),
+  subtract: defineTool({
+    id: 'cidr-subtract', page: 'subtract', title: 'CIDR Subtraction', execution: 'local',
+    legacyWebPaths: ['/cidr/subtract'], cli: false,
+    removedInterfaces: { apiPaths: ['/v1/cidr/subtract'], mcpNames: ['subtract_cidrs'], cliCommands: [] },
     schemaName: 'CidrSubtract', inputSchema: CidrSubtractRequestSchema, outputSchema: CidrSubtractResultSchema,
     examples: CIDR_SUBTRACT_EXAMPLES, example: CIDR_SUBTRACT_EXAMPLES[0]!,
     api: {
-      method: 'post', path: '/v1/cidr/subtract', operationId: 'subtractCidrs', tag: 'CIDR',
+      method: 'post', tag: 'CIDR',
       summary: 'Subtract excluded networks from included address space exactly',
       description: `Return the minimal sorted canonical CIDR list for union(include) minus union(exclude), without adding addresses. Use one address family and at most ${MAX_SUBTRACTION_INPUTS} entries across both lists, with at most ${MAX_INPUT_LENGTH} characters per entry. Include must be nonempty; exclude may be empty. Overlaps count once and host bits are normalized. Results include exact decimal-string counts; complete removal succeeds with an empty list. Results exceeding ${MAX_SUBTRACTION_OUTPUTS} CIDRs fail without returning a partial list. The request body must not exceed ${MAX_REQUEST_BYTES} bytes. Calls send inputs to the server; no firewall or WireGuard configuration is changed and remaining ranges do not prove live availability.`,
     },
     mcp: {
-      name: 'subtract_cidrs',
       description: `Use to prepare WireGuard AllowedIPs exceptions or calculate remaining address space relative to supplied include and exclude lists. Compute union(include) minus union(exclude) as a minimal sorted canonical CIDR list, without adding addresses. Use one address family, a nonempty include list, and at most ${MAX_SUBTRACTION_INPUTS} entries across both lists, up to ${MAX_INPUT_LENGTH} characters each. Exclude may be empty. Normalize host bits and count overlaps once. Return cidrs, normalizedInclude, normalizedExclude, and exact decimal-string includedAddressCount, removedAddressCount, remainingAddressCount. Complete removal returns an empty list; more than ${MAX_SUBTRACTION_OUTPUTS} output CIDRs returns an error without a partial result. Error issues identify include or exclude and the zero-based entry index. Remote calls submit inputs to this server; the browser calculates locally. This does not inspect live allocation, configure WireGuard, or change firewall rules.`,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
-  },
-  ip: {
-    id: 'public-ip', page: 'ip', webPath: '/public-ip', title: 'Current Public IP', execution: 'connection',
+  }),
+  ip: defineTool({
+    id: 'public-ip', page: 'ip', title: 'Current Public IP', execution: 'connection',
+    legacyWebPaths: ['/ip'], cli: true,
+    removedInterfaces: { apiPaths: ['/v1/ip'], mcpNames: ['get_public_ip'], cliCommands: ['ip'] },
     schemaName: 'PublicIp', inputSchema: PublicIpRequestSchema, outputSchema: PublicIpResultSchema,
     examples: PUBLIC_IP_EXAMPLES, example: PUBLIC_IP_EXAMPLES[0]!,
     api: {
-      method: 'get', path: '/v1/public-ip', operationId: 'getPublicIp', tag: 'IP',
+      method: 'get', tag: 'IP',
       summary: 'Get the IP address observed for the current request',
       description: 'Returns one IPv4 or IPv6 address from the current connection to Packetrove. Request Accept: text/plain for the address followed by a newline; JSON is the default. Errors remain structured JSON in either format. With a VPN or proxy this is its exit address. A hosted caller observes its own connection, not a user device behind it. It does not discover local addresses or separately probe both address families. The Cloudflare deployment reads edge-provided connection headers, including preserved IPv6 when Pseudo IPv4 overwrites headers. Results and errors are not cached; the application does not store or log the returned IP address.',
     },
     mcp: {
-      name: 'public-ip',
       description: 'Use to inspect the public IPv4 or IPv6 address observed for the connection making this MCP tool call. Takes an empty object and returns ip and family. This is the MCP client connection: a hosted AI client may observe its own exit address, not the user device address. If the user needs their browser or computer connection, direct them to the web tool or a CLI running on that machine. A VPN or proxy changes the observed path. One call observes one address family; it does not discover private local addresses, an address before a proxy, or both address families. The application does not store or log results, and no firewall rules are changed. Cloudflare Worker subrequests can have platform-specific address semantics; the result is not an identity proof.',
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     },
-  },
-} as const satisfies Record<string, ToolDefinition>;
+  }),
+} as const;
 
 export type ToolPage = keyof typeof toolCatalog;
 export type ToolId = (typeof toolCatalog)[ToolPage]['id'];
 export const tools = Object.values(toolCatalog);
+export type CliToolPage = {
+  [Page in ToolPage]: (typeof toolCatalog)[Page]['cli'] extends null ? never : Page;
+}[ToolPage];
+export const cliTools = tools.filter((tool): tool is (typeof toolCatalog)[CliToolPage] => tool.cli !== null);
+export const legacyToolPagePaths: Readonly<Record<string, string>> = Object.fromEntries(
+  tools.flatMap(tool => tool.legacyWebPaths.map(path => [path, tool.webPath])),
+);
 export function isToolPage(page: string): page is ToolPage {
   return Object.hasOwn(toolCatalog, page);
 }

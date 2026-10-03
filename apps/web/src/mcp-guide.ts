@@ -71,6 +71,8 @@ export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = 
   const t = guideTranslator(locale);
   const toolContent = tools.map(tool => getMcpToolContent(tool.page, locale));
   const sdkVersion = workerManifest.dependencies['@modelcontextprotocol/client'];
+  const toolRenames = tools.flatMap(tool => tool.removedInterfaces.mcpNames.map(name =>
+    `<code>${name}</code> → <code>${tool.mcp.name}</code>`)).join(', ');
   return {
     title: t($ => $.mcp.title),
     explanation: t($ => $.mcp.explanation),
@@ -104,7 +106,7 @@ export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = 
     deployment: {
       title: t($ => $.mcp.deploymentTitle),
       paragraphs: [t($ => $.mcp.serverBehavior), t($ => $.mcp.connectionPrivacy),
-        t($ => $.mcp.toolMigration, { ipTool: mcpExamples.ip.name }), t($ => $.mcp.endpointMigration, { serverUrl })],
+        t($ => $.mcp.toolMigration, { toolRenames }), t($ => $.mcp.endpointMigration, { serverUrl })],
       label: t($ => $.mcp.deploymentGuide),
     },
   };

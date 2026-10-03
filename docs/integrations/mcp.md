@@ -34,7 +34,7 @@ codex mcp add packetrove \
 
 [Codex MCP documentation](https://developers.openai.com/codex/mcp/)
 
-Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `smallest_covering_cidr, subtract_cidrs, public-ip`.
+Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `cidr-cover, cidr-subtract, public-ip`.
 
 After configuration, the client discovers available tools with tools/list. Tool descriptions and schemas guide selection and arguments. Reading a web page does not configure a client or grant it tool access.
 
@@ -42,7 +42,7 @@ After configuration, the client discovers available tools with tools/list. Tool 
 
 Ask an AI agent to calculate one covering CIDR for a selected group of firewall allowlist or blocklist entries and explain the extra coverage.
 
-Tool name: `smallest_covering_cidr`
+Tool name: `cidr-cover`
 
 Server address: `https://api.packetrove.com/mcp`
 
@@ -87,13 +87,13 @@ Remote MCP calls send your inputs to the server. The browser calculator runs loc
 
 203.0.113.0/29 covers 8 addresses and adds 5.
 
-[Open the browser calculator](https://packetrove.com/cidr)
+[Open the browser calculator](https://packetrove.com/cidr-cover)
 
 ## Use subtraction through MCP
 
 Ask an AI agent to subtract excluded networks from included address space and return the exact remaining CIDRs.
 
-Tool name: `subtract_cidrs`
+Tool name: `cidr-subtract`
 
 Server address: `https://api.packetrove.com/mcp`
 
@@ -137,7 +137,7 @@ Read cidrs and the exact decimal-string includedAddressCount, removedAddressCoun
 
 Remote API and MCP calls send inputs to the server; the browser calculates locally. Remaining ranges are relative to your inputs and do not prove live availability. The tool does not configure WireGuard or change firewall rules.
 
-[Open browser subtraction](https://packetrove.com/cidr/subtract)
+[Open browser subtraction](https://packetrove.com/cidr-subtract)
 
 ## Inspect a connection through MCP
 
@@ -193,7 +193,7 @@ try {
   await client.connect(new StreamableHTTPClientTransport(new URL("https://api.packetrove.com/mcp")));
   const { tools } = await client.listTools();
   const result = await client.callTool({
-    name: "smallest_covering_cidr",
+    name: "cidr-cover",
     arguments: {"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]},
   });
   if (result.isError) throw new Error(JSON.stringify(result.content));
@@ -217,7 +217,7 @@ The server supports modern stateless requests and legacy Streamable HTTP initial
 
 Public IP metadata is read for each tool-call request, with isolated server instances for concurrent clients. MCP results and errors use Cache-Control: no-store, no-transform. The application does not retain or log lookup addresses.
 
-The former `get_public_ip` tool name has no compatibility alias. Refresh tool discovery and use `public-ip` in saved calls.
+Previous tool names have no compatibility aliases: `smallest_covering_cidr` → `cidr-cover`, `subtract_cidrs` → `cidr-subtract`, `get_public_ip` → `public-ip`. Refresh tool discovery and update saved calls.
 
 The website’s `/mcp` path is not the service endpoint: GET returns 404 and POST returns 405, without proxying or redirecting tool calls. Configure clients with `https://api.packetrove.com/mcp`. For your own deployment, update the domains and separate exact Host and browser Origin allowlists; non-browser clients without an Origin header are supported.
 

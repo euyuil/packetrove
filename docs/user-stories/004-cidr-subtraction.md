@@ -44,7 +44,7 @@ not evidence of market size.
 
 ## Behavior and examples
 
-The tool is available at `/cidr/subtract` and under the existing `/zh`, `/es`,
+The tool is available at `/cidr-subtract` and under the existing `/zh`, `/es`,
 `/de`, `/ja`, `/fr`, `/pt`, `/ru`, `/ko`, and `/it` prefixes, with labels, errors,
 descriptions, and metadata in all ten website languages. The homepage and
 navigation link to it. All ten pages are prerendered and included in the sitemap.
@@ -136,8 +136,8 @@ Counts include all addresses, including network and broadcast addresses.
 The browser calls the shared core locally. Inputs and results remain in memory;
 they are not uploaded, logged, persisted, or added to URLs. Prerendering starts
 with empty inputs and makes no network requests. There are no new dependencies
-or external services. The Web API at `POST /v1/cidr/subtract` and MCP tool
-`subtract_cidrs` call the same shared calculation. Remote calls submit inputs to the server; the
+or external services. The Web API at `POST /v1/cidr-subtract` and MCP tool
+`cidr-subtract` call the same shared calculation. Remote calls submit inputs to the server; the
 website remains local. The CLI and covering-calculator skill retain their
 existing operations. Shared errors identify the include/exclude list and entry
 index for invalid subtraction inputs.

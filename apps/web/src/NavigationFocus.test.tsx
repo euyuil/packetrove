@@ -72,7 +72,7 @@ describe('focus after navigation to a different page', () => {
   it('focuses each distinct CIDR page and retains both unfinished drafts', () => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     render(<App />);
     fireEvent.change(screen.getByLabelText(resources.en.translation.cidr.inputLabel), { target: { value: '203.0.113.' } });
     fireEvent.click(screen.getByRole('link', { name: resources.en.translation.subtract.title }));
@@ -97,7 +97,7 @@ describe('focus after navigation to a different page', () => {
     expect(document.activeElement).toBe(screen.getByRole('main', { name: 'Home' }));
     act(() => { window.history.back(); });
     await waitFor(() => {
-      expect(window.location.pathname).toBe('/cidr');
+      expect(window.location.pathname).toBe('/cidr-cover');
       expect(document.activeElement).toBe(screen.getByRole('main', { name: 'Smallest Covering CIDR' }));
     });
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('::/0');
@@ -120,7 +120,7 @@ describe('focus after navigation to a different page', () => {
   });
 
   it('keeps focus for same-page languages, input changes, URL suffixes, and route aliases', async () => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     render(<App />);
@@ -136,12 +136,12 @@ describe('focus after navigation to a different page', () => {
     await userEvent.setup().type(input, '203.0.113.1');
     expect(document.activeElement).toBe(input);
     act(() => {
-      window.history.pushState({}, '', '/cidr?source=example#tool');
+      window.history.pushState({}, '', '/cidr-cover?source=example#tool');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
     expect(document.activeElement).toBe(input);
     act(() => {
-      window.history.pushState({}, '', '/cidr.html?source=example#another');
+      window.history.pushState({}, '', '/cidr-cover.html?source=example#another');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
     expect(document.activeElement).toBe(input);

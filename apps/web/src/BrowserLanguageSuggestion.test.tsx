@@ -38,7 +38,7 @@ afterEach(() => {
 
 describe('browser language suggestions', () => {
   it.each(supportedLocales)('offers %s using its own language without changing the page', locale => {
-    const page = locale === 'en' ? '/zh/cidr' : '/cidr';
+    const page = locale === 'en' ? '/zh/cidr-cover' : '/cidr-cover';
     window.history.replaceState(null, '', page + '?source=example#tool');
     browserLanguages([locale]);
     const fetch = vi.fn();
@@ -49,7 +49,7 @@ describe('browser language suggestions', () => {
     expect(suggestion.getAttribute('lang')).toBe(locale);
     expect(within(suggestion).getByRole('button', { name: copy.dismiss })).toBeDefined();
     const link = within(suggestion).getByRole('link', { name: copy.switch });
-    expect(link.getAttribute('href')).toBe(localizedPath('/cidr', locale) + '?source=example#tool');
+    expect(link.getAttribute('href')).toBe(localizedPath('/cidr-cover', locale) + '?source=example#tool');
     expect(link.getAttribute('hreflang')).toBe(locale);
     expect(window.location.pathname).toBe(page);
     expect(document.activeElement).toBe(document.body);
@@ -76,16 +76,16 @@ describe('browser language suggestions', () => {
   });
 
   it('switches on request while retaining the calculator draft, exact result, and live URL suffix', () => {
-    window.history.replaceState(null, '', '/cidr?source=initial#initial');
+    window.history.replaceState(null, '', '/cidr-cover?source=initial#initial');
     const fetch = vi.fn();
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     vi.stubGlobal('fetch', fetch);
     render(<App />);
     fireEvent.change(screen.getByLabelText('IP addresses or CIDR ranges'), { target: { value: '::/0' } });
     fireEvent.click(screen.getByRole('button', { name: 'Calculate covering CIDR' }));
-    window.history.replaceState(null, '', '/cidr?source=selected#tool');
+    window.history.replaceState(null, '', '/cidr-cover?source=selected#tool');
     fireEvent.click(screen.getByRole('link', { name: chineseCopy.switch }));
-    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/zh/cidr?source=selected#tool');
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/zh/cidr-cover?source=selected#tool');
     expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('::/0');
     expect(screen.getAllByText('340,282,366,920,938,463,463,374,607,431,768,211,456')).toHaveLength(2);
     expect(currentSuggestion()).toBeNull();

@@ -22,7 +22,7 @@ describe('interactive API documentation', () => {
     vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
       const request = new Request(input, init);
       requests.push(request);
-      return Response.json(new URL(request.url).pathname === '/v1/cidr/cover' ? CIDR_COVER_EXAMPLES[0]!.result : specification);
+      return Response.json(new URL(request.url).pathname === '/v1/cidr-cover' ? CIDR_COVER_EXAMPLES[0]!.result : specification);
     });
     window.history.replaceState({}, '', '/docs/api');
     render(<App />);
@@ -39,19 +39,19 @@ describe('interactive API documentation', () => {
       && request.credentials === 'omit')).toBe(true);
 
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: /Test Request.*post \/v1\/cidr\/cover/i }, { timeout: 5_000 }));
+    await user.click(await screen.findByRole('button', { name: /Test Request.*post \/v1\/cidr-cover/i }, { timeout: 5_000 }));
     // JSDOM exposes both responsive variants of the same send button.
     const sendButtons = await screen.findAllByRole('button', {
-      name: 'Send post request to https://api.packetrove.com/v1/cidr/cover',
+      name: 'Send post request to https://api.packetrove.com/v1/cidr-cover',
     }, { timeout: 5_000 });
     await user.click(sendButtons[0]!);
     await waitFor(() => {
-      expect(requests.some(request => request.url === 'https://api.packetrove.com/v1/cidr/cover'
+      expect(requests.some(request => request.url === 'https://api.packetrove.com/v1/cidr-cover'
         && request.method === 'POST' && request.credentials === 'omit')).toBe(true);
     }, { timeout: 5_000 });
     const trial = requests.find(request => request.method === 'POST')!;
     expect(CidrCoverRequestSchema.parse(await trial.json()).inputs.length).toBeGreaterThan(0);
-    expect(requests.every(request => ['https://api.packetrove.com/openapi.json', 'https://api.packetrove.com/v1/cidr/cover']
+    expect(requests.every(request => ['https://api.packetrove.com/openapi.json', 'https://api.packetrove.com/v1/cidr-cover']
       .includes(request.url))).toBe(true);
   }, 30_000);
 });

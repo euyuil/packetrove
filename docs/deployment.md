@@ -84,18 +84,20 @@ not published to the API origin. Keep Workers Cache disabled and do not enable
 Worker-first routing for `/openapi.json` when free static-asset requests are
 desired.
 
-Vite builds `index.html`, `cidr.html`, `cidr/subtract.html`, `public-ip.html`, `docs/api.html`,
+Vite builds `index.html`, `cidr-cover.html`, `cidr-subtract.html`, `public-ip.html`, `docs/api.html`,
 their localized counterparts, and `404.html` with shared
 JavaScript and styles. Cloudflare serves the project homepage at `/`, the CIDR
-covering calculator at `/cidr`, CIDR subtraction at `/cidr/subtract`,
+covering calculator at `/cidr-cover`, CIDR subtraction at `/cidr-subtract`,
 My Public IP at `/public-ip`, and API documentation at
 `/docs/api` directly, and uses `404-page`
-handling for unknown paths. `/cidr/`, `/cidr/subtract/`, `/public-ip/`, and `/docs/api/` redirect to their canonical
+handling for unknown paths. `/cidr-cover/`, `/cidr-subtract/`, `/public-ip/`, and `/docs/api/` redirect to their canonical
 paths without the trailing slash. API routes continue to return structured
 JSON errors, including for browser navigation.
 Each supported locale has the same pages. The build generates `_redirects`
-from the shared route and locale registries: legacy `/ip`, `/ip/`, and
-`/ip.html` links return 301 redirects to `/public-ip` in the same locale,
+from the shared tool catalog and locale registry: legacy `/cidr`,
+`/cidr/subtract`, and `/ip` links, including their trailing-slash and `.html`
+forms, return 301 redirects to `/cidr-cover`, `/cidr-subtract`, and `/public-ip`
+in the same locale,
 preserving query strings. These aliases do not have static HTML entries and
 are excluded from canonical metadata and the sitemap. See
 [Cloudflare's redirect rules](https://developers.cloudflare.com/workers/static-assets/redirects/).

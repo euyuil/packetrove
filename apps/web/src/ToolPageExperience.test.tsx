@@ -15,7 +15,7 @@ afterEach(() => {
 
 describe('calculation feedback', () => {
   it('focuses the covering error summary and links original lines to the input without changing the URL', async () => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     render(<App />);
     const input = screen.getByLabelText('IP addresses or CIDR ranges');
     fireEvent.change(input, { target: { value: '\n203.0.113.1, bad\n::/129' } });
@@ -30,14 +30,14 @@ describe('calculation feedback', () => {
     expect(errors[1]?.textContent).toContain('Line 3:');
     await userEvent.setup().click(errors[1]!);
     expect(document.activeElement).toBe(input);
-    expect(window.location.pathname + window.location.hash).toBe('/cidr');
+    expect(window.location.pathname + window.location.hash).toBe('/cidr-cover');
     fireEvent.change(input, { target: { value: '203.0.113.1' } });
     expect(screen.queryByRole('alert')).toBeNull();
     expect(input.getAttribute('aria-describedby')).toBe('input-help');
   });
 
   it('focuses subtraction errors and takes each link to its affected list', async () => {
-    window.history.replaceState({}, '', '/cidr/subtract');
+    window.history.replaceState({}, '', '/cidr-subtract');
     render(<App />);
     fireEvent.change(screen.getByLabelText('Included IP addresses or CIDRs'), { target: { value: 'bad' } });
     fireEvent.change(screen.getByLabelText('Excluded IP addresses or CIDRs'), { target: { value: '\n\nbroken' } });
@@ -54,7 +54,7 @@ describe('calculation feedback', () => {
   });
 
   it('announces only a short covering result, including repeated calculations, without moving keyboard focus', async () => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     render(<App />);
     const completion = screen.getByRole('status', { name: resources.en.translation.cidr.result });
     expect(completion.textContent).toBe('');
@@ -77,7 +77,7 @@ describe('calculation feedback', () => {
   });
 
   it('reveals an off-screen result on submission while preserving focus, and does not scroll on editing', () => {
-    window.history.replaceState({}, '', '/cidr/subtract');
+    window.history.replaceState({}, '', '/cidr-subtract');
     render(<App />);
     const panel = screen.getByRole('region', { name: resources.en.translation.subtract.result });
     vi.spyOn(panel, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 900, 400, 400));
@@ -97,7 +97,7 @@ describe('calculation feedback', () => {
 
 describe('compact navigation', () => {
   it.each(supportedLocales)('provides complete catalog links and retains drafts when switching tools in %s', async locale => {
-    window.history.replaceState({}, '', localizedPath('/cidr', locale));
+    window.history.replaceState({}, '', localizedPath('/cidr-cover', locale));
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const text = resources[locale].translation;
@@ -126,7 +126,7 @@ describe('compact navigation', () => {
   });
 
   it('returns focus after Escape and reselecting the active page', async () => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     render(<App />);
     const trigger = screen.getByRole('button', { name: resources.en.translation.common.navigation + ': ' + resources.en.translation.cidr.title });
     const user = userEvent.setup();
@@ -141,7 +141,7 @@ describe('compact navigation', () => {
 
   it.each([{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }])(
     'preserves native compact-menu navigation for %j without dropping focus or drafts', async modifiers => {
-      window.history.replaceState({}, '', '/cidr');
+      window.history.replaceState({}, '', '/cidr-cover');
       const fetch = vi.fn();
       vi.stubGlobal('fetch', fetch);
       render(<App />);
@@ -154,7 +154,7 @@ describe('compact navigation', () => {
         event.preventDefault();
       }, { once: true });
       fireEvent.click(screen.getByRole('menuitem', { name: 'My Public IP' }), modifiers);
-      expect(window.location.pathname).toBe('/cidr');
+      expect(window.location.pathname).toBe('/cidr-cover');
       expect((input as HTMLTextAreaElement).value).toBe('203.0.113.');
       expect(document.activeElement).toBe(trigger);
       expect(fetch).not.toHaveBeenCalled();

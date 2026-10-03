@@ -350,9 +350,9 @@
     "parameters": {}
   },
   "paths": {
-    "/v1/cidr/cover": {
+    "/v1/cidr-cover": {
       "post": {
-        "operationId": "smallestCoveringCidr",
+        "operationId": "cidr-cover",
         "tags": [
           "CIDR"
         ],
@@ -520,9 +520,9 @@
         }
       }
     },
-    "/v1/cidr/subtract": {
+    "/v1/cidr-subtract": {
       "post": {
-        "operationId": "subtractCidrs",
+        "operationId": "cidr-subtract",
         "tags": [
           "CIDR"
         ],
@@ -669,7 +669,7 @@
     },
     "/v1/public-ip": {
       "get": {
-        "operationId": "getPublicIp",
+        "operationId": "public-ip",
         "tags": [
           "IP"
         ],

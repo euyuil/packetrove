@@ -7,7 +7,7 @@ import { render } from './test-utils';
 import { locales, supportedLocales, type Locale } from './i18n/locales';
 import { resources } from './i18n/resources';
 
-beforeEach(() => { window.history.replaceState({}, '', '/cidr/subtract'); });
+beforeEach(() => { window.history.replaceState({}, '', '/cidr-subtract'); });
 afterEach(() => {
   cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
   window.history.replaceState({}, '', '/');
@@ -105,7 +105,7 @@ describe('CIDR subtraction completion status', () => {
   });
 
   it.each(supportedLocales)('uses a short localized summary and exact IPv6 counts in %s', locale => {
-    window.history.replaceState({}, '', locales[locale].prefix + '/cidr/subtract');
+    window.history.replaceState({}, '', locales[locale].prefix + '/cidr-subtract');
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     render(<App />);

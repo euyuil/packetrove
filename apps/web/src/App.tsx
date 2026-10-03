@@ -96,7 +96,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>
               <Text c="dimmed">{t($ => $.api.unavailableDescription)}</Text>
-              <Anchor href={href('/cidr')} onClick={navigate}>{t($ => $.api.returnToCalculator)}</Anchor>
+              <Anchor href={href(pagePaths.cidr)} onClick={navigate}>{t($ => $.api.returnToCalculator)}</Anchor>
             </Stack>
           }>
             <ApiDocumentation onNavigate={navigate} />
