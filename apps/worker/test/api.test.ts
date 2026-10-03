@@ -10,6 +10,12 @@ import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/c
 import { createApp } from '../src/app';
 import { rangeEndpointErrorCases } from './range-endpoint-error-cases';
 
+const httpBoundaryErrorCases = [
+  { body: '{', type: 'application/json', status: 400, code: 'INVALID_JSON' },
+  { body: '{}', type: 'text/plain', status: 415, code: 'UNSUPPORTED_MEDIA_TYPE' },
+  { body: ' '.repeat(MAX_REQUEST_BYTES + 1), type: 'application/json', status: 413, code: 'PAYLOAD_TOO_LARGE' },
+];
+
 function post(body: string, headers: Record<string, string> = { 'content-type': 'application/json' }) {
   return exports.default.fetch(`http://localhost${CIDR_COVER_PATH}`, { method: 'POST', headers, body });
 }
@@ -220,11 +226,7 @@ describe('inclusive IP range conversion over API', () => {
     expect(error.issues?.map(issue => issue.field)).toEqual(fields);
     expect(error.issues?.every(issue => issue.message.length > 0)).toBe(true);
   });
-  it.each([
-    { body: '{', type: 'application/json', status: 400, code: 'INVALID_JSON' },
-    { body: '{}', type: 'text/plain', status: 415, code: 'UNSUPPORTED_MEDIA_TYPE' },
-    { body: ' '.repeat(MAX_REQUEST_BYTES + 1), type: 'application/json', status: 413, code: 'PAYLOAD_TOO_LARGE' },
-  ])('enforces the shared range HTTP boundary: $code', async ({ body, type, status, code }) => {
+  it.each(httpBoundaryErrorCases)('enforces the shared range HTTP boundary: $code', async ({ body, type, status, code }) => {
     const response = await exports.default.fetch(`http://localhost${toolCatalog.range.api.path}`, {
       method: 'POST', headers: { 'content-type': type }, body,
     });
@@ -290,11 +292,7 @@ describe('CIDR subtraction over API', () => {
     expect(ErrorResponseSchema.parse(result).error.code).toBe('INVALID_INPUT');
     expect(result).not.toHaveProperty('cidrs');
   });
-  it.each([
-    { body: '{', type: 'application/json', status: 400, code: 'INVALID_JSON' },
-    { body: '{}', type: 'text/plain', status: 415, code: 'UNSUPPORTED_MEDIA_TYPE' },
-    { body: ' '.repeat(MAX_REQUEST_BYTES + 1), type: 'application/json', status: 413, code: 'PAYLOAD_TOO_LARGE' },
-  ])('enforces the shared HTTP boundary: $code', async ({ body, type, status, code }) => {
+  it.each(httpBoundaryErrorCases)('enforces the shared HTTP boundary: $code', async ({ body, type, status, code }) => {
     const response = await exports.default.fetch(`http://localhost${CIDR_SUBTRACT_PATH}`, {
       method: 'POST', headers: { 'content-type': type }, body,
     });
