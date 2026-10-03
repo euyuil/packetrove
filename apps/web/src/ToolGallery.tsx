@@ -6,7 +6,7 @@ import {
 import { Carousel } from '@mantine/carousel';
 import { useReducedMotion } from '@mantine/hooks';
 import type { EmblaCarouselType } from 'embla-carousel';
-import { IconArrowRight, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { IconArrowRight } from '@tabler/icons-react';
 import { toolCatalog, type tools } from '@packetrove/contracts';
 import { localizedPath } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
@@ -63,13 +63,10 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
   return <Stack component="section" gap="md" aria-labelledby="tool-gallery-heading">
     <Title order={2} size="h3" id="tool-gallery-heading">{t($ => $.home.galleryTitle)}</Title>
     <Text size="sm" c="dimmed" id="tool-gallery-help">{t($ => $.home.galleryDescription)}</Text>
-    <Box pos="relative" miw={0}>
+    <Box miw={0}>
       <Carousel id="tool-gallery-carousel" className="tool-gallery mantine-focus-auto" role="group"
         aria-roledescription={undefined} aria-labelledby="tool-gallery-heading" aria-describedby="tool-gallery-help tool-gallery-status"
-        tabIndex={0} pb={60} slideSize="100%" slideGap="md" includeGapInSize={false}
-        controlSize={44} controlsOffset={0} emblaOptions={emblaOptions} getEmblaApi={setEmbla} onSlideChange={setActive}
-        previousControlIcon={<IconChevronLeft size={22} aria-hidden="true" />}
-        nextControlIcon={<IconChevronRight size={22} aria-hidden="true" />}
+        tabIndex={0} emblaOptions={emblaOptions} getEmblaApi={setEmbla} onSlideChange={setActive}
         previousControlProps={{ 'aria-label': t($ => $.home.galleryPrevious) }}
         nextControlProps={{ 'aria-label': t($ => $.home.galleryNext) }}
         styles={{
@@ -78,10 +75,6 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
             overscrollBehaviorX: 'contain', touchAction: embla ? 'pan-y pinch-zoom' : 'auto',
           },
           slide: { display: 'flex', minWidth: 0, scrollSnapAlign: 'start' },
-          controls: { top: 'auto', bottom: 0 },
-          control: {
-            color: 'var(--mantine-primary-color-filled)', borderRadius: 'var(--mantine-radius-md)', boxShadow: 'none',
-          },
         }}>
         {featuredTools.map((tool, index) => <Carousel.Slide key={tool.id} aria-roledescription={undefined}
           aria-label={t($ => $[tool.page].title)} aria-hidden={embla && active !== index ? true : undefined}
@@ -107,12 +100,10 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
           </Paper>
         </Carousel.Slide>)}
       </Carousel>
-      <Box pos="absolute" bottom={0} left={44} right={44} h={44} style={{ display: 'grid', placeItems: 'center', pointerEvents: 'none' }}>
-        <Text id="tool-gallery-status" size="sm" c="dimmed" role="status" aria-live="polite" aria-atomic="true">
-          {t($ => $.home.galleryPosition, { current: active + 1, total: featuredTools.length })}
-          <VisuallyHidden> · {t($ => $[featuredTools[active]!.page].title)}</VisuallyHidden>
-        </Text>
-      </Box>
+      <VisuallyHidden id="tool-gallery-status" role="status" aria-live="polite" aria-atomic="true">
+        {t($ => $.home.galleryPosition, { current: active + 1, total: featuredTools.length })}
+        {' · '}{t($ => $[featuredTools[active]!.page].title)}
+      </VisuallyHidden>
     </Box>
   </Stack>;
 }

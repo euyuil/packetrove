@@ -10,8 +10,11 @@ instructions or a growing grid of every tool.
 
 The homepage keeps a fixed project introduction followed by a horizontal
 gallery built with Mantine Carousel. One complete card is visible at a time.
-Large previous/next controls and a position indicator sit below the card without
-covering the preview. The carousel does not add a separate selector for each tool.
+Previous/next controls use Mantine's default circular buttons, icons, size, and
+position at the vertical center of the card's left and right edges. The gallery
+uses the default full-width slides and does not add visible position text or a
+separate selector for each tool. A localized position and tool name remain
+available to screen readers.
 The layout stacks each card's description and preview on smaller screens. Tool
 navigation remains available separately.
 
