@@ -34,6 +34,8 @@ describe('bundled CLI output streams', () => {
     { name: 'CIDR readable result', args: ['cidr-cover', '203.0.113.1'], json: false },
     { name: 'help', args: ['--help'], json: false },
     { name: 'help with JSON errors', args: ['--help', '--json'], json: true },
+    { name: 'version', args: ['--version'], json: false },
+    { name: 'JSON version', args: ['--version', '--json'], json: true },
   ])('reports a closed stdout destination for $name without a native stack', async ({ args, json }) => {
     const execution = await closeOutput(args);
     expect(execution.status).toBe(1);

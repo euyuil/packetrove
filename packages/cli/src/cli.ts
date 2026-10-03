@@ -4,6 +4,7 @@ import {
   cliTools, toolCatalog, PUBLIC_API_ORIGIN, PUBLIC_IP_PATH, type CidrCoverResult, type CliToolPage,
 } from '@packetrove/contracts';
 import { lookupPublicIp, smallestCoveringCidr, ToolError } from '@packetrove/core';
+import manifest from '../package.json' with { type: 'json' };
 import { appendStandardInput } from './stdin';
 
 const usage: Record<CliToolPage, string[]> = {
@@ -16,10 +17,12 @@ const help = `Packetrove: network tools for humans and agents.
 
 Usage:
 ${cliTools.flatMap(tool => usage[tool.page].map(options => `  packetrove ${tool.cli.command} ${options}`)).join('\n')}
+  packetrove --version [--json]
 
 Options:
   --stdin    Append one IP address or CIDR per nonblank standard-input line.
-  --json     Write the shared result JSON to stdout, or error JSON to stderr.
+  --json     Write result JSON to stdout, or error JSON to stderr.
+  --version  Show the CLI package version; only --json may accompany it.
   -h, --help Show this help and exit.
   --api-origin  IP lookup service origin (default: https://api.packetrove.com).
 
@@ -38,7 +41,7 @@ Examples:
   packetrove ${ipCommand}
   packetrove ${ipCommand} --json
 
-Exit status: 0 for success or help, 1 for errors.
+Exit status: 0 for success, help, or version, 1 for errors.
 `;
 
 function formatResult(result: CidrCoverResult): string {
@@ -108,6 +111,7 @@ async function main(): Promise<void> {
         options: {
           stdin: { type: 'boolean', default: false },
           json: { type: 'boolean', default: false },
+          version: { type: 'boolean', default: false },
           help: { type: 'boolean', short: 'h', default: false },
           'api-origin': { type: 'string' },
         },
@@ -116,6 +120,14 @@ async function main(): Promise<void> {
       throw new ToolError('INVALID_INPUT', error instanceof Error ? error.message : 'Invalid command-line arguments.');
     }
     json = parsed.values.json;
+    if (parsed.values.version) {
+      if (parsed.positionals.length || parsed.values.stdin || parsed.values.help
+        || parsed.values['api-origin'] !== undefined) {
+        throw new ToolError('INVALID_INPUT', 'Use "packetrove --version [--json]" without a command, inputs, --stdin, --api-origin, or --help.');
+      }
+      await writeOutput(process.stdout, json ? `${JSON.stringify({ version: manifest.version })}\n` : `${manifest.version}\n`);
+      return;
+    }
     if (parsed.values.help) {
       await writeOutput(process.stdout, help);
       return;

@@ -100,6 +100,14 @@ it('packs a public CLI and installs its executable offline with npm and pnpm', (
       const run = (args: string[]) => manager === 'npm'
         ? npm(['exec', '--offline', '--', 'packetrove', ...args], consumer)
         : pnpm(['--silent', 'exec', 'packetrove', ...args], consumer);
+      const version = run(['--version']);
+      expect(version.status, version.stderr).toBe(0);
+      expect(version.stderr).toBe('');
+      expect(version.stdout).toBe(`${manifest.version}\n`);
+      const jsonVersion = run(['--version', '--json']);
+      expect(jsonVersion.status, jsonVersion.stderr).toBe(0);
+      expect(jsonVersion.stderr).toBe('');
+      expect(JSON.parse(jsonVersion.stdout)).toEqual({ version: manifest.version });
       const example = CIDR_COVER_EXAMPLES[1]!;
       const success = run(['cidr-cover', ...example.request.inputs, '--json']);
       expect(success.status, success.stderr).toBe(0);
