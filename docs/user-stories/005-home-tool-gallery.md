@@ -43,7 +43,15 @@ connection check. No example is a user's observed result.
 
 The gallery has no automatic rotation or random initial selection. Visitors can
 drag or swipe the cards, use labeled previous/next buttons, or focus the gallery
-and use Left/Right, Home, and End. Controls stay synchronized with the selected
+container itself and use unmodified Left/Right, Home, and End. These container
+shortcuts do not intercept keys from card links or the previous/next buttons.
+Indicators retain their own arrow-key, Home, and End selection and move focus to
+the selected indicator. Enter or Space activates a focused previous/next button
+without moving focus away from it; a card link retains normal link navigation.
+If a selection would hide a card that still contains focus, move focus to the
+named, visibly focusable gallery container before making that card inert. Changes
+with focus outside the cards, including mouse or swipe browsing, do not otherwise
+move focus. Controls stay synchronized with the selected
 card, and a localized live status announces the current item. Offscreen cards
 cannot receive keyboard focus or appear in the accessibility tree after the
 carousel initializes. Button and keyboard transitions respect the system's
@@ -65,8 +73,9 @@ order, avoiding hydration changes caused by randomness.
 
 Tests cover all ten locales, catalog-derived examples and links, no network or
 storage writes, localized arrow and indicator navigation controls, bounded button
-navigation, indicator selection and keyboard focus, offscreen focus exclusion,
-and hydration. Existing navigation and calculation tests continue to verify
+navigation, indicator selection and keyboard focus, container-only shortcuts,
+focus recovery before hiding a card, offscreen focus exclusion, and hydration.
+Existing navigation and calculation tests continue to verify
 opening a tool, browser-local calculation, and retained drafts. Review desktop
 and mobile layouts, dragging, swiping,
 reduced motion, and the no-JavaScript fallback in a real browser, and run
