@@ -5,7 +5,7 @@ import { MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_WEBSITE_ORIGI
 import { ToolError } from '@packetrove/core';
 import { executeTool } from './tools';
 
-export function createMcpServer(context: McpRequestContext) {
+function createMcpServer(context: McpRequestContext) {
   const server = new McpServer({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
   for (const tool of tools) {
     // Local cores validate the entire request and return shared, located errors.
