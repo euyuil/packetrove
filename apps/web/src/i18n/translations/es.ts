@@ -94,8 +94,7 @@ export const es = {
     copySuccess: 'CIDR copiado.', copyFailure: 'No se puede usar el portapapeles. Selecciona y copia el CIDR de arriba.',
     first: 'Primera dirección', last: 'Última dirección', unique: 'Direcciones únicas de entrada', covered: 'Direcciones cubiertas', additional: 'Direcciones adicionales',
     exact: 'Cobertura exacta: este CIDR no añade direcciones.',
-    expansionOne: 'Este CIDR añade {{total}} dirección. Al aplicarlo, se amplía el conjunto de direcciones permitidas o bloqueadas por tu lista.',
-    expansionOther: 'Este CIDR añade {{total}} direcciones. Al aplicarlo, se amplía el conjunto de direcciones permitidas o bloqueadas por tu lista.',
+    expansion: 'Al aplicar este CIDR, se amplía el conjunto de direcciones permitidas o bloqueadas por tu lista.',
     normalized: 'Entradas normalizadas ({{total}})', emptyTitle: 'Tu resultado aparecerá aquí',
     emptyDescription: 'Introduce tus direcciones para ver el CIDR que las cubre, su rango y la cobertura adicional.',
     explanationTitle: 'Entender la cobertura',
@@ -382,4 +381,4 @@ export const es = {
     notFound: { title: 'Página no encontrada — Packetrove', description: 'Esta página de Packetrove no existe. Vuelve al inicio para usar las herramientas de red.' },
     imageAlt: 'Logotipo cúbico de Packetrove junto al nombre del proyecto y el lema en inglés Network tools for humans and agents.',
   },
-} satisfies TranslationResource & { cidr: { entryCount_many: string } };
+} satisfies TranslationResource;

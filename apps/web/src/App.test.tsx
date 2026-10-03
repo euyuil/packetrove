@@ -142,7 +142,7 @@ describe('browser calculator', () => {
     expect(screen.getByText('203.0.113.0/29')).toBeDefined();
     expect(screen.getByText('203.0.113.0')).toBeDefined();
     expect(screen.getByText('203.0.113.7')).toBeDefined();
-    expect(screen.getByText('This CIDR adds 5 addresses. Applying it expands the addresses allowed or blocked by your list.')).toBeDefined();
+    expect(screen.getByText('Applying this CIDR expands the range of addresses allowed or blocked by your list.')).toBeDefined();
     expect(fetch).not.toHaveBeenCalled();
   });
   it.each([

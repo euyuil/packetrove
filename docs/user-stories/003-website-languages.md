@@ -159,8 +159,10 @@ The web application uses `i18next` and `react-i18next`. Translation resources ar
 The browser prepares English fallback and the requested locale before rendering;
 other locales load only when navigating or showing a browser-language suggestion.
 `i18n/resources.ts` aggregates all languages for build scripts and tests.
-English defines the key structure; every other resource must satisfy the same
-structure. Selector-based translation calls are checked by TypeScript through
+English defines the ordinary key structure; every other resource must satisfy
+that structure. Entry counts use a shared type with a required `other` form and
+optional standard plural suffixes; the resource tests require the forms needed
+by each language. Selector-based translation calls are checked by TypeScript through
 `i18next.d.ts`. English is the fallback language. No translation backend or
 language-detection dependency is enabled.
 
@@ -199,12 +201,17 @@ counts. English entry counts use singular and plural forms; large address
 counts are never converted to JavaScript `Number` for display or plural selection.
 Spanish, French, Brazilian Portuguese, and Italian also define the CLDR `many` entry-count
 form. French and Brazilian Portuguese use the singular form for zero entries;
-Japanese and Korean use the same counter for singular and plural entries.
+Chinese, Japanese, and Korean define only `other` for entry counts.
 Russian includes `one`, `few`, `many`, and `other` entry-count forms, with teen
 numbers and compound endings determining the appropriate form. French uses
 narrow non-breaking spaces for digit grouping; Russian uses non-breaking spaces;
 Brazilian Portuguese and Italian use dots; Korean uses commas.
 Preserve interpolation names and inline code tokens in every translation.
+The covering-CIDR result shows the exact additional-address count separately
+from its warning. Nonzero extra coverage uses one neutral complete sentence in
+each language explaining that applying the CIDR expands the addresses allowed
+or blocked by the list. Zero keeps the exact-coverage message. The warning does
+not select plural forms or convert address counts to `Number`.
 
 The translation-resource tests traverse every registered locale and inspect its
 original messages before English fallback. They reject missing or unknown
