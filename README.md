@@ -70,6 +70,7 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
 - Public IP checks make a network request and observe one address family per
   check. A VPN or proxy supplies its exit address; a hosted MCP client may
   observe a different connection from your computer's.
+  Browser and CLI lookups have a ten-second deadline and a 64 KiB response limit.
 - The application does not store or log returned IP addresses. Lookup results
   and errors are not cached.
 
