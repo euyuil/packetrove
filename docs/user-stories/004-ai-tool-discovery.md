@@ -58,8 +58,29 @@ are outcomes to observe after deployment, not guarantees of this implementation.
   inputs, results, query strings, fragments, or tracking data. Their generation
   makes no outbound requests. Errors contain no optional page link.
 
-No registry submission, analytics, paid model evaluation, special AI files,
-external citation campaign, or additional structured markup is included.
+The first delivery did not include registry submission, analytics, paid model
+evaluation, special AI files, an external citation campaign, or additional
+structured markup.
+
+## MCP Registry preparation
+
+The remote-only `server.json` describes the existing anonymous Streamable HTTP
+service under `io.github.euyuil/packetrove`. Its title, description, website, and
+icon come from shared server identity; its version equals the formal product
+version. The protocol server name remains `Packetrove`. The manifest contains
+no packages, user-supplied headers, or authentication configuration.
+
+Offline checks reject unsupported fields and differences from the generated
+manifest. Release preparation regenerates all manifest metadata with the next
+product version, including metadata corrections. The maintained MCP guide links
+to the [manual publication procedure](../cli-publishing.md#publish-to-the-official-mcp-registry).
+
+Preparation and merging do not establish that an entry is published. First
+publication requires a formal release containing these changes, successful
+production verification, approved GitHub namespace authentication, publication,
+and exact-name/version plus latest-version readback. Keep the issue open until
+that readback is recorded. Registry discovery does not guarantee inclusion in a
+particular client's directory, configuration, recommendations, or citations.
 
 ## Tool selection boundaries
 

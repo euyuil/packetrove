@@ -24,6 +24,9 @@ The workflow runs `pnpm check`, which includes:
 - Type checks for every workspace and repository scripts.
 - Generated OpenAPI consistency and specification validation.
 - Generated MCP integration guide consistency with shared website content.
+- Offline MCP Registry manifest field checks and consistency with shared server
+  identity, endpoint, and product version. Official publisher validation and
+  Registry publication remain separate manual network operations.
 - Production builds for the website and offline CLI.
 - Wrangler deployment dry runs for the API and website Workers.
 - Shared calculation, CLI, web application, website isolation, API, and MCP tests.

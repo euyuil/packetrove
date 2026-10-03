@@ -32,7 +32,7 @@ describe('CLI release validation', () => {
   );
   it('requires matching versions in every release file', () => {
     const versions = Object.fromEntries(
-      [...productManifests, '.release-please-manifest.json', 'docs/api/openapi.json'].map(path => [path, '0.2.0']),
+      [...productManifests, '.release-please-manifest.json', 'docs/api/openapi.json', 'server.json'].map(path => [path, '0.2.0']),
     );
     expect(assertReleaseVersions('0.2.0', versions)).toBe('0.2.0');
     for (const path of Object.keys(versions)) {

@@ -5,11 +5,13 @@ import type { BuildUpdatesOptions, ConventionalCommit } from 'release-please';
 import { Node } from 'release-please/build/src/strategies/node.js';
 import { RawContent } from 'release-please/build/src/updaters/raw-content.js';
 import { createMcpGuideMarkdown } from './mcp-guide-markdown';
+import { createMcpRegistryJson } from './mcp-registry-manifest';
 
 const productDirectories = ['packages/cli', 'packages/core', 'packages/contracts', 'apps/web', 'apps/worker'];
 const sharedBuildInputs = new Set([
   'package.json', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', '.node-version', 'tsconfig.base.json', 'LICENSE',
-  'scripts/openapi.ts', 'scripts/api-assets.ts',
+  'scripts/openapi.ts', 'scripts/api-assets.ts', 'server.json',
+  'scripts/mcp-registry.ts', 'scripts/mcp-registry-manifest.ts',
 ]);
 
 export function isProductReleaseInput(path: string): boolean {
@@ -25,6 +27,11 @@ export class PacketroveRelease extends Node {
       path: 'docs/integrations/mcp.md',
       createIfMissing: false,
       updater: new RawContent(createMcpGuideMarkdown(options.newVersion.toString())),
+    });
+    updates.push({
+      path: 'server.json',
+      createIfMissing: false,
+      updater: new RawContent(createMcpRegistryJson(options.newVersion.toString())),
     });
     return updates;
   }
