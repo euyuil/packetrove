@@ -1,3 +1,4 @@
+import { fstatSync } from 'node:fs';
 import type { Readable } from 'node:stream';
 import { MAX_INPUT_LENGTH, MAX_INPUTS } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
@@ -20,8 +21,13 @@ export async function appendStandardInput(inputs: string[], source: Readable): P
     trailingWhitespace = '';
   };
 
-  source.setEncoding('utf8');
   try {
+    // Some platforms report EOF for a directory instead of a stream read error.
+    const fd = (source as Readable & { fd?: number }).fd;
+    if (typeof fd === 'number' && fstatSync(fd).isDirectory()) {
+      throw new ToolError('INVALID_INPUT', 'Standard input is a directory. Redirect a text file or pipe address lines instead.');
+    }
+    source.setEncoding('utf8');
     for await (const chunk of source) {
       for (const character of chunk as string) {
         if (character === '\n') {
