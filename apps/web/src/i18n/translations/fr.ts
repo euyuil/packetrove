@@ -63,6 +63,7 @@ export const fr = {
     limits: 'Saisissez des adresses individuelles ou des plages CIDR, jusqu’à {{maximum}} entrées. IPv4 et IPv6 ne peuvent pas être mélangés dans un même calcul. Les nombres d’adresses IPv6 restent exacts, même pour de très grandes plages.',
     exampleResult: '{{cidr}} couvre {{covered}} adresses et en ajoute {{additional}}.',
     line: 'Ligne {{line}} : {{message}}',
+    lineEntry: 'Ligne {{line}}, élément {{entry}} : {{message}}',
   },
   subtract: {
     title: 'Soustraction de CIDR', description: 'Retirez les réseaux IPv4 ou IPv6 exclus de votre espace d’adresses inclus. Obtenez la plus petite liste exacte de CIDR, sans ajouter d’adresses.',
@@ -84,6 +85,7 @@ export const fr = {
     limits: 'Utilisez une seule famille d’adresses et au maximum {{inputs}} entrées au total dans les deux listes, avec au maximum {{length}} caractères par entrée. Le résultat peut contenir jusqu’à {{outputs}} CIDR ; au-delà, une erreur est renvoyée sans liste partielle.',
     examplesTitle: 'Exemples de soustraction', example: 'Retirer {{exclude}} de {{include}} :',
     line: '{{list}}, ligne {{line}} : {{message}}', listIssue: '{{list}} : {{message}}',
+    lineEntry: '{{list}}, ligne {{line}}, élément {{entry}} : {{message}}',
     outputLimitTitle: 'Le résultat contient trop de CIDR.',
   },
   ip: {

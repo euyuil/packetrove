@@ -63,6 +63,7 @@ export const it = {
     limits: 'Inserisci indirizzi singoli o intervalli CIDR, fino a {{maximum}} voci. Non puoi mescolare IPv4 e IPv6 nello stesso calcolo. I conteggi degli indirizzi IPv6 rimangono esatti anche per intervalli molto grandi.',
     exampleResult: '{{cidr}} comprende {{covered}} indirizzi e ne aggiunge {{additional}}.',
     line: 'Riga {{line}}: {{message}}',
+    lineEntry: 'Riga {{line}}, voce {{entry}}: {{message}}',
   },
   subtract: {
     title: 'Sottrazione CIDR', description: 'Sottrai le reti IPv4 o IPv6 escluse dal tuo spazio di indirizzi incluso. Ottieni il più piccolo elenco esatto di CIDR, senza aggiungere indirizzi.',
@@ -84,6 +85,7 @@ export const it = {
     limits: 'Usa una sola famiglia di indirizzi e al massimo {{inputs}} voci complessive nei due elenchi, con al massimo {{length}} caratteri per voce. I risultati possono contenere fino a {{outputs}} CIDR; oltre questo limite viene restituito un errore senza elenco parziale.',
     examplesTitle: 'Esempi di sottrazione', example: 'Rimuovi {{exclude}} da {{include}}:',
     line: '{{list}}, riga {{line}}: {{message}}', listIssue: '{{list}}: {{message}}',
+    lineEntry: '{{list}}, riga {{line}}, voce {{entry}}: {{message}}',
     outputLimitTitle: 'Il risultato contiene troppi CIDR.',
   },
   ip: {

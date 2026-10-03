@@ -62,6 +62,7 @@ export const ko = {
     limits: '개별 주소 또는 CIDR 범위를 최대 {{maximum}}개 항목까지 입력하세요. 한 번의 계산에서 IPv4와 IPv6를 섞을 수 없습니다. 매우 큰 범위에서도 IPv6 주소 수는 정확하게 유지됩니다.',
     exampleResult: '{{cidr}}은 주소 {{covered}}개를 포함하며 {{additional}}개를 추가합니다.',
     line: '{{line}}행: {{message}}',
+    lineEntry: '{{line}}행, {{entry}}번째 항목: {{message}}',
   },
   subtract: {
     title: 'CIDR 빼기', description: '포함할 주소 공간에서 제외할 IPv4 또는 IPv6 네트워크를 빼세요. 추가 주소 없이 정확한 범위를 나타내는 최소 CIDR 목록을 얻을 수 있습니다.',
@@ -83,6 +84,7 @@ export const ko = {
     limits: '한 종류의 주소 체계를 사용하고 두 목록을 합쳐 최대 {{inputs}}개 항목, 항목당 최대 {{length}}자를 입력하세요. 결과는 최대 {{outputs}}개의 CIDR을 포함할 수 있으며 이를 초과하면 부분 목록 없이 오류를 반환합니다.',
     examplesTitle: '빼기 계산 예제', example: '{{include}}에서 {{exclude}} 빼기:',
     line: '{{list}}, {{line}}행: {{message}}', listIssue: '{{list}}: {{message}}',
+    lineEntry: '{{list}}, {{line}}행, {{entry}}번째 항목: {{message}}',
     outputLimitTitle: '결과에 CIDR이 너무 많습니다.',
   },
   ip: {

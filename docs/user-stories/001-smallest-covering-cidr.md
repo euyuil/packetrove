@@ -95,7 +95,9 @@ editing and clearing remove the previous result and status.
 The web input accepts commas (ASCII `,` or full-width `，`), spaces, tabs, and
 line breaks, in any combination. Empty entries are ignored; input order and
 duplicates are preserved for validation and the entry limit. Invalid entries
-report their original line, even when several entries share a line. Both CIDR
+report their original physical line. When a line contains multiple entries,
+errors also identify the entry's position within that line, counting every
+non-empty entry, including valid entries. Both CIDR
 tools use this parsing rule, and either subtraction copy format can be pasted
 directly into the covering calculator.
 

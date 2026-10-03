@@ -26,7 +26,7 @@ describe('calculation feedback', () => {
     expect(document.activeElement).toBe(summary);
     const errors = within(summary).getAllByRole('link');
     expect(errors.map(error => error.getAttribute('href'))).toEqual(['#addresses', '#addresses']);
-    expect(errors[0]?.textContent).toContain('Line 2:');
+    expect(errors[0]?.textContent).toContain('Line 2, item 2:');
     expect(errors[1]?.textContent).toContain('Line 3:');
     await userEvent.setup().click(errors[1]!);
     expect(document.activeElement).toBe(input);

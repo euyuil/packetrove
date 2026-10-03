@@ -75,9 +75,11 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
     if (!detail?.list) return { message };
     const inputList = detail.list;
     const list = t($ => inputList === 'include' ? $.subtract.include : $.subtract.exclude);
-    return { inputId: 'subtract-' + inputList,
-      message: issue.index === undefined ? t($ => $.subtract.listIssue, { list, message })
-        : t($ => $.subtract.line, { list, line: formatCount(entries[inputList][issue.index]?.line ?? issue.index + 1), message }) };
+    const entry = issue.index === undefined ? undefined : entries[inputList][issue.index];
+    return { inputId: 'subtract-' + inputList, message: !entry ? t($ => $.subtract.listIssue, { list, message })
+      : t($ => entry.entriesOnLine > 1 ? $.subtract.lineEntry : $.subtract.line, {
+        list, line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
+      }) };
   });
 
   return <Stack gap="xl">

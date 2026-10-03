@@ -62,6 +62,7 @@ export const de = {
     limits: 'Geben Sie einzelne Adressen oder CIDR-Netze ein, bis zu {{maximum}} Einträge. IPv4 und IPv6 können nicht in einer Berechnung gemischt werden. IPv6-Adresszahlen bleiben auch für sehr große Bereiche exakt.',
     exampleResult: '{{cidr}} deckt {{covered}} Adressen ab und fügt {{additional}} hinzu.',
     line: 'Zeile {{line}}: {{message}}',
+    lineEntry: 'Zeile {{line}}, Eintrag {{entry}}: {{message}}',
   },
   subtract: {
     title: 'CIDR-Subtraktion',
@@ -98,6 +99,7 @@ export const de = {
     examplesTitle: 'Subtraktionsbeispiele',
     example: '{{exclude}} von {{include}} abziehen:',
     line: '{{list}}, Zeile {{line}}: {{message}}',
+    lineEntry: '{{list}}, Zeile {{line}}, Eintrag {{entry}}: {{message}}',
     listIssue: '{{list}}: {{message}}',
     outputLimitTitle: 'Das Ergebnis enthält zu viele CIDRs.',
   },

@@ -52,7 +52,9 @@ navigation link to it. All ten pages are prerendered and included in the sitemap
 Separate IPv4 or IPv6 addresses or CIDRs with commas (ASCII `,` or full-width
 `，`), spaces, tabs, or line breaks, in any combination. Empty entries are ignored;
 invalid entries report the affected list and original physical line number,
-including when several entries share a line. Individual addresses become `/32`
+and, when the line contains multiple entries, the entry's position within that
+line. Positions count all non-empty entries, including valid entries, separately
+for each list and line. Individual addresses become `/32`
 or `/128`. CIDRs with host bits follow the covering
 calculator's normalization behavior. One calculation uses one address family
 across both lists, including exclusions that fall outside the included space.

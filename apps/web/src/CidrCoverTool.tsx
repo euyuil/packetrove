@@ -58,6 +58,15 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
     void copyText(result.cidr);
   }
 
+  const issueItems = error?.issues?.map((issue, index) => {
+    const message = issueMessage(issue, error.details?.[index], t, locale);
+    const entry = issue.index === undefined ? undefined : entries[issue.index];
+    return { inputId: 'addresses', message: !entry ? message
+      : t($ => entry.entriesOnLine > 1 ? $.cidr.lineEntry : $.cidr.line, {
+        line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
+      }) };
+  });
+
   return (
     <Stack gap="xl">
       <ToolPageHeader tool="cidr" notice={t($ => $.cidr.local)} />
@@ -67,12 +76,7 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
           <form onSubmit={calculate}>
             <Stack gap="md">
               {error && <ToolErrorSummary ref={feedback.errorSummary} id="input-error" title={errorMessage(error, t, locale)}
-                issues={error.issues?.map((issue, index) => ({
-                  inputId: 'addresses',
-                  message: issue.index === undefined ? issueMessage(issue, error.details?.[index], t, locale)
-                    : t($ => $.cidr.line, { line: formatCount(entries[issue.index]?.line ?? issue.index + 1),
-                      message: issueMessage(issue, error.details?.[index], t, locale) }),
-                }))} />}
+                issues={issueItems} />}
               <Textarea id="addresses" label={t($ => $.cidr.inputLabel)} value={input}
                 description={t($ => $.cidr.inputHelp, { maximum: formatCount(MAX_INPUTS) })}
                 descriptionProps={{ id: 'input-help' }}

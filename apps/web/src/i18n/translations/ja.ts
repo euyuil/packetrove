@@ -62,6 +62,7 @@ export const ja = {
     limits: '個々のアドレスまたは CIDR 範囲を、最大 {{maximum}} 件入力できます。1 回の計算で IPv4 と IPv6 を混在させることはできません。非常に大きな範囲でも、IPv6 のアドレス数は正確に計算されます。',
     exampleResult: '{{cidr}} は {{covered}} 個のアドレスを含み、{{additional}} 個を追加します。',
     line: '{{line}} 行目：{{message}}',
+    lineEntry: '{{line}} 行目、{{entry}} 番目の項目：{{message}}',
   },
   subtract: {
     title: 'CIDR の差分',
@@ -98,6 +99,7 @@ export const ja = {
     examplesTitle: '差分の計算例',
     example: '{{include}} から {{exclude}} を取り除く：',
     line: '{{list}}の {{line}} 行目：{{message}}',
+    lineEntry: '{{list}}の {{line}} 行目、{{entry}} 番目の項目：{{message}}',
     listIssue: '{{list}}：{{message}}',
     outputLimitTitle: '結果の CIDR が多すぎます。',
   },

@@ -70,6 +70,7 @@ export const en = {
     limits: 'Enter individual addresses or CIDR ranges, with up to {{maximum}} entries. IPv4 and IPv6 cannot be mixed in one calculation. IPv6 address counts remain exact, even for very large ranges.',
     exampleResult: '{{cidr}} covers {{covered}} addresses and adds {{additional}}.',
     line: 'Line {{line}}: {{message}}',
+    lineEntry: 'Line {{line}}, item {{entry}}: {{message}}',
   },
   subtract: {
     title: 'CIDR Subtraction', description: 'Subtract excluded IPv4 or IPv6 networks from your included address space. Get the smallest exact CIDR list, with no added addresses.',
@@ -91,6 +92,7 @@ export const en = {
     limits: 'Use one address family and at most {{inputs}} entries across both lists, with at most {{length}} characters per entry. Results may contain up to {{outputs}} CIDRs; larger results return an error with no partial list.',
     examplesTitle: 'Subtraction examples', example: 'Remove {{exclude}} from {{include}}:',
     line: '{{list}}, line {{line}}: {{message}}', listIssue: '{{list}}: {{message}}',
+    lineEntry: '{{list}}, line {{line}}, item {{entry}}: {{message}}',
     outputLimitTitle: 'The result contains too many CIDRs.',
   },
   ip: {
@@ -325,6 +327,7 @@ export const zhHans = {
     limits: '支持单个 IP 地址或 CIDR 网段，最多 {{maximum}} 项。一次计算不能混用 IPv4 和 IPv6。即使网段非常大，IPv6 地址数也保持精确。',
     exampleResult: '{{cidr}} 覆盖 {{covered}} 个地址，额外增加 {{additional}} 个地址。',
     line: '第 {{line}} 行：{{message}}',
+    lineEntry: '第 {{line}} 行第 {{entry}} 项：{{message}}',
   },
   subtract: {
     title: 'CIDR 相减', description: '从包含的 IPv4 或 IPv6 地址空间中扣除排除网段，得到不增加额外地址的最少 CIDR 列表。',
@@ -346,6 +349,7 @@ export const zhHans = {
     limits: '一次计算使用同一种地址类型，两侧列表合计最多 {{inputs}} 项，每项最多 {{length}} 个字符。结果最多 {{outputs}} 个 CIDR，超过上限会报错，不返回部分列表。',
     examplesTitle: 'CIDR 相减示例', example: '从 {{include}} 中扣除 {{exclude}}：',
     line: '{{list}}第 {{line}} 行：{{message}}', listIssue: '{{list}}：{{message}}',
+    lineEntry: '{{list}}第 {{line}} 行第 {{entry}} 项：{{message}}',
     outputLimitTitle: '结果中的 CIDR 数量过多。',
   },
   ip: {

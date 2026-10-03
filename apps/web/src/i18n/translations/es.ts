@@ -63,6 +63,7 @@ export const es = {
     limits: 'Introduce direcciones individuales o rangos CIDR, hasta {{maximum}} entradas. No se pueden mezclar IPv4 e IPv6 en un mismo cálculo. Los recuentos IPv6 siguen siendo exactos, incluso para rangos muy grandes.',
     exampleResult: '{{cidr}} cubre {{covered}} direcciones y añade {{additional}}.',
     line: 'Línea {{line}}: {{message}}',
+    lineEntry: 'Línea {{line}}, entrada {{entry}}: {{message}}',
   },
   subtract: {
     title: 'Resta de CIDR',
@@ -99,6 +100,7 @@ export const es = {
     examplesTitle: 'Ejemplos de resta',
     example: 'Restar {{exclude}} de {{include}}:',
     line: '{{list}}, línea {{line}}: {{message}}',
+    lineEntry: '{{list}}, línea {{line}}, entrada {{entry}}: {{message}}',
     listIssue: '{{list}}: {{message}}',
     outputLimitTitle: 'El resultado contiene demasiados CIDR.',
   },
