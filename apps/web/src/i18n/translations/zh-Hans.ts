@@ -13,12 +13,61 @@ export const zhHans = {
   languageSuggestion: {
     title: '想使用中文浏览吗？', switch: '切换为中文', dismiss: '暂不切换',
   },
+  "support": {
+    "title": "支持",
+    "introduction": "获取 Packetrove 网站、Web API、CLI 和远程 MCP 连接的使用帮助。无需账户或 API 密钥。",
+    "contactTitle": "联系维护者",
+    "contactBody": "Packetrove 的个人维护者负责处理下方邮箱的来信。私人支持、隐私请求或安全问题请通过邮件联系。维护者会在时间允许时处理，但不承诺固定回复时间。",
+    "publicTitle": "公开反馈",
+    "publicBody": "通过 GitHub 报告可复现的问题或提出功能建议。问题及附件会公开展示，请勿提供凭证、实际公网 IP 查询结果或私人网络数据。",
+    "detailsTitle": "帮助我们复现问题",
+    "detailsBody": "说明使用的工具和接口、浏览器或客户端版本、操作步骤、预期结果，以及实际结果或错误代码。请使用虚构的示例输入，并移除日志和截图中的敏感信息。",
+    "guidesTitle": "接入指南与隐私",
+    "guidesBody": "API 和 MCP 指南介绍连接方式及输入要求，CLI 指南为英文。隐私政策说明远程数据处理和支持来信的处理方式。"
+  },
+  "terms": {
+    "title": "服务条款",
+    "updated": "最后更新：2026 年 10 月 4 日。",
+    "introduction": "本条款适用于由个人维护者运营的 Packetrove 托管网站、Web API 和远程 MCP 服务。使用这些托管服务即表示你同意本条款。",
+    "sections": {
+      "use": {
+        "title": "合理使用",
+        "body": "请依法使用服务，仅处理你有权使用的数据，并遵守文档中的输入限制。请勿干扰服务、绕过安全措施，或把凭证和秘密作为工具输入发送。"
+      },
+      "results": {
+        "title": "使用前核对结果",
+        "body": "将结果应用到网络之前，你应自行核对。覆盖 CIDR 可能增加地址；计算得到的空隙并不能证明地址在真实网络中可用。公网 IP 查询观察的是发起调用的连接，可能是 AI 客户端的出口地址。Packetrove 不会配置网络或修改防火墙规则。"
+      },
+      "availability": {
+        "title": "可用性与责任",
+        "body": "托管服务按现状及实际可用情况提供，不保证可用性、准确性或适合特定用途。服务可能变更、受限或停止。在法律允许的范围内，维护者不承担使用服务造成的损失。本条款不排除适用法律禁止排除的权利或责任。"
+      },
+      "license": {
+        "title": "开源许可",
+        "body": "Packetrove 源代码（包括 CLI）继续按 MIT 许可提供。托管服务条款不改变该许可中的权限和声明，第三方组件保留各自的许可。"
+      },
+      "privacy": {
+        "title": "隐私与其他服务",
+        "body": "隐私政策说明 Packetrove 如何处理数据。你选择使用的 AI 客户端、GitHub 和其他服务适用各自的条款与隐私政策。"
+      },
+      "changes": {
+        "title": "条款变更",
+        "body": "修订会在本页公布并标注更新日期，适用于此后对托管服务的使用。如果你不同意修订，请停止使用托管服务。"
+      }
+    },
+    "contactTitle": "疑问",
+    "contactBody": "如对条款有疑问，请联系 Packetrove 维护者；使用帮助请查看支持页。"
+  },
   privacy: {
     "title": "隐私政策",
-    "updated": "最后更新：2026 年 10 月 3 日。",
+    "updated": "最后更新：2026 年 10 月 4 日。",
     "introduction": "本政策涵盖 Packetrove 网站、Web API、CLI 和远程 MCP 服务，包括通过 AI 插件使用这些服务。Packetrove 由 Liu Yue 维护，无需账户或 API 密钥。",
     "cloudflarePolicy": "Cloudflare 隐私政策",
     "sections": {
+        "correspondence": {
+          "title": "支持来信",
+          "body": "如果你发送邮件，我们会收到你的邮箱地址、你提供的姓名及邮件内容。个人维护者使用这些信息回复和跟进请求。支持邮件通常长期保留，没有固定到期日；你可以联系我们请求删除。邮件保存在邮箱服务中。GitHub 问题及其公开历史由 GitHub 保存，并适用其保留控制方式。"
+        },
         "local": {
             "title": "本地计算与浏览器存储",
             "body": "浏览器计算和离线 CLI 计算的输入与结果保留在你的设备上，计算草稿仅保留在页面内存中。网站只在当前标签页的 sessionStorage 中保存一个已处理语言提示的标记，不在其中保存地址或结果。复制结果会将其放入系统剪贴板。"
@@ -349,6 +398,8 @@ export const zhHans = {
     tooManyOutputs: '完整结果超过 {{limit}} 个 CIDR。请减少排除项或缩小包含范围，不会返回部分结果。',
   },
   meta: {
+    support: {"title":"Packetrove 支持","description":"联系 Packetrove 维护者，安全地反馈问题，并查看 API、MCP、CLI 和隐私说明。"},
+    terms: {"title":"Packetrove 服务条款","description":"了解 Packetrove 托管服务的合理使用要求、结果限制、可用性、隐私和 MIT 许可。"},
     privacy: {"title": "Packetrove 隐私政策", "description": "了解 Packetrove 如何处理本地计算、远程工具输入、连接地址、运营日志和托管数据，以及保留期限和用户选择。"},
     range: {
       "title": "IP 范围转 CIDR — Packetrove",

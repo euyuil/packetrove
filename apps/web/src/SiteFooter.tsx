@@ -1,6 +1,7 @@
 import type { MouseEventHandler, ReactNode } from 'react';
 import { Anchor, Box, Flex, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core';
-import { IconBook, IconBrandGithub, IconBug, IconBulb, IconExternalLink, IconMail, IconScale, IconShieldLock, IconTerminal2, type TablerIcon } from '@tabler/icons-react';
+import { IconBook, IconBrandGithub, IconBug, IconBulb, IconExternalLink, IconHelp, IconMail, IconScale, IconShieldLock, IconTerminal2, type TablerIcon } from '@tabler/icons-react';
+import { SUPPORT_EMAIL } from '@packetrove/contracts';
 import { useTranslation } from 'react-i18next';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { localizedPath, pagePaths, type Locale, type Page } from './i18n/routes';
@@ -53,6 +54,9 @@ export function SiteFooter({ sourceUrl, documentationUrl, locale, page, newIssue
             <FooterLink href={localizedPath(pagePaths.privacy, locale)} icon={IconShieldLock} current={page === 'privacy'} onClick={onNavigate}>
               {t($ => $.privacy.title)}
             </FooterLink>
+            <FooterLink href={localizedPath(pagePaths.terms, locale)} icon={IconScale} current={page === 'terms'} onClick={onNavigate}>
+              {t($ => $.terms.title)}
+            </FooterLink>
           </Stack>
           <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-integrations-heading">
             <Title order={2} size="sm" fw={600} id="footer-integrations-heading">{t($ => $.footer.integrations)}</Title>
@@ -68,13 +72,16 @@ export function SiteFooter({ sourceUrl, documentationUrl, locale, page, newIssue
           </Stack>
           <Stack gap="sm" align="flex-start" miw={0} component="section" aria-labelledby="footer-contact-heading">
             <Title order={2} size="sm" fw={600} id="footer-contact-heading">{t($ => $.footer.contact)}</Title>
+            <FooterLink href={localizedPath(pagePaths.support, locale)} icon={IconHelp} current={page === 'support'} onClick={onNavigate}>
+              {t($ => $.support.title)}
+            </FooterLink>
             <FooterLink href={`${newIssueUrl}?template=bug-report.yml`} icon={IconBug} external>
               {t($ => $.common.reportBug)}
             </FooterLink>
             <FooterLink href={`${newIssueUrl}?template=feature-request.yml`} icon={IconBulb} external>
               {t($ => $.common.requestFeature)}
             </FooterLink>
-            <FooterLink href="mailto:hello@packetrove.com" icon={IconMail}>
+            <FooterLink href={`mailto:${SUPPORT_EMAIL}`} icon={IconMail}>
               {t($ => $.footer.sendEmail)}
             </FooterLink>
           </Stack>

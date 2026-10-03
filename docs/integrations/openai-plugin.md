@@ -16,12 +16,13 @@ The package deliberately omits `author.name` and
 individual verification and confirms the public publishing name. The support
 email is `hello@packetrove.com`.
 
-The privacy-policy page is implemented at `/privacy`; verify its public deployment
-before adding its listing URL. Support and terms pages are still pending. Their
-listing URLs are omitted until the pages are published; the package does not link
-to planned pages or claim it is ready for final submission. Review cases, a demo
-recording, release notes, domain verification, and a successful OpenAI tool scan
-are further submission prerequisites. See the current
+The website implements localized support, terms, and privacy pages at `/support`,
+`/terms`, and `/privacy`. Their canonical HTTPS URLs are included in the source
+manifest. Verify that the reviewed revision has deployed and all three public
+pages are accessible before uploading or using those URLs in a submission.
+Source validation does not establish public availability or publisher verification.
+Review cases, a demo recording, release notes, domain verification, and a
+successful OpenAI tool scan are further submission prerequisites. See the current
 [OpenAI submission requirements](https://developers.openai.com/plugins/deploy/submission)
 before preparing a submission.
 
@@ -104,9 +105,8 @@ pnpm plugin:check --require-listing
 pnpm plugin:build --require-listing
 ```
 
-These commands currently fail until the five pending fields are filled:
-`author.name`, `developerName`, `supportURL`, `privacyPolicyURL`, and
-`termsOfServiceURL`; the last four belong to `extensions.com.openai.interface`.
+These commands currently fail until the two pending publisher fields are filled:
+`author.name` and `extensions.com.openai.interface.developerName`.
 Present fields are validated in either mode. Complete listing fields do not
 establish public URL availability, verified ownership, accepted agreements,
 review evidence, or OpenAI scan success.
@@ -194,9 +194,10 @@ These actions require the owner's separate authorization:
 1. Complete individual verification in the owning OpenAI organization/project.
    Confirm the displayed publisher name, then fill `author.name` and
    `extensions.com.openai.interface.developerName`.
-2. Publish and check support, privacy, and terms pages, keeping the confirmed
-   `hello@packetrove.com` contact. Fill their actual HTTPS listing URLs. Build
-   from a reviewed main revision with `require_listing` enabled.
+2. Check the deployed support, privacy, and terms pages, their canonical listing
+   URLs, publisher information, and the confirmed `hello@packetrove.com` contact.
+   Review the terms and correspondence policy before approving their publication.
+   Build from a reviewed main revision with `require_listing` enabled.
 3. Upload the verified inner ZIP, resolve metadata findings, connect the anonymous
    MCP endpoint, complete the portal's domain challenge, and inspect the tool scan.
 4. Prepare five positive and three negative cases, a reviewer-accessible demo

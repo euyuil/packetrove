@@ -14,12 +14,61 @@ export const fr = {
     feedbackPrompt: 'Un problème ou une idée ? Faites-nous en part sur GitHub.', reportBug: 'Signaler un problème', requestFeature: 'Proposer une fonctionnalité',
     notFound: 'Page introuvable', notFoundDescription: 'La page demandée n’existe pas.', returnHome: 'Retour à l’accueil',
   },
+  "support": {
+    "title": "Assistance",
+    "introduction": "Obtenez de l’aide pour le site Packetrove, la Web API, la CLI et la connexion MCP distante. Aucun compte ni clé API n’est nécessaire.",
+    "contactTitle": "Contacter le responsable",
+    "contactBody": "La personne qui maintient le projet lit les messages envoyés à l’adresse ci-dessous. Utilisez le courrier électronique pour les demandes privées, de confidentialité ou de sécurité. L’aide dépend du temps disponible, sans délai de réponse garanti.",
+    "publicTitle": "Retours publics",
+    "publicBody": "Signalez des bugs reproductibles ou proposez des fonctionnalités sur GitHub. Les signalements et pièces jointes sont publics. N’incluez pas d’identifiants, de résultats réels de recherche d’IP publique ni de données de réseau privées.",
+    "detailsTitle": "Nous aider à reproduire le problème",
+    "detailsBody": "Indiquez l’outil et l’interface, la version du navigateur ou du client, les étapes, le résultat attendu et le résultat obtenu ou code d’erreur. Utilisez des données fictives et retirez les informations confidentielles des journaux et captures.",
+    "guidesTitle": "Guides de connexion et confidentialité",
+    "guidesBody": "Les guides API et MCP expliquent la connexion et les entrées. Le guide CLI est en anglais. La politique de confidentialité décrit le traitement distant et les échanges d’assistance."
+  },
+  "terms": {
+    "title": "Conditions d’utilisation",
+    "updated": "Dernière mise à jour : 4 octobre 2026.",
+    "introduction": "Ces conditions s’appliquent au site hébergé, à la Web API et au service MCP distant de Packetrove, exploités par la personne qui maintient le projet. En les utilisant, vous acceptez ces conditions.",
+    "sections": {
+      "use": {
+        "title": "Utilisation autorisée",
+        "body": "Utilisez le service légalement et uniquement avec des données que vous êtes autorisé à traiter. Respectez les limites documentées. Ne perturbez pas le service, ne contournez pas les contrôles de sécurité et n’envoyez pas d’identifiants ou de secrets comme entrées."
+      },
+      "results": {
+        "title": "Vérifier les résultats avant utilisation",
+        "body": "Vous devez vérifier les résultats avant de les appliquer à un réseau. Un CIDR englobant peut ajouter des adresses ; les plages libres calculées ne prouvent pas une disponibilité réelle. La recherche d’IP publique observe la connexion appelante, qui peut être la sortie d’un client AI. Packetrove ne configure pas les réseaux ou pare-feu."
+      },
+      "availability": {
+        "title": "Disponibilité et responsabilité",
+        "body": "Le service hébergé est fourni en l’état et selon sa disponibilité, sans garantie de disponibilité, d’exactitude ou d’adéquation. Il peut changer, être limité ou cesser. Dans la mesure permise par la loi, le responsable n’est pas tenu des pertes liées à son utilisation. Les droits et responsabilités que la loi interdit d’exclure restent applicables."
+      },
+      "license": {
+        "title": "Licence open source",
+        "body": "Le code source de Packetrove, y compris la CLI, reste disponible sous licence MIT. Ces conditions ne modifient ni les permissions ni les mentions de cette licence. Les composants tiers conservent leurs propres licences."
+      },
+      "privacy": {
+        "title": "Confidentialité et autres services",
+        "body": "La politique de confidentialité explique le traitement des données par Packetrove. Les clients AI, GitHub et les autres services que vous choisissez ont leurs propres conditions et politiques de confidentialité."
+      },
+      "changes": {
+        "title": "Modification des conditions",
+        "body": "Les révisions sont publiées ici avec une date actualisée et s’appliquent à l’utilisation ultérieure du service hébergé. Si vous n’acceptez pas une révision, cessez d’utiliser le service hébergé."
+      }
+    },
+    "contactTitle": "Questions",
+    "contactBody": "Contactez le responsable de Packetrove pour toute question sur ces conditions ou consultez la page d’assistance."
+  },
   privacy: {
     "title": "Politique de confidentialité",
-    "updated": "Dernière mise à jour : 3 octobre 2026.",
+    "updated": "Dernière mise à jour : 4 octobre 2026.",
     "introduction": "Cette politique couvre le site web, la Web API, la CLI et le service MCP distant de Packetrove, y compris leur utilisation via des plugins d’IA. Packetrove est maintenu par Liu Yue. Aucun compte ni clé d’API n’est nécessaire.",
     "cloudflarePolicy": "Politique de confidentialité de Cloudflare",
     "sections": {
+        "correspondence": {
+          "title": "Correspondance d’assistance",
+          "body": "Si vous nous écrivez, nous recevons votre adresse électronique, le nom éventuellement fourni et votre message. La personne qui maintient le projet utilise ces données pour répondre et suivre votre demande. Les échanges d’assistance sont généralement conservés à long terme, sans échéance fixe ; contactez-nous pour demander leur suppression. Les courriers sont stockés dans le service de messagerie. Les signalements GitHub et leur historique public sont conservés par GitHub selon ses contrôles de conservation."
+        },
         "local": {
             "title": "Calculs locaux et stockage du navigateur",
             "body": "Les calculs du navigateur et les calculs hors ligne de la CLI conservent les entrées et résultats sur votre appareil. Les brouillons restent dans la mémoire de la page. Le site stocke uniquement dans sessionStorage un indicateur de suggestion de langue déjà traitée pour l’onglet courant, sans adresses ni résultats. Copier un résultat le place dans le presse-papiers du système."
@@ -351,6 +400,8 @@ export const fr = {
     tooManyOutputs: 'Le résultat complet dépasse {{limit}} CIDR. Réduisez les exclusions ou les plages incluses. Aucun résultat partiel n’est renvoyé.',
   },
   meta: {
+    support: {"title":"Packetrove Assistance","description":"Contactez le responsable de Packetrove, signalez des problèmes sans divulguer de données privées et trouvez les guides API, MCP, CLI et de confidentialité."},
+    terms: {"title":"Packetrove Conditions d’utilisation","description":"Lisez les conditions du service hébergé Packetrove : utilisation, limites des résultats, disponibilité, confidentialité et licence MIT."},
     privacy: {"title": "Politique de confidentialité de Packetrove", "description": "Découvrez le traitement des calculs locaux, entrées distantes, adresses de connexion, journaux opérationnels et données d’hébergement de Packetrove, ainsi que leur conservation et vos choix."},
     range: {
       "title": "Convertisseur de plage IP en CIDR — Packetrove",

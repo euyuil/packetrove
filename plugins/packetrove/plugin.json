@@ -20,6 +20,9 @@
         "category": "Developer Tools",
         "capabilities": ["CIDR calculations", "Public IP lookup"],
         "websiteURL": "https://packetrove.com",
+        "supportURL": "https://packetrove.com/support",
+        "privacyPolicyURL": "https://packetrove.com/privacy",
+        "termsOfServiceURL": "https://packetrove.com/terms",
         "defaultPrompt": [
           "Find the smallest CIDR covering 203.0.113.1, 203.0.113.2, and 203.0.113.6; explain any extra coverage.",
           "Subtract 203.0.113.64/26 from 203.0.113.0/24 and return the exact remaining CIDRs.",

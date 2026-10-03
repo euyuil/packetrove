@@ -12,12 +12,61 @@ export const en = {
     title: 'Would you like to read this page in English?',
     switch: 'Switch to English', dismiss: 'Not now',
   },
+  "support": {
+    "title": "Support",
+    "introduction": "Get help with the Packetrove website, Web API, CLI, and remote MCP connection. No account or API key is required.",
+    "contactTitle": "Contact the maintainer",
+    "contactBody": "The individual maintainer reads the email below. Use email for private support, privacy requests, or security reports. Support is provided as time permits, without a guaranteed response time.",
+    "publicTitle": "Public feedback",
+    "publicBody": "Report reproducible bugs or suggest features on GitHub. Issues and attachments are public. Do not include credentials, actual public-IP lookup results, or private network data.",
+    "detailsTitle": "Help us reproduce the problem",
+    "detailsBody": "Describe the tool and interface, browser or client version, steps, expected result, and actual result or error code. Use synthetic inputs and remove secrets from logs and screenshots.",
+    "guidesTitle": "Connection guides and privacy",
+    "guidesBody": "Check the API and MCP guides for connection and input details. The CLI guide is in English. The privacy policy explains remote processing and support correspondence."
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "updated": "Last updated: October 4, 2026.",
+    "introduction": "These terms apply to the Packetrove hosted website, Web API, and remote MCP service, operated by its individual maintainer. By using the hosted service, you agree to these terms.",
+    "sections": {
+      "use": {
+        "title": "Acceptable use",
+        "body": "Use the service lawfully and only with data you are authorized to process. Respect documented input limits. Do not disrupt the service, bypass security controls, or send credentials or secrets as tool inputs."
+      },
+      "results": {
+        "title": "Check results before use",
+        "body": "You are responsible for reviewing results before applying them to a network. A covering CIDR may add addresses; calculated gaps do not prove live availability. Public-IP lookup observes the calling connection, which may be an AI client's exit address. Packetrove does not configure networks or firewall rules."
+      },
+      "availability": {
+        "title": "Availability and responsibility",
+        "body": "The hosted service is provided as is and as available, without guaranteed availability, accuracy, or suitability. It may change, be limited, or stop. To the extent permitted by law, the maintainer is not liable for losses arising from its use. These terms do not exclude rights or liabilities that applicable law does not allow to be excluded."
+      },
+      "license": {
+        "title": "Open source license",
+        "body": "Packetrove source code, including the CLI, remains available under the MIT License. These hosted-service terms do not change the permissions or notices in that license. Third-party components retain their own licenses."
+      },
+      "privacy": {
+        "title": "Privacy and other services",
+        "body": "The Privacy Policy explains Packetrove's data processing. AI clients, GitHub, and other services you choose to use have their own terms and privacy policies."
+      },
+      "changes": {
+        "title": "Changes to these terms",
+        "body": "Revisions are published on this page with an updated date and apply to subsequent use of the hosted service. If you do not agree to a revision, stop using the hosted service."
+      }
+    },
+    "contactTitle": "Questions",
+    "contactBody": "Contact the Packetrove maintainer about these terms or use the support page for help."
+  },
   privacy: {
     "title": "Privacy Policy",
-    "updated": "Last updated: October 3, 2026.",
+    "updated": "Last updated: October 4, 2026.",
     "introduction": "This policy covers the Packetrove website, Web API, CLI, and remote MCP service, including AI plugin use. Packetrove is maintained by Liu Yue. No account or API key is required.",
     "cloudflarePolicy": "Cloudflare Privacy Policy",
     "sections": {
+        "correspondence": {
+          "title": "Support correspondence",
+          "body": "If you email us, we receive your email address, any name you provide, and your message. The individual maintainer uses these details to answer and follow up on your request. Support correspondence is generally retained long term, without a fixed expiry; contact us to request deletion. Email is held in the mail service. GitHub issue reports and their public history are held by GitHub and follow its retention controls."
+        },
         "local": {
             "title": "Local calculations and browser storage",
             "body": "Browser calculations and offline CLI calculations keep inputs and results on your device. Calculator drafts stay in page memory. The website stores only a handled-language-suggestion flag in sessionStorage for the current tab; it does not store addresses or results there. Copying a result puts it on your system clipboard."
@@ -348,6 +397,8 @@ export const en = {
     tooManyOutputs: 'The complete result exceeds {{limit}} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.',
   },
   meta: {
+    support: {"title":"Packetrove Support","description":"Contact the Packetrove maintainer, report problems safely, and find API, MCP, CLI, and privacy information."},
+    terms: {"title":"Packetrove Terms of Service","description":"Read the terms for Packetrove's hosted service, including acceptable use, result limitations, availability, privacy, and the MIT License."},
     privacy: {"title": "Packetrove Privacy Policy", "description": "Read how Packetrove processes local calculations, remote tool inputs, connection addresses, operational logs, and hosting data, with retention and user choices."},
     range: {
       "title": "IP Range to CIDRs Converter — Packetrove",

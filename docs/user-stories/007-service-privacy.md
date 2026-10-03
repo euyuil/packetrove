@@ -71,6 +71,41 @@ per-call logging opt-out, account-linked history, or individual-call deletion
 capability. Privacy questions and applicable rights requests use the existing
 project email address; public issues must not include private network data.
 
+Support emails include the sender's address, any supplied name, and message.
+The individual maintainer uses these details to reply and follow up. Per the
+owner's confirmed practice, correspondence is generally retained long term
+without a fixed expiry, and users may contact the maintainer to request deletion.
+This correspondence policy does not extend retention of remote tool inputs or
+create an account-linked call history. GitHub issue history follows GitHub's
+separate retention controls.
+
+## Support and hosted-service terms
+
+The localized `/support` page directs private support, privacy requests, and
+security reports to the individual maintainer at `hello@packetrove.com`.
+Public bug reports and feature requests use the existing GitHub issue templates.
+Support instructions request reproducible synthetic examples, interface and client
+details, expected and actual behavior, and controlled error codes; they warn
+against sending credentials, real public-IP results, or private network data.
+There is no contact form, automatic email send, or additional telemetry. Support
+is provided as time permits, without a promised response time.
+
+The localized `/terms` page covers the hosted website, Web API, and remote MCP
+service. It explains lawful authorized use, documented limits, result review,
+the public-IP connection boundary, availability, responsibility subject to
+non-excludable legal rights, and future revisions. The terms do not replace the
+MIT License for source code and the CLI or third-party license notices.
+
+Keep both pages in the shared footer, with support under Contact & Feedback and
+terms under Project Resources. Do not add them to browser-tool navigation.
+Preserve same-language cross-links between support, privacy, and terms, including
+mobile current-page labels. The original translated page text is authoritative;
+documentation should describe its behavior rather than duplicate the policy.
+
+The plugin source manifest includes the canonical HTTPS policy and support URLs.
+Check all three pages after deployment before uploading the plugin; an offline
+manifest check does not establish public availability or directory readiness.
+
 ## Acceptance
 
 - Every localized page is prerendered with its complete policy, unique heading,
@@ -88,6 +123,11 @@ project email address; public issues must not include private network data.
 - Discovery and pre-callback rejections produce no tool execution events.
 - Logging exceptions preserve successful and failed MCP responses.
 - Production smoke checks verify policy content and footer entry points.
+- Support and terms pages render complete text in every locale, publish canonical
+  and alternate links and sitemap entries, and open from the footer without tool
+  requests. Preserve calculator drafts when navigating to and from these pages.
+- Support links use the confirmed email and existing GitHub templates. Privacy
+  and terms cross-links remain in the current locale.
 - Directory listing URLs are considered available only after deployment and
   public-page verification. No directory submission is performed by this change.
 

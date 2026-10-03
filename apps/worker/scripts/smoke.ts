@@ -74,7 +74,8 @@ for (const page of websitePages) {
     });
     assert.equal(response.status, 200, `Page status: ${path}`);
     assert.match(response.headers.get('content-type') ?? '', /text\/html/);
-    const pageHtml = await response.text();
+    // Match equivalent apostrophe entities in React text and generated metadata.
+    const pageHtml = (await response.text()).replaceAll('&#x27;', '&#39;');
     assert(!/\{\{[^{}]*\}\}/.test(pageHtml), `Unresolved translation placeholder: ${path}`);
     const metadata = getPageMetadata(page.locale, page.page, page.path, resources[page.locale].translation);
     assert(pageHtml.includes('<html lang="' + metadata.lang + '"'), `Page language: ${path}`);
@@ -98,16 +99,28 @@ for (const page of websitePages) {
     for (const tool of catalogTools) {
       assert(navigation.includes('href="' + localizedPath(tool.webPath, page.locale) + '"'), `Shared tool navigation: ${path}`);
     }
-    for (const documentationPath of [pagePaths.api, pagePaths.mcp, pagePaths.privacy]) {
+    for (const documentationPath of [pagePaths.api, pagePaths.mcp, pagePaths.privacy, pagePaths.support, pagePaths.terms]) {
       assert(!navigation.includes('href="' + localizedPath(documentationPath, page.locale) + '"'), `Documentation outside primary navigation: ${path}`);
     }
     const footer = /<footer\b[^>]*>([\s\S]*?)<\/footer>/.exec(pageHtml)?.[1] ?? '';
-    assert(footer.includes('href="' + localizedPath(pagePaths.privacy, page.locale) + '"'), `Privacy policy footer link: ${path}`);
+    for (const servicePage of ['privacy', 'support', 'terms'] as const) {
+      assert(footer.includes('href="' + localizedPath(pagePaths[servicePage], page.locale) + '"'), `Service page footer link ${servicePage}: ${path}`);
+    }
     if (page.page === 'privacy') {
       assert(pageHtml.includes(escapeHtml(text.privacy.sections.remote.body)), `Remote data disclosure: ${path}`);
       assert(pageHtml.includes(escapeHtml(text.privacy.sections.logs.body)), `Application log disclosure: ${path}`);
       assert(pageHtml.includes(escapeHtml(text.privacy.sections.providers.body)), `Platform retention disclosure: ${path}`);
       assert(pageHtml.includes('href="mailto:hello@packetrove.com"'), `Privacy contact: ${path}`);
+    }
+    if (page.page === 'support') {
+      assert(pageHtml.includes(escapeHtml(text.support.contactBody)), `Support contact details: ${path}`);
+      assert(pageHtml.includes(escapeHtml(text.support.publicBody)), `Public feedback privacy: ${path}`);
+      assert(pageHtml.includes('href="mailto:hello@packetrove.com"'), `Support email: ${path}`);
+    }
+    if (page.page === 'terms') {
+      for (const section of Object.values(text.terms.sections)) {
+        assert(pageHtml.includes(escapeHtml(section.body)), `Terms disclosure ${section.title}: ${path}`);
+      }
     }
     for (const [documentationPath, label] of [[pagePaths.api, text.footer.apiDocumentation], [pagePaths.mcp, text.mcp.navigation]] as const) {
       assert(footer.includes('href="' + localizedPath(documentationPath, page.locale) + '"'), `Localized footer documentation: ${path}`);
@@ -118,7 +131,8 @@ for (const page of websitePages) {
       assert(footer.includes(escapeHtml(heading)), `Footer section heading: ${path}`);
     }
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
-      ? text.api.cidrSummary : page.page === 'privacy' ? text.privacy.introduction : text[page.page].explanation;
+      ? text.api.cidrSummary : page.page === 'privacy' || page.page === 'support' || page.page === 'terms'
+        ? text[page.page].introduction : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
     if (isToolPage(page.page)) {
       for (const question of Object.values(text.discovery[page.page].questions)) {

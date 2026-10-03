@@ -10,13 +10,14 @@ describe('website in the Workers runtime', () => {
   it.each(websitePages)('serves localized content and metadata at $pathname without running JavaScript', async ({ locale, page, pathname }) => {
     const response = await exports.default.fetch('http://localhost' + pathname);
     expect(response.status).toBe(200);
-    const html = await response.text();
+    // React text and generated metadata can use equivalent apostrophe entities.
+    const html = (await response.text()).replaceAll('&#x27;', '&#39;');
     const metadata = resources[locale].translation.meta[page];
     expect(html).toContain('<html lang="' + locale + '"');
-    expect(html).toContain('<title>' + metadata.title + '</title>');
-    expect(html).toContain('<meta name="description" content="' + metadata.description + '" />');
-    expect(html).toContain('<meta property="og:title" content="' + metadata.title + '" />');
-    expect(html).toContain('<meta name="twitter:title" content="' + metadata.title + '" />');
+    expect(html).toContain('<title>' + escapeHtml(metadata.title) + '</title>');
+    expect(html).toContain('<meta name="description" content="' + escapeHtml(metadata.description) + '" />');
+    expect(html).toContain('<meta property="og:title" content="' + escapeHtml(metadata.title) + '" />');
+    expect(html).toContain('<meta name="twitter:title" content="' + escapeHtml(metadata.title) + '" />');
     expect(html).toContain('<link rel="canonical" href="https://packetrove.com' + pathname + '" />');
     expect(html.match(/<title>/g)).toHaveLength(1);
     expect(html.match(/<link rel="canonical"/g)).toHaveLength(1);
@@ -34,7 +35,9 @@ describe('website in the Workers runtime', () => {
     expect(Array.from(navigation.matchAll(/href="([^"]+)"/g), match => match[1]))
       .toEqual([pagePaths.home, ...catalogTools.map(tool => tool.webPath)].map(path => localizedPath(path, locale)));
     const footer = /<footer\b[^>]*>([\s\S]*?)<\/footer>/.exec(html)?.[1] ?? '';
-    expect(footer).toContain('href="' + localizedPath(pagePaths.privacy, locale) + '"');
+    for (const servicePage of ['privacy', 'support', 'terms'] as const) {
+      expect(footer).toContain('href="' + localizedPath(pagePaths[servicePage], locale) + '"');
+    }
     for (const [path, label] of [[pagePaths.api, text.footer.apiDocumentation], [pagePaths.mcp, text.mcp.navigation]] as const) {
       expect(footer).toContain('href="' + localizedPath(path, locale) + '"');
       expect(footer).toContain(escapeHtml(label));
@@ -90,6 +93,22 @@ describe('website in the Workers runtime', () => {
         expect(html).toContain(escapeHtml(section.body));
       }
       expect(html).toContain('href="mailto:hello@packetrove.com"');
+    } else if (page === 'support') {
+      for (const content of [text.support.introduction, text.support.contactBody,
+        text.support.publicBody, text.support.detailsBody, text.support.guidesBody]) {
+        expect(html).toContain(escapeHtml(content));
+      }
+      expect(html).toContain('href="mailto:hello@packetrove.com"');
+      expect(html).not.toContain('<form');
+    } else if (page === 'terms') {
+      expect(html).toContain(escapeHtml(text.terms.introduction));
+      for (const section of Object.values(text.terms.sections)) {
+        expect(html).toContain(escapeHtml(section.title));
+        expect(html).toContain(escapeHtml(section.body));
+      }
+      expect(html).toContain('href="' + localizedPath(pagePaths.privacy, locale) + '"');
+      expect(html).toContain('href="' + localizedPath(pagePaths.support, locale) + '"');
+      expect(html).toMatch(/href="[^"\s]*\/LICENSE"/);
     } else {
       expect(html).toContain(escapeHtml(text.mcp.explanation));
       expect(html).toContain('claude mcp add --transport http --scope user packetrove');

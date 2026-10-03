@@ -122,6 +122,13 @@ link to the canonical English policy for client and directory discovery.
 Use `https://packetrove.com/privacy` as the plugin's privacy-policy URL only
 after the revision is deployed and the public page is verified.
 
+The same registry publishes `/support` and `/terms` in every locale. The shared
+footer links to them, and the plugin source manifest references their canonical
+English HTTPS URLs. Before uploading a package, verify the deployed revision's
+support, terms, and privacy pages with the production smoke command. Maintainer
+approval of the terms and correspondence policy precedes their publication
+through the normal pull request workflow.
+
 Unexpected HTTP failures emit only `request_failure` and the fixed
 `INTERNAL_ERROR` code. The application logger does not receive exception
 objects, request data, or results, and logging failure cannot replace the HTTP
