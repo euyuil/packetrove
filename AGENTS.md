@@ -22,12 +22,21 @@
   the user has requested.
 - Build web interfaces with Mantine components and the shared theme. Prefer
   component props and layout components before adding custom CSS.
-- Keep capitalization consistent within each type of interface text.
-  English navigation labels use title case, such as "MCP Guide" and
-  "My Public IP". Action labels and explanatory text use sentence case.
-  Preserve acronym and product-name casing, and follow each locale's
-  writing conventions. Store the intended capitalization in translation
-  resources rather than applying CSS or runtime case transformations.
+- Keep capitalization consistent by text role across the website.
+  English primary-navigation labels, footer section headings, and footer links
+  that name destinations use title case, such as "My Public IP",
+  "Contact & Feedback", "API Documentation", and "MCP Guide".
+  Action labels use sentence case, including action links in the footer,
+  such as "Report a bug", "Request a feature", and "Send an email".
+  Explanatory text also uses sentence case.
+- Preserve acronym and product-name casing, including API, MCP, CLI, CIDR,
+  IP, IPv6, GitHub, OpenAPI, and Packetrove. Follow each locale's writing
+  conventions rather than applying English title case to other languages.
+  Keep canonical tool identifiers, URLs, commands, and protocol fields in
+  their defined forms.
+- Store the intended wording and capitalization in translation resources.
+  Do not apply CSS or runtime case transformations. Use separate translation
+  keys when different text roles require different wording or capitalization.
 - Give buttons a visible background or border in their default state. Use
   Mantine Button variants such as `filled`, `light`, `outline`, or `default`.
   Avoid `subtle` and equivalent text-only button styles; users must be able to
@@ -38,6 +47,31 @@
   across related tools and keep localized help, user stories, entry counts, and
   error locations accurate. If values can contain separators, use an unambiguous
   parser appropriate to that format.
+
+## Website navigation and documentation entry points
+
+- Reserve the shared primary navigation for Home and product tools that users
+  can use directly in the browser. Classify destinations by the user's task,
+  rather than by whether their names or content contain technical terminology.
+- Put entry points for integration and developer documentation in the shared
+  footer, including API documentation, MCP connection guides, and CLI
+  installation and usage guides. Group related integration links together,
+  separately from project resources and contact links. Do not add these
+  documentation destinations to the primary navigation when introducing or
+  expanding an integration.
+- Apply the same distinction to desktop navigation and mobile navigation menus.
+  Keep footer documentation entry points available on every page and preserve
+  same-language destinations where localized documentation exists.
+- Allow a concise integration overview on the homepage and relevant contextual
+  links within tool and documentation pages. Give browser tool selection and
+  use priority over integration promotion. Keep detailed installation,
+  configuration, and interface reference content in the corresponding guides.
+- Keep calculation explanations, input limits, and result interpretation with
+  the tools they explain, because users need them to complete browser tasks
+  correctly.
+- When moving navigation links, preserve existing documentation URLs and useful
+  contextual links. Update affected user stories and navigation checks so that
+  they agree with this policy.
 
 ## Tool icons and headings
 

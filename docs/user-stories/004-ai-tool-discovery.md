@@ -32,8 +32,10 @@ are outcomes to observe after deployment, not guarantees of this implementation.
 - `/docs/mcp` centralizes Claude Code and Codex remote HTTP configuration,
   `/mcp` inspection, `tools/list` discovery, all catalog tool examples, result decoding,
   errors, and links back to the tools. Reading it makes no tool calls.
-- The shared navigation links to the MCP guide in the current language. The
-  guide links to the API reference in that language and to the project source.
+- The shared footer groups the same-language MCP guide and API documentation
+  with the existing English CLI guide. Desktop and mobile primary navigation
+  contain Home and browser tools. The MCP guide links to the API reference in
+  that language and to the project source.
   Its text, client commands, SDK example, and tool examples also generate the
   repository integration guide; build checks reject stale generated Markdown.
 - The homepage keeps a short MCP introduction and server address, with a link

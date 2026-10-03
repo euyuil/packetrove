@@ -21,7 +21,10 @@ export const en = {
     title: 'Would you like to read this page in English?',
     switch: 'Switch to English', dismiss: 'Not now',
   },
-  footer: { project: 'Project', contact: 'Contact & feedback', sendEmail: 'Send an email' },
+  footer: {
+    project: 'Project Resources', integrations: 'Integrations', contact: 'Contact & Feedback',
+    apiDocumentation: 'API Documentation', cliGuide: 'CLI Guide', sendEmail: 'Send an email',
+  },
   home: {
     rangeDescription: "Convert inclusive start and end IP addresses into the minimal exact CIDR list. Calculate locally and copy every block without adding addresses.",
     rangeLink: "Open IP range converter",
@@ -348,7 +351,10 @@ export const zhHans = {
   languageSuggestion: {
     title: '想使用中文浏览吗？', switch: '切换为中文', dismiss: '暂不切换',
   },
-  footer: { project: '项目资源', contact: '联系与反馈', sendEmail: '发送邮件' },
+  footer: {
+    project: '项目资源', integrations: '接入与集成', contact: '联系与反馈',
+    apiDocumentation: 'API 文档', cliGuide: '命令行指南（英文）', sendEmail: '发送邮件',
+  },
   home: {
     rangeDescription: "将包含起止端点的 IP 范围转换为最少且精确的 CIDR 列表。在本地计算并复制全部网段，不增加额外地址。",
     rangeLink: "打开 IP 范围转换",

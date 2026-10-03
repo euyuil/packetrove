@@ -13,7 +13,10 @@ export const ru = {
     feedbackPrompt: 'Нашли ошибку или есть идея? Расскажите нам на GitHub.', reportBug: 'Сообщить об ошибке', requestFeature: 'Предложить функцию',
     notFound: 'Страница не найдена', notFoundDescription: 'Запрошенная страница не существует.', returnHome: 'Вернуться на главную',
   },
-  footer: { project: 'Проект', contact: 'Контакты и обратная связь', sendEmail: 'Отправить письмо' },
+  footer: {
+    project: 'Ресурсы проекта', integrations: 'Интеграции', contact: 'Контакты и обратная связь',
+    apiDocumentation: 'Документация API', cliGuide: 'Руководство CLI (на английском)', sendEmail: 'Отправить письмо',
+  },
   home: {
     rangeDescription: "Преобразуйте включённые начальный и конечный IP в минимальный точный список CIDR. Рассчитайте локально и скопируйте все блоки без лишних адресов.",
     rangeLink: "Открыть преобразование диапазона IP",

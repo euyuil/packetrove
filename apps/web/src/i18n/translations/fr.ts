@@ -13,7 +13,10 @@ export const fr = {
     feedbackPrompt: 'Un problème ou une idée ? Faites-nous en part sur GitHub.', reportBug: 'Signaler un problème', requestFeature: 'Proposer une fonctionnalité',
     notFound: 'Page introuvable', notFoundDescription: 'La page demandée n’existe pas.', returnHome: 'Retour à l’accueil',
   },
-  footer: { project: 'Projet', contact: 'Contact et commentaires', sendEmail: 'Envoyer un e-mail' },
+  footer: {
+    project: 'Ressources du projet', integrations: 'Intégrations', contact: 'Contact et commentaires',
+    apiDocumentation: 'Documentation de l’API', cliGuide: 'Guide CLI (en anglais)', sendEmail: 'Envoyer un e-mail',
+  },
   home: {
     rangeDescription: "Convertissez des bornes IP inclusives en une liste CIDR minimale exacte. Calculez localement et copiez tous les blocs sans ajouter d’adresses.",
     rangeLink: "Ouvrir le convertisseur de plages IP",

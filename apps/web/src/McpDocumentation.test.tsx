@@ -161,7 +161,7 @@ describe('localized MCP tool disclosures', () => {
 });
 
 describe('localized MCP guide navigation', () => {
-  it.each(supportedLocales)('opens the %s guide and API reference from shared navigation while preserving a calculator error', async locale => {
+  it.each(supportedLocales)('opens the %s guide and API reference from the shared footer while preserving a calculator error', async locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
@@ -171,7 +171,7 @@ describe('localized MCP guide navigation', () => {
     render(<App />);
     fireEvent.change(screen.getByLabelText(text.cidr.inputLabel), { target: { value: 'bad' } });
     fireEvent.click(screen.getByRole('button', { name: text.cidr.calculate }));
-    const guideLink = within(screen.getByRole('navigation')).getByRole('link', { name: text.mcp.navigation });
+    const guideLink = within(screen.getByRole('contentinfo')).getByRole('link', { name: text.mcp.navigation });
     expect(guideLink.getAttribute('href')).toBe(localizedPath(pagePaths.mcp, locale));
     fireEvent.click(guideLink);
     expect(guideLink.getAttribute('aria-current')).toBe('page');

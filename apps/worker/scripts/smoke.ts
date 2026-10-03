@@ -94,7 +94,22 @@ for (const page of websitePages) {
     assert(new RegExp('<h1[^>]*>' + escapeHtml(heading) + '</h1>').test(pageHtml), `Prerendered heading: ${path}`);
     assert(pageHtml.includes('data-prerendered-path="' + page.pathname + '"'), `Prerendered page: ${path}`);
     const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(pageHtml)?.[1] ?? '';
-    assert(navigation.includes('href="' + localizedPath(pagePaths.mcp, page.locale) + '"'), `Shared MCP navigation: ${path}`);
+    assert(navigation.includes('href="' + localizedPath(pagePaths.home, page.locale) + '"'), `Shared Home navigation: ${path}`);
+    for (const tool of catalogTools) {
+      assert(navigation.includes('href="' + localizedPath(tool.webPath, page.locale) + '"'), `Shared tool navigation: ${path}`);
+    }
+    for (const documentationPath of [pagePaths.api, pagePaths.mcp]) {
+      assert(!navigation.includes('href="' + localizedPath(documentationPath, page.locale) + '"'), `Documentation outside primary navigation: ${path}`);
+    }
+    const footer = /<footer\b[^>]*>([\s\S]*?)<\/footer>/.exec(pageHtml)?.[1] ?? '';
+    for (const [documentationPath, label] of [[pagePaths.api, text.footer.apiDocumentation], [pagePaths.mcp, text.mcp.navigation]] as const) {
+      assert(footer.includes('href="' + localizedPath(documentationPath, page.locale) + '"'), `Localized footer documentation: ${path}`);
+      assert(footer.includes(escapeHtml(label)), `Footer documentation label: ${path}`);
+    }
+    assert(footer.includes('/docs/integrations/cli.md') && footer.includes(escapeHtml(text.footer.cliGuide)), `Footer CLI guide: ${path}`);
+    for (const heading of [text.footer.project, text.footer.integrations, text.footer.contact]) {
+      assert(footer.includes(escapeHtml(heading)), `Footer section heading: ${path}`);
+    }
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
       ? text.api.cidrSummary : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
