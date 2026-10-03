@@ -113,11 +113,16 @@ it('preserves located structured errors from rejected asynchronous handlers in A
   } finally { await client.close(); }
 });
 
-it('sanitizes unexpected asynchronous failures and preserves no-store error responses', async () => {
+it.each([
+  new Error('Private upstream failure'),
+  'Private upstream failure',
+  null,
+  { detail: 'Private upstream failure' },
+])('sanitizes unexpected asynchronous failures (%#) and preserves no-store error responses', async (reason) => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
   const app = createApp(createToolExecutor({ ...toolHandlers, ip: async () => {
     await Promise.resolve();
-    throw new Error('Private upstream failure');
+    throw reason;
   } }));
   const response = await app.request('http://localhost/v1/public-ip', { headers: { accept: 'text/plain' } });
   const failure = { error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } };

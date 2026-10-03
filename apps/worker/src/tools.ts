@@ -27,7 +27,7 @@ export function createToolExecutor(handlers: ToolHandlers): ToolExecutor {
       result = await handlers[page](input, context);
     } catch (error) {
       assertToolExecutionActive(context);
-      throw error;
+      throw error instanceof Error ? error : new Error('An unexpected error occurred.');
     }
     assertToolExecutionActive(context);
     return result;

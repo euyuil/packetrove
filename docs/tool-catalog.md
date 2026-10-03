@@ -167,6 +167,8 @@ accept unknown input and return a synchronous result or a Promise of that result
 `createToolExecutor` provides the awaited execution boundary used by both API and
 MCP; it does not replace each domain's existing input validation. The browser's
 local calculations and the CLI continue to use the synchronous core directly.
+Non-Error handler rejections become a fixed internal Error without converting
+their payload to text, so API and MCP preserve their structured error responses.
 
 `tool-context.ts` snapshots only edge connection addresses and an AbortSignal
 for each invocation. It does not forward arbitrary headers, authorization data,
