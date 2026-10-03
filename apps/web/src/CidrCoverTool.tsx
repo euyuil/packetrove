@@ -62,7 +62,7 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
   const issueItems = error?.issues?.map((issue, index) => {
     const message = issueMessage(issue, error.details?.[index], t, locale);
     const entry = issue.index === undefined ? undefined : entries[issue.index];
-    return { inputId: 'addresses', message: !entry ? message
+    return { inputId: 'addresses', selection: entry && { start: entry.start, end: entry.end }, message: !entry ? message
       : t($ => entry.entriesOnLine > 1 ? $.cidr.lineEntry : $.cidr.line, {
         line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
       }) };
