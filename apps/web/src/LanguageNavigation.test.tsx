@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import * as core from '@packetrove/core';
 import { App } from './App';
-import { render } from './test-utils';
+import { deferred, render } from './test-utils';
+import * as pages from './page-resources';
 import { locales, supportedLocales } from './i18n/locales';
 import { localizedPath, resolveRoute } from './i18n/routes';
 import { resources } from './i18n/resources';
@@ -60,6 +61,69 @@ function observeNativeAction(type: string, action: () => void) {
 }
 
 describe('language links after reference navigation', () => {
+  it.each(['pushState', 'replaceState'] as const)('keeps the latest %s operation through a failed locale load and retry', async method => {
+    await openDocumentation();
+    const pending = deferred<void>();
+    const isReady = pages.isRoutePrepared;
+    vi.spyOn(pages, 'isRoutePrepared').mockImplementation(path => path !== '/zh/docs/api' && isReady(path));
+    const prepare = vi.spyOn(pages, 'prepareRoute').mockReturnValueOnce(pending.promise).mockResolvedValue();
+    fireEvent.click(openLanguageMenu());
+    act(() => { window.history[method](null, '', '/docs/api' + laterSuffix); });
+    await act(async () => { pending.reject(new Error('Unavailable')); });
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/docs/api' + laterSuffix);
+    const newestSuffix = '?source=retry#tag/Current-public-IP/get/v1/public-ip';
+    act(() => { window.history[method](null, '', '/docs/api' + newestSuffix); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Retry' })); });
+    expect(prepare).toHaveBeenCalledTimes(2);
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/zh/docs/api' + newestSuffix);
+    expect(document.documentElement.lang).toBe('zh-Hans');
+  });
+
+  it.each(['pushState', 'replaceState'] as const)('preserves an operation selected with %s during a slow locale load', async method => {
+    await openDocumentation();
+    const pending = deferred<void>();
+    const isReady = pages.isRoutePrepared;
+    vi.spyOn(pages, 'isRoutePrepared').mockImplementation(path => path !== '/zh/docs/api' && isReady(path));
+    vi.spyOn(pages, 'prepareRoute').mockReturnValue(pending.promise);
+    fireEvent.click(openLanguageMenu());
+    expect(window.location.pathname).toBe('/docs/api');
+    act(() => { window.history[method](null, '', '/docs/api' + laterSuffix); });
+    await act(async () => { pending.resolve(); });
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/zh/docs/api' + laterSuffix);
+    expect(document.documentElement.lang).toBe('zh-Hans');
+  });
+
+  it('restores the last silently selected operation when a later history destination fails', async () => {
+    await openDocumentation('replaceState');
+    const pending = deferred<void>();
+    const isReady = pages.isRoutePrepared;
+    vi.spyOn(pages, 'isRoutePrepared').mockImplementation(path => path !== '/cidr-subtract' && isReady(path));
+    vi.spyOn(pages, 'prepareRoute').mockReturnValue(pending.promise);
+    act(() => { window.history.replaceState(null, '', '/docs/api' + laterSuffix); });
+    act(() => {
+      window.history.replaceState(null, '', '/cidr-subtract');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await act(async () => { pending.reject(new Error('Unavailable')); });
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/docs/api' + laterSuffix);
+    expect(document.title).toBe('Packetrove API Documentation');
+  });
+
+  it('keeps a newer reference suffix written while a history destination is pending on failure', async () => {
+    await openDocumentation('replaceState');
+    const pending = deferred<void>();
+    const isReady = pages.isRoutePrepared;
+    vi.spyOn(pages, 'isRoutePrepared').mockImplementation(path => path !== '/cidr-subtract' && isReady(path));
+    vi.spyOn(pages, 'prepareRoute').mockReturnValue(pending.promise);
+    act(() => {
+      window.history.replaceState(null, '', '/cidr-subtract');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    act(() => { window.history.replaceState(null, '', '/cidr-subtract' + laterSuffix); });
+    await act(async () => { pending.reject(new Error('Unavailable')); });
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/docs/api' + laterSuffix);
+  });
+
   it.each((['pushState', 'replaceState'] as const).flatMap(method => supportedLocales.map(locale => ({ method, locale }))))
     ('preserves the current URL after $method when choosing $locale', async ({ method, locale }) => {
     const fetch = await openDocumentation(method);

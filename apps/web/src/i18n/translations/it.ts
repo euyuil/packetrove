@@ -1,4 +1,4 @@
-import type { TranslationResource } from '../resources';
+import type { TranslationResource } from '../translation-resource';
 
 export const it = {
   languageSuggestion: {
@@ -6,6 +6,7 @@ export const it = {
     switch: 'Passa all’italiano', dismiss: 'Non ora',
   },
   common: {
+    pageLoading: "Caricamento della pagina…", pageLoadFailure: "Impossibile caricare questa pagina. Riprova.", retryPage: "Riprova",
     home: 'Home', homeLabel: 'Pagina iniziale di Packetrove', navigation: 'Navigazione principale',
     language: 'Lingua', tools: 'STRUMENTI PER INDIRIZZI IP', copied: 'Copiato', dismissCopy: 'Chiudi l’errore di copia',
     tagline: 'Strumenti di rete per persone e agenti IA',

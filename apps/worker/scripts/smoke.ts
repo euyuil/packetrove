@@ -76,7 +76,7 @@ for (const page of websitePages) {
     assert.match(response.headers.get('content-type') ?? '', /text\/html/);
     const pageHtml = await response.text();
     assert(!/\{\{[^{}]*\}\}/.test(pageHtml), `Unresolved translation placeholder: ${path}`);
-    const metadata = getPageMetadata(page.locale, page.page, page.path);
+    const metadata = getPageMetadata(page.locale, page.page, page.path, resources[page.locale].translation);
     assert(pageHtml.includes('<html lang="' + metadata.lang + '"'), `Page language: ${path}`);
     assert(pageHtml.includes('<title>' + escapeHtml(metadata.title) + '</title>'), `Page title: ${path}`);
     for (const entry of metadata.meta) {

@@ -1,4 +1,14 @@
-import { beforeEach, vi } from 'vitest';
+import { beforeAll, beforeEach, vi } from 'vitest';
+import { prepareRoute } from './page-resources';
+import { pagePaths, localizedPath } from './i18n/routes';
+import { supportedLocales } from './i18n/locales';
+
+// Existing interaction tests exercise prepared views. Cold caches and loading
+// races have separate tests; the production manifest also verifies chunk edges.
+beforeAll(async () => {
+  await Promise.all(supportedLocales.flatMap(locale =>
+    Object.values(pagePaths).map(path => prepareRoute(localizedPath(path, locale)))));
+});
 
 beforeEach(() => { window.sessionStorage.clear(); });
 

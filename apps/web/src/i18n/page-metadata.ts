@@ -1,12 +1,13 @@
 import { PACKETROVE_IDENTITY, PUBLIC_WEBSITE_ORIGIN } from '@packetrove/contracts';
-import { resources } from './resources';
+import { getLocaleTranslation } from './locale-resources';
+import type { TranslationResource } from './translation-resource';
 import { supportedLocales } from './locales';
 import { localizedPath, type Locale, type Page } from './routes';
 
 export const WEBSITE_ORIGIN = PUBLIC_WEBSITE_ORIGIN;
 
-export function getPageMetadata(locale: Locale, page: Page, path: string) {
-  const translations = resources[locale].translation;
+export function getPageMetadata(locale: Locale, page: Page, path: string,
+  translations: TranslationResource = getLocaleTranslation(locale)) {
   const { title, description } = translations.meta[page];
   const image = WEBSITE_ORIGIN + '/packetrove-social-preview-1280x640.png';
   const meta: Array<{ attribute: 'name' | 'property'; key: string; content: string }> = [

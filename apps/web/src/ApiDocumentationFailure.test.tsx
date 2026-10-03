@@ -25,6 +25,11 @@ async function application() {
   const core = await import('@packetrove/core');
   const calculation = vi.spyOn(core, 'smallestCoveringCidr');
   const { App } = await import('./App');
+  const { prepareRoute } = await import('./page-resources');
+  const { pagePaths, localizedPath } = await import('./i18n/routes');
+  const { supportedLocales } = await import('./i18n/locales');
+  await Promise.all(supportedLocales.flatMap(locale =>
+    Object.values(pagePaths).map(path => prepareRoute(localizedPath(path, locale)))));
   const caught = vi.fn();
   render(<App />, { onCaughtError: caught });
   return { documentation, fetch, calculation, caught };

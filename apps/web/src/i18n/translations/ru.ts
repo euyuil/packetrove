@@ -1,4 +1,4 @@
-import type { TranslationResource } from '../resources';
+import type { TranslationResource } from '../translation-resource';
 
 export const ru = {
   languageSuggestion: {
@@ -6,6 +6,7 @@ export const ru = {
     switch: 'Перейти на русский', dismiss: 'Не сейчас',
   },
   common: {
+    pageLoading: "Загрузка страницы…", pageLoadFailure: "Не удалось загрузить эту страницу. Попробуйте ещё раз.", retryPage: "Повторить",
     home: 'Главная', homeLabel: 'Главная страница Packetrove', navigation: 'Основная навигация',
     language: 'Язык', tools: 'ИНСТРУМЕНТЫ ДЛЯ IP-АДРЕСОВ', copied: 'Скопировано', dismissCopy: 'Закрыть сообщение об ошибке копирования',
     tagline: 'Сетевые инструменты для людей и ИИ-агентов',

@@ -101,8 +101,7 @@ previews and has a stable initial order. New tools enter interface discovery
 and navigation through the catalog; homepage inclusion is a separate selection.
 See the [homepage user story](user-stories/005-home-tool-gallery.md).
 
-Localized prose remains in `apps/web/src/i18n/resources.ts` and the language
-files, indexed by the catalog's page keys. The catalog contains no React
+Localized prose remains in `apps/web/src/i18n/translations`, indexed by the catalog's page keys. The catalog contains no React
 components or browser state. Tool-specific views can choose an appropriate
 presentation while consuming shared facts and examples.
 
@@ -131,9 +130,26 @@ validation, draft, and result state belong to each tool's view. Each calculation
 page declares its draft initializer and uses `useToolDraft`; `ToolDraftProvider`
 retains drafts only within the current `App` instance. Switching tools or
 languages preserves drafts, results, and errors without storage or recalculation.
-A reload or a new application instance starts fresh. Register the page component
+A reload or a new application instance starts fresh. Register a dynamic loader for the page component
 in the exhaustive map in `apps/web/src/ToolPageView.tsx`; the application shell
 does not declare tool-specific state.
+
+`page-resources.ts` prepares the requested page and its locale before rendering.
+Tool page loaders are exhaustive, and cached component identities stay stable
+across language changes. `i18n/locale-resources.ts` loads English fallback and
+the selected locale; the application installs translations into its own i18next
+instance. A browser-language suggestion prepares only its suggested locale
+after hydration. Complete `i18n/resources.ts` imports are reserved for build
+scripts and tests, never the browser entry graph.
+
+Navigation retains the current page while resources load. Only the latest
+successful navigation commits its URL, language, and metadata. Failed loads
+show localized retry controls without discarding drafts; failed history events
+restore the committed URL and retry by replacing that entry. Prerendering awaits
+the same preparation before rendering complete static content. Initial load
+failures keep that content readable, using retry text embedded in the HTML.
+The production manifest check enforces deferred page and locale modules, and
+loading tests cover races, history, failures, retries, and retained drafts.
 
 The shared `InputIssue` contract accepts tool-defined `field`, `list`, and
 `path` locations. `inputIssuePath` resolves explicit paths before legacy

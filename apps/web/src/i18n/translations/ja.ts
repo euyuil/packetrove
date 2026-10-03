@@ -1,4 +1,4 @@
-import type { TranslationResource } from '../resources';
+import type { TranslationResource } from '../translation-resource';
 
 export const ja = {
   languageSuggestion: {
@@ -6,6 +6,7 @@ export const ja = {
     switch: '日本語に切り替える', dismiss: '今はしない',
   },
   common: {
+    pageLoading: "ページを読み込み中…", pageLoadFailure: "ページを読み込めませんでした。もう一度お試しください。", retryPage: "再試行",
     home: 'ホーム', homeLabel: 'Packetrove ホーム', navigation: 'メインナビゲーション',
     language: '言語', tools: 'IP アドレスツール', copied: 'コピー済み', dismissCopy: 'コピーエラーを閉じる',
     tagline: '人と AI エージェントのためのネットワークツール',
