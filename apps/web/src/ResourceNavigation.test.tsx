@@ -8,6 +8,7 @@ import { deferred, render } from './test-utils';
 beforeEach(() => { window.history.replaceState(null, '', '/cidr-cover'); });
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.restoreAllMocks();
   window.history.replaceState(null, '', '/');
 });
@@ -22,28 +23,51 @@ function delayRoutes(targets: Record<string, ReturnType<typeof deferred<void>>>)
 const field = () => screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement;
 
 it('keeps the current page editable while loading and retains the latest draft on return', async () => {
+  vi.useFakeTimers();
   const destination = deferred<void>();
   delayRoutes({ '/cidr-subtract': destination });
   render(<App />);
   fireEvent.change(field(), { target: { value: '203.0.113.' } });
   fireEvent.click(screen.getByRole('link', { name: 'CIDR Subtraction' }));
+  act(() => { vi.advanceTimersByTime(999); });
+  expect(screen.queryByRole('status', { name: 'Loading page…' })).toBeNull();
+  act(() => { vi.advanceTimersByTime(1); });
   expect(screen.getByRole('status', { name: 'Loading page…' }).textContent).toContain('Loading page');
   expect(window.location.pathname).toBe('/cidr-cover');
   expect(document.title).toContain('Smallest Covering');
   fireEvent.change(field(), { target: { value: '203.0.113.27' } });
   await act(async () => { destination.resolve(); });
+  expect(screen.queryByRole('status', { name: 'Loading page…' })).toBeNull();
   expect(window.location.pathname).toBe('/cidr-subtract');
   fireEvent.click(screen.getByRole('link', { name: 'Smallest Covering CIDR' }));
   expect(field().value).toBe('203.0.113.27');
 });
 
+it('commits a fast navigation immediately without flashing a delayed loading status', async () => {
+  vi.useFakeTimers();
+  const destination = deferred<void>();
+  delayRoutes({ '/cidr-subtract': destination });
+  render(<App />);
+  fireEvent.click(screen.getByRole('link', { name: 'CIDR Subtraction' }));
+  act(() => { vi.advanceTimersByTime(200); });
+  await act(async () => { destination.resolve(); });
+  expect(window.location.pathname).toBe('/cidr-subtract');
+  expect(screen.queryByRole('status', { name: 'Loading page…' })).toBeNull();
+  act(() => { vi.advanceTimersByTime(2_000); });
+  expect(screen.queryByRole('status', { name: 'Loading page…' })).toBeNull();
+});
+
 it('commits only the latest choice when page loads complete in reverse order', async () => {
+  vi.useFakeTimers();
   const first = deferred<void>();
   const last = deferred<void>();
   delayRoutes({ '/cidr-subtract': first, '/range-to-cidrs': last });
   render(<App />);
   fireEvent.click(screen.getByRole('link', { name: 'CIDR Subtraction' }));
+  act(() => { vi.advanceTimersByTime(1_000); });
+  const status = screen.getByRole('status', { name: 'Loading page…' });
   fireEvent.click(screen.getByRole('link', { name: 'IP Range to CIDRs' }));
+  expect(screen.getByRole('status', { name: 'Loading page…' })).toBe(status);
   await act(async () => { last.resolve(); });
   expect(window.location.pathname).toBe('/range-to-cidrs');
   const title = document.title;
@@ -68,12 +92,16 @@ it.each(['popstate', 'hashchange'])('lets a later %s event supersede a pending c
 });
 
 it('keeps input and metadata on failure and retries without exposing module errors', async () => {
+  vi.useFakeTimers();
   const first = deferred<void>();
   const loads = delayRoutes({ '/cidr-subtract': first });
   render(<App />);
   fireEvent.change(field(), { target: { value: '203.0.113.57' } });
   fireEvent.click(screen.getByRole('link', { name: 'CIDR Subtraction' }));
+  act(() => { vi.advanceTimersByTime(1_000); });
+  expect(screen.getByRole('status', { name: 'Loading page…' })).toBeDefined();
   await act(async () => { first.reject(new Error('Private chunk diagnostic')); });
+  expect(screen.queryByRole('status', { name: 'Loading page…' })).toBeNull();
   expect(screen.getByRole('alert').textContent).toContain('This page could not be loaded');
   expect(screen.getByRole('alert').textContent).not.toContain('Private chunk');
   expect(field().value).toBe('203.0.113.57');
@@ -81,6 +109,8 @@ it('keeps input and metadata on failure and retries without exposing module erro
   const retry = deferred<void>();
   loads.mockImplementationOnce(() => retry.promise);
   fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+  act(() => { vi.advanceTimersByTime(999); });
+  expect(screen.queryByRole('status', { name: 'Loading page…' })).toBeNull();
   await act(async () => { retry.resolve(); });
   expect(window.location.pathname).toBe('/cidr-subtract');
   fireEvent.click(screen.getByRole('link', { name: 'Smallest Covering CIDR' }));

@@ -2,6 +2,24 @@ body {
   background: var(--mantine-color-gray-0);
 }
 
+/* Mantine Progress represents measured completion; route preparation has no percentage. */
+.page-loading-indicator-bar {
+  width: 35%;
+  animation: page-loading-indicator-slide 1.4s ease-in-out infinite;
+}
+
+@keyframes page-loading-indicator-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-loading-indicator-bar {
+    width: 100%;
+    animation: none;
+  }
+}
+
 .network-value {
   font-family: var(--mantine-font-family-monospace);
   overflow-wrap: anywhere;

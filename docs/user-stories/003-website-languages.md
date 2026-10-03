@@ -197,6 +197,15 @@ and align the address with the retained page. Locale changes do not remount a
 tool. Initial resource failures preserve the prerendered page and use its embedded
 localized retry wording; no language bundle is needed to display that error.
 
+Pending navigation shows no loading indicator during its first second. If it is
+still pending after one second, show a three-pixel indeterminate bar fixed to the
+top of the viewport. Its appearance and removal must not move existing content,
+cover controls, intercept pointer input, or take keyboard focus. Keep a polite,
+localized status message available to assistive technology. Under reduced-motion
+preferences, show a stationary bar. Commit a prepared destination immediately;
+the indicator must not delay navigation. A continuous pending sequence uses one
+indicator even when the user chooses another destination.
+
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while
 preserving command examples, endpoint paths, IP addresses, CIDRs, and exact

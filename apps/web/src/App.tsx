@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Anchor, Box, Button, Container, Divider, Group, Loader, Stack, Text, Title } from '@mantine/core';
+import { Alert, Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import { isToolPage } from '@packetrove/contracts';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { ToolDraftProvider } from './ToolDraftProvider';
@@ -14,6 +14,7 @@ import { ToolNavigation } from './ToolNavigation';
 import { getPreparedPage, isRoutePrepared, prepareRoute } from './page-resources';
 import { installLocale } from './i18n/locale-resources';
 import { subscribeHistoryWrites } from './history-writes';
+import { PageLoadingIndicator } from './PageLoadingIndicator';
 
 export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
@@ -127,7 +128,9 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
 
   const PageView = page === 'home' || page === 'api' || page === 'mcp' || page === 'privacy' ? getPreparedPage(page) : null;
 
-  return <ToolDraftProvider><Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
+  return <ToolDraftProvider>
+    <PageLoadingIndicator loading={loading} label={t($ => $.common.pageLoading)} />
+    <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
     <Stack gap="lg">
       <Group component="header" justify="space-between">
         <Anchor href={href('/')} onClick={navigate} aria-label={t($ => $.common.homeLabel)} underline="never" c="var(--mantine-color-text)">
@@ -141,9 +144,6 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       </Group>
       <Divider />
       <ToolNavigation page={page} locale={locale} onNavigate={navigate} />
-      {loading && <Group role="status" aria-label={t($ => $.common.pageLoading)} gap="sm">
-        <Loader size="sm" /><Text>{t($ => $.common.pageLoading)}</Text>
-      </Group>}
       {failedNavigation && <Alert role="alert" color="red">
         <Stack gap="sm">
           <Text>{t($ => $.common.pageLoadFailure)}</Text>
