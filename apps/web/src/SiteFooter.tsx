@@ -24,12 +24,12 @@ export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, 
       <Flex justify="space-between" align="flex-start" gap={{ base: 'lg', sm: 64 }} w={{ base: '100%', sm: 'auto' }}>
         <Stack gap="sm" align="flex-start" component="section" aria-labelledby="footer-project-heading">
           <Title order={2} size="sm" fw={600} id="footer-project-heading">{t($ => $.footer.project)}</Title>
-          <Anchor size="sm" href={sourceUrl} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover"
+          <Anchor size="sm" ff="monospace" href={sourceUrl} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover"
             aria-label={sourceLabel} title={sourceLabel}>
-            <Group component="span" gap={6} wrap="nowrap" align="center">
-              <IconBrandGithub size="1em" stroke={1.75} aria-hidden="true" focusable="false" />
-              {commit && <Text component="code" inherit ff="monospace" lh={1}>{commit.slice(0, 7)}</Text>}
-            </Group>
+            {/* Align the inline SVG to the text baseline without overriding the footer line height. */}
+            <Box component={IconBrandGithub} w="1em" h="1em" stroke={1.75} mr={commit ? 6 : 0}
+              style={{ verticalAlign: '-0.125em' }} aria-hidden="true" focusable="false" />
+            {commit && <Text component="code" inherit ff="inherit">{commit.slice(0, 7)}</Text>}
           </Anchor>
           <Anchor size="sm" href={apiDocumentationHref} onClick={onNavigate} c="dimmed" underline="hover">
             {t($ => $.api.title)}
