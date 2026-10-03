@@ -46,7 +46,7 @@ export function getMcpToolContent(tool: ToolPage, locale: Locale) {
   };
 }
 
-export function getMcpSdkExample(serverUrl: string, productVersion = PACKETROVE_VERSION) {
+function getMcpSdkExample(serverUrl: string, productVersion = PACKETROVE_VERSION) {
   const definition = toolCatalog.cidr;
   return `import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
