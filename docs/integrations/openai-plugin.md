@@ -97,8 +97,8 @@ fields. The written ZIP is checked again before reporting success. Choose
 another output directory with `pnpm plugin:build --output-dir <directory>`;
 output inside the plugin source directory is rejected.
 
-By default, both commands accept the deliberate publisher-name and policy-URL
-omissions and report them as `pendingListingFields`. To require their presence:
+By default, both commands accept the deliberate publisher-name omissions and
+report them as `pendingListingFields`. To require complete listing fields:
 
 ```sh
 pnpm plugin:check --require-listing
