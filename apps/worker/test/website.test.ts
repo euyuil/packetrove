@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { resources } from '../../web/src/i18n/resources';
 import { localizedPath, pagePaths, resolveRoute, type Locale } from '../../web/src/i18n/routes';
 import { escapeHtml, websitePages, websiteRedirects } from '../../web/src/seo';
-import { mcpExamples } from '../../web/src/mcp-examples';
 import { supportedLocales } from '../../web/src/i18n/locales';
 import { tools as catalogTools, isToolPage, toolCatalog } from '@packetrove/contracts';
 
@@ -91,12 +90,12 @@ describe('website in the Workers runtime', () => {
     if (page !== 'mcp') {
       expect(html).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
     }
-    for (const { page: tool } of catalogTools.filter(tool => page === 'mcp' || page === tool.page)) {
-      const example = mcpExamples[tool];
-      expect(html).toContain('data-mcp-tool="' + example.name + '"');
-      expect(html).toContain(escapeHtml(JSON.stringify(example.arguments, null, 2)));
+    for (const tool of catalogTools.filter(tool => page === 'mcp' || page === tool.page)) {
+      const example = tool.example;
+      expect(html).toContain('data-mcp-tool="' + tool.mcp.name + '"');
+      expect(html).toContain(escapeHtml(JSON.stringify(example.request, null, 2)));
       expect(html).toContain(escapeHtml(JSON.stringify(example.result, null, 2)));
-      expect(html).toContain(escapeHtml(text.discovery[tool].boundary));
+      expect(html).toContain(escapeHtml(text.discovery[tool.page].boundary));
     }
     for (const language of [...supportedLocales, 'x-default'] as const) {
       const alternate: Locale = language === 'x-default' ? 'en' : language;

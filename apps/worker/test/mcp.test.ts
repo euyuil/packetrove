@@ -14,7 +14,6 @@ import {
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
   RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema, toolCatalog,
 } from '@packetrove/contracts';
-import { mcpExamples } from '../../web/src/mcp-examples';
 
 const workerFetch: typeof fetch = async (input, init) => {
   const request = new Request(input, init);
@@ -237,14 +236,15 @@ describe('stateless MCP in the Workers runtime', () => {
       expect(ErrorResponseSchema.safeParse(JSON.parse(content.text)).success).toBe(true);
     } finally { await client.close(); }
   });
-  it.each(Object.values(mcpExamples))('executes the website guide example for $name', async example => {
-    const client = await connectedClient('http://localhost/mcp', undefined, mcpExamples.ip.result.ip);
+  it.each(catalogTools)('executes the website guide example for $mcp.name', async tool => {
+    const example = tool.example;
+    const client = await connectedClient('http://localhost/mcp', undefined, toolCatalog.ip.example.result.ip);
     try {
-      expect((await client.listTools()).tools.some(tool => tool.name === example.name)).toBe(true);
-      const response = await client.callTool({ name: example.name, arguments: example.arguments });
+      expect((await client.listTools()).tools.some(entry => entry.name === tool.mcp.name)).toBe(true);
+      const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
       expect(response.isError).not.toBe(true);
       expect(response.structuredContent).toEqual(example.result);
-      expectSuccessContent(response.content, catalogTools.find(tool => tool.mcp.name === example.name)!, example.result);
+      expectSuccessContent(response.content, tool, example.result);
       const content = response.content?.[0];
       if (content?.type !== 'text') throw new Error('Missing result content');
       expect(JSON.parse(content.text)).toEqual(example.result);
