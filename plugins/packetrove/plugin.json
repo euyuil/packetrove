@@ -30,6 +30,59 @@
         ],
         "composerIcon": "./assets/logo.png",
         "logo": "./assets/logo.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Find a covering CIDR and explain additional coverage",
+              "prompt": "Use Packetrove to find the smallest single CIDR covering 203.0.113.1, 203.0.113.2, and 203.0.113.6. Explain which additional addresses it covers.",
+              "tools_triggered": "cidr-cover",
+              "expected_behavior": "Call cidr-cover with inputs [\"203.0.113.1\", \"203.0.113.2\", \"203.0.113.6\"]. Return 203.0.113.0/29 with the inclusive range 203.0.113.0 through 203.0.113.7. Report exact inputAddressCount \"3\", coveredAddressCount \"8\", and additionalAddressCount \"5\". Explain that the additional addresses are 203.0.113.0, 203.0.113.3, 203.0.113.4, 203.0.113.5, and 203.0.113.7, and that all addresses count, including network and broadcast addresses. Advise reviewing the additional coverage before using this CIDR in an allowlist or blocklist."
+            },
+            {
+              "description": "Subtract an excluded subnet for a WireGuard AllowedIPs draft",
+              "prompt": "Use Packetrove to draft WireGuard AllowedIPs for 203.0.113.0/24 excluding 203.0.113.64/26. Return the exact remaining CIDRs and address counts.",
+              "tools_triggered": "cidr-subtract",
+              "expected_behavior": "Call cidr-subtract with include [\"203.0.113.0/24\"] and exclude [\"203.0.113.64/26\"]. Return 203.0.113.0/26 and 203.0.113.128/25, in that order. Report exact includedAddressCount \"256\", removedAddressCount \"64\", and remainingAddressCount \"192\". Explain that the CIDRs cover exactly the remaining address space without adding addresses. Present the result as a configuration draft; do not claim to have edited or applied a WireGuard configuration."
+            },
+            {
+              "description": "Convert an inclusive IPv4 range to an exact CIDR list",
+              "prompt": "Use Packetrove to convert the inclusive range from 203.0.113.11 to 203.0.113.23 into its minimal exact CIDR list. Explain the address count.",
+              "tools_triggered": "range-to-cidrs",
+              "expected_behavior": "Call range-to-cidrs with start \"203.0.113.11\" and end \"203.0.113.23\". Return 203.0.113.11/32, 203.0.113.12/30, and 203.0.113.16/29, in that order, with cidrCount 3 and exact addressCount \"13\". Explain that both endpoints are included and the CIDRs cover exactly the requested range without gaps, overlaps, or additional addresses."
+            },
+            {
+              "description": "Preserve the exact address count for large IPv6 networks",
+              "prompt": "Use Packetrove to find the smallest single CIDR covering 2001:db8::/64 and 2001:db8:0:1::/64. Give the exact total and additional address counts without rounding.",
+              "tools_triggered": "cidr-cover",
+              "expected_behavior": "Call cidr-cover with inputs [\"2001:db8::/64\", \"2001:db8:0:1::/64\"]. Return 2001:db8::/63 with exact inputAddressCount and coveredAddressCount both \"36893488147419103232\" and additionalAddressCount \"0\". Preserve the full decimal count without rounding or replacing it with a scientific-notation approximation. Explain that the two adjacent /64 networks are covered without adding addresses."
+            },
+            {
+              "description": "Explain the address family and boundary of the MCP caller connection",
+              "prompt": "Use Packetrove to inspect the connection making this MCP call. Do not display the IP address; report only whether the observed connection uses IPv4 or IPv6 and explain whose connection this measures.",
+              "tools_triggered": "public-ip",
+              "expected_behavior": "Call public-ip with an empty object. Check that the returned ip is valid and agrees with the returned family, then report only the observed IPv4 or IPv6 family in the answer. Do not display the IP address or assume a fixed family. Explain that this observes the connection making the MCP call: a hosted AI client may expose its platform's exit address, and a VPN or proxy can change the observed path. One call observes one address family and does not prove the user's device IP. If the user needs their device connection, direct them to the Packetrove website or a CLI running on that device. Keep the actual observed IP out of public test records and recordings, including expanded tool output."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Reject one covering CIDR for mixed IPv4 and IPv6 inputs",
+              "prompt": "Use Packetrove to put 203.0.113.1 and 2001:db8::1 into one covering CIDR containing both addresses.",
+              "expected_behavior": "Explain that IPv4 and IPv6 cannot be combined into one CIDR and ask the user to choose one family or calculate each family separately. Clarification before a tool call is acceptable. If cidr-cover is called with both inputs, it must return an MCP error with code MIXED_ADDRESS_FAMILIES and issues[0].index 1; explain that error without fabricating a successful result. Do not silently discard an input, convert an address into the other family, or claim that one CIDR covers both."
+            },
+            {
+              "description": "Reject reversed range endpoints without silently swapping them",
+              "prompt": "Use Packetrove to convert the inclusive range starting at 203.0.113.23 and ending at 203.0.113.11 into CIDRs. Keep the endpoints in the order I provided.",
+              "expected_behavior": "Explain that the end address precedes the start address and ask the user to correct or confirm the endpoints. Clarification before a tool call is acceptable. If range-to-cidrs is called with the given order, it must return an MCP error with code INVALID_INPUT and issues[0].field end; explain that error without fabricating a successful result. Do not automatically swap the endpoints, ignore the requested order, or present a successful CIDR list for the reversed range."
+            },
+            {
+              "description": "Decline an unsupported Cloudflare firewall change",
+              "prompt": "Use Packetrove to add 203.0.113.0/24 directly to my Cloudflare firewall and save the rule. Confirm when it is done.",
+              "expected_behavior": "Explain that Packetrove provides calculations and connection lookups and cannot change or save Cloudflare firewall rules. Do not invoke an unrelated Packetrove calculator as a substitute for this action or claim that a rule was created or saved. Offer manual configuration guidance or ask whether the user wants help preparing the rule, without claiming access to the account."
+            }
+          ]
+        }
       }
     }
   }

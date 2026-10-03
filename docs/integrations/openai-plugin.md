@@ -21,8 +21,11 @@ The website implements localized support, terms, and privacy pages at `/support`
 manifest. Verify that the reviewed revision has deployed and all three public
 pages are accessible before uploading or using those URLs in a submission.
 Source validation does not establish public availability or publisher verification.
-Review cases, a demo recording, release notes, domain verification, and a
-successful OpenAI tool scan are further submission prerequisites. See the current
+The source manifest includes five positive and three negative review cases.
+These are prompts and expected behavior, not evidence of OpenAI client acceptance.
+Executing those cases in the intended clients, a demo recording, release notes,
+domain verification, and a successful OpenAI tool scan are further submission
+prerequisites. See the current
 [OpenAI submission requirements](https://developers.openai.com/plugins/deploy/submission)
 before preparing a submission.
 
@@ -38,8 +41,9 @@ plugins/packetrove/
 ```
 
 `plugin.json` uses the portable Agent Plugins schema. OpenAI presentation fields
-are under `extensions.com.openai.interface`. The package name is `packetrove`,
-and its display name, service description, and website match the shared
+are under `extensions.com.openai.interface`, and review cases are under the
+sibling `extensions.com.openai.review.test_cases` object. The package name is
+`packetrove`, and its display name, service description, and website match the shared
 [Packetrove identity](../../packages/contracts/src/identity.ts).
 
 `mcp.json` declares one remote server without authentication headers or local
@@ -67,8 +71,17 @@ pnpm plugin:build
 [pinned Agent Plugins 1.0.0 schemas](../../scripts/schemas/agent-plugins/README.md),
 then checks the reviewed MCP-only subset, shared identity and endpoint, unified
 product version, exact MIT license, listing text limits, HTTPS URLs, and local
-image references. It fully decodes the square PNG, allowing 48–4096 pixels and
-at most 5 MiB. The current package intentionally supports PNG only. Text files
+image references. When review cases are declared, this repository's supported
+subset requires complete lists of exactly five positive and three negative
+cases. Every case requires supported nonempty `description` and `prompt` text;
+positive cases also require `tools_triggered` and `expected_behavior`.
+Descriptions are limited to 4000 characters. Tool names must match the shared
+catalog, with multiple names separated by commas. Negative cases may omit tool
+names or expected behavior; the source cases include expected behavior to make
+clarification and fallback outcomes explicit. Attachments, demo URLs, publication
+metadata, reviewer credentials, and other unreviewed fields are outside the
+current supported subset. It fully decodes the square PNG, allowing 48–4096 pixels
+and at most 5 MiB. The current package intentionally supports PNG only. Text files
 are limited to 64 KiB each. Unexpected files, directories, symbolic links,
 authentication headers, local commands, skills, hooks, and app references fail
 validation.
@@ -185,6 +198,43 @@ connection boundary. Record the client, date, source revision, and outcome.
 Direct MCP smoke checks do not establish successful OpenAI package import or
 target-client acceptance.
 
+## Review cases and execution records
+
+Maintain the English review prompts and expected behavior in
+[`plugin.json`](../../plugins/packetrove/plugin.json), under
+`extensions.com.openai.review.test_cases`. The positive list covers IPv4 covering
+CIDRs with additional coverage, exact subtraction for an AllowedIPs draft,
+inclusive range conversion, exact IPv6 counts, and the public-IP connection
+boundary. The negative list covers mixed address families, reversed endpoints,
+and an unsupported firewall change. The list order identifies cases as P1–P5
+and N1–N3 in execution records.
+
+The cases travel inside the eventual plugin ZIP. OpenAI imports them as read-only
+review information; change the source and upload a reviewed replacement ZIP to
+update them. Review information belongs alongside `interface`, not inside it.
+OpenAI accepts partial draft lists on upload; the repository validator deliberately
+requires complete lists whenever this object is supplied. See the authoritative
+[case fields and import behavior](https://developers.openai.com/plugins/deploy/submission#configure-onboarding-review-and-publication).
+
+Run each case in a new conversation with Packetrove enabled in the intended
+OpenAI client. Positive cases must select the expected MCP tool and match its
+observable result; a manually calculated answer alone does not pass. The first
+two negative cases may clarify before calling a tool or correctly explain the
+specified structured error after a call. The unsupported firewall action must
+not be reported as completed. For P5, check the response shape privately and
+report the observed address family and connection boundary without displaying
+the actual IP. Redact that IP from recordings, including expanded tool output.
+
+Keep execution evidence separate from the package. For each run, record the
+client and available version, UTC date, full source revision, package checksum
+when available, and each case's identifier, actual tool calls and arguments,
+observed result, pass/fail outcome, and conversation or redacted recording link.
+Use the documentation inputs from the cases and exclude private network inputs
+and actual lookup IPs. Do not mark a case as passed until it has been executed in
+the recorded client. Offline manifest checks and local calculation checks do not
+establish client acceptance; OpenAI client execution of these source cases is
+pending.
+
 ## Manual submission runbook
 
 Follow the current
@@ -200,11 +250,12 @@ These actions require the owner's separate authorization:
    Build from a reviewed main revision with `require_listing` enabled.
 3. Upload the verified inner ZIP, resolve metadata findings, connect the anonymous
    MCP endpoint, complete the portal's domain challenge, and inspect the tool scan.
-4. Prepare five positive and three negative cases, a reviewer-accessible demo
-   recording, and release notes. Use documentation addresses. Supply information
-   in editable review fields; fields managed by a ZIP require a reviewed package
-   update. The current validator accepts listing fields only, so adding packaged
-   review/publication objects requires extending that reviewed subset.
+4. Execute the five positive and three negative manifest cases and retain
+   separate execution evidence. Prepare a reviewer-accessible demo recording and
+   release notes. Imported cases are managed by the ZIP and require a reviewed
+   replacement package to change. Supply the demo URL and release notes in the
+   editable portal fields; packaging those fields requires extending the
+   validator's reviewed subset first.
 5. The owner completes required attestations, submits for review, resolves
    feedback, and chooses when to publish the approved version.
 
