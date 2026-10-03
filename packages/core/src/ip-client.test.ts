@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { lookupPublicIp, MAX_PUBLIC_IP_RESPONSE_BYTES } from './index';
+import { BodyLimitError, lookupPublicIp, MAX_PUBLIC_IP_RESPONSE_BYTES } from './index';
 
 const apiModes: Array<{ name: string; missing: Array<'any' | 'timeout'> }> = [
   { name: 'native helpers available', missing: [] },
@@ -93,6 +93,16 @@ describe('shared public IP HTTP client', () => {
       },
     }), { status: 503 }));
     await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'CLIENT_IP_UNAVAILABLE', message: '�€' });
+  });
+  it('keeps a caller-supplied size-error abort reason classified as NETWORK_ERROR', async () => {
+    const reason = new BodyLimitError();
+    const caller = new AbortController();
+    caller.abort(reason);
+    // Native fetch rejects the already-aborted signal without making a request.
+    const fetch = vi.fn(globalThis.fetch);
+    vi.stubGlobal('fetch', fetch);
+    await expect(lookupPublicIp('http://localhost/v1/public-ip', caller.signal)).rejects.toMatchObject({ code: 'NETWORK_ERROR' });
+    await expect(fetch.mock.results[0]!.value).rejects.toBe(reason);
   });
   it.each([
     Response.json({ ip: '2001:db8::1', family: 'ipv4' }),

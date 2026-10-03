@@ -101,7 +101,7 @@ export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSigna
     response = await fetch(endpoint, options);
     text = await readBoundedText(response.body, MAX_PUBLIC_IP_RESPONSE_BYTES);
   } catch (error) {
-    if (error instanceof BodyLimitError) {
+    if (error instanceof BodyLimitError && !request.signal.aborted) {
       throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
     }
     throw new ToolError('NETWORK_ERROR', 'Unable to reach the IP lookup service. Check your connection and try again.');
