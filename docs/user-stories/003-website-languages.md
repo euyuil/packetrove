@@ -9,7 +9,7 @@ network results and share a link in my preferred language.
 
 ## Website scope
 
-- Translate the homepage, navigation, CIDR calculator, public IP tool, API
+- Translate the homepage, navigation, every catalog tool page, API
   documentation shell, MCP connection guide, tool questions and MCP examples,
   loading states, clipboard feedback, accessible labels,
   and the application-rendered not-found page.
@@ -17,7 +17,8 @@ network results and share a link in my preferred language.
   `/es` for Spanish (`es`), `/de` for German (`de`), `/ja` for Japanese (`ja`),
   `/fr` for French (`fr`), `/pt` for Portuguese (`pt-BR`), `/ru` for Russian (`ru`),
   `/ko` for Korean (`ko`), and `/it` for Italian (`it`).
-  Each prefix has a homepage, `/cidr-cover`, `/cidr-subtract`, `/public-ip`, `/docs/api`, and `/docs/mcp` page.
+  Each prefix has a homepage, every tool page from the
+  [shared catalog](../tool-catalog.md), `/docs/api`, and `/docs/mcp`.
   Reserve short language codes and language-tag names for locale prefixes;
   choose descriptive tool URL names according to `AGENTS.md`. Legacy tool paths
   follow the catalog's [name migration](../tool-catalog.md#migration-to-flat-names),
@@ -80,6 +81,14 @@ network results and share a link in my preferred language.
   entries. Use self-referencing canonical URLs and reciprocal links for all
   registered locales, plus `x-default` pointing to English. Update metadata during in-page
   navigation.
+  The homepage title presents Packetrove as network tools for humans and agents,
+  using the localized project tagline. Homepage, API, and MCP descriptions
+  explain the product purpose, intended audience, and interface workflows.
+  Do not enumerate individual tools, tool counts, or a growing capability list
+  in these descriptions. Adding a tool must not require expanding this prose.
+  The shared catalog and tool pages carry the inventory and operation details.
+  API and MCP guide titles identify their interfaces; individual tool titles
+  identify the specific operation.
 - Prerender every registered page in every supported locale at build time,
   including headings, explanations, links, and examples. Hydrate the same React components in the
   browser without losing page state during navigation or language changes.
