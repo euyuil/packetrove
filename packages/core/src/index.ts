@@ -92,6 +92,7 @@ export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSigna
   const timeout = setTimeout(() => request.abort(new DOMException('The operation timed out.', 'TimeoutError')), 10_000);
   let response: Response;
   let text: string;
+  const invalidResponseMessage = 'The IP lookup service returned an invalid response. Please try again.';
   try {
     const options = {
       headers: { accept: 'application/json' },
@@ -102,7 +103,7 @@ export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSigna
     text = await readBoundedText(response.body, MAX_PUBLIC_IP_RESPONSE_BYTES);
   } catch (error) {
     if (error instanceof BodyLimitError && !request.signal.aborted) {
-      throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
+      throw new ToolError('INVALID_RESPONSE', invalidResponseMessage);
     }
     throw new ToolError('NETWORK_ERROR', 'Unable to reach the IP lookup service. Check your connection and try again.');
   } finally {
@@ -111,7 +112,7 @@ export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSigna
   }
   let body: unknown;
   try { body = JSON.parse(text) as unknown; } catch {
-    throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
+    throw new ToolError('INVALID_RESPONSE', invalidResponseMessage);
   }
   if (!response.ok) {
     const failure = ErrorResponseSchema.safeParse(body);
@@ -120,7 +121,7 @@ export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSigna
   }
   const result = PublicIpResultSchema.safeParse(body);
   if (!result.success) {
-    throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
+    throw new ToolError('INVALID_RESPONSE', invalidResponseMessage);
   }
   return result.data;
 }
