@@ -20,7 +20,9 @@ export function createMcpServer(context: McpRequestContext) {
     }, async (request: unknown): Promise<CallToolResult> => {
       try {
         const result = executeTool(tool.page, request, context.requestInfo?.headers);
-        return { structuredContent: result, content: [{ type: 'text', text: JSON.stringify(result) }] };
+        return { structuredContent: result, content: [
+          { type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink,
+        ] };
       } catch (error) {
         const failure = error instanceof ToolError ? error
           : new ToolError('INTERNAL_ERROR', 'An unexpected error occurred.');

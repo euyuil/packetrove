@@ -78,6 +78,8 @@ describe('MCP examples in production HTML', () => {
         expect(section.textContent).not.toMatch(/\{\{[^{}]*\}\}/);
         const args = JSON.parse(section.querySelector('[data-mcp-example="arguments"]')!.textContent!);
         const result = JSON.parse(section.querySelector('[data-mcp-example="result"]')!.textContent!);
+        const resourceLink = JSON.parse(section.querySelector('[data-mcp-example="resource-link"]')!.textContent!);
+        expect(resourceLink).toEqual(definition.mcp.resultLink);
         if (name === mcpExamples.cidr.name) {
           const request = CidrCoverRequestSchema.parse(args);
           expect(CidrCoverResultSchema.parse(result)).toEqual(smallestCoveringCidr(request));
@@ -96,6 +98,10 @@ describe('MCP examples in production HTML', () => {
           expect(PublicIpRequestSchema.parse(args)).toEqual({});
           expect(PublicIpResultSchema.parse(result)).toEqual(mcpExamples.ip.result);
         }
+      }
+      if (page.page === 'mcp') {
+        expect(document.querySelector('main')!.textContent).toContain(resources[page.locale].translation.mcp.resultLinks
+          .replace(/<\/?code>/g, ''));
       }
     },
   );

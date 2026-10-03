@@ -303,6 +303,8 @@ export const ja = {
     exampleResult: "文書用アドレスを使った結果の例",
     errorsTitle: "結果の読み取りとエラー処理",
     results: "<code>structuredContent</code> またはテキストブロックの JSON を読み取ってください。アドレス数は十進数の文字列か任意精度整数として保持してください。大きな IPv6 の値を浮動小数点数に変換すると精度が失われます。",
+    resourceLinkLabel: "成功した応答に含まれる任意のツールページリンク",
+    resultLinks: "成功した応答は <code>structuredContent</code> と最初の JSON テキストブロックに結果を保持し、英語のツールページへの任意の <code>resource_link</code> を追加します。リンクには入力や結果を含めず、計算内容を復元しません。表示、無視、リンクを開くかどうかはクライアントが決定し、自動表示や引用は保証されません。公開 IP ページを開くとブラウザの新しい接続を確認するため、MCP クライアントの接続とは異なる場合があります。エラー応答にツールページリンクは含まれません。",
     errors: "<code>isError</code> が true の場合は再試行前にエラー JSON を確認してください。ユーザーの情報で <code>INVALID_INPUT</code> と <code>MIXED_ADDRESS_FAMILIES</code> を修正します。<code>CLIENT_IP_UNAVAILABLE</code> は信頼できる接続情報がないことを示すため、アドレスを推測しないでください。",
     technicalGuide: "リポジトリの MCP 技術ガイドを読む（英語）"
   },

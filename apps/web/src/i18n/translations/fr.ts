@@ -288,6 +288,8 @@ export const fr = {
     exampleResult: "Exemple de résultat avec des adresses de documentation",
     errorsTitle: "Lire les résultats et traiter les erreurs",
     results: "Lisez <code>structuredContent</code> ou le JSON du bloc de texte. Conservez les nombres d’adresses sous forme de chaînes décimales ou d’entiers de précision arbitraire ; convertir de grands comptes IPv6 en nombres à virgule flottante perd de la précision.",
+    resourceLinkLabel: "Lien facultatif vers l’outil dans les réponses réussies",
+    resultLinks: "Les réponses réussies conservent le résultat dans <code>structuredContent</code> et dans le premier bloc de texte JSON, puis ajoutent un <code>resource_link</code> facultatif vers la page anglaise de l’outil. Les liens ne contiennent ni entrées ni résultats et ne restaurent pas le calcul. Chaque client décide d’afficher, d’ignorer ou d’ouvrir les liens ; leur affichage ou citation automatique n’est pas garanti. Ouvrir la page d’IP publique vérifie une nouvelle connexion du navigateur, qui peut différer de celle du client MCP. Les erreurs ne comportent pas de lien vers l’outil.",
     errors: "Si <code>isError</code> vaut true, lisez le JSON d’erreur avant de réessayer. Corrigez <code>INVALID_INPUT</code> et <code>MIXED_ADDRESS_FAMILIES</code> à partir des informations de l’utilisateur. <code>CLIENT_IP_UNAVAILABLE</code> indique l’absence de métadonnées de connexion fiables ; n’inventez pas d’adresse.",
     technicalGuide: "Lire le guide technique MCP du dépôt (en anglais)"
   },

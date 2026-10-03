@@ -101,6 +101,15 @@ alone does not establish visual presentation.
 The generated technical guide records dated manual client observations;
 maintain those English verification notes in `scripts/mcp-guide-markdown.ts`.
 
+Each entry's `mcp.resultLinkDescription` also supplies the optional successful
+result link. `defineTool` derives its URI from the shared public website origin
+and canonical tool identifier, with the catalog title and `text/html` metadata.
+Keep this destination independent of inputs, results, connection metadata, and
+request language; the default is the English tool page. The server and generated
+guide consume the same link. See the [MCP guide](integrations/mcp.md) for result
+decoding and the [discovery story](user-stories/004-ai-tool-discovery.md#result-link-compatibility-observations)
+for observed compatibility and presentation limits.
+
 ## Adding or changing a tool
 
 1. Define its request and result schemas and documentation examples in the

@@ -31,6 +31,8 @@ export function ToolMcpSection({ tool, onNavigate, guide = false }: {
     <Code block data-mcp-example="arguments">{JSON.stringify(example.arguments, null, 2)}</Code>
     <Text size="sm" fw={600}>{t($ => $.mcp.exampleResult)}</Text>
     <Code block data-mcp-example="result">{JSON.stringify(example.result, null, 2)}</Code>
+    <Text size="sm" fw={600}>{t($ => $.mcp.resourceLinkLabel)}</Text>
+    <Code block data-mcp-example="resource-link">{JSON.stringify(content.resourceLink, null, 2)}</Code>
     <Text size="sm" c="dimmed">{content.result}</Text>
     <Text size="sm" c="dimmed">{content.boundary}</Text>
     {content.expansion && <Text size="sm" c="dimmed">{content.expansion}</Text>}

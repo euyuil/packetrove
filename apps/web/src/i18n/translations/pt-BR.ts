@@ -288,6 +288,8 @@ export const ptBR = {
     exampleResult: "Exemplo de resultado com endereços de documentação",
     errorsTitle: "Ler resultados e tratar erros",
     results: "Leia <code>structuredContent</code> ou o JSON do bloco de texto. Mantenha as contagens como strings decimais ou inteiros de precisão arbitrária; converter grandes contagens IPv6 em números de ponto flutuante perde precisão.",
+    resourceLinkLabel: "Link opcional da ferramenta nas respostas bem-sucedidas",
+    resultLinks: "As respostas bem-sucedidas mantêm o resultado em <code>structuredContent</code> e no primeiro bloco de texto JSON, e acrescentam um <code>resource_link</code> opcional para a página da ferramenta em inglês. Os links não contêm entradas nem resultados e não restauram o cálculo. Cada cliente decide se exibe, ignora ou abre os links; a exibição ou citação automática não é garantida. Abrir a página de IP público verifica uma nova conexão do navegador, que pode ser diferente da conexão do cliente MCP. Os erros não incluem links da ferramenta.",
     errors: "Se <code>isError</code> for true, leia o JSON do erro antes de tentar novamente. Corrija <code>INVALID_INPUT</code> e <code>MIXED_ADDRESS_FAMILIES</code> com as informações do usuário. <code>CLIENT_IP_UNAVAILABLE</code> indica que faltam metadados confiáveis da conexão; não invente um endereço.",
     technicalGuide: "Ler o guia técnico MCP do repositório (em inglês)"
   },

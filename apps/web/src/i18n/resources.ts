@@ -295,6 +295,8 @@ export const en = {
     exampleResult: "Example result using documentation addresses",
     errorsTitle: "Read results and handle errors",
     results: "Read <code>structuredContent</code>, or the JSON in the text content block. Keep address counts as decimal strings or arbitrary-precision integers; converting large IPv6 counts to floating-point numbers loses precision.",
+    resourceLinkLabel: "Optional tool page link in successful responses",
+    resultLinks: "Successful responses keep the result in <code>structuredContent</code> and the first JSON text block, then add an optional <code>resource_link</code> to the English tool page. Links contain no inputs or results and do not restore your calculation. Clients choose whether to display, ignore, or open links; automatic rendering or citation is not guaranteed. Opening the public-IP page checks a new browser connection, which may differ from the MCP caller connection. Errors contain no tool page link.",
     errors: "If <code>isError</code> is true, read the error JSON before retrying. Correct <code>INVALID_INPUT</code> and <code>MIXED_ADDRESS_FAMILIES</code> using the user’s information. <code>CLIENT_IP_UNAVAILABLE</code> means trusted connection metadata is missing; do not invent an address.",
     technicalGuide: "Read the technical MCP guide in the repository (English)"
   },
@@ -614,6 +616,8 @@ export const zhHans = {
     exampleResult: "使用文档专用地址的示例结果",
     errorsTitle: "读取结果与处理错误",
     results: "读取 <code>structuredContent</code>，或解析文本内容块中的 JSON。地址计数应保留为十进制字符串或任意精度整数；将很大的 IPv6 计数转换为浮点数会丢失精度。",
+    resourceLinkLabel: "成功响应中的可选工具页面链接",
+    resultLinks: "成功响应会保留 <code>structuredContent</code> 和第一个 JSON 文本内容块中的结果，再附上一个指向英文工具页面的可选 <code>resource_link</code>。链接不含输入或结果，也不会恢复你的计算。是否显示、忽略或打开链接由客户端决定，不保证自动展示或引用。打开公网 IP 页面会检查浏览器的新连接，可能与 MCP 调用者的连接不同。错误响应不附工具页面链接。",
     errors: "<code>isError</code> 为 true 时，先读取错误 JSON，再决定是否重试。根据用户提供的信息修正 <code>INVALID_INPUT</code> 和 <code>MIXED_ADDRESS_FAMILIES</code>。<code>CLIENT_IP_UNAVAILABLE</code> 表示缺少可信的连接信息，请勿推测地址。",
     technicalGuide: "阅读仓库中的 MCP 技术指南（英文）"
   },

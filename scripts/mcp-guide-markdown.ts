@@ -31,11 +31,12 @@ export function createMcpGuideMarkdown(productVersion?: string) {
       `${guide.labels.serverAddress}: \`${guide.serverUrl}\``, tool.inputs,
       `### ${guide.labels.arguments}`, code('json', JSON.stringify(tool.example.arguments, null, 2)),
       `### ${guide.labels.exampleResult}`, code('json', JSON.stringify(tool.example.result, null, 2)),
+      `### ${guide.labels.resourceLink}`, code('json', JSON.stringify(tool.resourceLink, null, 2)),
       tool.result, tool.boundary);
     if (tool.expansion) parts.push(tool.expansion);
     parts.push(`[${tool.openTool}](${WEBSITE_ORIGIN}${pagePaths[tool.tool]})`);
   }
-  parts.push(`## ${guide.errorsTitle}`, text(guide.results), text(guide.errors), guide.httpErrors,
+  parts.push(`## ${guide.errorsTitle}`, text(guide.results), text(guide.resultLinks), text(guide.errors), guide.httpErrors,
     `## ${guide.sdk.title}`, text(guide.sdk.description), code('js', guide.sdk.code), code('sh', guide.sdk.command), text(guide.sdk.local),
     `## ${guide.deployment.title}`, ...guide.deployment.paragraphs.map(text),
     `[${guide.deployment.label}](../deployment.md)`);
@@ -45,6 +46,7 @@ export function createMcpGuideMarkdown(productVersion?: string) {
       + '| --- | --- | --- |\n'
       + '| Codex CLI 0.160.0 | `/mcp` and `/mcp verbose` | Connected and discovered four tools. Displayed the local configuration name, connection status, tool count, and tool names; did not display the advertised server title, release version, description, website, or PNG icon. |\n'
       + '| Claude Code 2.1.288 | `claude mcp get` using a temporary isolated configuration | Connected. Displayed the local configuration name, scope, status, transport, and endpoint URL; did not display the advertised server title, release version, description, website, or PNG icon on this surface. Its interactive `/mcp` view was not checked because the isolated client stopped at account login. |',
-    'The current `@modelcontextprotocol/client@2.0.0` and legacy `@modelcontextprotocol/sdk@1.30.0` integration tests separately verify complete serialized identity, discovery, exact tool results, and compatibility when optional identity fields are ignored. SDK acceptance does not establish visual rendering. No model prompt or new account authorization was used for the manual checks.');
+    'The current `@modelcontextprotocol/client@2.0.0` and legacy `@modelcontextprotocol/sdk@1.30.0` integration tests separately verify complete serialized identity, discovery, exact tool results, and compatibility when optional identity fields are ignored. SDK acceptance does not establish visual rendering. No model prompt or new account authorization was used for the manual checks.',
+    'Actual Codex app-server result handling and the remaining result-link presentation limits are recorded in the [discovery story](../user-stories/004-ai-tool-discovery.md#result-link-compatibility-observations). Links survive the tested raw client responses; TUI, desktop, and Claude Code result rendering remain unverified.');
   return parts.join('\n\n') + '\n';
 }

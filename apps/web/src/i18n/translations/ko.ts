@@ -287,6 +287,8 @@ export const ko = {
     exampleResult: '문서용 주소를 사용한 예제 결과',
     errorsTitle: '결과 읽기 및 오류 처리',
     results: '<code>structuredContent</code> 또는 텍스트 블록의 JSON을 읽으세요. 주소 수는 십진수 문자열이나 임의 정밀도 정수로 유지하세요. 큰 IPv6 주소 수를 부동 소수점 숫자로 변환하면 정확도가 손실됩니다.',
+    resourceLinkLabel: "성공 응답의 선택적 도구 페이지 링크",
+    resultLinks: "성공 응답은 <code>structuredContent</code>와 첫 번째 JSON 텍스트 블록에 결과를 유지하고 영어 도구 페이지로 연결되는 선택적 <code>resource_link</code>를 추가합니다. 링크에는 입력이나 결과가 없으며 계산을 복원하지 않습니다. 링크를 표시하거나 무시하거나 열지는 클라이언트가 결정하며 자동 표시나 인용은 보장되지 않습니다. 공용 IP 페이지를 열면 브라우저의 새 연결을 확인하므로 MCP 호출자의 연결과 다를 수 있습니다. 오류 응답에는 도구 페이지 링크가 없습니다.",
     errors: '<code>isError</code>가 true이면 재시도 전에 오류 JSON을 읽으세요. 사용자 정보를 바탕으로 <code>INVALID_INPUT</code> 및 <code>MIXED_ADDRESS_FAMILIES</code>를 수정하세요. <code>CLIENT_IP_UNAVAILABLE</code>은 신뢰할 수 있는 연결 메타데이터가 없다는 뜻입니다. 주소를 임의로 만들지 마세요.',
     technicalGuide: '저장소의 MCP 기술 가이드 읽기 (영어)',
   },
