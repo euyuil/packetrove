@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, screen, within } from '@testing-library/react'
 import { useState } from 'react';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { PublicIpTool } from './PublicIpTool';
-import { render } from './test-utils';
+import { deferred, render } from './test-utils';
 
 let originalClipboard: PropertyDescriptor | undefined;
 beforeEach(() => { originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard'); });
@@ -14,13 +14,6 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks(); vi.unstubAllGlobals();
 });
-
-function deferred<Value>() {
-  let resolve!: (value: Value) => void;
-  let reject!: (reason: Error) => void;
-  const promise = new Promise<Value>((complete, fail) => { resolve = complete; reject = fail; });
-  return { promise, resolve, reject };
-}
 
 function clipboard(writeText: ReturnType<typeof vi.fn>) {
   Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
