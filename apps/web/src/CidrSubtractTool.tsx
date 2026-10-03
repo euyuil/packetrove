@@ -179,7 +179,7 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
       <Text size="sm" c="dimmed">{t($ => $.subtract.review)}</Text>
     </Stack>
     <CidrSubtractExamples />
-    <ToolQuestions tool="subtract" onNavigate={onNavigate} />
+    <ToolQuestions tool="subtract" />
     <ToolMcpSection tool="subtract" {...(onNavigate ? { onNavigate } : {})} />
   </Stack>;
 }

@@ -1,4 +1,3 @@
-import type { MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Text, Title } from '@mantine/core';
 import type { ToolPage } from '@packetrove/contracts';
@@ -6,7 +5,6 @@ import { ToolDisclosure } from './ToolDisclosure';
 
 export function ToolQuestions({ tool }: {
   tool: ToolPage;
-  onNavigate?: MouseEventHandler<HTMLAnchorElement> | undefined;
 }) {
   const { t } = useTranslation();
   const questions = Object.values(t($ => $.discovery[tool].questions, { returnObjects: true }));
