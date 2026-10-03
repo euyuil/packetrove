@@ -34,7 +34,7 @@ export const es = {
         },
         "logs": {
             "title": "Registros operativos de la aplicación",
-            "body": "Los fallos inesperados de solicitudes generan un nombre de evento y un código de error fijos para diagnosticar el servicio. Estos eventos generados por la aplicación no contienen entradas de herramientas, resultados, direcciones IP devueltas, cabeceras de solicitudes ni detalles de excepciones sin filtrar. No creamos perfiles de usuarios, no seguimos a usuarios entre sitios, no vendemos datos de herramientas ni los usamos para publicidad o entrenamiento de modelos."
+            "body": "Al finalizar una función de herramienta MCP se genera un evento operativo con un nombre fijo, el nombre de la herramienta, éxito o error y un código de error controlado en caso de fallo. Usamos estos eventos para contar ejecuciones y diagnosticar errores. Los reintentos cuentan por separado; el descubrimiento y las solicitudes rechazadas antes de ejecutar la función no se incluyen. Los fallos HTTP inesperados generan un evento y un código fijos. Estos eventos de la aplicación no contienen entradas, resultados, direcciones IP devueltas, cabeceras ni detalles de excepciones originales. No creamos perfiles, rastreamos entre sitios, vendemos datos de herramientas ni los usamos para publicidad o entrenamiento de modelos."
         },
         "providers": {
             "title": "Alojamiento, destinatarios y conservación",
@@ -332,6 +332,7 @@ export const es = {
     httpErrors: "Los errores de negocio usan el JSON de error compartido. El SDK de MCP valida el protocolo. El HTTP rechaza JSON inválido, tipos de contenido no admitidos y cuerpos demasiado grandes.",
     deploymentTitle: "Despliegue y límites de conexión",
     serverBehavior: "El servidor admite solicitudes modernas sin estado e inicialización, descubrimiento y llamadas del transporte Streamable HTTP anterior. No ofrece sesiones persistentes ni flujos de eventos independientes del servidor.",
+    operationalLogging: "Contamos las ejecuciones con eventos operativos que contienen el nombre de la herramienta, éxito o error y un código de error controlado. Excluyen entradas, resultados y direcciones consultadas. Cloudflare puede añadir metadatos de la solicitud; la política de privacidad explica el tratamiento y la conservación.",
     connectionPrivacy: "Los metadatos de la IP pública se leen en cada llamada y las instancias del servidor se aíslan entre clientes concurrentes. Los resultados y errores MCP usan Cache-Control: no-store, no-transform. La aplicación no conserva ni registra las direcciones consultadas.",
     toolMigration: "Los nombres anteriores no tienen alias de compatibilidad: {{toolRenames}}. Actualiza el descubrimiento de herramientas y las llamadas guardadas.",
     endpointMigration: "La ruta <code>/mcp</code> del sitio no es el servicio: GET devuelve 404 y POST 405, sin reenviar ni redirigir llamadas. Configura los clientes con <code>{{serverUrl}}</code>. En tu despliegue, actualiza los dominios y las listas exactas separadas de Host y Origin del navegador; se admiten clientes sin cabecera Origin.",

@@ -75,6 +75,10 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
   Browser and CLI lookups have a ten-second deadline and a 64 KiB response limit.
 - The application does not store or log returned IP addresses. Lookup results
   and errors are not cached.
+- MCP execution counts use operational events with the tool name, outcome, and
+  a controlled error code, excluding inputs and results. The
+  [deployment guide](docs/deployment.md#mcp-tool-execution-counts) describes the
+  free-tier limits and per-tool queries.
 - The [Privacy Policy](https://packetrove.com/privacy) describes remote input
   processing, browser storage, operational error logs, hosting, retention, and
   user choices. Cloudflare's platform processing is separate from application

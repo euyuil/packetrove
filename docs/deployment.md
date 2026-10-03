@@ -125,7 +125,7 @@ after the revision is deployed and the public page is verified.
 Unexpected HTTP failures emit only `request_failure` and the fixed
 `INTERNAL_ERROR` code. The application logger does not receive exception
 objects, request data, or results, and logging failure cannot replace the HTTP
-error response. This change does not enable MCP usage statistics.
+error response. MCP execution events use the separate controlled fields below.
 
 Application event fields are not a whitelist for Cloudflare's complete log
 record. Review actual observability settings and full persisted events before
@@ -135,6 +135,123 @@ December 1, 2026. This limit concerns operator-queryable Workers Logs, not all
 Cloudflare network or security processing. See the
 [Workers Logs documentation](https://developers.cloudflare.com/workers/observability/logs/workers-logs/)
 and [new Observability pricing](https://developers.cloudflare.com/observability/pricing/).
+
+## MCP tool execution counts
+
+After this revision is deployed, each completed MCP tool callback writes one
+structured event to the existing API Worker log:
+
+```json
+{"event":"mcp_tool_execution","tool":"cidr-cover","outcome":"success"}
+```
+
+A failed callback adds a controlled error code:
+
+```json
+{"event":"mcp_tool_execution","tool":"cidr-cover","outcome":"error","error_code":"INVALID_INPUT"}
+```
+
+The tool identifier comes from the catalog closure. No inputs, results,
+connection addresses, arbitrary headers, exception details, request identifiers,
+or duration fields are passed to this application logger. Recording an event
+uses the current invocation; it does not perform another API request or write
+to a database. The public policy, MCP guide, and tool descriptions disclose this
+logging in the same revision.
+
+### Counting boundary
+
+An execution is counted after the callback awaits its executor and prepares a
+success or error result. Retries count separately. Initialization,
+`tools/list`, unknown names, and schema rejections before the callback do not
+count. Local calculator requests deliberately reach core validation, so their
+invalid inputs count as errors. Public-IP schema rejections occur before its
+callback and do not count.
+
+Cancellation after entering the callback can produce `error` with
+`INTERNAL_ERROR` under the existing response contract. Error totals therefore
+include callback cancellations as well as validation and execution failures.
+
+`success` describes the callback before SDK output validation or response
+delivery. Runtime termination or a failed logging sink may omit an event.
+The result is recorded execution counts within the available log window, not
+unique-user counts, all attempts, guaranteed deliveries, or an audit ledger.
+
+### Log settings and free limits
+
+Only the API configuration enables persisted logs, with
+`logs.head_sampling_rate: 1`, `invocation_logs: false`, query-string redaction,
+and traces and Issues disabled. This sampling configuration does not override
+platform quotas. Disabling invocation logs removes the default invocation
+entry; it does not remove all metadata from console events or prevent runtime
+error capture. Query-string redaction removes URL query strings, not all
+platform fields.
+
+The pinned MCP SDK currently emits a fixed JSON-response-mode warning while
+creating a server. Such SDK and runtime logs can consume the same quota,
+including during discovery, but they are excluded from the tool-count query
+by its `event` filter. Do not globally replace `console` or change the MCP
+protocol to suppress that warning.
+
+| Workers Free period | Included ingestion | Queryable retention |
+| --- | --- | --- |
+| Until November 30, 2026 | 200,000 log events per day | 3 days |
+| From December 1, 2026 | 0.5 GB per day, shared at account level | 7 days |
+
+These are log allowances, separate from the Worker request allowance. The new
+meter includes complete uncompressed event bodies and enriched attributes.
+From December 1, Free stops ingesting after its daily allowance is exhausted
+and resumes at 00:00 UTC; existing records remain queryable for their retention
+window. Free does not have paid overage ingestion. See
+[current Workers Logs limits](https://developers.cloudflare.com/workers/observability/logs/workers-logs/)
+and [announced Observability pricing](https://developers.cloudflare.com/observability/pricing/).
+
+Confirm the actual Workers subscription before merging a change that enables
+production logs. A Free zone plan does not establish the Workers subscription.
+Paid subscriptions can charge overages; these Wrangler settings do not select
+Free billing or set a spending cap. This implementation neither upgrades the
+subscription nor adds a separate analytics service.
+
+### Per-tool queries
+
+After deployment, open Workers & Pages, select `packetrove-api`, then open
+Observability and Overview. Keep the query scoped to this Worker, select the
+last 24 hours, and use the raw event-count aggregation. Structured console
+objects expose the fields below for filtering and grouping.
+
+| Saved-query name | Filters | Group By |
+| --- | --- | --- |
+| MCP tool executions | `event = mcp_tool_execution` | `tool` |
+| MCP tool errors | `event = mcp_tool_execution`, `outcome = error` | `tool`, `error_code` |
+
+Sort by count descending and save each query under the listed name. Expand an
+event in the Events tab to inspect its application fields and complete platform
+envelope. The query excludes initialization, discovery, SDK warnings, and
+`request_failure` events. The default window is one day; retained history
+depends on the active plan. Saved queries do not extend retention or establish
+monthly history. See the
+[Query Builder guide](https://developers.cloudflare.com/workers/observability/query-builder/).
+
+### Production acceptance
+
+Before enabling statistics, confirm the production Workers subscription and
+account-level log usage. After the authorized merge and successful deployment:
+
+1. Verify the public policy, MCP discovery descriptions, and API observability
+   settings match this revision.
+2. Use documentation-address MCP examples to confirm that indexed
+   `mcp_tool_execution` fields are available and both queries can be saved.
+   Inspect success and controlled-error events without printing real lookup
+   addresses.
+3. Inspect complete persisted records privately, including any URL, request
+   identifiers, IP-related fields, headers, or other enriched attributes.
+   Confirm query strings are redacted and default invocation entries, traces,
+   and Issues are disabled. Do not export raw logs to public artifacts or CI.
+4. Check actual quota usage and state any missing-record limitation. A local
+   exact-object logger assertion does not prove the platform envelope, billing
+   plan, or complete production counts.
+
+The code and local tests establish the application event boundary. Production
+log inspection and saved queries require authenticated Cloudflare access.
 
 ## Manual build and deploy
 

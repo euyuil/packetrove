@@ -32,7 +32,7 @@ export const en = {
         },
         "logs": {
             "title": "Application operational logs",
-            "body": "Unexpected request failures produce a fixed event name and error code for service diagnostics. These application-generated events contain no tool inputs, results, returned IP addresses, request headers, or raw exception details. We do not build user profiles, track users across sites, sell tool data, use it for advertising, or train models with it."
+            "body": "Completed MCP tool callbacks emit an operational event with a fixed event name, the tool name, success or error, and a controlled error code on failure. We use these events to count tool executions and diagnose errors. Retries count separately; discovery and requests rejected before a tool callback are not included. Unexpected HTTP failures emit a fixed event and error code. These application-generated events contain no inputs, results, returned IP addresses, headers, or raw exception details. We do not build user profiles, track users across sites, sell tool data, use it for advertising, or train models with it."
         },
         "providers": {
             "title": "Hosting, recipients, and retention",
@@ -310,6 +310,7 @@ export const en = {
     httpErrors: "Business errors use the shared error JSON. The MCP SDK handles protocol validation errors. Invalid JSON, unsupported media types, and oversized bodies are rejected at the HTTP boundary.",
     deploymentTitle: "Deployment and connection limits",
     serverBehavior: "The server supports modern stateless requests and legacy Streamable HTTP initialization, discovery, and calls. It does not provide persistent sessions or standalone server event streams.",
+    operationalLogging: "We count tool executions using operational events containing the tool name, success or error, and a controlled error code. These events exclude inputs, results, and lookup addresses. Cloudflare may add request metadata; see the privacy policy for processing and retention.",
     connectionPrivacy: "Public IP metadata is read for each tool-call request, with isolated server instances for concurrent clients. MCP results and errors use Cache-Control: no-store, no-transform. The application does not retain or log lookup addresses.",
     toolMigration: "Previous tool names have no compatibility aliases: {{toolRenames}}. Refresh tool discovery and update saved calls.",
     endpointMigration: "The website’s <code>/mcp</code> path is not the service endpoint: GET returns 404 and POST returns 405, without proxying or redirecting tool calls. Configure clients with <code>{{serverUrl}}</code>. For your own deployment, update the domains and separate exact Host and browser Origin allowlists; non-browser clients without an Origin header are supported.",
