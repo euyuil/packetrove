@@ -139,6 +139,7 @@ export const ja = {
     familyExplanation: '1 つの接続で使われるのは IPv4 または IPv6 のどちらかです。この確認で表示するのはその接続のアドレスで、両方のアドレスやローカルのプライベートアドレスは取得できません。ネットワークやプロキシの設定を変更したら、再取得してください。',
   },
   api: {
+    examplesTitle: 'エンドポイントの概要と例',
     rangeSummary: "同じアドレス種別の start と end を送信します。両端を含み、正規化した端点、最小の正確な CIDR リスト、CIDR 数、十進数文字列のアドレス数を返します。このリクエストは入力をサーバーに送信します。",
     rangeResponse: "この例は {{cidrs}} を返し、正確に {{addresses}} 個のアドレスを表します。",
     title: 'API ドキュメント', loading: 'API ドキュメントを読み込んでいます…', specification: 'OpenAPI 仕様',

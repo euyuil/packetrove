@@ -140,6 +140,7 @@ export const es = {
     familyExplanation: 'Cada conexión utiliza IPv4 o IPv6. Esta consulta muestra esa dirección; no descubre ambas familias ni tu dirección local privada. Actualiza después de cambiar de red o de configurar el proxy.',
   },
   api: {
+    examplesTitle: 'Resúmenes de endpoints y ejemplos',
     rangeSummary: "Envía start y end de la misma familia. Ambos extremos son inclusivos. Devuelve extremos canónicos, lista CIDR mínima y exacta, número de CIDR y número de direcciones como cadena decimal. Esta solicitud envía datos al servidor.",
     rangeResponse: "Este ejemplo devuelve {{cidrs}}, que representa exactamente {{addresses}} direcciones.",
     title: 'Documentación de la API', loading: 'Cargando la documentación de la API…', specification: 'Especificación OpenAPI',
