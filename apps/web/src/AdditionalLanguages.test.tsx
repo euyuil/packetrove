@@ -5,7 +5,7 @@ import { App } from './App';
 import { render } from './test-utils';
 import { createI18n } from './i18n';
 import { locales, supportedLocales, type Locale } from './i18n/locales';
-import { localizedPath, resolveRoute } from './i18n/routes';
+import { localizedPath, pagePaths, resolveRoute } from './i18n/routes';
 import { en, resources } from './i18n/resources';
 import { languageSuggestionStorageKey } from './useLanguageSuggestion';
 
@@ -219,6 +219,36 @@ describe('additional website languages', () => {
     expect(instance.t($ => $.cidr.entryCount, { count: 1, total: '1' })).toBe(one);
     expect(instance.t($ => $.cidr.entryCount, { count: 2, total: '2' })).toBe(other);
     expect(instance.t($ => $.cidr.entryCount, { count: 1_000_000, total: formatter.format(1_000_000) })).toBe(many);
+  });
+
+  it.each(supportedLocales)('shows exact additional counts and neutral coverage messages in %s', locale => {
+    window.history.replaceState({}, '', localizedPath(pagePaths.cidr, locale));
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    render(<App />);
+    const translation = resources[locale].translation.cidr;
+    const formatter = new Intl.NumberFormat(locale);
+    for (const [input, additional] of [
+      ['203.0.113.0/30', 0n],
+      ['203.0.113.1,203.0.113.2,203.0.113.3', 1n],
+      ['203.0.113.0,203.0.113.3', 2n],
+      ['2001:db8::1,2001:db8:8000::1', 79228162514264337593543950334n],
+    ] as const) {
+      calculate(input);
+      const notice = screen.getByRole('note');
+      expect(within(notice).getByText(translation.additional).nextElementSibling?.textContent)
+        .toBe(formatter.format(additional));
+      expect(within(notice).getByText(additional === 0n ? translation.exact : translation.expansion)).toBeDefined();
+      expect(within(notice).queryByText(additional === 0n ? translation.expansion : translation.exact)).toBeNull();
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('uses only the other entry-count branch for Chinese, including zero and one', () => {
+    const instance = createI18n('zh-Hans');
+    for (const [count, expected] of [[0, '0 项'], [1, '1 项'], [2, '2 项']] as const) {
+      expect(instance.t($ => $.cidr.entryCount, { count, total: String(count) })).toBe(expected);
+    }
   });
 
   it.each([

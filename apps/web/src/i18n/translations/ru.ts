@@ -94,8 +94,7 @@ export const ru = {
     copySuccess: 'CIDR скопирован.', copyFailure: 'Буфер обмена недоступен. Выделите и скопируйте CIDR выше.',
     first: 'Первый адрес', last: 'Последний адрес', unique: 'Уникальные входные адреса', covered: 'Охваченные адреса', additional: 'Дополнительные адреса',
     exact: 'Точный охват: этот CIDR не добавляет адресов.',
-    expansionOne: 'Этот CIDR добавляет {{total}} адрес. Его применение расширяет набор адресов, разрешённых или заблокированных вашим списком.',
-    expansionOther: 'Дополнительных адресов: {{total}}. Применение этого CIDR расширяет набор адресов, разрешённых или заблокированных вашим списком.',
+    expansion: 'Применение этого CIDR расширяет набор адресов, разрешённых или заблокированных вашим списком.',
     normalized: 'Нормализованные записи ({{total}})', emptyTitle: 'Здесь появится ваш результат',
     emptyDescription: 'Введите адреса, чтобы увидеть охватывающий CIDR, диапазон адресов и дополнительный охват.',
     explanationTitle: 'Как устроен охват',
@@ -366,4 +365,4 @@ export const ru = {
     notFound: { title: 'Страница не найдена — Packetrove', description: 'Эта страница Packetrove не существует. Вернитесь на главную страницу, чтобы воспользоваться сетевыми инструментами.' },
     imageAlt: 'Кубический логотип Packetrove рядом с названием проекта и английским слоганом Network tools for humans and agents.',
   },
-} satisfies TranslationResource & { cidr: { entryCount_few: string; entryCount_many: string } };
+} satisfies TranslationResource;

@@ -70,7 +70,7 @@ describe('calculation feedback', () => {
     expect(screen.getByRole('status', { name: resources.en.translation.cidr.result })).toBe(completion);
     expect(completion.firstElementChild).not.toBe(previousContent);
     expect(screen.getByRole('button', { name: 'Copy CIDR' }).closest('[aria-live]')).toBeNull();
-    expect(screen.getByText('This CIDR adds 2 addresses. Applying it expands the addresses allowed or blocked by your list.')
+    expect(screen.getByText('Applying this CIDR expands the range of addresses allowed or blocked by your list.')
       .closest('[aria-live]')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
     expect(completion.textContent).toBe('');
