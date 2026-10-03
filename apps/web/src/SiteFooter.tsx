@@ -1,8 +1,24 @@
-import type { MouseEventHandler } from 'react';
+import type { MouseEventHandler, ReactNode } from 'react';
 import { Anchor, Box, Flex, Group, Stack, Text, Title } from '@mantine/core';
-import { IconBrandGithub } from '@tabler/icons-react';
+import { IconBook, IconBrandGithub, IconBug, IconBulb, IconExternalLink, IconMail, IconScale, type TablerIcon } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
+
+function FooterLink({ href, icon: Icon, external = false, label, onClick, children }: {
+  href: string; icon: TablerIcon; external?: boolean; label?: string;
+  onClick?: MouseEventHandler<HTMLAnchorElement>; children?: ReactNode;
+}) {
+  return <Anchor size="sm" href={href} onClick={onClick} c="dimmed" underline="hover" display="inline-flex"
+    target={external ? '_blank' : undefined} rel={external ? 'noopener noreferrer' : undefined}
+    aria-label={label} title={label}>
+    <Group component="span" gap={6} wrap="nowrap">
+      <Box component={Icon} w={16} h={16} flex="0 0 auto" stroke={1.75} aria-hidden="true" focusable="false" />
+      {children && <Text component="span" inherit>{children}</Text>}
+      {external && <Box component={IconExternalLink} w={12} h={12} flex="0 0 auto" stroke={1.75}
+        aria-hidden="true" focusable="false" />}
+    </Group>
+  </Anchor>;
+}
 
 export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, newIssueUrl, commit, onNavigate }: {
   sourceUrl: string; documentationUrl: string; newIssueUrl: string; commit?: string;
@@ -24,31 +40,27 @@ export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, 
       <Flex justify="space-between" align="flex-start" gap={{ base: 'lg', sm: 64 }} w={{ base: '100%', sm: 'auto' }}>
         <Stack gap="sm" align="flex-start" component="section" aria-labelledby="footer-project-heading">
           <Title order={2} size="sm" fw={600} id="footer-project-heading">{t($ => $.footer.project)}</Title>
-          <Anchor size="sm" ff="monospace" href={sourceUrl} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover"
-            aria-label={sourceLabel} title={sourceLabel}>
-            {/* Align the inline SVG to the text baseline without overriding the footer line height. */}
-            <Box component={IconBrandGithub} w="1em" h="1em" stroke={1.75} mr={commit ? 6 : 0}
-              style={{ verticalAlign: '-0.125em' }} aria-hidden="true" focusable="false" />
-            {commit && <Text component="code" inherit ff="inherit">{commit.slice(0, 7)}</Text>}
-          </Anchor>
-          <Anchor size="sm" href={apiDocumentationHref} onClick={onNavigate} c="dimmed" underline="hover">
+          <FooterLink href={sourceUrl} icon={IconBrandGithub} external label={sourceLabel}>
+            {commit && <Text component="code" inherit ff="monospace">{commit.slice(0, 7)}</Text>}
+          </FooterLink>
+          <FooterLink href={apiDocumentationHref} icon={IconBook} onClick={onNavigate}>
             {t($ => $.api.title)}
-          </Anchor>
-          <Anchor size="sm" href={`${documentationUrl}/LICENSE`} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover">
+          </FooterLink>
+          <FooterLink href={`${documentationUrl}/LICENSE`} icon={IconScale} external>
             {t($ => $.common.sourceLicense)}
-          </Anchor>
+          </FooterLink>
         </Stack>
         <Stack gap="sm" align="flex-start" component="section" aria-labelledby="footer-contact-heading">
           <Title order={2} size="sm" fw={600} id="footer-contact-heading">{t($ => $.footer.contact)}</Title>
-          <Anchor size="sm" href={`${newIssueUrl}?template=bug-report.yml`} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover">
-            {t($ => $.common.reportBug)} <span aria-hidden="true">↗</span>
-          </Anchor>
-          <Anchor size="sm" href={`${newIssueUrl}?template=feature-request.yml`} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover">
-            {t($ => $.common.requestFeature)} <span aria-hidden="true">↗</span>
-          </Anchor>
-          <Anchor size="sm" href="mailto:hello@packetrove.com" c="dimmed" underline="hover">
+          <FooterLink href={`${newIssueUrl}?template=bug-report.yml`} icon={IconBug} external>
+            {t($ => $.common.reportBug)}
+          </FooterLink>
+          <FooterLink href={`${newIssueUrl}?template=feature-request.yml`} icon={IconBulb} external>
+            {t($ => $.common.requestFeature)}
+          </FooterLink>
+          <FooterLink href="mailto:hello@packetrove.com" icon={IconMail}>
             {t($ => $.footer.sendEmail)}
-          </Anchor>
+          </FooterLink>
         </Stack>
       </Flex>
     </Flex>

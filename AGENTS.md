@@ -191,6 +191,11 @@
   detached HEAD is not required. This checkout state is the only difference
   between the two cleanup workflows. Preserve any uncommitted work in either
   case.
+- When cleaning up a completed feature in a linked Git worktree or the primary
+  clone, stop the temporary development and preview servers started for that
+  work. Record each server's process or session identifier and port when starting
+  it, stop only the task's servers, and verify that their listening ports are
+  released. Include server shutdown in the cleanup report.
 - Delete the corresponding local and remote feature branches once the feature
   is complete and merged. The remote branch may be deleted as part of merging
   the request. Verify the request's merged state and delivered functionality;
