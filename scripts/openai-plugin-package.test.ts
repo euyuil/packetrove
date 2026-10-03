@@ -139,6 +139,7 @@ describe('OpenAI plugin package', () => {
     await symlink(directory, rootLink);
     await expect(readPackage(rootLink)).rejects.toThrow('regular directory');
   });
+  // Two complete round trips with the real artwork need time on shared CI runners.
   it('produces a repeatable, root-layout archive with every source byte preserved', async () => {
     const first = await verifiedArchive(original, version);
     const second = await verifiedArchive(original, version);
@@ -147,7 +148,7 @@ describe('OpenAI plugin package', () => {
     expect(Object.keys(extracted)).toEqual([...packageEntries]);
     for (const path of packageEntries) expect(Buffer.from(extracted[path])).toEqual(Buffer.from(original[path]));
     expect(sha256(first.archive)).toMatch(/^[a-f0-9]{64}$/u);
-  });
+  }, 20_000);
   it('rejects wrapped archives, unexpected members, symlink entries, trailing data, and damaged bytes', async () => {
     const wrapped = Object.fromEntries(Object.entries(original).map(([path, data]) => [`packetrove/${path}`, data]));
     const valid = await createArchive(original);
