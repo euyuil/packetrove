@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEventHandler } from 'react';
+import { useCallback, useMemo, useRef, useState, type KeyboardEventHandler, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Badge, Box, Button, Code, Group, Paper, SimpleGrid, Stack, Text, Title, VisuallyHidden,
@@ -69,18 +69,41 @@ function ToolPreview({ tool }: { tool: CatalogTool }) {
 export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTMLAnchorElement> }) {
   const { t, i18n } = useTranslation();
   const locale = resolveLocale(i18n.resolvedLanguage);
+  const carousel = useRef<HTMLDivElement>(null);
   const [embla, setEmbla] = useState<EmblaCarouselType | null>(null);
   const [active, setActive] = useState(0);
   const reducedMotion = useReducedMotion();
   const emblaOptions = useMemo(() => ({ align: 'start' as const, loop: false, duration: reducedMotion ? 0 : 25 }), [reducedMotion]);
 
+  const handleSlideChange = useCallback((index: number) => {
+    const root = carousel.current;
+    // Move focus before React makes the old card inert; controls outside the cards retain focus.
+    if (root && embla?.slideNodes().some((slide, slideIndex) =>
+      slideIndex !== index && slide.contains(root.ownerDocument.activeElement))) {
+      root.focus({ preventScroll: true });
+    }
+    setActive(index);
+  }, [embla]);
+
+  const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = event => {
+    if (!embla || event.target !== event.currentTarget || event.defaultPrevented
+      || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey || event.nativeEvent.isComposing) return;
+    switch (event.key) {
+      case 'ArrowRight': event.preventDefault(); embla.scrollNext(); break;
+      case 'ArrowLeft': event.preventDefault(); embla.scrollPrev(); break;
+      case 'Home': event.preventDefault(); embla.scrollTo(0); break;
+      case 'End': event.preventDefault(); embla.scrollTo(embla.scrollSnapList().length - 1); break;
+    }
+  };
+
   return <Stack component="section" gap="md" aria-labelledby="tool-gallery-heading">
     <Title order={2} size="h3" id="tool-gallery-heading">{t($ => $.home.galleryTitle)}</Title>
     <Text size="sm" c="dimmed" id="tool-gallery-help">{t($ => $.home.galleryDescription)}</Text>
     <Box miw={0}>
-      <Carousel id="tool-gallery-carousel" className="tool-gallery mantine-focus-auto" role="group"
+      <Carousel ref={carousel} id="tool-gallery-carousel" className="tool-gallery mantine-focus-auto" role="group"
         aria-roledescription={undefined} aria-labelledby="tool-gallery-heading" aria-describedby="tool-gallery-help tool-gallery-status"
-        tabIndex={0} withIndicators emblaOptions={emblaOptions} getEmblaApi={setEmbla} onSlideChange={setActive}
+        tabIndex={0} withIndicators withKeyboardEvents={false} onKeyDown={handleKeyDown}
+        emblaOptions={emblaOptions} getEmblaApi={setEmbla} onSlideChange={handleSlideChange}
         previousControlProps={{ 'aria-label': t($ => $.home.galleryPrevious) }}
         nextControlProps={{ 'aria-label': t($ => $.home.galleryNext) }}
         attributes={{ indicators: { 'aria-labelledby': 'tool-gallery-heading' } }}

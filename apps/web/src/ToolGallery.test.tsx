@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MantineProvider } from '@mantine/core';
 import { I18nextProvider } from 'react-i18next';
 import { renderToString } from 'react-dom/server';
@@ -120,6 +121,102 @@ describe('homepage tool gallery', () => {
     fireEvent.click(previous);
     expect(position()).toContain(expectedPosition(2));
     expect(document.activeElement).toBe(carousel);
+  });
+
+  it.each(['ArrowLeft', 'ArrowRight', 'Home', 'End'])('leaves %s on card links and arrow buttons to their own interaction', key => {
+    render(<App />);
+    const link = screen.getByRole('link', { name: resources.en.translation.home.cidrLink });
+    const next = screen.getByRole('button', { name: 'Next tool' });
+    link.focus();
+    expect(fireEvent.keyDown(link, { key })).toBe(true);
+    expect(position()).toContain(expectedPosition(1));
+    expect(document.activeElement).toBe(link);
+    next.focus();
+    expect(fireEvent.keyDown(next, { key })).toBe(true);
+    expect(position()).toContain(expectedPosition(1));
+    expect(document.activeElement).toBe(next);
+  });
+
+  it('ignores modified and composing container shortcuts', () => {
+    render(<App />);
+    const carousel = document.getElementById('tool-gallery-carousel')!;
+    carousel.focus();
+    for (const modifier of ['altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'isComposing']) {
+      expect(fireEvent.keyDown(carousel, { key: 'ArrowRight', [modifier]: true })).toBe(true);
+      expect(position()).toContain(expectedPosition(1));
+      expect(document.activeElement).toBe(carousel);
+    }
+  });
+
+  it('moves focus to the gallery before an indicator hides the focused card', () => {
+    render(<App />);
+    const carousel = document.getElementById('tool-gallery-carousel')!;
+    const link = screen.getByRole('link', { name: resources.en.translation.home.cidrLink });
+    const oldSlide = link.closest('.mantine-Carousel-slide')!;
+    const indicators = screen.getAllByRole('tab');
+    const focusedBeforeInert = vi.fn(() => expect(oldSlide.hasAttribute('inert')).toBe(false));
+    carousel.addEventListener('focus', focusedBeforeInert);
+    link.focus();
+    fireEvent.mouseDown(indicators[1]!);
+    fireEvent.click(indicators[1]!);
+    expect(focusedBeforeInert).toHaveBeenCalledOnce();
+    expect(document.activeElement).toBe(carousel);
+    expect(oldSlide.getAttribute('aria-hidden')).toBe('true');
+    expect(oldSlide.hasAttribute('inert')).toBe(true);
+    expect(position()).toContain(expectedPosition(2));
+    fireEvent.keyDown(carousel, { key: 'ArrowRight' });
+    expect(position()).toContain(expectedPosition(3));
+  });
+
+  it('does not move card focus when its indicator is reselected or steal focus outside a card', () => {
+    render(<><button>Outside gallery</button><App /></>);
+    const link = screen.getByRole('link', { name: resources.en.translation.home.cidrLink });
+    const indicators = screen.getAllByRole('tab');
+    link.focus();
+    fireEvent.mouseDown(indicators[0]!);
+    fireEvent.click(indicators[0]!);
+    expect(document.activeElement).toBe(link);
+    const outside = screen.getByRole('button', { name: 'Outside gallery' });
+    outside.focus();
+    fireEvent.mouseDown(indicators[1]!);
+    fireEvent.click(indicators[1]!);
+    expect(document.activeElement).toBe(outside);
+    expect(position()).toContain(expectedPosition(2));
+    const next = screen.getByRole('button', { name: 'Next tool' });
+    next.focus();
+    fireEvent.click(next);
+    expect(document.activeElement).toBe(next);
+    expect(position()).toContain(expectedPosition(3));
+  });
+
+  it('wraps indicator keyboard selection without container shortcuts interfering', () => {
+    render(<App />);
+    const indicators = screen.getAllByRole('tab');
+    indicators[0]!.focus();
+    fireEvent.keyDown(indicators[0]!, { key: 'ArrowLeft' });
+    expect(position()).toContain(expectedPosition(featuredTools.length));
+    expect(document.activeElement).toBe(indicators.at(-1));
+    fireEvent.keyDown(indicators.at(-1)!, { key: 'ArrowRight' });
+    expect(position()).toContain(expectedPosition(1));
+    expect(document.activeElement).toBe(indicators[0]);
+  });
+
+  it('preserves Enter and Space activation on controls and Enter navigation on a card link', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+    const next = screen.getByRole('button', { name: 'Next tool' });
+    next.focus();
+    await user.keyboard('{Enter}');
+    expect(position()).toContain(expectedPosition(2));
+    expect(document.activeElement).toBe(next);
+    await user.keyboard(' ');
+    expect(position()).toContain(expectedPosition(3));
+    expect(document.activeElement).toBe(next);
+    const link = screen.getByRole('link', { name: resources.en.translation.home.rangeLink });
+    link.focus();
+    await user.keyboard('{Enter}');
+    expect(window.location.pathname).toBe(featuredTools[2]!.webPath);
+    expect(screen.getByRole('main').getAttribute('aria-label')).toBe(resources.en.translation.range.title);
   });
 
   it('excludes offscreen cards from focus and the accessibility tree', () => {
