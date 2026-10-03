@@ -89,7 +89,7 @@ describe('CIDR subtraction completion status', () => {
     expect(status().textContent).toBe('');
     expect(screen.getByRole('alert')).toBeDefined();
     expect(screen.queryByLabelText('Remaining CIDRs')).toBeNull();
-    expect(document.activeElement).toBe(submit);
+    expect(document.activeElement).toBe(screen.getByRole('alert'));
   });
 
   it('keeps only the existing nonempty status message for complete removal', () => {

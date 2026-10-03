@@ -78,6 +78,20 @@ they do not subtract subnet network or broadcast addresses.
 The web app performs the calculation locally. The API returns a structured
 result with exact counts represented as decimal strings; MCP uses the same result.
 
+The input grows with pasted content up to a bounded scrollable height. Input
+and result panels size independently. Present the resulting CIDR and copy
+action first, with the additional-address count and coverage warning immediately
+below, followed by input/covered counts and the address range. Keep the warning
+visible without expanding a disclosure.
+
+On submission, focus a visible error summary whose issue links return to the
+input. Retain physical line numbers and associate the summary with the input.
+A successful calculation updates a short polite, atomic status containing the
+resulting CIDR, rather than announcing the entire result panel. Repeating the
+calculation refreshes that status. Success keeps keyboard focus on the active
+control and reveals the result panel when it is entirely outside the viewport;
+editing and clearing remove the previous result and status.
+
 The web input accepts commas (ASCII `,` or full-width `，`), spaces, tabs, and
 line breaks, in any combination. Empty entries are ignored; input order and
 duplicates are preserved for validation and the entry limit. Invalid entries

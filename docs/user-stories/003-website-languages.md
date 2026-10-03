@@ -42,11 +42,11 @@ network results and share a link in my preferred language.
   variants share the existing generic language entries. Traditional Chinese
   does not match the current Simplified Chinese resource.
   When the first supported preference differs from the URL's language, show a
-  dismissible suggestion beside the header language selector, written in the
+  dismissible suggestion in the header's normal layout, written in the
   suggested language. Keep the page language and URL until the user follows
   its switch link, preserving the page, query string, fragment, and tool state.
   Hide the suggestion while the language menu is open without moving focus or
-  preventing interaction with the page.
+  preventing interaction with the page. It must not cover navigation or inputs.
 - Dismissing the suggestion or explicitly selecting a language records only an
   handled flag in `sessionStorage`. Subsequent navigation, history traversal,
   and reloads in the current tab do not repeat the suggestion. A new independent
@@ -93,6 +93,27 @@ CLI, MCP descriptions, and repository documentation remain in English in this
 phase. API fields, error codes, serialized messages, and address counts retain
 their existing contracts. Further locales are future work.
 
+## Shared page presentation
+
+On narrow screens, replace the wrapped navigation button rows with a menu
+showing the current page and complete localized destination names. Its entries
+come from the shared tool catalog and retain native links and same-tab draft
+preservation. Escape returns focus to the menu button; selecting a different
+page focuses its main region, while reselecting the current page returns focus
+to the button.
+
+Use the shared theme for readable secondary text on white cards and the page
+background. Buttons keep visible default backgrounds or borders. On narrow
+screens and coarse-pointer devices, button and menu-item targets are at least
+44 pixels tall. Long names, IPv6 addresses, and exact counts wrap without
+horizontal page scrolling.
+
+Tool examples, questions, and MCP details use collapsed Mantine accordions on
+tool pages. Preserve all existing content in prerendered HTML and retain
+localized headings and links. Input limits, calculation explanations, review
+guidance, and extra-coverage warnings stay visible. The MCP connection guide
+continues to show its full tool documentation directly.
+
 ## Implementation and contribution
 
 The web application uses `i18next` and `react-i18next`. Bundled translation
@@ -114,7 +135,7 @@ require an external image service.
 `i18n/browser-language.ts` matches browser language tags with `Intl.Locale`.
 `useLanguageSuggestion.ts` reads preferences only after hydration and handles
 the tab's reminder flag; `LanguageSelector.tsx` displays the suggestion with
-Mantine `Popover`. No detection request or additional dependency is needed.
+Mantine `Paper`. No detection request or additional dependency is needed.
 
 When adding a locale, add its registry entry, complete translations and metadata,
 static HTML entries, and flag import together. The menu

@@ -52,7 +52,7 @@ describe('focus after navigation to a different page', () => {
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: title }));
+    if (tool === 'subtract') fireEvent.click(screen.getByRole('button', { name: translation.home.galleryNext }));
     const entry = screen.getByRole('link', { name: linkName });
     entry.focus();
     const user = userEvent.setup();
@@ -156,7 +156,8 @@ describe('focus after navigation to a different page', () => {
     }));
     vi.stubGlobal('fetch', fetch);
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: 'My Public IP' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next tool' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Next tool' }));
     fireEvent.click(screen.getByRole('link', { name: 'Check my public IP' }));
     expect(window.location.pathname).toBe(pagePaths.ip);
     const main = screen.getByRole('main', { name: 'My Public IP' });

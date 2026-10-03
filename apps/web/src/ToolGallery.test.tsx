@@ -32,12 +32,13 @@ describe('homepage tool gallery', () => {
     const gallery = screen.getByRole('region', { name: text.home.galleryTitle });
     const cards = Array.from(gallery.querySelectorAll<HTMLElement>('article'));
     expect(cards.map(card => card.getAttribute('data-tool-id'))).toEqual(featuredTools.map(tool => tool.id));
+    const buttons = within(gallery).getAllByRole('button');
+    expect(buttons.map(button => button.getAttribute('aria-label'))).toEqual([text.home.galleryPrevious, text.home.galleryNext]);
     for (const [index, tool] of featuredTools.entries()) {
       const card = cards[index]!;
       expect(within(card).getByRole('link', { hidden: true }).getAttribute('href')).toBe(localizedPath(tool.webPath, locale));
-      fireEvent.click(within(gallery).getByRole('button', { name: text[tool.page].title }));
+      if (index > 0) fireEvent.click(within(gallery).getByRole('button', { name: text.home.galleryNext }));
       expect(within(gallery).getByRole('article')).toBe(card);
-      expect(within(gallery).getByRole('button', { name: text[tool.page].title }).getAttribute('aria-pressed')).toBe('true');
       expect(position()).toContain(text[tool.page].title);
       expect(within(card).getByText(text.home.previewLabel)).toBeDefined();
       const preview = card.querySelector('[data-tool-preview]')!;
@@ -58,7 +59,7 @@ describe('homepage tool gallery', () => {
     expect(storage).not.toHaveBeenCalled();
   });
 
-  it('keeps bounded controls, direct selection, and keyboard navigation in sync without moving focus', () => {
+  it('keeps bounded controls and keyboard navigation in sync without moving focus', () => {
     render(<App />);
     const carousel = document.getElementById('tool-gallery-carousel')!;
     const previous = screen.getByRole('button', { name: 'Previous tool' }) as HTMLButtonElement;
@@ -83,7 +84,7 @@ describe('homepage tool gallery', () => {
     expect(position()).toContain('1 of 3');
     fireEvent.keyDown(carousel, { key: 'ArrowRight' });
     expect(position()).toContain('2 of 3');
-    fireEvent.click(screen.getByRole('button', { name: resources.en.translation.ip.title }));
+    fireEvent.click(next);
     expect(position()).toContain('3 of 3');
     fireEvent.click(previous);
     expect(position()).toContain('2 of 3');
@@ -96,7 +97,7 @@ describe('homepage tool gallery', () => {
     expect(within(gallery).getAllByRole('article')).toHaveLength(1);
     expect(within(gallery).queryByRole('link', { name: resources.en.translation.home.subtractLink })).toBeNull();
     expect(gallery.querySelectorAll('[inert]')).toHaveLength(2);
-    fireEvent.click(within(gallery).getByRole('button', { name: resources.en.translation.subtract.title }));
+    fireEvent.click(within(gallery).getByRole('button', { name: 'Next tool' }));
     expect(within(gallery).getByRole('link', { name: resources.en.translation.home.subtractLink })).toBeDefined();
     expect(within(gallery).queryByRole('link', { name: resources.en.translation.home.cidrLink })).toBeNull();
     expect(gallery.querySelectorAll('[inert]')).toHaveLength(2);

@@ -116,7 +116,7 @@ describe('localized MCP guide navigation', () => {
     expect(fetch).not.toHaveBeenCalled();
   });
 
-  it.each(supportedLocales)('keeps both subtraction lists and the exact result when visiting the %s guide', locale => {
+  it.each(supportedLocales)('keeps both subtraction lists and the exact result when visiting the %s guide', async locale => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
@@ -128,7 +128,8 @@ describe('localized MCP guide navigation', () => {
     fireEvent.click(screen.getByRole('button', { name: text.subtract.calculate }));
     expect(screen.getByText(text.discovery.subtract.questions.access.answer)).toBeDefined();
     expect(document.querySelector('[data-mcp-tool]')?.getAttribute('data-mcp-tool')).toBe(mcpExamples.subtract.name);
-    fireEvent.click(screen.getByRole('link', { name: text.home.mcpGuide }));
+    fireEvent.click(screen.getByRole('button', { name: text.discovery.subtract.mcpTitle }));
+    fireEvent.click(await screen.findByRole('link', { name: text.home.mcpGuide }));
     expect(window.location.pathname).toBe(localizedPath(pagePaths.mcp, locale));
     fireEvent.click(screen.getByRole('link', { name: text.subtract.title }));
     expect((screen.getByLabelText(text.subtract.includeLabel) as HTMLTextAreaElement).value).toBe('203.0.113.0/24');
@@ -167,7 +168,7 @@ describe('localized MCP guide navigation', () => {
   });
 
   it.each(supportedLocales.flatMap(locale => ['::/0', 'bad'].map(input => ({ locale, input }))))(
-    'keeps the calculator draft $input through the guide and a language change to $locale', ({ locale, input }) => {
+    'keeps the calculator draft $input through the guide and a language change to $locale', async ({ locale, input }) => {
       const fetch = vi.fn();
       vi.stubGlobal('fetch', fetch);
       const storage = vi.spyOn(Storage.prototype, 'setItem');
@@ -175,7 +176,8 @@ describe('localized MCP guide navigation', () => {
       render(<App />);
       fireEvent.change(screen.getByLabelText(en.cidr.inputLabel), { target: { value: input } });
       fireEvent.click(screen.getByRole('button', { name: en.cidr.calculate }));
-      fireEvent.click(screen.getByRole('link', { name: en.home.mcpGuide }));
+      fireEvent.click(screen.getByRole('button', { name: en.discovery.cidr.mcpTitle }));
+      fireEvent.click(await screen.findByRole('link', { name: en.home.mcpGuide }));
       expect(window.location.pathname).toBe(pagePaths.mcp);
       fireEvent.click(screen.getByRole('button', { name: en.common.language + ': ' + locales.en.name }));
       fireEvent.click(screen.getByRole('menuitem', { name: locales[locale].name }));

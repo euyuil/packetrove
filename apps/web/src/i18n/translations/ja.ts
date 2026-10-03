@@ -16,7 +16,7 @@ export const ja = {
   footer: { project: 'プロジェクト', contact: 'お問い合わせ・ご意見', sendEmail: 'メールを送信' },
   home: {
     galleryTitle: "ツールを探す",
-    galleryDescription: "ツール名を選ぶかカードをスワイプして例を確認し、必要なツールを開いてください。",
+    galleryDescription: "左右の矢印を使うかカードをスワイプして例を確認し、必要なツールを開いてください。",
     galleryPrevious: "前のツール",
     galleryNext: "次のツール",
     galleryPosition: "{{total}} 件中 {{current}} 件目",

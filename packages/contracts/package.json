@@ -1,11 +1,16 @@
 {
   "name": "@packetrove/contracts",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts", "./openapi": "./src/openapi.ts" },
-  "scripts": { "typecheck": "tsc --noEmit" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./openapi": "./src/openapi.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "9.1.0",
     "zod": "4.6.5"

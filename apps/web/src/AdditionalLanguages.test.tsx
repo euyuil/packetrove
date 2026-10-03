@@ -157,14 +157,14 @@ describe('additional website languages', () => {
     await user.click(screen.getByRole('button', { name: en.cidr.copy }));
     chooseLanguage(locale);
     const translation = resources[locale].translation;
-    expect(screen.getByRole('status').textContent).toBe(translation.cidr.copySuccess);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(translation.cidr.copySuccess);
     expect(write).toHaveBeenCalledExactlyOnceWith('::1/128');
     write.mockRejectedValueOnce(new Error('Example clipboard failure'));
     await user.click(screen.getByRole('button', { name: translation.common.copied }));
-    expect(screen.getByRole('status').textContent).toBe(translation.cidr.copyFailure);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(translation.cidr.copyFailure);
     expect(screen.getByRole('button', { name: translation.common.dismissCopy })).toBeDefined();
     chooseLanguage('en');
-    expect(screen.getByRole('status').textContent).toBe(en.cidr.copyFailure);
+    expect(screen.getByRole('status', { name: '' }).textContent).toBe(en.cidr.copyFailure);
     expect(write).toHaveBeenCalledTimes(2);
   });
 

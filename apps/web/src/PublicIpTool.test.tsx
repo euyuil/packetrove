@@ -25,7 +25,7 @@ describe('public IP web tool', () => {
     vi.stubGlobal('fetch', fetch);
     render(<PublicIpTool />);
     expect(screen.getByText('Checking your public IP…')).toBeDefined();
-    expect((screen.getByRole('button', { name: 'Checking…' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Checking…' }).getAttribute('aria-disabled')).toBe('true');
     resolve(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
     expect(screen.getByText('IPv4')).toBeDefined();
@@ -161,7 +161,7 @@ describe('public IP web tool', () => {
     await act(async () => { resolveOld(Response.json({ ip: '2001:db8::7', family: 'ipv6' })); });
     expect(screen.queryByText('2001:db8::7')).toBeNull();
     expect(screen.getByText('Checking your public IP…')).toBeDefined();
-    expect((screen.getByRole('button', { name: 'Checking…' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getByRole('button', { name: 'Checking…' }).getAttribute('aria-disabled')).toBe('true');
     resolveCurrent(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
     expect(screen.queryByRole('alert')).toBeNull();

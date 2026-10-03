@@ -140,7 +140,7 @@ describe('address error entry locations', () => {
     change(label, mixedLine);
     fireEvent.click(screen.getByRole('button', { name: calculate }));
     expect(errors()).toHaveLength(2);
-    fireEvent.click(screen.getByRole('link', { name: 'Home' }));
+    fireEvent.click(screen.getByRole('link', { name: 'Packetrove home' }));
     fireEvent.click(screen.getByRole('link', { name: tool === 'cover' ? 'Smallest Covering CIDR' : 'CIDR Subtraction' }));
     expect(errors()).toHaveLength(2);
     expect((screen.getByLabelText(label) as HTMLTextAreaElement).value).toBe(mixedLine);

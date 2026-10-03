@@ -2,6 +2,7 @@ import type { MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Stack, Text, Title } from '@mantine/core';
 import type { McpExampleTool } from './mcp-examples';
+import { ToolDisclosure } from './ToolDisclosure';
 
 export function ToolQuestions({ tool }: {
   tool: McpExampleTool;
@@ -22,11 +23,12 @@ export function ToolQuestions({ tool }: {
       answer: t($ => $.discovery.subtract.questions[key].answer),
     }));
   const headingId = tool + '-questions-heading';
-  return <Stack component="section" aria-labelledby={headingId} gap="lg">
-    <Title order={2} size="h3" id={headingId}>{t($ => $.discovery[tool].title)}</Title>
-    {questions.map(({ question, answer }) => <Stack gap="xs" key={question}>
-      <Title order={3} size="h4">{question}</Title>
-      <Text size="sm" c="dimmed">{answer}</Text>
-    </Stack>)}
-  </Stack>;
+  return <ToolDisclosure headingId={headingId} title={t($ => $.discovery[tool].title)}>
+    <Stack gap="lg">
+      {questions.map(({ question, answer }) => <Stack gap="xs" key={question}>
+        <Title order={3} size="h4">{question}</Title>
+        <Text size="sm" c="dimmed">{answer}</Text>
+      </Stack>)}
+    </Stack>
+  </ToolDisclosure>;
 }

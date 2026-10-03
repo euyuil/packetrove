@@ -79,6 +79,9 @@ Including `2001:db8::/124` and excluding `2001:db8::4/126` returns:
 The counts are 16 included addresses, 4 removed, and 12 remaining.
 
 - An empty include list is a validation error.
+  Submitting invalid input focuses the visible error summary. List-specific
+  issue links focus the affected include or exclude input without changing the
+  URL or discarding either draft.
 - An empty exclude list returns the exact minimal union of included ranges.
   Adjacent siblings may merge; gaps are preserved.
 - Duplicate, overlapping, and nested entries count once on each side.
@@ -93,6 +96,12 @@ The counts are 16 included addresses, 4 removed, and 12 remaining.
   Focus stays on the active control. Repeating a calculation updates the short
   status content without replacing the region. Complete removal keeps its
   existing message without an additional completion summary.
+  If the result panel is entirely outside the viewport, reveal it on submission
+  while retaining focus. Input and result panels size independently. Input areas
+  grow with content up to a bounded scrollable height; short results shrink to
+  their contents, and long results remain fully available through scrolling.
+  Lead with remaining-address and CIDR counts, place both copy actions beside
+  the output, and show included/removed counts below it.
 - **Copy with newlines** copies every output CIDR with one CIDR per line.
   **Copy with commas** separates CIDRs with a comma and a space. Button labels,
   helper text, and success feedback describe the separator so users can choose

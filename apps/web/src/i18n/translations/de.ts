@@ -16,7 +16,7 @@ export const de = {
   footer: { project: 'Projekt', contact: 'Kontakt und Feedback', sendEmail: 'E-Mail senden' },
   home: {
     galleryTitle: "Werkzeuge entdecken",
-    galleryDescription: "Wähle ein Werkzeug oder wische durch die Beispiele und öffne das gewünschte Werkzeug.",
+    galleryDescription: "Nutze die Pfeile oder wische durch die Beispiele und öffne das gewünschte Werkzeug.",
     galleryPrevious: "Vorheriges Werkzeug",
     galleryNext: "Nächstes Werkzeug",
     galleryPosition: "{{current}} von {{total}}",

@@ -4,6 +4,7 @@ import { Manifest, setLogger } from 'release-please';
 import type { Commit, GitHub, PullRequest } from 'release-please';
 import { createOpenApiDocument } from '../packages/contracts/src/openapi';
 import { productManifests } from './cli-release';
+import { createMcpGuideMarkdown } from './mcp-guide-markdown';
 import { isProductReleaseInput, registerPacketroveRelease } from './release-please';
 
 const baselineSha = 'a'.repeat(40);
@@ -72,6 +73,19 @@ describe('release-please unified product', () => {
   it('ignores documentation and chores even within CLI packages', async () => {
     expect(await candidate('docs(cli): clarify help', ['packages/cli/README.md'])).toBeUndefined();
     expect(await candidate('chore(cli): reorganize tests', ['packages/cli/test/cli.test.ts'])).toBeUndefined();
+  });
+  it.each([
+    ['fix(cli): correct output', '0.1.0', '0.1.1'],
+    ['feat(core): add a calculation', '0.1.0', '0.2.0'],
+    ['feat(cli)!: change input format', '1.0.0', '2.0.0'],
+  ])('regenerates the MCP guide for %s at the candidate version', async (message, baseline, version) => {
+    const pullRequest = await candidate(message!, ['packages/cli/src/cli.ts'], baseline);
+    const update = pullRequest?.updates.find(update => update.path === 'docs/integrations/mcp.md');
+    expect(update).toBeDefined();
+    const markdown = update!.updater.updateContent(createMcpGuideMarkdown('0.0.0'));
+    expect(markdown).toBe(createMcpGuideMarkdown(version));
+    expect(markdown).toContain(`{ name: 'packetrove-example', version: "${version}" }`);
+    expect(createMcpGuideMarkdown()).toBe(readFileSync('docs/integrations/mcp.md', 'utf8'));
   });
   it('combines website and calculation changes in one product release while omitting tooling changes', async () => {
     const github = fixtureGithub([

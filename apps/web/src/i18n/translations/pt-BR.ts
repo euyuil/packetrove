@@ -16,7 +16,7 @@ export const ptBR = {
   footer: { project: 'Projeto', contact: 'Contato e feedback', sendEmail: 'Enviar um e-mail' },
   home: {
     galleryTitle: "Explore as ferramentas",
-    galleryDescription: "Escolha uma ferramenta ou deslize os cartões para ver exemplos e abrir a que você precisa.",
+    galleryDescription: "Use as setas ou deslize os cartões para ver exemplos e abrir a ferramenta que você precisa.",
     galleryPrevious: "Ferramenta anterior",
     galleryNext: "Próxima ferramenta",
     galleryPosition: "{{current}} de {{total}}",

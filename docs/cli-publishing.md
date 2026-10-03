@@ -72,11 +72,13 @@ and regenerate the lockfile together.
 
 Release-please updates the root and every workspace's `package.json`,
 `.release-please-manifest.json`, `docs/api/openapi.json`, and `CHANGELOG.md`
-together. API and MCP version metadata comes from the shared contracts package
-version. The generated OpenAPI version is updated in the release PR so the
-required consistency check continues to pass. Only the CLI is published to npm;
-the other packages remain private. Publication checks every workspace version,
-the OpenAPI version, and the release manifest against the tag before uploading.
+together. It also regenerates `docs/integrations/mcp.md` from the shared MCP
+guide content using the candidate version. API and MCP version metadata comes
+from the shared contracts package version. The generated OpenAPI version and
+MCP guide are updated in the release PR so the required consistency checks
+continue to pass. Only the CLI is published to npm; the other packages remain
+private. Publication checks every workspace version, the OpenAPI version, and
+the release manifest against the tag before uploading.
 
 ## One-time GitHub App setup
 
@@ -233,8 +235,9 @@ preview and publication; an identical existing archive skips both and proceeds
 to verification; different contents fail. Even `npm publish --dry-run` rejects
 an already published version, so it runs only when the version is absent.
 Registry errors are failures, not evidence that a version is absent. After
-publication it checks registry integrity, installs the exact version with a
-fresh npm cache outside the workspace, and verifies its calculation.
+publication it allows up to five minutes of polling delays for the new version
+to become visible, then checks registry integrity, installs the exact version
+with a fresh npm cache outside the workspace, and verifies its calculation.
 
 If upload succeeds but later verification fails, the version may already be
 public. Inspect the registry and workflow logs, then rerun the failed job or
