@@ -14,7 +14,6 @@ export async function readJsonBody(request: Request): Promise<unknown> {
     if (error instanceof BodyLimitError) {
       throw new ToolError('PAYLOAD_TOO_LARGE', 'Request body must not exceed 64 KiB.');
     }
-    if (error instanceof ToolError) throw error;
     if (error instanceof SyntaxError || error instanceof TypeError) {
       throw new ToolError('INVALID_JSON', 'Expected a valid UTF-8 JSON request body.');
     }
