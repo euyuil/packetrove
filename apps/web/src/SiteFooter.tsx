@@ -9,6 +9,7 @@ export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, 
   apiDocumentationHref: string; onNavigate: MouseEventHandler<HTMLAnchorElement>;
 }) {
   const { t } = useTranslation();
+  const sourceLabel = commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source);
 
   return <Box component="footer" id="site-footer" pt="xs" pb="sm">
     <Flex direction={{ base: 'column', sm: 'row' }} justify="space-between"
@@ -24,10 +25,10 @@ export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, 
         <Stack gap="sm" align="flex-start" component="section" aria-labelledby="footer-project-heading">
           <Title order={2} size="sm" fw={600} id="footer-project-heading">{t($ => $.footer.project)}</Title>
           <Anchor size="sm" href={sourceUrl} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover"
-            title={commit ? t($ => $.common.sourceCommit, { commit }) : t($ => $.common.source)}>
+            aria-label={sourceLabel} title={sourceLabel}>
             <Group component="span" gap={6} wrap="nowrap">
               <IconBrandGithub size={16} stroke={1.75} aria-hidden="true" focusable="false" />
-              <span>GitHub{commit && <> · <code>{commit.slice(0, 7)}</code></>}</span>
+              {commit && <code>{commit.slice(0, 7)}</code>}
             </Group>
           </Anchor>
           <Anchor size="sm" href={apiDocumentationHref} onClick={onNavigate} c="dimmed" underline="hover">
