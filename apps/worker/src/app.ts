@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { accepts } from 'hono/accepts';
 import { cors } from 'hono/cors';
-import { tools, PUBLIC_IP_PATH, type ErrorResponse } from '@packetrove/contracts';
+import { tools, type ErrorResponse } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
 import { mcpHandler } from './mcp';
@@ -12,11 +12,15 @@ export function createApp() {
   for (const path of ['/v1/*', '/health', '/openapi.json']) {
     app.use(path, cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
   }
-  app.use(PUBLIC_IP_PATH, async (context, next) => {
-    context.header('Cache-Control', 'no-store');
-    context.header('Vary', 'Accept', { append: true });
-    await next();
-  });
+  for (const tool of tools) {
+    const headers = tool.api.response.headers;
+    if (headers) app.use(tool.api.path, async (context, next) => {
+      for (const [name, header] of Object.entries(headers)) {
+        context.header(name, header.value, { append: name.toLowerCase() === 'vary' });
+      }
+      await next();
+    });
+  }
   app.onError((error, context) => {
     if (error instanceof ToolError) {
       const status = error.code === 'CLIENT_IP_UNAVAILABLE' ? 503 : error.code === 'PAYLOAD_TOO_LARGE' ? 413
@@ -32,11 +36,12 @@ export function createApp() {
     app.on(tool.api.method.toUpperCase(), tool.api.path, async context => {
       const body = tool.api.method === 'post' ? await readJsonBody(context.req.raw) : {};
       const result = executeTool(tool.page, body, context.req.raw.headers);
-      if ('ip' in result) {
+      const text = tool.api.response.text;
+      if (text) {
         const format = accepts(context, {
           header: 'Accept', supports: ['application/json', 'text/plain'], default: 'application/json',
         });
-        if (format === 'text/plain') return context.text(`${result.ip}\n`);
+        if (format === 'text/plain') return context.text(text.format(result));
       }
       return context.json(result);
     });

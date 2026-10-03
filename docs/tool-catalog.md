@@ -81,7 +81,7 @@ included; third-party listings are not changed.
 | Website routes and sitemap | Tool paths combined with the locale registry and non-tool pages |
 | Website navigation and homepage | Tool entries and localized titles and descriptions |
 | Website API documentation | Endpoint summaries and example requests and results |
-| Generated OpenAPI | Paths, methods, schemas, metadata, and examples |
+| Generated OpenAPI | Paths, methods, schemas, response formats, status descriptions, and examples |
 | API and MCP | Catalog-driven registration and the same request-scoped handler map |
 | CLI | Enabled catalog entries, derived commands and usage, and exhaustive handler coverage |
 | MCP guide and tool pages | Catalog-derived examples rendered by `ToolMcpSection` and the generated repository guide |
@@ -97,6 +97,22 @@ Localized prose remains in `apps/web/src/i18n/resources.ts` and the language
 files, indexed by the catalog's page keys. The catalog contains no React
 components or browser state. Tool-specific views can choose an appropriate
 presentation while consuming shared facts and examples.
+
+Each tool's `api.response` declares its successful JSON description, optional
+headers, and optional plain-text formatter. OpenAPI derives text examples from
+that formatter and the shared results; the Worker uses the same formatter and
+headers, including on error responses. `api.errors` supplies domain status
+descriptions, while the generator adds common transport failures. JSON-only GET
+tools need no special generator branch. API tags also come from tool metadata.
+
+Tool-owned modules in `apps/web/src/tools` provide static preview components and
+localized API/MCP example guidance. Register them in the exhaustive maps in
+`ToolPreview.tsx` and `tool-documentation.ts`. The pure documentation map does
+not load preview components. Keep prose in translation resources and derive
+interpolation values from the catalog's examples and shared limits. Previews
+must not import complete calculation pages or initiate live lookups. Shared
+gallery and documentation components traverse these declarations without
+branches for individual tools.
 
 Tool pages share `ToolPageHeader` for catalog-indexed titles and descriptions,
 and `ToolPanel` for labelled input and result sections. Pass the tool's localized

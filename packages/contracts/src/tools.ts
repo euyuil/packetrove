@@ -8,6 +8,12 @@ import {
   MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MAX_REQUEST_BYTES,
 } from './schemas';
 
+export type ApiResponseDefinition = {
+  description: string;
+  headers?: Readonly<Record<string, { description: string; value: string }>>;
+  text?: { description: string; format: (result: unknown) => string };
+};
+
 type ToolDefinition = {
   id: string;
   page: string;
@@ -26,7 +32,12 @@ type ToolDefinition = {
   outputSchema: z.ZodType;
   examples: ReadonlyArray<{ name: string; request: unknown; result: unknown }>;
   example: { name: string; request: unknown; result: unknown };
-  api: { method: 'post' | 'get'; path?: never; operationId?: never; tag: string; summary: string; description: string };
+  api: {
+    method: 'post' | 'get'; path?: never; operationId?: never;
+    tag: string; tagDescription: string; summary: string; description: string;
+    response: ApiResponseDefinition;
+    errors: Readonly<Record<number, string>>;
+  };
   mcp: {
     name?: never;
     description: string;
@@ -48,7 +59,8 @@ function defineTool<const Definition extends ToolDefinition>(definition: Definit
   return {
     ...metadata,
     webPath,
-    api: { ...api, path: `/v1/${id}` as `/v1/${Definition['id']}`, operationId: id },
+    api: { ...api, response: api.response as ApiResponseDefinition,
+      path: `/v1/${id}` as `/v1/${Definition['id']}`, operationId: id },
     mcp: { ...mcpMetadata, name: id, resultLink: {
       type: 'resource_link' as const, uri: `${PUBLIC_WEBSITE_ORIGIN}${webPath}`,
       name: id, title: definition.title, description: resultLinkDescription, mimeType: 'text/html',
@@ -66,7 +78,9 @@ export const toolCatalog = {
     schemaName: 'CidrCover', inputSchema: CidrCoverRequestSchema, outputSchema: CidrCoverResultSchema,
     examples: CIDR_COVER_EXAMPLES, example: CIDR_COVER_EXAMPLES[1]!,
     api: {
-      method: 'post', tag: 'CIDR',
+      method: 'post', tag: 'CIDR', tagDescription: 'IP address and CIDR calculations.',
+      response: { description: 'The calculated result and exact address counts.' },
+      errors: { 400: 'Invalid JSON, invalid input, or mixed address families. Input issues include a zero-based index.' },
       summary: 'Find the smallest single CIDR covering all inputs',
       description: `Accepts IPv4 or IPv6 addresses and CIDRs from one address family. The output maximizes the prefix length while covering every input address, and may include additional addresses. Overlapping inputs are counted once. CIDRs with host bits are normalized. The request body must not exceed ${MAX_REQUEST_BYTES} bytes. This is a stateless calculation and does not modify firewall rules.`,
     },
@@ -83,7 +97,9 @@ export const toolCatalog = {
     schemaName: 'CidrSubtract', inputSchema: CidrSubtractRequestSchema, outputSchema: CidrSubtractResultSchema,
     examples: CIDR_SUBTRACT_EXAMPLES, example: CIDR_SUBTRACT_EXAMPLES[0]!,
     api: {
-      method: 'post', tag: 'CIDR',
+      method: 'post', tag: 'CIDR', tagDescription: 'IP address and CIDR calculations.',
+      response: { description: 'The calculated result and exact address counts.' },
+      errors: { 400: 'Invalid JSON, invalid input, mixed address families, or output limit exceeded. Entry issues include a zero-based index and identify the include/exclude list.' },
       summary: 'Subtract excluded networks from included address space exactly',
       description: `Return the minimal sorted canonical CIDR list for union(include) minus union(exclude), without adding addresses. Use one address family and at most ${MAX_SUBTRACTION_INPUTS} entries across both lists, with at most ${MAX_INPUT_LENGTH} characters per entry. Include must be nonempty; exclude may be empty. Overlaps count once and host bits are normalized. Results include exact decimal-string counts; complete removal succeeds with an empty list. Results exceeding ${MAX_SUBTRACTION_OUTPUTS} CIDRs fail without returning a partial list. The request body must not exceed ${MAX_REQUEST_BYTES} bytes. Calls send inputs to the server; no firewall or WireGuard configuration is changed and remaining ranges do not prove live availability.`,
     },
@@ -100,7 +116,10 @@ export const toolCatalog = {
     schemaName: 'RangeToCidrs', inputSchema: RangeToCidrsRequestSchema, outputSchema: RangeToCidrsResultSchema,
     examples: RANGE_TO_CIDRS_EXAMPLES, example: RANGE_TO_CIDRS_EXAMPLES[0]!,
     api: {
-      method: 'post', tag: 'CIDR', summary: 'Convert an inclusive IP range to its minimal exact CIDR list',
+      method: 'post', tag: 'CIDR', tagDescription: 'IP address and CIDR calculations.',
+      response: { description: 'The calculated result and exact address counts.' },
+      errors: { 400: 'Invalid JSON, invalid endpoints, mixed address families, or reversed range. Issues identify the start or end field.' },
+      summary: 'Convert an inclusive IP range to its minimal exact CIDR list',
       description: `Accept exactly one start and one end IP address of the same family, without CIDR prefixes, at most ${MAX_INPUT_LENGTH} characters each. Both endpoints are inclusive; end must be at or after start and endpoints are never swapped. Return canonical endpoints and the minimal sorted non-overlapping CIDR list covering exactly that range, with cidrCount and an exact decimal-string addressCount. Every address counts, including IPv4 network and broadcast addresses. Calculations do not enumerate addresses. The request body must not exceed ${MAX_REQUEST_BYTES} bytes. Calls submit inputs to the server; no live allocation or firewall configuration is inspected or changed.`,
     },
     mcp: {
@@ -116,7 +135,17 @@ export const toolCatalog = {
     schemaName: 'PublicIp', inputSchema: PublicIpRequestSchema, outputSchema: PublicIpResultSchema,
     examples: PUBLIC_IP_EXAMPLES, example: PUBLIC_IP_EXAMPLES[0]!,
     api: {
-      method: 'get', tag: 'IP',
+      method: 'get', tag: 'IP', tagDescription: 'Request-based IP address diagnostics.',
+      response: {
+        description: 'The observed address as JSON with its address family, or as plain text when requested.',
+        headers: {
+          'Cache-Control': { description: 'Do not store this per-request result.', value: 'no-store' },
+          Vary: { description: 'The response format depends on the Accept header.', value: 'Accept' },
+        },
+        text: { description: 'One IPv4 or IPv6 address followed by a newline.',
+          format: result => PublicIpResultSchema.parse(result).ip + '\n' },
+      },
+      errors: { 503: 'CLIENT_IP_UNAVAILABLE: edge connection information is missing or invalid. No guessed or caller-supplied forwarded address is returned.' },
       summary: 'Get the IP address observed for the current request',
       description: 'Returns one IPv4 or IPv6 address from the current connection to Packetrove. Request Accept: text/plain for the address followed by a newline; JSON is the default. Errors remain structured JSON in either format. With a VPN or proxy this is its exit address. A hosted caller observes its own connection, not a user device behind it. It does not discover local addresses or separately probe both address families. The Cloudflare deployment reads edge-provided connection headers, including preserved IPv6 when Pseudo IPv4 overwrites headers. Results and errors are not cached; the application does not store or log the returned IP address.',
     },
@@ -129,6 +158,9 @@ export const toolCatalog = {
 } as const;
 
 export type ToolPage = keyof typeof toolCatalog;
+export type ToolApiDefinition = Pick<ToolDefinition, 'schemaName' | 'inputSchema' | 'outputSchema' | 'examples' | 'example'> & {
+  api: Omit<ToolDefinition['api'], 'path' | 'operationId'> & { path: string; operationId: string };
+};
 export type ToolId = (typeof toolCatalog)[ToolPage]['id'];
 export const tools = Object.values(toolCatalog);
 export type CliToolPage = {

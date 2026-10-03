@@ -6,6 +6,8 @@ import { getApiUrl } from './api';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
 import { ToolDisclosure } from './ToolDisclosure';
+import { apiExampleCommand } from './api-example';
+import { getToolDocumentation } from './tool-documentation';
 
 const ApiReference = lazy(() => import('./ApiReference'));
 
@@ -34,18 +36,10 @@ export default function ApiDocumentation({ onNavigate }: { onNavigate: MouseEven
           <Stack gap="sm">
             <Title order={3} size="h3" id={tool.page + '-api-heading'}>{tool.api.method.toUpperCase()} {tool.api.path}</Title>
             <Text>{t($ => $.api[`${tool.page}Summary`])}</Text>
-            <Code block>{tool.api.method === 'post'
-              ? `curl -fsS ${getApiUrl(tool.api.path)} \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(tool.example.request)}'`
-              : `curl -fsS ${getApiUrl(tool.api.path)} -H 'Accept: text/plain'`}</Code>
-            {tool.page === 'cidr' && <Text size="sm" c="dimmed">{t($ => $.api.cidrResponse, {
-              cidr: tool.example.result.cidr, additional: tool.example.result.additionalAddressCount,
-            })}</Text>}
-            {tool.page === 'subtract' && <Text size="sm" c="dimmed">{t($ => $.api.subtractResponse, {
-              cidrs: tool.example.result.cidrs.join(', '), remaining: tool.example.result.remainingAddressCount,
-            })}</Text>}
-            {tool.page === 'range' && <Text size="sm" c="dimmed">{t($ => $.api.rangeResponse, {
-              cidrs: tool.example.result.cidrs.join(', '), addresses: tool.example.result.addressCount,
-            })}</Text>}
+            <Code block>{apiExampleCommand(tool, getApiUrl(tool.api.path))}</Code>
+            {getToolDocumentation(tool.page).apiExampleResponse && <Text size="sm" c="dimmed">
+              {getToolDocumentation(tool.page).apiExampleResponse?.(t)}
+            </Text>}
           </Stack>
         </Paper>)}
       </Stack>

@@ -1,9 +1,10 @@
-import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog, tools, type ToolPage } from '@packetrove/contracts';
+import { MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog, tools, type ToolPage } from '@packetrove/contracts';
 import workerManifest from '../../worker/package.json' with { type: 'json' };
 import { createInstance } from 'i18next';
 import type {} from './i18n/i18next';
 import { resources } from './i18n/resources';
 import type { Locale } from './i18n/locales';
+import { getToolDocumentation } from './tool-documentation';
 
 const translations = new Map<Locale, ReturnType<typeof createInstance>>();
 
@@ -23,6 +24,7 @@ function guideTranslator(locale: Locale) {
 export function getMcpToolContent(tool: ToolPage, locale: Locale) {
   const t = guideTranslator(locale);
   const definition = toolCatalog[tool];
+  const documentation = getToolDocumentation(tool);
   const example = {
     name: definition.mcp.name, arguments: definition.example.request, result: definition.example.result,
   };
@@ -30,18 +32,10 @@ export function getMcpToolContent(tool: ToolPage, locale: Locale) {
     tool, example, resourceLink: definition.mcp.resultLink,
     title: t($ => $.discovery[tool].mcpTitle),
     purpose: t($ => $.discovery[tool].purpose),
-    inputs: t($ => $.discovery[tool].inputs, {
-      maximumInputs: new Intl.NumberFormat(locale).format(tool === 'subtract' ? MAX_SUBTRACTION_INPUTS : MAX_INPUTS),
-      maximumLength: MAX_INPUT_LENGTH, maximumOutputs: new Intl.NumberFormat(locale).format(MAX_SUBTRACTION_OUTPUTS),
-    }),
-    result: t($ => $.discovery[tool].result, {
-      maximumOutputs: new Intl.NumberFormat(locale).format(MAX_SUBTRACTION_OUTPUTS),
-    }),
+    inputs: documentation.mcpInputs(t, locale),
+    result: documentation.mcpResult(t, locale),
     boundary: t($ => $.discovery[tool].boundary),
-    expansion: tool === 'cidr' ? t($ => $.cidr.exampleResult, {
-      cidr: toolCatalog.cidr.example.result.cidr, covered: toolCatalog.cidr.example.result.coveredAddressCount,
-      additional: toolCatalog.cidr.example.result.additionalAddressCount,
-    }) : undefined,
+    exampleNote: documentation.mcpExampleNote?.(t),
     openTool: t($ => $.discovery[tool].openTool),
   };
 }
