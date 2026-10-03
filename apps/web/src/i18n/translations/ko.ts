@@ -13,7 +13,10 @@ export const ko = {
     feedbackPrompt: '오류를 발견했거나 아이디어가 있나요? GitHub에서 알려 주세요.', reportBug: '오류 신고', requestFeature: '기능 제안',
     notFound: '페이지를 찾을 수 없습니다', notFoundDescription: '요청한 페이지가 존재하지 않습니다.', returnHome: '홈으로 돌아가기',
   },
-  footer: { project: '프로젝트', contact: '문의 및 의견', sendEmail: '이메일 보내기' },
+  footer: {
+    project: '프로젝트 자료', integrations: '연동', contact: '문의 및 의견',
+    apiDocumentation: 'API 문서', cliGuide: 'CLI 안내 (영어)', sendEmail: '이메일 보내기',
+  },
   home: {
     rangeDescription: "양 끝을 포함하는 시작 및 끝 IP를 최소의 정확한 CIDR 목록으로 변환하세요. 로컬에서 계산하고 추가 주소 없이 모든 블록을 복사합니다.",
     rangeLink: "IP 범위 변환 열기",

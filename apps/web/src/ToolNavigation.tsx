@@ -2,7 +2,7 @@ import { useRef, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Group, Menu } from '@mantine/core';
 import { tools } from '@packetrove/contracts';
-import { IconBook, IconChevronDown, IconHome } from '@tabler/icons-react';
+import { IconChevronDown, IconHome } from '@tabler/icons-react';
 import { localizedPath, pagePaths, type Locale, type Page } from './i18n/routes';
 import { ToolIcon } from './ToolIcon';
 
@@ -16,11 +16,10 @@ export function ToolNavigation({ page, locale, onNavigate }: {
       icon: <IconHome size={18} stroke={1.75} aria-hidden="true" focusable="false" /> },
     ...tools.map(tool => ({ page: tool.page, path: tool.webPath, label: t($ => $[tool.page].title),
       icon: <ToolIcon tool={tool.page} size={18} /> })),
-    { page: 'mcp', path: pagePaths.mcp, label: t($ => $.mcp.navigation),
-      icon: <IconBook size={18} stroke={1.75} aria-hidden="true" focusable="false" /> },
   ];
   const current = entries.find(entry => entry.page === page);
-  const label = current?.label ?? (page === 'api' ? t($ => $.api.title) : t($ => $.common.notFound));
+  const label = current?.label ?? (page === 'api' ? t($ => $.footer.apiDocumentation)
+    : page === 'mcp' ? t($ => $.mcp.navigation) : t($ => $.common.notFound));
 
   return <Box component="nav" aria-label={t($ => $.common.navigation)}>
     <Group gap="sm" visibleFrom="sm">

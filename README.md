@@ -58,6 +58,9 @@ API address counts are decimal strings to preserve exact IPv6 values.
 | Command-line interface (CLI) | `npm install --global @packetrove/cli` · [CLI guide](docs/integrations/cli.md) |
 | Model Context Protocol (MCP) | [Connection guide](https://packetrove.com/docs/mcp) · [Technical guide](docs/integrations/mcp.md) |
 
+The website's main navigation opens browser tools. Its footer groups the API,
+MCP, and CLI guides; the CLI guide is in English.
+
 Tools share flat public names across interfaces. For changes to existing calls
 and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-flat-names).
 

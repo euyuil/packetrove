@@ -13,7 +13,10 @@ export const es = {
     feedbackPrompt: '¿Encontraste un problema o tienes una idea? Cuéntanos en GitHub.', reportBug: 'Informar de un problema', requestFeature: 'Sugerir una función',
     notFound: 'Página no encontrada', notFoundDescription: 'La página solicitada no existe.', returnHome: 'Volver al inicio',
   },
-  footer: { project: 'Proyecto', contact: 'Contacto y sugerencias', sendEmail: 'Enviar un correo' },
+  footer: {
+    project: 'Recursos del proyecto', integrations: 'Integraciones', contact: 'Contacto y sugerencias',
+    apiDocumentation: 'Documentación de la API', cliGuide: 'Guía de la CLI (en inglés)', sendEmail: 'Enviar un correo',
+  },
   home: {
     rangeDescription: "Convierte direcciones IP inicial y final inclusivas en una lista CIDR mínima y exacta. Calcula localmente y copia todos los bloques sin añadir direcciones.",
     rangeLink: "Abrir conversor de rangos IP",

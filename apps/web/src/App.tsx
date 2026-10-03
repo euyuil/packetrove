@@ -111,7 +111,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
         </Stack>}
       </Box>
       <Divider />
-      <SiteFooter sourceUrl={sourceUrl} documentationUrl={documentationUrl} apiDocumentationHref={href(pagePaths.api)}
+      <SiteFooter sourceUrl={sourceUrl} documentationUrl={documentationUrl} locale={locale} page={page}
         newIssueUrl={newIssueUrl} commit={commit} onNavigate={navigate} />
     </Stack>
   </Container>;
