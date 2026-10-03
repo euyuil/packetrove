@@ -31,7 +31,7 @@ describe('web page routing', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Calculate covering CIDR' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Refresh IP' })).toBeNull();
-    expect(document.title).toBe('Packetrove — CIDR Calculator and Public IP Lookup');
+    expect(document.title).toBe('Packetrove — Network tools for humans and agents');
     expect(fetch).not.toHaveBeenCalled();
   });
 

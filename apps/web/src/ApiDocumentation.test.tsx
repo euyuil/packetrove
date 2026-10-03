@@ -31,7 +31,7 @@ describe('interactive API documentation', () => {
     await waitFor(() => {
       expect(screen.getAllByText('Find the smallest single CIDR covering all inputs').length).toBeGreaterThan(0);
     }, { timeout: 15_000 });
-    expect(document.title).toBe('Packetrove API Documentation — CIDR and Public IP');
+    expect(document.title).toBe('Packetrove API Documentation');
     expect(screen.getByRole('link', { name: /OpenAPI specification/ }).getAttribute('href'))
       .toBe('https://api.packetrove.com/openapi.json');
     expect(requests.length).toBeGreaterThan(0);
