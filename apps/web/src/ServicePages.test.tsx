@@ -11,6 +11,8 @@ import { resources } from './i18n/resources';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { websitePages } from './seo';
 
+const sourceCommit = '0123456789abcdef0123456789abcdef01234567';
+
 afterEach(() => {
   cleanup(); vi.unstubAllGlobals(); vi.unstubAllEnvs();
   window.history.replaceState({}, '', '/');
@@ -22,6 +24,7 @@ it.each(supportedLocales.flatMap(locale => (['support', 'terms'] as const).map(p
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
+    vi.stubEnv('VITE_GIT_COMMIT', sourceCommit);
     window.history.replaceState({}, '', localizedPath(pagePaths.home, locale));
     render(<App />);
     const text = resources[locale].translation;
@@ -46,7 +49,7 @@ it.each(supportedLocales.flatMap(locale => (['support', 'terms'] as const).map(p
       expect(within(main).getByRole('link', { name: text.support.title }).getAttribute('href'))
         .toBe(localizedPath(pagePaths.support, locale));
       expect(within(main).getByRole('link', { name: text.common.sourceLicense }).getAttribute('href'))
-        .toBe('https://github.com/example-owner/packetrove/blob/main/LICENSE');
+        .toBe(`https://github.com/example-owner/packetrove/blob/${sourceCommit}/LICENSE`);
     }
     fireEvent.click(within(main).getByRole('link', { name: text.privacy.title }));
     const privacy = screen.getByRole('main', { name: text.privacy.title });
