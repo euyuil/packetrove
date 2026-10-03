@@ -276,6 +276,9 @@ export const ja = {
     }
   },
   mcp: {
+    identityTitle: "サーバーの識別情報",
+    identityExplanation: "サーバーはリリースバージョンとともに、以下のサービス識別情報を提供します。各ツールの名前、説明、スキーマは tools/list で個別に一覧表示されます。",
+    identityPresentation: "タイトル、説明、Web サイト、アイコンを表示するかどうかはクライアントが決め、任意のフィールドを無視する場合もあります。プロトコルでの検出成功は、クライアントがこれらの情報を表示することを意味しません。PNG アイコンは 32×32 で、テーマの制限はありません。",
     navigation: "MCP ガイド",
     sdkTitle: "Node.js の例を実行する",
     sdkDescription: "新しいディレクトリで、下のコードを <code>packetrove-example.mjs</code> として保存し、コマンドを実行します。例は <code>@modelcontextprotocol/client@{{version}}</code> を使い、ツールを検出して文書用アドレスで CIDR ツールを呼び出します。",

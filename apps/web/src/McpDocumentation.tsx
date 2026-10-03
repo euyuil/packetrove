@@ -46,6 +46,12 @@ export function McpDocumentation({ onNavigate, documentationUrl, sourceUrl }: {
         <Text size="sm" c="dimmed">{guide.discovery}</Text>
       </Stack>
     </Paper>
+    <Stack component="section" gap="sm" aria-labelledby="mcp-identity-heading">
+      <Title order={2} size="h3" id="mcp-identity-heading">{guide.identity.title}</Title>
+      <Text>{guide.identity.explanation}</Text>
+      <Code block data-mcp-server-identity>{JSON.stringify(guide.identity.metadata, null, 2)}</Code>
+      <Text size="sm" c="dimmed">{guide.identity.presentation}</Text>
+    </Stack>
     {guide.tools.map(tool => <ToolMcpSection key={tool.tool} tool={tool.tool} onNavigate={onNavigate} guide />)}
     <Stack component="section" gap="sm" aria-labelledby="mcp-errors-heading">
       <Title order={2} size="h3" id="mcp-errors-heading">{guide.errorsTitle}</Title>

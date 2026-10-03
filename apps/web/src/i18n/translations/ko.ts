@@ -260,6 +260,9 @@ export const ko = {
     },
   },
   mcp: {
+    identityTitle: "서버 식별 정보",
+    identityExplanation: "서버는 릴리스 버전과 함께 다음 서비스 식별 정보를 제공합니다. 각 도구의 이름, 설명, 스키마는 tools/list를 통해 별도로 나열됩니다.",
+    identityPresentation: "클라이언트는 제목, 설명, 웹사이트 또는 아이콘을 표시할지 결정하며 선택 필드를 무시할 수 있습니다. 프로토콜 검색 성공이 클라이언트의 정보 표시를 보장하지는 않습니다. PNG 아이콘은 32×32이며 테마 제한이 없습니다.",
     navigation: "MCP 안내",
     sdkTitle: "Node.js 예제 실행",
     sdkDescription: "새 디렉터리에 아래 코드를 <code>packetrove-example.mjs</code>로 저장한 다음 명령을 실행하세요. 예제는 <code>@modelcontextprotocol/client@{{version}}</code>를 사용해 도구를 검색하고 문서용 주소로 CIDR 도구를 호출합니다.",

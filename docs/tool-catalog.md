@@ -91,6 +91,16 @@ with localized prose and client commands. Generate the English repository
 guide with `pnpm docs:mcp:generate`; do not edit that output manually.
 `pnpm docs:mcp:check` rejects drift during builds and the full project check.
 
+Service identity is separate from tool discovery. `packages/contracts/src/identity.ts`
+owns the Packetrove server name, display title, description, canonical website,
+and icon metadata. The MCP server combines these with `PACKETROVE_VERSION` from
+the contracts package's release manifest. The website and maintained MCP guide
+reuse this identity; individual tool identities remain in the tool catalog.
+Clients choose which optional service fields to display, so protocol acceptance
+alone does not establish visual presentation.
+The generated technical guide records dated manual client observations;
+maintain those English verification notes in `scripts/mcp-guide-markdown.ts`.
+
 ## Adding or changing a tool
 
 1. Define its request and result schemas and documentation examples in the
