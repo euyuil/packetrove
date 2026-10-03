@@ -14,6 +14,7 @@ import {
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
   RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema, toolCatalog,
 } from '@packetrove/contracts';
+import { rangeEndpointErrorCases } from './range-endpoint-error-cases';
 
 const workerFetch: typeof fetch = async (input, init) => {
   const request = new Request(input, init);
@@ -169,13 +170,7 @@ describe('stateless MCP in the Workers runtime', () => {
       });
     } finally { await client.close(); }
   });
-  it.each([
-    { request: { start: 'bad', end: '::/128' }, code: 'INVALID_INPUT', fields: ['start', 'end'] },
-    { request: { start: '', end: '::1' }, code: 'INVALID_INPUT', fields: ['start'] },
-    { request: { start: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
-    { request: { start: '203.0.113.1', end: '::1' }, code: 'MIXED_ADDRESS_FAMILIES', fields: ['end'] },
-    { request: { start: '::2', end: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
-  ])('returns shared range endpoint errors: $request', async ({ request, code, fields }) => {
+  it.each(rangeEndpointErrorCases)('returns shared range endpoint errors: $request', async ({ request, code, fields }) => {
     const client = await connectedClient();
     try {
       const response = await client.callTool({ name: toolCatalog.range.mcp.name, arguments: request });
