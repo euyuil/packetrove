@@ -2,7 +2,8 @@ import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
   PublicIpRequestSchema, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
@@ -72,6 +73,13 @@ describe('MCP examples in production HTML', () => {
         const name = section.getAttribute('data-mcp-tool');
         const definition = catalogTools.find(tool => tool.mcp.name === name)!;
         const guidance = resources[page.locale].translation.discovery[definition.page];
+        const control = section.querySelector<HTMLButtonElement>('button[aria-expanded]')!;
+        expect(control.textContent).toBe(guidance.mcpTitle);
+        expect(control.getAttribute('aria-expanded')).toBe('false');
+        expect(section.querySelector('h2')!.contains(control)).toBe(true);
+        const panel = document.getElementById(control.getAttribute('aria-controls')!)!;
+        expect(panel.getAttribute('aria-labelledby')).toBe(control.id);
+        expect(panel.style.display).toBe('none');
         const resultGuidance = guidance.result
           .replaceAll('{{maximumOutputs}}', new Intl.NumberFormat(page.locale).format(MAX_SUBTRACTION_OUTPUTS));
         expect(section.textContent).toContain(resultGuidance);
@@ -106,6 +114,50 @@ describe('MCP examples in production HTML', () => {
       }
     },
   );
+});
+
+describe('localized MCP tool disclosures', () => {
+  it.each(supportedLocales)('keeps the %s tool documentation mounted while opening and closing independent panels', async locale => {
+    const fetch = vi.fn();
+    vi.stubGlobal('fetch', fetch);
+    window.history.replaceState({}, '', localizedPath(pagePaths.mcp, locale));
+    render(<App />);
+    const user = userEvent.setup();
+    const text = resources[locale].translation;
+    const main = screen.getByRole('main', { name: text.mcp.title });
+    const controls = catalogTools.map(tool => within(main).getByRole('button', {
+      name: text.discovery[tool.page].mcpTitle,
+    }));
+    const panels = controls.map(control => document.getElementById(control.getAttribute('aria-controls')!)!);
+    const examples = panels.map(panel => panel.querySelector('[data-mcp-example="arguments"]'));
+    for (const [index, tool] of catalogTools.entries()) {
+      expect(controls[index]!.getAttribute('aria-expanded')).toBe('false');
+      expect(examples[index]).not.toBeNull();
+      expect(within(panels[index]!).queryByRole('link', { name: text.discovery[tool.page].openTool })).toBeNull();
+    }
+    for (const [index, tool] of catalogTools.entries()) {
+      await user.click(controls[index]!);
+      expect(controls[index]!.getAttribute('aria-expanded')).toBe('true');
+      expect((await within(panels[index]!).findByRole('link', { name: text.discovery[tool.page].openTool })).getAttribute('href'))
+        .toBe(localizedPath(pagePaths[tool.page], locale));
+      expect(panels[index]!.querySelector('[data-mcp-example="arguments"]')).toBe(examples[index]);
+    }
+    expect(controls.every(control => control.getAttribute('aria-expanded') === 'true')).toBe(true);
+    for (const [index, tool] of catalogTools.entries()) {
+      controls[index]!.focus();
+      await user.keyboard('{Enter}');
+      expect(document.activeElement).toBe(controls[index]);
+      expect(controls[index]!.getAttribute('aria-expanded')).toBe('false');
+      await waitFor(() => {
+        expect(within(panels[index]!).queryByRole('link', { name: text.discovery[tool.page].openTool })).toBeNull();
+      });
+      expect(panels[index]!.querySelector('[data-mcp-example="arguments"]')).toBe(examples[index]);
+      await user.keyboard(' ');
+      expect(controls[index]!.getAttribute('aria-expanded')).toBe('true');
+      expect(await within(panels[index]!).findByRole('link', { name: text.discovery[tool.page].openTool })).toBeDefined();
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
 });
 
 describe('localized MCP guide navigation', () => {
@@ -206,7 +258,8 @@ describe('localized MCP guide navigation', () => {
       const text = resources[locale].translation;
       expect(window.location.pathname).toBe(localizedPath(pagePaths.mcp, locale));
       const section = screen.getByRole('region', { name: text.discovery.cidr.mcpTitle });
-      fireEvent.click(within(section).getByRole('link', { name: text.discovery.cidr.openTool }));
+      fireEvent.click(within(section).getByRole('button', { name: text.discovery.cidr.mcpTitle }));
+      fireEvent.click(await within(section).findByRole('link', { name: text.discovery.cidr.openTool }));
       expect(window.location.pathname).toBe(localizedPath(pagePaths.cidr, locale));
       expect((screen.getByLabelText(text.cidr.inputLabel) as HTMLTextAreaElement).value).toBe(input);
       if (input === 'bad') {

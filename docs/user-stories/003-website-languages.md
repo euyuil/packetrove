@@ -121,10 +121,14 @@ screens and coarse-pointer devices, button and menu-item targets are at least
 horizontal page scrolling.
 
 Tool examples, questions, and MCP details use collapsed Mantine accordions on
-tool pages. Preserve all existing content in prerendered HTML and retain
-localized headings and links. Input limits, calculation explanations, review
-guidance, and extra-coverage warnings stay visible. The MCP connection guide
-continues to show its full tool documentation directly.
+tool pages. The MCP connection guide uses the same collapsed accordions for
+each tool's documentation, with independent click and keyboard controls.
+Preserve all existing content in prerendered HTML and retain localized headings
+and links; expanding a panel does not fetch or create its documentation. Input
+limits, calculation explanations, review guidance, and extra-coverage warnings
+on tool pages stay visible. The MCP guide's connection instructions, server
+identity, result and error explanations, SDK example, and deployment guidance
+stay visible.
 
 ## Implementation and contribution
 
