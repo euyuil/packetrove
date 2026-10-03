@@ -65,8 +65,8 @@ not. This tooling is not bundled in the CLI. One component rooted at `.` groups
 `packages/cli`, `packages/core`, `packages/contracts`, `apps/web`, and
 `apps/worker`. Shared manifests, the lockfile, `.node-version`,
 `tsconfig.base.json`, `LICENSE`, and the OpenAPI and API-asset build scripts also
-contribute. Documentation, agent skills, other repository scripts, and workflow
-files are excluded. A mixed commit that changes product inputs still
+contribute. Documentation, other repository scripts, and workflow files are
+excluded. A mixed commit that changes product inputs still
 contributes. Update the relevant package manifest when changing a dependency
 and regenerate the lockfile together.
 

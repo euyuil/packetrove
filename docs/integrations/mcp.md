@@ -204,7 +204,7 @@ Pass start and end as IPv4 or IPv6 addresses from the same family, without CIDR 
 
 Read canonical range.first and range.last, sorted cidrs, cidrCount, and exact decimal-string addressCount. Equal endpoints produce one /32 or /128; a complete address space produces /0. Errors identify the start or end field.
 
-The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI and agent-skill range conversion are not available.
+The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI range conversion is not available.
 
 [Open browser range conversion](https://packetrove.com/range-to-cidrs)
 
