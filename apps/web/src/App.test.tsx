@@ -109,7 +109,8 @@ describe('GitHub source link', () => {
     vi.stubEnv('VITE_GITHUB_REPOSITORY', '');
     vi.stubEnv('VITE_GIT_COMMIT', '');
     render(<App />);
-    const link = screen.getByRole('link', { name: 'GitHub' });
+    const link = screen.getByRole('link', { name: 'View Packetrove on GitHub' });
+    expect(link.textContent).toBe('');
     expect(link.getAttribute('href')).toBe('https://github.com/euyuil/packetrove');
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
@@ -120,9 +121,10 @@ describe('GitHub source link', () => {
     vi.stubEnv('VITE_GITHUB_REPOSITORY', 'example-owner/packetrove');
     vi.stubEnv('VITE_GIT_COMMIT', commit);
     render(<App />);
-    const link = screen.getByRole('link', { name: /^GitHub/ });
+    const link = screen.getByRole('link', { name: `View source for commit ${commit} on GitHub` });
     expect(link.getAttribute('href')).toBe(`https://github.com/example-owner/packetrove/tree/${commit}`);
     expect(within(link).getByText('0123456')).toBeDefined();
+    expect(link.textContent).toBe('0123456');
     expect(link.getAttribute('title')).toContain(commit);
     expect(screen.getByRole('link', { name: 'Read the API guide' }).getAttribute('href'))
       .toBe('/docs/api');
