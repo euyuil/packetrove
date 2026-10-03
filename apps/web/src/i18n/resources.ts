@@ -268,7 +268,7 @@ export const en = {
     }
   },
   mcp: {
-    navigation: "MCP guide",
+    navigation: "MCP Guide",
     sdkTitle: "Run a Node.js example",
     sdkDescription: "In a new directory, save the code below as <code>packetrove-example.mjs</code>, then run the commands. The example uses <code>@modelcontextprotocol/client@{{version}}</code>, discovers tools, and calls the covering-CIDR tool with documentation addresses.",
     sdkLocal: "For local development, start <code>pnpm dev:api</code> and replace the server URL in the example with <code>{{localUrl}}</code>.",

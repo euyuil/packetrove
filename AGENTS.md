@@ -22,6 +22,12 @@
   the user has requested.
 - Build web interfaces with Mantine components and the shared theme. Prefer
   component props and layout components before adding custom CSS.
+- Keep capitalization consistent within each type of interface text.
+  English navigation labels use title case, such as "MCP Guide" and
+  "My Public IP". Action labels and explanatory text use sentence case.
+  Preserve acronym and product-name casing, and follow each locale's
+  writing conventions. Store the intended capitalization in translation
+  resources rather than applying CSS or runtime case transformations.
 - Give buttons a visible background or border in their default state. Use
   Mantine Button variants such as `filled`, `light`, `outline`, or `default`.
   Avoid `subtle` and equivalent text-only button styles; users must be able to
