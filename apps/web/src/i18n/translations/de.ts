@@ -34,7 +34,7 @@ export const de = {
         },
         "logs": {
             "title": "Betriebsprotokolle der Anwendung",
-            "body": "Unerwartete Anfragefehler erzeugen einen festen Ereignisnamen und Fehlercode zur Dienstdiagnose. Diese von der Anwendung erzeugten Ereignisse enthalten keine Werkzeugeingaben, Ergebnisse, zurückgegebenen IP-Adressen, Anfrageheader oder ungefilterten Ausnahmedetails. Wir erstellen keine Nutzerprofile, verfolgen Nutzer nicht über Websites hinweg, verkaufen keine Werkzeugdaten und verwenden sie weder für Werbung noch für Modelltraining."
+            "body": "Nach Abschluss eines MCP-Werkzeug-Callbacks wird ein Betriebsereignis mit festem Ereignisnamen, Werkzeugname, Erfolg oder Fehler und bei Fehlern einem kontrollierten Fehlercode erzeugt. Wir zählen damit Werkzeugausführungen und untersuchen Fehler. Wiederholungen zählen einzeln; Erkennung und vor dem Callback abgewiesene Anfragen sind nicht enthalten. Unerwartete HTTP-Fehler erzeugen einen festen Ereignisnamen und Fehlercode. Diese Anwendungsereignisse enthalten keine Eingaben, Ergebnisse, zurückgegebenen IP-Adressen, Header oder ursprünglichen Ausnahmedetails. Wir erstellen keine Nutzerprofile, verfolgen Nutzer nicht über Websites hinweg und verkaufen keine Werkzeugdaten. Wir verwenden diese Daten weder für Werbung noch für Modelltraining."
         },
         "providers": {
             "title": "Hosting, Empfänger und Aufbewahrung",
@@ -331,6 +331,7 @@ export const de = {
     httpErrors: "Fachliche Fehler verwenden das gemeinsame Fehler-JSON. Das MCP SDK prüft das Protokoll. Ungültiges JSON, nicht unterstützte Medientypen und zu große Anfragen werden auf HTTP-Ebene abgewiesen.",
     deploymentTitle: "Bereitstellung und Verbindungsgrenzen",
     serverBehavior: "Der Server unterstützt moderne zustandslose Anfragen sowie Initialisierung, Erkennung und Aufrufe über älteres Streamable HTTP. Er bietet keine dauerhaften Sitzungen oder eigenständigen Server-Ereignisströme.",
+    operationalLogging: "Wir zählen Werkzeugausführungen mit Betriebsereignissen, die Werkzeugname, Erfolg oder Fehler und einen kontrollierten Fehlercode enthalten. Eingaben, Ergebnisse und ermittelte Adressen sind nicht enthalten. Cloudflare kann Anfrage-Metadaten ergänzen; Verarbeitung und Aufbewahrung sind in der Datenschutzerklärung beschrieben.",
     connectionPrivacy: "Die öffentliche IP wird für jede Werkzeuganfrage aus den Verbindungsmetadaten gelesen. Gleichzeitige Clients verwenden getrennte Serverinstanzen. MCP-Ergebnisse und Fehler nutzen Cache-Control: no-store, no-transform. Die Anwendung speichert oder protokolliert keine abgefragten Adressen.",
     toolMigration: "Frühere Werkzeugnamen haben keine Kompatibilitätsaliase: {{toolRenames}}. Aktualisiere die Werkzeugerkennung und gespeicherte Aufrufe.",
     endpointMigration: "Der Website-Pfad <code>/mcp</code> ist kein Dienstendpunkt: GET liefert 404 und POST 405, ohne Werkzeugaufrufe weiterzuleiten. Konfiguriere Clients mit <code>{{serverUrl}}</code>. Passe bei eigener Bereitstellung Domains sowie die getrennten exakten Host- und Browser-Origin-Freigaben an. Clients ohne Origin-Header werden unterstützt.",

@@ -31,6 +31,33 @@ Application unexpected-error events include only the fixed event name
 response if the logging sink throws. Do not pass exception objects, input
 values, results, returned IP addresses, or request headers to this logger.
 
+## MCP execution counts
+
+Each registered tool callback emits one `mcp_tool_execution` event after its
+awaited execution finishes and the callback prepares a success or error result.
+The event includes the trusted catalog tool identifier, `outcome: success` or
+`outcome: error`, and a controlled `error_code` only on error. Retries count as
+separate executions. Initialization, discovery, unknown tool names, and input
+rejections before the callback do not count. Local calculator inputs still
+reach shared-core validation and therefore count as errors when invalid.
+Cancellation after callback entry can also count as an error with
+`INTERNAL_ERROR` under the existing response contract.
+
+Success describes the callback outcome before SDK output validation and
+response delivery. This is a count of recorded executions, not unique people,
+all attempted requests, successful deliveries, or a complete audit record.
+Quota exhaustion, sampling, runtime termination, and logging failures may
+omit records. Logging failure must preserve the original tool response.
+
+Application statistics must not receive or emit inputs, outputs, lookup
+addresses, arbitrary headers, exception objects, request identifiers, raw
+messages, or duration fields. Cloudflare may independently attach platform
+metadata to its complete persisted record. All localized policy pages, MCP
+guide summaries, and tool discovery descriptions disclose these events in
+the same revision that enables them.
+
+## Providers and user choices
+
 Cloudflare processes requests as the hosting provider. Application event
 fields do not describe the whole platform log record: technical metadata may
 include timestamps, request URLs, and identifiers. Workers Logs, when enabled,
@@ -54,12 +81,17 @@ project email address; public issues must not include private network data.
   tool destinations.
 - Unexpected HTTP errors keep their existing response and expose no exception
   details in the controlled application event, including when logging fails.
+- Current and legacy MCP clients record each successful or failed callback
+  once, including retries, and retain their existing results and errors.
+- Deferred execution produces no completion event until it settles; concurrent
+  tools, outcomes, and connections remain isolated.
+- Discovery and pre-callback rejections produce no tool execution events.
+- Logging exceptions preserve successful and failed MCP responses.
 - Production smoke checks verify policy content and footer entry points.
 - Directory listing URLs are considered available only after deployment and
   public-page verification. No directory submission is performed by this change.
 
-This delivery publishes the privacy boundary and restricts existing error
-events. It does not enable MCP tool-use statistics. Before enabling those
-statistics, update this policy in the same revision and verify the full actual
-persisted platform record as described in the
-[deployment guide](../deployment.md#privacy-policy-and-operational-errors).
+Confirm the actual Workers subscription before enabling production statistics,
+and inspect full persisted events after deployment as described in the
+[deployment guide](../deployment.md#mcp-tool-execution-counts). A local logger
+assertion does not establish the platform log envelope or directory readiness.
