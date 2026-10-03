@@ -138,8 +138,10 @@ use. With `--json`, stdout contains the shared result, for example
 exit-status convention as the calculator.
 
 The command queries `https://api.packetrove.com/v1/public-ip` without authentication,
-with a 10-second timeout, no cache, and no redirects. It rejects invalid or
-inconsistent result JSON. It does not read standard input or take address
+with a 10-second timeout covering headers and body, no cache, and no redirects.
+It rejects invalid or inconsistent result JSON and response bodies over 64 KiB
+with `INVALID_RESPONSE`; see the [HTTP client limits](../user-stories/002-current-public-ip.md#http-client-limits).
+It does not read standard input or take address
 arguments. For a self-hosted deployment or local integration test:
 
 ```sh

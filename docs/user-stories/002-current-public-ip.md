@@ -81,6 +81,29 @@ See [Cloudflare's header documentation](https://developers.cloudflare.com/fundam
 The tool reports an address. It does not edit firewall rules or automatically
 insert the result into the CIDR calculator.
 
+## HTTP client limits
+
+The browser and CLI use one shared HTTP client. Its ten-second deadline covers
+both response headers and the complete body; caller cancellation also stops
+the pending lookup. Network or body-transfer failures report `NETWORK_ERROR`
+without exposing exception details.
+
+The client accepts at most 64 KiB of actual response-body bytes, including
+whitespace, regardless of a missing or misleading `Content-Length`. This leaves
+ample room for the fixed IP result and normal structured service errors while
+bounding accumulation from an abnormal endpoint. At the first chunk exceeding
+the limit, it stops reading, requests cancellation, releases its reader, and
+reports `INVALID_RESPONSE` without displaying the body. Cancellation cleanup
+does not delay or replace that error. Even otherwise valid JSON larger than
+64 KiB is rejected; self-hosted endpoints must stay within this client limit.
+Small valid structured service errors retain their existing error codes.
+
+Client decoding retains UTF-8 replacement and BOM handling. The API and MCP
+JSON request reader shares only the byte-counting and streaming text mechanism:
+it keeps its existing 64 KiB request limit, strict UTF-8 validation, media-type
+checks, and `PAYLOAD_TOO_LARGE` / `INVALID_JSON` errors. These HTTP body limits
+do not apply to command-line address input.
+
 ## Page explanations and agent access
 
 The tool page includes questions about connection addresses, VPN/proxy changes,
