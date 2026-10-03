@@ -63,8 +63,11 @@ See [Cloudflare's header documentation](https://developers.cloudflare.com/fundam
 
 - Send `Cache-Control: no-store` for IP results and errors. Browser and CLI
   requests bypass caches, and refreshing clears an old result before retrying.
-- Keep the result in memory for display. Do not store lookup history, add
-  analytics, or log the IP in application logs or production verification.
+- Keep the result in memory for display. Do not store lookup history or log
+  the IP in application logs or production verification. MCP operational
+  events may count executions using the catalog tool name, outcome, and a
+  controlled error code; they must exclude inputs, results, connection
+  addresses, arbitrary headers, and exception details.
   Cloudflare still processes the request under the operator's platform settings.
   The public [Privacy Policy](https://packetrove.com/privacy) explains that
   hosting boundary and the limits of operator-accessible log retention.

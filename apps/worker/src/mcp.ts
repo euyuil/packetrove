@@ -5,6 +5,7 @@ import { MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_WEBSITE_ORIGI
 import { ToolError } from '@packetrove/core';
 import { executeTool, type ToolExecutor } from './tools';
 import { createToolExecutionContext } from './tool-context';
+import { logMcpToolExecution, type McpToolExecutionOutcome } from './operational-logs';
 
 export function createMcpServer(context: McpRequestContext, executor: ToolExecutor = executeTool) {
   const server = new McpServer({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
@@ -19,6 +20,7 @@ export function createMcpServer(context: McpRequestContext, executor: ToolExecut
       inputSchema, outputSchema: tool.outputSchema,
       annotations: tool.mcp.annotations,
     }, async (request: unknown, callContext: ServerContext): Promise<CallToolResult> => {
+      let outcome: McpToolExecutionOutcome = { outcome: 'success' };
       try {
         const executionContext = createToolExecutionContext(callContext.http?.req ?? context.requestInfo,
           callContext.mcpReq.signal);
@@ -29,7 +31,11 @@ export function createMcpServer(context: McpRequestContext, executor: ToolExecut
       } catch (error) {
         const failure = error instanceof ToolError ? error
           : new ToolError('INTERNAL_ERROR', 'An unexpected error occurred.');
+        outcome = { outcome: 'error', error_code: failure.code };
         return { isError: true, content: [{ type: 'text', text: JSON.stringify(failure.toResponse()) }] };
+      } finally {
+        // Count executions, including errors and retries, without passing request data.
+        logMcpToolExecution(tool.id, outcome);
       }
     });
   }

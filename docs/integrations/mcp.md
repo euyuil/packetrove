@@ -343,6 +343,8 @@ The server supports modern stateless requests and legacy Streamable HTTP initial
 
 Public IP metadata is read for each tool-call request, with isolated server instances for concurrent clients. MCP results and errors use Cache-Control: no-store, no-transform. The application does not retain or log lookup addresses.
 
+We count tool executions using operational events containing the tool name, success or error, and a controlled error code. These events exclude inputs, results, and lookup addresses. Cloudflare may add request metadata; see the privacy policy for processing and retention.
+
 Previous tool names have no compatibility aliases: `smallest_covering_cidr` → `cidr-cover`, `subtract_cidrs` → `cidr-subtract`, `get_public_ip` → `public-ip`. Refresh tool discovery and update saved calls.
 
 The website’s `/mcp` path is not the service endpoint: GET returns 404 and POST returns 405, without proxying or redirecting tool calls. Configure clients with `https://api.packetrove.com/mcp`. For your own deployment, update the domains and separate exact Host and browser Origin allowlists; non-browser clients without an Origin header are supported.
