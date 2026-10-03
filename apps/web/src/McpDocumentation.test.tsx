@@ -72,9 +72,11 @@ describe('MCP examples in production HTML', () => {
       for (const section of tools) {
         const name = section.getAttribute('data-mcp-tool');
         const definition = catalogTools.find(tool => tool.mcp.name === name)!;
-        const guidance = resources[page.locale].translation.discovery[definition.page].result
+        const guidance = resources[page.locale].translation.discovery[definition.page];
+        const resultGuidance = guidance.result
           .replaceAll('{{maximumOutputs}}', new Intl.NumberFormat(page.locale).format(MAX_SUBTRACTION_OUTPUTS));
-        expect(section.textContent).toContain(guidance);
+        expect(section.textContent).toContain(resultGuidance);
+        expect(section.textContent).toContain(guidance.boundary);
         expect(section.textContent).not.toMatch(/\{\{[^{}]*\}\}/);
         const args = JSON.parse(section.querySelector('[data-mcp-example="arguments"]')!.textContent!);
         const result = JSON.parse(section.querySelector('[data-mcp-example="result"]')!.textContent!);

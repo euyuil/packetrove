@@ -68,7 +68,7 @@
 - Every product tool must have a website page, a Web API endpoint, and an MCP
   tool in the same delivery. A tool is incomplete until all three interfaces
   share the same calculation or lookup implementation, contracts, examples,
-  and error semantics. CLI and skill coverage must describe their actual scope.
+  and error semantics. CLI coverage must describe its actual scope.
 - Maintain `packages/contracts/src/tools.ts` as the single source of truth for
   tool identities, website paths, API methods and paths, MCP names and metadata,
   CLI availability, legacy website redirects, schemas, and example references.
@@ -126,7 +126,7 @@
   their separate paths.
 - Record actual CLI availability in the catalog. Generate CLI discovery and
   command names from enabled entries, with exhaustive handler coverage. Naming
-  consistency does not authorize adding an unavailable CLI or skill operation.
+  consistency does not authorize adding an unavailable CLI operation.
 - Enforce identifier equality, flat paths, uniqueness, CLI coverage, and locale
   prefix avoidance in automated checks. New tools follow these rules immediately.
 
@@ -278,7 +278,7 @@ story, API contract, or integration guide when its behavior is affected.
 - For calculation changes, verify full input-range coverage, the largest valid
   prefix length, canonical addresses, overlap handling, and exact IPv6 counts.
   Keep the explanation of additional allowlist or blocklist coverage accurate.
-- For interface changes, keep the Web API, MCP, CLI, and skill aligned with the
+- For interface changes, keep the Web API, MCP, and CLI aligned with the
   shared contracts. Preserve structured errors, decimal-string address counts,
   and machine-readable CLI output. Regenerate OpenAPI from its source.
 - For IP lookup changes, verify the trusted connection metadata, per-call MCP

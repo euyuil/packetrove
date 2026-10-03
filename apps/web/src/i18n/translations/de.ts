@@ -160,7 +160,7 @@ export const de = {
       "purpose": "Bitte einen KI-Agenten, einen inklusiven Start-/Endbereich als minimale exakte CIDR-Liste darzustellen.",
       "inputs": "Übergib start und end als IPv4- oder IPv6-Adressen derselben Familie, ohne CIDR-Präfix, mit höchstens {{maximumLength}} Zeichen je Adresse. end muss gleich oder nach start liegen.",
       "result": "Lies die kanonischen range.first und range.last, sortierte cidrs, cidrCount und die exakte Dezimalzeichenfolge addressCount. Gleiche Endpunkte ergeben /32 oder /128; der vollständige Adressraum ergibt /0. Fehler nennen start oder end.",
-      "boundary": "Der Browser berechnet lokal. API- und entfernte MCP-Aufrufe senden Endpunkte an den Server. Das Werkzeug prüft keine tatsächlichen Zuweisungen und ändert keine Firewall-, Routing- oder VPN-Konfiguration. CLI und Agenten-Skill unterstützen diese Umwandlung nicht.",
+      "boundary": "Der Browser berechnet lokal. API- und entfernte MCP-Aufrufe senden Endpunkte an den Server. Das Werkzeug prüft keine tatsächlichen Zuweisungen und ändert keine Firewall-, Routing- oder VPN-Konfiguration. Die CLI unterstützt diese Umwandlung nicht.",
       "openTool": "Bereichsumwandlung im Browser öffnen",
       "questions": {
         "exact": {

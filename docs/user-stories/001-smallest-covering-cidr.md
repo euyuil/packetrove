@@ -2,7 +2,7 @@
 
 This document records the agreed calculation, behavior, and implementation
 choices for Packetrove's covering-CIDR tool. The shared calculation is available
-through the website, API, MCP, CLI, and agent skill. See the
+through the website, API, MCP, and CLI. See the
 [API contract](../api/README.md) and [integration guides](../integrations/)
 for interface usage.
 
@@ -54,8 +54,7 @@ IPv4 and IPv6 inputs, the agreed calculation is:
 ## Requested access and cost goals
 
 The user wants an interactive web application, a web API, and access for AI
-agents through Model Context Protocol (MCP), a command-line interface, and a
-reusable skill.
+agents through Model Context Protocol (MCP) and a command-line interface.
 
 When a calculation can run in the browser, the web application should be able to
 perform it locally without calling the hosted API. Browser and server interfaces
@@ -121,7 +120,7 @@ storage or URLs, or uploaded to the service.
 - Normalize CIDRs with host bits set and show canonical inputs in the result.
 - Use shared Zod schemas to generate the OpenAPI specification.
 - Accept 1 to 1,000 entries per calculation, with a 64 KiB HTTP request body limit.
-- Deliver a local CLI and repository skill in addition to the web app, API, and MCP.
+- Deliver a local CLI in addition to the web app, API, and MCP.
 
 Choosing which entries to combine across an entire list to meet a target entry
 limit would require a separate definition of the optimization goal. That broader

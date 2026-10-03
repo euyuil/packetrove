@@ -144,7 +144,7 @@ export const ko = {
       "purpose": "AI 에이전트에게 양 끝을 포함하는 IP 범위를 최소의 정확한 CIDR 목록으로 나타내도록 요청하세요.",
       "inputs": "같은 주소 체계의 IPv4 또는 IPv6 주소를 start와 end로 전달하세요. CIDR 접두사 없이 각각 최대 {{maximumLength}}자이며 end는 start 이상이어야 합니다.",
       "result": "정규화된 range.first와 range.last, 정렬된 cidrs, cidrCount, 정확한 십진 문자열 addressCount를 읽으세요. 같은 끝점은 /32 또는 /128, 전체 주소 공간은 /0을 반환합니다. 오류는 start 또는 end를 표시합니다.",
-      "boundary": "브라우저는 로컬에서 계산합니다. API와 원격 MCP는 끝점을 서버로 보냅니다. 도구는 실제 할당을 조사하거나 방화벽, 라우팅, VPN 설정을 변경하지 않습니다. CLI 및 에이전트 스킬에서는 범위 변환을 제공하지 않습니다.",
+      "boundary": "브라우저는 로컬에서 계산합니다. API와 원격 MCP는 끝점을 서버로 보냅니다. 도구는 실제 할당을 조사하거나 방화벽, 라우팅, VPN 설정을 변경하지 않습니다. CLI에서는 범위 변환을 제공하지 않습니다.",
       "openTool": "브라우저 범위 변환 열기",
       "questions": {
         "exact": {

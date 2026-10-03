@@ -145,7 +145,7 @@ export const it = {
       "purpose": "Chiedi a un agente IA di rappresentare un intervallo IP inclusivo con la lista CIDR minima esatta.",
       "inputs": "Passa start ed end come indirizzi IPv4 o IPv6 della stessa famiglia, senza prefissi CIDR, massimo {{maximumLength}} caratteri ciascuno. end deve essere uguale o successivo a start.",
       "result": "Leggi range.first e range.last canonici, cidrs ordinati, cidrCount e addressCount come stringa decimale esatta. Estremi uguali producono /32 o /128; uno spazio completo produce /0. Gli errori identificano start o end.",
-      "boundary": "Il browser calcola localmente. API e MCP remoto inviano gli estremi al server. Lo strumento non controlla allocazioni reali né modifica firewall, routing o VPN. CLI e skill dell’agente non offrono la conversione degli intervalli.",
+      "boundary": "Il browser calcola localmente. API e MCP remoto inviano gli estremi al server. Lo strumento non controlla allocazioni reali né modifica firewall, routing o VPN. La CLI non offre la conversione degli intervalli.",
       "openTool": "Apri conversione nel browser",
       "questions": {
         "exact": {

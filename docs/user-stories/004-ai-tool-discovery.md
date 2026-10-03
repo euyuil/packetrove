@@ -95,7 +95,7 @@ metadata and sitemap, hydration without unrelated requests, same-language
 links, and retained calculator results/errors through guide navigation. They
 parse examples from built HTML against the shared contracts, calculate CIDR
 results with the shared core, and execute the same examples through the local
-MCP server. Existing IP isolation, errors, cache behavior, API, CLI, and skill
+MCP server. Existing IP isolation, errors, cache behavior, API, and CLI
 contracts remain in scope. Production smoke checks inspect all localized pages
 after an authorized merge and deployment.
 

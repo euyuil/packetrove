@@ -145,7 +145,7 @@ export const fr = {
       "purpose": "Demandez à un agent IA de représenter une plage IP inclusive par sa liste CIDR minimale exacte.",
       "inputs": "Transmettez start et end comme adresses IPv4 ou IPv6 de même famille, sans préfixes CIDR, avec {{maximumLength}} caractères maximum chacune. end doit être égale ou postérieure à start.",
       "result": "Lisez range.first et range.last canoniques, cidrs triés, cidrCount et addressCount sous forme de chaîne décimale exacte. Des bornes égales produisent /32 ou /128 ; un espace complet produit /0. Les erreurs indiquent start ou end.",
-      "boundary": "Le navigateur calcule localement. L’API et le MCP distant envoient les bornes au serveur. L’outil ne vérifie pas les allocations réelles et ne modifie ni pare-feu, ni routage, ni VPN. La CLI et la compétence d’agent ne proposent pas cette conversion.",
+      "boundary": "Le navigateur calcule localement. L’API et le MCP distant envoient les bornes au serveur. L’outil ne vérifie pas les allocations réelles et ne modifie ni pare-feu, ni routage, ni VPN. La CLI ne propose pas cette conversion.",
       "openTool": "Ouvrir la conversion dans le navigateur",
       "questions": {
         "exact": {
