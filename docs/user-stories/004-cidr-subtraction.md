@@ -80,8 +80,19 @@ The counts are 16 included addresses, 4 removed, and 12 remaining.
 
 - An empty include list is a validation error.
   Submitting invalid input focuses the visible error summary. List-specific
-  issue links focus the affected include or exclude input without changing the
-  URL or discarding either draft.
+  issue links focus the affected include or exclude input. Mouse or keyboard
+  activation of a located issue also selects the specific invalid entry,
+  including when identical invalid values appear more than once. Missing or
+  out-of-range entry indices only focus the affected list; overall errors stay
+  in the summary. Activation preserves both drafts and the URL without
+  recalculating. Both CIDR pages share the original UTF-16 entry-range parser
+  and error-summary selection handling; subtraction only maps the issue's
+  list and index to its field and entry. Editing or clearing removes old errors
+  and their locations.
+  A shared helper reveals an off-screen selection by scrolling only the affected
+  textarea, measuring its actual text layout including soft wraps. It reveals
+  the start when the selected entry is taller than the viewport, and preserves
+  exact focus and selection when layout measurement is unavailable.
 - An empty exclude list returns the exact minimal union of included ranges.
   Adjacent siblings may merge; gaps are preserved.
 - Duplicate, overlapping, and nested entries count once on each side.
@@ -161,7 +172,9 @@ These questions are present in prerendered HTML.
 
 Focused tests cover interval boundaries, `/0`, `/32`, `/128`, canonicalization,
 overlaps on both sides, disjoint ranges, spanning exclusions, complete removal,
-input and output limits, mixed input separators, original error lines, exact
+input and output limits, mixed input separators, original error lines and token
+selection in both lists, repeated values, UTF-16 ranges and normalized CRLF,
+keyboard issue-link activation, unlocated errors, exact
 IPv6 counts, copy formats and paste round trips, local calculation,
 language and navigation state, prerendering, and hydration. A deterministic
 small-set oracle checks both address families against independent set membership

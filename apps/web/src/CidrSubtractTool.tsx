@@ -85,7 +85,8 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
     const inputList = detail.list;
     const list = t($ => inputList === 'include' ? $.subtract.include : $.subtract.exclude);
     const entry = issue.index === undefined ? undefined : entries[inputList][issue.index];
-    return { inputId: 'subtract-' + inputList, message: !entry ? t($ => $.subtract.listIssue, { list, message })
+    return { inputId: 'subtract-' + inputList, selection: entry && { start: entry.start, end: entry.end },
+      message: !entry ? t($ => $.subtract.listIssue, { list, message })
       : t($ => entry.entriesOnLine > 1 ? $.subtract.lineEntry : $.subtract.line, {
         list, line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
       }) };
