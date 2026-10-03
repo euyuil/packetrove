@@ -145,7 +145,7 @@ describe('tool navigation in one page session', () => {
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('::/0');
     act(() => { window.history.forward(); });
     await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Network tools for humans and agents'));
-    expect(document.title).toBe('Packetrove — CIDR Calculator and Public IP Lookup');
+    expect(document.title).toBe('Packetrove — Network tools for humans and agents');
     expect(fetch).toHaveBeenCalledTimes(2);
   });
   it('handles an unknown history route and returns home with the existing draft', () => {
