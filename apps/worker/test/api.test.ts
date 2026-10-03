@@ -3,9 +3,10 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CIDR_SUBTRACT_EXAMPLES, CIDR_SUBTRACT_PATH,
   CidrSubtractResultSchema, ErrorResponseSchema, MAX_REQUEST_BYTES, tools,
+  toolCatalog, RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema,
 } from '@packetrove/contracts';
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
-import { smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
+import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { createApp } from '../src/app';
 
 function post(body: string, headers: Record<string, string> = { 'content-type': 'application/json' }) {
@@ -193,6 +194,61 @@ function subtractPost(value: unknown) {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(value),
   });
 }
+
+describe('inclusive IP range conversion over API', () => {
+  const postRange = (value: unknown) => exports.default.fetch(`http://localhost${toolCatalog.range.api.path}`, {
+    method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(value),
+  });
+  it.each(RANGE_TO_CIDRS_EXAMPLES)('returns the shared exact $name example', async ({ request, result }) => {
+    const response = await postRange(request);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('access-control-allow-origin')).toBe('*');
+    expect(RangeToCidrsResultSchema.parse(await response.json())).toEqual(result);
+  });
+  it('preserves full IPv6 space counts and canonical endpoints', async () => {
+    const request = { start: ' :: ', end: 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF' };
+    const response = await postRange(request);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(rangeToCidrs(request));
+  });
+  it.each([
+    { request: { start: 'bad', end: '::/128' }, code: 'INVALID_INPUT', fields: ['start', 'end'] },
+    { request: { start: '', end: '::1' }, code: 'INVALID_INPUT', fields: ['start'] },
+    { request: { start: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
+    { request: { start: '203.0.113.1', end: '::1' }, code: 'MIXED_ADDRESS_FAMILIES', fields: ['end'] },
+    { request: { start: '::2', end: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
+  ])('returns field-specific errors without a partial list: $request', async ({ request, code, fields }) => {
+    const response = await postRange(request);
+    expect(response.status).toBe(400);
+    const error = ErrorResponseSchema.parse(await response.json()).error;
+    expect(error.code).toBe(code);
+    expect(error.issues?.map(issue => issue.field)).toEqual(fields);
+    expect(error.issues?.every(issue => issue.message.length > 0)).toBe(true);
+  });
+  it.each([
+    { body: '{', type: 'application/json', status: 400, code: 'INVALID_JSON' },
+    { body: '{}', type: 'text/plain', status: 415, code: 'UNSUPPORTED_MEDIA_TYPE' },
+    { body: ' '.repeat(MAX_REQUEST_BYTES + 1), type: 'application/json', status: 413, code: 'PAYLOAD_TOO_LARGE' },
+  ])('enforces the shared range HTTP boundary: $code', async ({ body, type, status, code }) => {
+    const response = await exports.default.fetch(`http://localhost${toolCatalog.range.api.path}`, {
+      method: 'POST', headers: { 'content-type': type }, body,
+    });
+    expect(response.status).toBe(status);
+    expect(ErrorResponseSchema.parse(await response.json()).error.code).toBe(code);
+  });
+  it('documents field-specific failures and supports anonymous preflight and method errors', async () => {
+    expect(createOpenApiDocument().paths![toolCatalog.range.api.path]?.post?.responses?.[400]?.description).toContain('start or end');
+    const options = await exports.default.fetch(`http://localhost${toolCatalog.range.api.path}`, {
+      method: 'OPTIONS', headers: { origin: 'https://client.example', 'access-control-request-method': 'POST' },
+    });
+    expect(options.status).toBe(204);
+    expect(options.headers.get('access-control-allow-origin')).toBe('*');
+    const response = await exports.default.fetch(`http://localhost${toolCatalog.range.api.path}`);
+    expect(response.status).toBe(405);
+    expect(response.headers.get('allow')).toBe('POST');
+    expect(ErrorResponseSchema.parse(await response.json()).error.code).toBe('METHOD_NOT_ALLOWED');
+  });
+});
 
 describe('CIDR subtraction over API', () => {
   it.each(CIDR_SUBTRACT_EXAMPLES)('returns the shared exact $name result', async ({ request, result }) => {

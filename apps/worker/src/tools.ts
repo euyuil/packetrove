@@ -1,10 +1,11 @@
-import type { CidrCoverResult, CidrSubtractResult, PublicIpResult, ToolPage } from '@packetrove/contracts';
-import { smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
+import type { CidrCoverResult, CidrSubtractResult, PublicIpResult, RangeToCidrsResult, ToolPage } from '@packetrove/contracts';
+import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { getPublicIp } from './ip';
 
-const handlers: Record<ToolPage, (input: unknown, headers?: Headers) => CidrCoverResult | CidrSubtractResult | PublicIpResult> = {
+const handlers: Record<ToolPage, (input: unknown, headers?: Headers) => CidrCoverResult | CidrSubtractResult | PublicIpResult | RangeToCidrsResult> = {
   cidr: smallestCoveringCidr,
   subtract: subtractCidrs,
+  range: rangeToCidrs,
   ip: (_input, headers) => getPublicIp(headers),
 };
 

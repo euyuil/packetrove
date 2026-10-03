@@ -8,6 +8,7 @@ import { formatAddress, parseInput, unionAddressCount, type ParsedInput } from '
 
 export { ToolError, type InputIssueDetail } from './errors';
 export { subtractCidrs } from './subtract';
+export { rangeToCidrs } from './range-to-cidrs';
 
 /** Calculate a single enclosing CIDR without enumerating addresses. */
 export function smallestCoveringCidr(value: unknown): CidrCoverResult {

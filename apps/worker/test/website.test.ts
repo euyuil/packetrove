@@ -5,7 +5,7 @@ import { localizedPath, pagePaths, resolveRoute, type Locale } from '../../web/s
 import { escapeHtml, websitePages, websiteRedirects } from '../../web/src/seo';
 import { mcpExamples } from '../../web/src/mcp-examples';
 import { supportedLocales } from '../../web/src/i18n/locales';
-import { tools as catalogTools } from '@packetrove/contracts';
+import { tools as catalogTools, isToolPage, toolCatalog } from '@packetrove/contracts';
 
 describe('website in the Workers runtime', () => {
   it.each(websitePages)('serves localized content and metadata at $pathname without running JavaScript', async ({ locale, page, pathname }) => {
@@ -30,12 +30,14 @@ describe('website in the Workers runtime', () => {
     expect(html).toContain('href="' + localizedPath('/cidr-cover', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/cidr-subtract', locale) + '"');
     expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
+    expect(html).toContain('href="' + localizedPath(toolCatalog.range.webPath, locale) + '"');
     const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? '';
     expect(navigation).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
       expect(html).toContain(text.home.subtractDescription);
       expect(html).toContain(text.home.ipDescription);
+      expect(html).toContain(escapeHtml(text.home.rangeDescription));
     } else if (page === 'cidr') {
       expect(html).toContain(text.cidr.explanation);
       expect(html).toContain(text.cidr.examplesTitle);
@@ -51,6 +53,15 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('2001:db8::8/125');
       expect(html.match(/<textarea\b/g)).toHaveLength(2);
       expect(html).not.toMatch(/<textarea[^>]*>[^<]+<\/textarea>/);
+    } else if (page === 'range') {
+      expect(html).toContain(escapeHtml(text.range.explanation));
+      expect(html).toContain(escapeHtml(text.range.startHelp));
+      expect(html).toContain(escapeHtml(text.range.endHelp));
+      expect(html).toContain(escapeHtml(text.range.examplesTitle));
+      expect(html).toContain('203.0.113.11/32');
+      expect(html).toContain('2001:db8::10/125');
+      expect(html).not.toContain('<textarea');
+      expect(html.match(/<input[^>]+value=""/g)).toHaveLength(2);
     } else if (page === 'ip') {
       expect(html).toContain(text.ip.explanation);
       expect(html).toContain(text.ip.checking);
@@ -71,7 +82,7 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('client.listTools()');
       expect(html).toContain('client.callTool(');
     }
-    if (page === 'cidr' || page === 'ip' || page === 'subtract') {
+    if (isToolPage(page)) {
       for (const question of Object.values(text.discovery[page].questions)) {
         expect(html).toContain(escapeHtml(question.question));
         expect(html).toContain(escapeHtml(question.answer));

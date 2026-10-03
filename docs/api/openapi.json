@@ -75,6 +75,14 @@
                       ],
                       "description": "The subtraction list containing the invalid entry."
                     },
+                    "field": {
+                      "type": "string",
+                      "enum": [
+                        "start",
+                        "end"
+                      ],
+                      "description": "The range endpoint containing the invalid input."
+                    },
                     "message": {
                       "type": "string"
                     }
@@ -298,6 +306,86 @@
         "required": [
           "include",
           "exclude"
+        ],
+        "additionalProperties": false
+      },
+      "RangeToCidrsResult": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "type": "string",
+            "enum": [
+              "ipv4",
+              "ipv6"
+            ]
+          },
+          "range": {
+            "type": "object",
+            "properties": {
+              "first": {
+                "type": "string"
+              },
+              "last": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "first",
+              "last"
+            ],
+            "additionalProperties": false,
+            "description": "Canonical inclusive start and end IP addresses."
+          },
+          "cidrs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "minItems": 1,
+            "maxItems": 254,
+            "description": "Complete minimal CIDR list, sorted by network address, with no gaps, overlaps, or additional addresses."
+          },
+          "cidrCount": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 254
+          },
+          "addressCount": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)$",
+            "description": "Exact number of addresses as a base-10 string, including network and broadcast addresses."
+          }
+        },
+        "required": [
+          "family",
+          "range",
+          "cidrs",
+          "cidrCount",
+          "addressCount"
+        ],
+        "additionalProperties": false
+      },
+      "RangeToCidrsRequest": {
+        "type": "object",
+        "properties": {
+          "start": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Inclusive start IP address. Use IPv4 or IPv6 without a CIDR prefix; surrounding whitespace is ignored."
+          },
+          "end": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "Inclusive end IP address, in the same family and at or after start. Endpoints are never silently swapped."
+          }
+        },
+        "required": [
+          "start",
+          "end"
         ],
         "additionalProperties": false
       },
@@ -616,6 +704,141 @@
           },
           "400": {
             "description": "Invalid JSON, invalid input, mixed address families, or output limit exceeded. Entry issues include a zero-based index and identify the include/exclude list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method is not supported for this endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 64 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected an application/json request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/range-to-cidrs": {
+      "post": {
+        "operationId": "range-to-cidrs",
+        "tags": [
+          "CIDR"
+        ],
+        "summary": "Convert an inclusive IP range to its minimal exact CIDR list",
+        "description": "Accept exactly one start and one end IP address of the same family, without CIDR prefixes, at most 64 characters each. Both endpoints are inclusive; end must be at or after start and endpoints are never swapped. Return canonical endpoints and the minimal sorted non-overlapping CIDR list covering exactly that range, with cidrCount and an exact decimal-string addressCount. Every address counts, including IPv4 network and broadcast addresses. Calculations do not enumerate addresses. The request body must not exceed 65536 bytes. Calls submit inputs to the server; no live allocation or firewall configuration is inspected or changed.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "summary": "IPv4",
+                  "value": {
+                    "start": "203.0.113.11",
+                    "end": "203.0.113.23"
+                  }
+                },
+                "example2": {
+                  "summary": "IPv6",
+                  "value": {
+                    "start": "2001:db8::b",
+                    "end": "2001:db8::17"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/RangeToCidrsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The calculated result and exact address counts.",
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "IPv4",
+                    "value": {
+                      "family": "ipv4",
+                      "range": {
+                        "first": "203.0.113.11",
+                        "last": "203.0.113.23"
+                      },
+                      "cidrs": [
+                        "203.0.113.11/32",
+                        "203.0.113.12/30",
+                        "203.0.113.16/29"
+                      ],
+                      "cidrCount": 3,
+                      "addressCount": "13"
+                    }
+                  },
+                  "example2": {
+                    "summary": "IPv6",
+                    "value": {
+                      "family": "ipv6",
+                      "range": {
+                        "first": "2001:db8::b",
+                        "last": "2001:db8::17"
+                      },
+                      "cidrs": [
+                        "2001:db8::b/128",
+                        "2001:db8::c/126",
+                        "2001:db8::10/125"
+                      ],
+                      "cidrCount": 3,
+                      "addressCount": "13"
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/RangeToCidrsResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, invalid endpoints, mixed address families, or reversed range. Issues identify the start or end field.",
             "content": {
               "application/json": {
                 "schema": {

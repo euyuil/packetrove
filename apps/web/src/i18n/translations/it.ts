@@ -15,6 +15,8 @@ export const it = {
   },
   footer: { project: 'Progetto', contact: 'Contatti e feedback', sendEmail: 'Invia un’e-mail' },
   home: {
+    rangeDescription: "Converti indirizzi IP iniziale e finale inclusivi nella lista CIDR minima esatta. Calcola localmente e copia tutti i blocchi senza aggiungere indirizzi.",
+    rangeLink: "Apri convertitore di intervalli IP",
     galleryTitle: "Esplora gli strumenti",
     galleryDescription: "Usa le frecce o scorri le schede per vedere gli esempi, poi apri lo strumento che ti serve.",
     galleryPrevious: "Strumento precedente",
@@ -88,6 +90,30 @@ export const it = {
     lineEntry: '{{list}}, riga {{line}}, voce {{entry}}: {{message}}',
     outputLimitTitle: 'Il risultato contiene troppi CIDR.',
   },
+  range: {
+    "title": "Intervallo IP in CIDR",
+    "description": "Converti un intervallo IPv4 o IPv6 inclusivo nella lista CIDR esatta più piccola, senza aggiungere indirizzi.",
+    "inputs": "Il tuo intervallo IP",
+    "start": "IP iniziale",
+    "end": "IP finale",
+    "startHelp": "Primo indirizzo incluso. Inserisci un indirizzo IPv4 o IPv6 senza prefisso CIDR, massimo 64 caratteri.",
+    "endHelp": "Ultimo indirizzo incluso. Stessa famiglia, uguale o successivo all’IP iniziale, massimo 64 caratteri.",
+    "calculate": "Converti intervallo in CIDR",
+    "result": "Risultato esatto dell’intervallo",
+    "output": "Lista CIDR esatta",
+    "addresses": "Indirizzi nell’intervallo",
+    "completed": "Calcolo completato. Indirizzi: {{addresses}}. CIDR: {{cidrs}}.",
+    "pendingDescription": "Inserisci entrambi gli estremi inclusivi per vedere la lista CIDR esatta e il numero di indirizzi.",
+    "explanation": "Entrambi gli estremi sono inclusi. Il risultato è la lista CIDR minima ordinata che copre esattamente l’intervallo, senza lacune, sovrapposizioni o indirizzi aggiunti. Un singolo CIDR di copertura può includere indirizzi esterni. Si contano tutti gli indirizzi, inclusi quelli di rete e broadcast IPv4, mantenendo precisione anche per grandi intervalli IPv6.",
+    "examplesTitle": "Esempi di intervalli IP",
+    "example": "Intervallo inclusivo: da {{start}} a {{end}}.",
+    "issue": "{{field}}: {{message}}",
+    "emptyEndpoint": "Inserisci un indirizzo IPv4 o IPv6.",
+    "invalidEndpoint": "Usa un indirizzo IPv4 o IPv6 standard senza prefisso CIDR. Identificatori di zona e zeri iniziali IPv4 non sono supportati.",
+    "endpointCidr": "Inserisci un indirizzo IP senza prefisso CIDR.",
+    "reversedRange": "L’IP finale deve essere uguale o successivo all’IP iniziale. Gli estremi non vengono scambiati automaticamente.",
+    "expectedFamily": "Usa {{family}} come per l’IP iniziale."
+  },
   ip: {
     title: 'Il mio IP pubblico', description: 'Visualizza l’indirizzo IP pubblico utilizzato dalla tua connessione attuale a Packetrove.',
     online: 'Verificato online · Il risultato non viene salvato dall’applicazione', connection: 'La tua connessione attuale', checking: 'Verifica dell’IP pubblico…',
@@ -98,6 +124,8 @@ export const it = {
     familyExplanation: 'Una connessione usa IPv4 oppure IPv6. Questa verifica mostra l’indirizzo di quella connessione; non individua entrambe le famiglie né il tuo indirizzo locale privato. Aggiorna il risultato dopo aver cambiato rete o impostazioni del proxy.',
   },
   api: {
+    rangeSummary: "Invia start ed end della stessa famiglia. Entrambi gli estremi sono inclusi. Restituisce estremi canonici, lista CIDR minima esatta, numero di CIDR e conteggio indirizzi come stringa decimale. La richiesta invia dati al server.",
+    rangeResponse: "Questo esempio restituisce {{cidrs}}, rappresentando esattamente {{addresses}} indirizzi.",
     title: 'Documentazione API', loading: 'Caricamento della documentazione API…', specification: 'Specifica OpenAPI',
     unavailableTitle: 'La documentazione API non è disponibile',
     unavailableDescription: 'Non è stato possibile caricare o visualizzare la documentazione. Puoi tornare al calcolatore conservando i dati inseriti, il risultato o gli errori di validazione.',
@@ -111,6 +139,33 @@ export const it = {
     subtractResponse: "Questo esempio restituisce {{cidrs}}, con {{remaining}} indirizzi rimanenti e nessuna copertura aggiuntiva.",
   },
   discovery: {
+    range: {
+      "title": "Domande sulla conversione degli intervalli IP",
+      "mcpTitle": "Converti intervalli IP tramite MCP",
+      "purpose": "Chiedi a un agente IA di rappresentare un intervallo IP inclusivo con la lista CIDR minima esatta.",
+      "inputs": "Passa start ed end come indirizzi IPv4 o IPv6 della stessa famiglia, senza prefissi CIDR, massimo {{maximumLength}} caratteri ciascuno. end deve essere uguale o successivo a start.",
+      "result": "Leggi range.first e range.last canonici, cidrs ordinati, cidrCount e addressCount come stringa decimale esatta. Estremi uguali producono /32 o /128; uno spazio completo produce /0. Gli errori identificano start o end.",
+      "boundary": "Il browser calcola localmente. API e MCP remoto inviano gli estremi al server. Lo strumento non controlla allocazioni reali né modifica firewall, routing o VPN. CLI e skill dell’agente non offrono la conversione degli intervalli.",
+      "openTool": "Apri conversione nel browser",
+      "questions": {
+        "exact": {
+          "question": "Qual è la differenza rispetto a un singolo CIDR di copertura?",
+          "answer": "Questa lista contiene esattamente l’intervallo inclusivo, senza indirizzi aggiuntivi. Un singolo CIDR può includere indirizzi prima dell’inizio o dopo la fine. Usa la conversione esatta per una allowlist che corrisponda precisamente all’intervallo."
+        },
+        "order": {
+          "question": "Posso usare estremi uguali o invertiti?",
+          "answer": "Estremi uguali restituiscono un CIDR host: /32 per IPv4 o /128 per IPv6. Gli estremi invertiti vengono rifiutati e mai scambiati senza avviso. Entrambi devono essere della stessa famiglia e senza prefissi CIDR."
+        },
+        "counts": {
+          "question": "Quali indirizzi vengono contati?",
+          "answer": "Conta ogni indirizzo tra gli estremi, inclusi gli estremi e gli indirizzi di rete e broadcast IPv4. Il conteggio resta esatto per l’intero spazio IPv6; gli indirizzi non vengono enumerati singolarmente."
+        },
+        "privacy": {
+          "question": "Dove vengono inviati i miei estremi?",
+          "answer": "I calcoli nel browser restano nella memoria del dispositivo, senza upload, persistenza, registrazione o dati nelle URL. Web API e MCP remoto inviano gli estremi al server. L’operazione è disponibile sul sito, Web API e MCP."
+        }
+      }
+    },
     subtract: {
       title: 'Domande sulla sottrazione CIDR',
       mcpTitle: "Usare la sottrazione tramite MCP",
@@ -245,6 +300,10 @@ export const it = {
     tooManyOutputs: 'Il risultato completo supera {{limit}} CIDR. Riduci le esclusioni o gli intervalli inclusi. Non viene restituito un risultato parziale.',
   },
   meta: {
+    range: {
+      "title": "Convertitore intervallo IP in CIDR — Packetrove",
+      "description": "Converti localmente estremi IPv4 o IPv6 inclusivi in una lista CIDR minima esatta. Copia tutti i blocchi e verifica i conteggi senza copertura aggiuntiva."
+    },
     mcp: { title: 'Guida MCP Packetrove — Strumenti CIDR e IP pubblico', description: 'Collega Claude Code o Codex a Packetrove tramite MCP. Consulta argomenti, risultati CIDR esatti, limiti della connessione IP e gestione degli errori senza chiave API.' },
     home: { title: 'Packetrove — Calcolatore CIDR e ricerca IP pubblico', description: 'Calcola CIDR di copertura nel browser e verifica il tuo IP pubblico. Strumenti IPv4 e IPv6 open source per web, API, CLI e MCP, senza account.' },
     cidr: { title: 'Calcolatore del CIDR minimo di copertura — Packetrove', description: 'Trova il più piccolo CIDR singolo che comprende indirizzi e intervalli IPv4 o IPv6. Calcola nel browser con conteggi esatti, copertura aggiuntiva ed esempi.' },

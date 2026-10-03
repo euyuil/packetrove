@@ -23,6 +23,8 @@ export const en = {
   },
   footer: { project: 'Project', contact: 'Contact & feedback', sendEmail: 'Send an email' },
   home: {
+    rangeDescription: "Convert inclusive start and end IP addresses into the minimal exact CIDR list. Calculate locally and copy every block without adding addresses.",
+    rangeLink: "Open IP range converter",
     galleryTitle: "Explore the tools",
     galleryDescription: "Use the arrows or swipe through the example previews, then open the tool you need.",
     galleryPrevious: "Previous tool",
@@ -95,6 +97,30 @@ export const en = {
     lineEntry: '{{list}}, line {{line}}, item {{entry}}: {{message}}',
     outputLimitTitle: 'The result contains too many CIDRs.',
   },
+  range: {
+    "title": "IP Range to CIDRs",
+    "description": "Convert one inclusive IPv4 or IPv6 start/end range into the smallest exact CIDR list, without adding addresses.",
+    "inputs": "Your IP range",
+    "start": "Start IP",
+    "end": "End IP",
+    "startHelp": "First included address. Enter one IPv4 or IPv6 address without a CIDR prefix (up to 64 characters).",
+    "endHelp": "Last included address. Use the same family and an address at or after Start IP (up to 64 characters).",
+    "calculate": "Convert range to CIDRs",
+    "result": "Exact range result",
+    "output": "Exact CIDR list",
+    "addresses": "Addresses in range",
+    "completed": "Calculation complete. Addresses: {{addresses}}. CIDRs: {{cidrs}}.",
+    "pendingDescription": "Enter both inclusive endpoints to see their exact CIDR list and address count.",
+    "explanation": "Both endpoints are included. The result is the minimal sorted CIDR list covering exactly this range, with no gaps, overlaps, or added addresses. A single covering CIDR can include addresses outside the range. Counts include every address, including IPv4 network and broadcast addresses, and remain exact for large IPv6 ranges.",
+    "examplesTitle": "IP range examples",
+    "example": "Inclusive range: {{start}} through {{end}}.",
+    "issue": "{{field}}: {{message}}",
+    "emptyEndpoint": "Enter one IPv4 or IPv6 address.",
+    "invalidEndpoint": "Use a standard IPv4 or IPv6 address without a CIDR prefix. Zone identifiers and IPv4 leading zeros are not supported.",
+    "endpointCidr": "Enter an IP address without a CIDR prefix.",
+    "reversedRange": "Enter an end IP at or after the start IP. Endpoints are not automatically swapped.",
+    "expectedFamily": "Use {{family}} to match the start IP."
+  },
   ip: {
     title: 'My Public IP', description: 'See the public IP address used by your current connection to Packetrove.',
     online: 'Checked online · Not stored by the application', connection: 'Your current connection', checking: 'Checking your public IP…',
@@ -105,6 +131,8 @@ export const en = {
     familyExplanation: 'A connection uses either IPv4 or IPv6. This check shows that address; it does not discover both families or your private local address. Refresh after changing networks or proxy settings.',
   },
   api: {
+    rangeSummary: "Submit start and end IP addresses from one family. Both endpoints are inclusive. Return canonical endpoints, the minimal exact CIDR list, a CIDR count, and a decimal-string address count. This request sends inputs to the server.",
+    rangeResponse: "This example returns {{cidrs}}, representing exactly {{addresses}} addresses.",
     title: 'API documentation', loading: 'Loading API documentation…', specification: 'OpenAPI specification',
     unavailableTitle: 'API documentation is unavailable',
     unavailableDescription: 'The documentation could not be loaded or displayed. You can return to the calculator with your input, result, or validation errors preserved.',
@@ -118,6 +146,33 @@ export const en = {
     subtractResponse: "This example returns {{cidrs}}, with {{remaining}} remaining addresses and no additional coverage.",
   },
   discovery: {
+    range: {
+      "title": "Questions about IP range conversion",
+      "mcpTitle": "Convert IP ranges through MCP",
+      "purpose": "Ask an AI agent to represent one inclusive start/end IP range as its minimal exact CIDR list.",
+      "inputs": "Pass start and end as IPv4 or IPv6 addresses from the same family, without CIDR prefixes, up to {{maximumLength}} characters each. End must be at or after start.",
+      "result": "Read canonical range.first and range.last, sorted cidrs, cidrCount, and exact decimal-string addressCount. Equal endpoints produce one /32 or /128; a complete address space produces /0. Errors identify the start or end field.",
+      "boundary": "The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI and agent-skill range conversion are not available.",
+      "openTool": "Open browser range conversion",
+      "questions": {
+        "exact": {
+          "question": "How does this differ from a single covering CIDR?",
+          "answer": "This list contains exactly the inclusive range, with no additional addresses. A single covering CIDR can include addresses before the start or after the end. Use exact conversion when an allowlist must match the supplied range."
+        },
+        "order": {
+          "question": "Can I use equal or reversed endpoints?",
+          "answer": "Equal endpoints return one host CIDR: /32 for IPv4 or /128 for IPv6. Reversed endpoints are rejected and never silently swapped. Both endpoints must be IP addresses of the same family, without CIDR prefixes."
+        },
+        "counts": {
+          "question": "Which addresses are counted?",
+          "answer": "Every address between the endpoints counts, including both endpoints and IPv4 network and broadcast addresses. Counts remain exact even across the complete IPv6 address space; addresses are not individually enumerated."
+        },
+        "privacy": {
+          "question": "Where do my endpoints go?",
+          "answer": "Browser calculations stay in memory on your device, without uploads, persistence, logging, or input-bearing URLs. Web API and remote MCP calls send endpoints to the server. This operation is available on the website, Web API, and MCP."
+        }
+      }
+    },
     subtract: {
       title: "Questions about CIDR subtraction",
       mcpTitle: "Use subtraction through MCP",
@@ -252,6 +307,10 @@ export const en = {
     tooManyOutputs: 'The complete result exceeds {{limit}} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.',
   },
   meta: {
+    range: {
+      "title": "IP Range to CIDRs Converter — Packetrove",
+      "description": "Convert inclusive IPv4 or IPv6 start/end addresses to a minimal exact CIDR list locally. Copy all blocks and verify exact counts without extra coverage."
+    },
     mcp: {"title": "Packetrove MCP Guide — CIDR and Public IP Tools", "description": "Connect Claude Code or Codex to Packetrove over MCP. Learn tool arguments, exact CIDR results, public IP connection boundaries, and error handling without an API key."},
     home: { title: 'Packetrove — CIDR Calculator and Public IP Lookup', description: 'Calculate covering CIDRs locally in your browser and check your public IP. Open source IPv4 and IPv6 tools for the web, API, CLI, and MCP, with no account required.' },
     cidr: { title: 'Smallest Covering CIDR Calculator — Packetrove', description: 'Find the smallest single CIDR covering IPv4 or IPv6 addresses and ranges. Calculate in your browser with exact address counts, extra coverage, and worked examples.' },
@@ -280,6 +339,8 @@ export const zhHans = {
   },
   footer: { project: '项目资源', contact: '联系与反馈', sendEmail: '发送邮件' },
   home: {
+    rangeDescription: "将包含起止端点的 IP 范围转换为最少且精确的 CIDR 列表。在本地计算并复制全部网段，不增加额外地址。",
+    rangeLink: "打开 IP 范围转换",
     galleryTitle: "工具预览",
     galleryDescription: "使用左右箭头或滑动卡片浏览示例，再打开需要的工具。",
     galleryPrevious: "上一个工具",
@@ -352,6 +413,30 @@ export const zhHans = {
     lineEntry: '{{list}}第 {{line}} 行第 {{entry}} 项：{{message}}',
     outputLimitTitle: '结果中的 CIDR 数量过多。',
   },
+  range: {
+    "title": "IP 范围转 CIDR",
+    "description": "将一组包含起止端点的 IPv4 或 IPv6 地址范围转换为最少且精确的 CIDR 列表，不增加范围外的地址。",
+    "inputs": "你的 IP 地址范围",
+    "start": "起始 IP",
+    "end": "结束 IP",
+    "startHelp": "范围内的第一个地址。输入一个不含 CIDR 前缀的 IPv4 或 IPv6 地址，最多 64 个字符。",
+    "endHelp": "范围内的最后一个地址。须与起始 IP 属于同一地址族，且不早于起始 IP，最多 64 个字符。",
+    "calculate": "将范围转换为 CIDR",
+    "result": "精确范围结果",
+    "output": "精确 CIDR 列表",
+    "addresses": "范围内地址数",
+    "completed": "计算完成。地址数：{{addresses}}。CIDR 数：{{cidrs}}。",
+    "pendingDescription": "输入包含在范围内的起止地址，查看精确 CIDR 列表和地址数。",
+    "explanation": "起始和结束地址都包含在范围内。结果是精确覆盖此范围的最少 CIDR 列表，按网络地址排序，没有空隙、重叠或额外地址。单个覆盖 CIDR 可能包含范围外的地址。计数包括所有地址，也包括 IPv4 网络地址和广播地址；大范围 IPv6 的地址数仍保持精确。",
+    "examplesTitle": "IP 范围示例",
+    "example": "含端点范围：{{start}} 至 {{end}}。",
+    "issue": "{{field}}：{{message}}",
+    "emptyEndpoint": "请输入一个 IPv4 或 IPv6 地址。",
+    "invalidEndpoint": "请使用标准 IPv4 或 IPv6 地址，不要包含 CIDR 前缀。不支持区域标识和 IPv4 前导零。",
+    "endpointCidr": "请输入不含 CIDR 前缀的 IP 地址。",
+    "reversedRange": "结束 IP 须等于或晚于起始 IP，工具不会自动交换端点。",
+    "expectedFamily": "请使用 {{family}}，与起始 IP 一致。"
+  },
   ip: {
     title: '我的公网 IP', description: '查看当前连接到 Packetrove 时使用的公网 IP 地址。',
     online: '在线查询 · 应用不存储结果', connection: '当前连接', checking: '正在查询公网 IP…',
@@ -362,6 +447,8 @@ export const zhHans = {
     familyExplanation: '一次连接使用 IPv4 或 IPv6 中的一种。本次查询显示该连接的地址，无法同时发现两种地址，也不会显示本地私有地址。切换网络或代理设置后，请刷新查询。',
   },
   api: {
+    rangeSummary: "提交属于同一地址族的 start 和 end IP 地址，范围包含两个端点。返回规范化端点、最少精确 CIDR 列表、CIDR 数量和十进制字符串地址数。请求会将输入发送到服务器。",
+    rangeResponse: "此示例返回 {{cidrs}}，精确表示 {{addresses}} 个地址。",
     title: 'API 文档', loading: '正在加载 API 文档…', specification: 'OpenAPI 规范',
     unavailableTitle: 'API 文档暂时无法显示',
     unavailableDescription: '文档加载或显示失败。你可以返回计算器，继续使用当前输入、结果或验证提示。',
@@ -375,6 +462,33 @@ export const zhHans = {
     subtractResponse: "此示例返回 {{cidrs}}，剩余 {{remaining}} 个地址，不增加额外覆盖。",
   },
   discovery: {
+    range: {
+      "title": "IP 范围转换常见问题",
+      "mcpTitle": "通过 MCP 转换 IP 范围",
+      "purpose": "让智能体将一组包含起止端点的 IP 范围表示为最少且精确的 CIDR 列表。",
+      "inputs": "start 和 end 须是不含 CIDR 前缀且属于同一地址族的 IPv4 或 IPv6 地址，每个最多 {{maximumLength}} 个字符。end 须等于或晚于 start。",
+      "result": "读取规范化 range.first、range.last，已排序的 cidrs、cidrCount，以及精确十进制字符串 addressCount。端点相同返回一个 /32 或 /128；完整地址空间返回 /0。错误会指出 start 或 end 字段。",
+      "boundary": "浏览器在本地计算；API 和远程 MCP 调用会将端点发送到服务器。工具不检查实际地址分配，也不修改防火墙、路由或 VPN 配置。CLI 和智能体技能尚不支持范围转换。",
+      "openTool": "打开浏览器范围转换",
+      "questions": {
+        "exact": {
+          "question": "这与单个覆盖 CIDR 有何区别？",
+          "answer": "此列表只包含起止地址之间的全部地址，不增加额外地址。单个覆盖 CIDR 可能包含起始地址之前或结束地址之后的地址。允许列表需要精确匹配给定范围时，应使用精确转换。"
+        },
+        "order": {
+          "question": "端点相同或顺序相反时会怎样？",
+          "answer": "端点相同会返回一个主机 CIDR：IPv4 为 /32，IPv6 为 /128。顺序相反会报错，不会自动交换。两个端点须属于同一地址族，且不能含 CIDR 前缀。"
+        },
+        "counts": {
+          "question": "哪些地址会计入数量？",
+          "answer": "端点之间的每个地址都计入，包括两个端点及 IPv4 网络地址和广播地址。即使覆盖整个 IPv6 地址空间，计数也保持精确，计算不会逐个枚举地址。"
+        },
+        "privacy": {
+          "question": "起止地址会发送到哪里？",
+          "answer": "浏览器计算只在设备内存中进行，不上传、持久化、记录输入或将输入写入网址。Web API 和远程 MCP 调用会将端点发送到服务器。网站、Web API 和 MCP 均提供此功能。"
+        }
+      }
+    },
     subtract: {
       title: "关于 CIDR 扣除的常见问题",
       mcpTitle: "通过 MCP 使用 CIDR 相减",
@@ -509,6 +623,10 @@ export const zhHans = {
     tooManyOutputs: '完整结果超过 {{limit}} 个 CIDR。请减少排除项或缩小包含范围，不会返回部分结果。',
   },
   meta: {
+    range: {
+      "title": "IP 范围转 CIDR — Packetrove",
+      "description": "在本地将包含起止端点的 IPv4 或 IPv6 范围转换为最少精确 CIDR 列表，复制全部网段并核对精确地址数，不增加范围外地址。"
+    },
     mcp: {"title": "Packetrove MCP 接入指南 — CIDR 与公网 IP 工具", "description": "通过 MCP 将 Claude Code 或 Codex 接入 Packetrove。了解参数、精确 CIDR 结果、公网 IP 的连接归属与错误处理，无需 API 密钥。"},
     home: { title: 'Packetrove — CIDR 计算器与公网 IP 查询', description: '在浏览器内计算覆盖 CIDR，并查询当前公网 IP。开源 IPv4 与 IPv6 网络工具，支持网页、API、命令行和 MCP，无需账户。' },
     cidr: { title: '最小覆盖 CIDR 计算器 — Packetrove', description: '在浏览器内计算覆盖 IPv4 或 IPv6 地址和网段的最小单个 CIDR，查看精确地址数、额外覆盖范围与计算示例。' },

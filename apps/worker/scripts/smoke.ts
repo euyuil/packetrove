@@ -3,9 +3,10 @@ import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/cli
 import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
+import { CallToolResultSchema as LegacyCallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
-  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
+  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
 } from '@packetrove/contracts';
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
@@ -76,7 +77,7 @@ for (const page of websitePages) {
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
       ? text.api.cidrSummary : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
-    if (page.page === 'cidr' || page.page === 'ip' || page.page === 'subtract') {
+    if (isToolPage(page.page)) {
       for (const question of Object.values(text.discovery[page.page].questions)) {
         assert(pageHtml.includes(escapeHtml(question.question)), `Tool question: ${path}`);
         assert(pageHtml.includes(escapeHtml(question.answer)), `Tool answer: ${path}`);
@@ -241,13 +242,24 @@ const invalid = await timedFetch(`${apiOrigin}${CIDR_COVER_PATH}`, {
 });
 assert.equal(invalid.status, 400);
 assert.equal((await invalid.json() as { error: { code: string } }).error.code, 'MIXED_ADDRESS_FAMILIES');
+const invalidCalculationErrors = new Map<string, unknown>();
 for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
-  const response = await timedFetch(`${apiOrigin}${tool.api.path}`, {
+  for (const example of tool.examples) {
+    const response = await timedFetch(`${apiOrigin}${tool.api.path}`, {
+      method: tool.api.method.toUpperCase(), headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(example.request),
+    });
+    assert.equal(response.status, 200, `API calculation status: ${tool.id}`);
+    assert.deepEqual(tool.outputSchema.parse(await response.json()), example.result);
+  }
+  const invalid = await timedFetch(`${apiOrigin}${tool.api.path}`, {
     method: tool.api.method.toUpperCase(), headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(tool.example.request),
+    body: '{}',
   });
-  assert.equal(response.status, 200, `API calculation status: ${tool.id}`);
-  assert.deepEqual(tool.outputSchema.parse(await response.json()), tool.example.result);
+  assert.equal(invalid.status, 400, `API must reject an incomplete calculation: ${tool.id}`);
+  const error = ErrorResponseSchema.parse(await invalid.json());
+  assert.equal(error.error.code, 'INVALID_INPUT');
+  invalidCalculationErrors.set(tool.id, error);
 }
 console.log('PASS health, OpenAPI, IPv4/IPv6 API results, and invalid input');
 
@@ -267,9 +279,16 @@ try {
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
   for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
-    const response = await client.callTool({ name: tool.mcp.name, arguments: tool.example.request });
-    assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
-    assert.deepEqual(response.structuredContent, tool.example.result);
+    for (const example of tool.examples) {
+      const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
+      assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
+      assert.deepEqual(response.structuredContent, example.result);
+    }
+    const invalid = await client.callTool({ name: tool.mcp.name, arguments: {} });
+    assert.equal(invalid.isError, true, `MCP must reject an incomplete calculation: ${tool.id}`);
+    const content = invalid.content?.[0];
+    assert(content?.type === 'text', `MCP must return error content: ${tool.id}`);
+    assert.deepEqual(ErrorResponseSchema.parse(JSON.parse(content.text)), invalidCalculationErrors.get(tool.id));
   }
   const publicIp = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
   assert.notEqual(publicIp.isError, true, 'Public IP tool failed.');
@@ -292,9 +311,16 @@ try {
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
   for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
-    const response = await legacyClient.callTool({ name: tool.mcp.name, arguments: tool.example.request });
-    assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
-    assert.deepEqual(response.structuredContent, tool.example.result);
+    for (const example of tool.examples) {
+      const response = await legacyClient.callTool({ name: tool.mcp.name, arguments: example.request });
+      assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
+      assert.deepEqual(response.structuredContent, example.result);
+    }
+    const invalid = LegacyCallToolResultSchema.parse(await legacyClient.callTool({ name: tool.mcp.name, arguments: {} }));
+    assert.equal(invalid.isError, true, `Legacy MCP must reject an incomplete calculation: ${tool.id}`);
+    const content = invalid.content?.[0];
+    assert(content?.type === 'text', `Legacy MCP must return error content: ${tool.id}`);
+    assert.deepEqual(ErrorResponseSchema.parse(JSON.parse(content.text)), invalidCalculationErrors.get(tool.id));
   }
   const publicIp = await legacyClient.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
   assert.notEqual(publicIp.isError, true, 'Legacy public IP tool failed.');

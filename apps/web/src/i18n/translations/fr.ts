@@ -15,6 +15,8 @@ export const fr = {
   },
   footer: { project: 'Projet', contact: 'Contact et commentaires', sendEmail: 'Envoyer un e-mail' },
   home: {
+    rangeDescription: "Convertissez des bornes IP inclusives en une liste CIDR minimale exacte. Calculez localement et copiez tous les blocs sans ajouter d’adresses.",
+    rangeLink: "Ouvrir le convertisseur de plages IP",
     galleryTitle: "Découvrez les outils",
     galleryDescription: "Utilisez les flèches ou faites glisser les cartes pour voir les exemples, puis ouvrez l’outil souhaité.",
     galleryPrevious: "Outil précédent",
@@ -88,6 +90,30 @@ export const fr = {
     lineEntry: '{{list}}, ligne {{line}}, élément {{entry}} : {{message}}',
     outputLimitTitle: 'Le résultat contient trop de CIDR.',
   },
+  range: {
+    "title": "Plage IP en CIDR",
+    "description": "Convertissez une plage IPv4 ou IPv6 inclusive en la plus petite liste CIDR exacte, sans ajouter d’adresses.",
+    "inputs": "Votre plage IP",
+    "start": "IP de début",
+    "end": "IP de fin",
+    "startHelp": "Première adresse incluse. Saisissez une adresse IPv4 ou IPv6 sans préfixe CIDR, jusqu’à 64 caractères.",
+    "endHelp": "Dernière adresse incluse. Même famille, égale ou postérieure à l’IP de début, jusqu’à 64 caractères.",
+    "calculate": "Convertir la plage en CIDR",
+    "result": "Résultat exact de la plage",
+    "output": "Liste CIDR exacte",
+    "addresses": "Adresses dans la plage",
+    "completed": "Calcul terminé. Adresses : {{addresses}}. CIDR : {{cidrs}}.",
+    "pendingDescription": "Saisissez les deux bornes inclusives pour voir la liste CIDR exacte et le nombre d’adresses.",
+    "explanation": "Les deux bornes sont incluses. Le résultat est la liste CIDR minimale triée couvrant exactement la plage, sans trous, chevauchements ni adresses supplémentaires. Un CIDR de couverture unique peut inclure des adresses extérieures. Toutes les adresses comptent, y compris les adresses réseau et de diffusion IPv4, avec des nombres exacts même pour de grandes plages IPv6.",
+    "examplesTitle": "Exemples de plages IP",
+    "example": "Plage inclusive : de {{start}} à {{end}}.",
+    "issue": "{{field}} : {{message}}",
+    "emptyEndpoint": "Saisissez une adresse IPv4 ou IPv6.",
+    "invalidEndpoint": "Utilisez une adresse IPv4 ou IPv6 standard sans préfixe CIDR. Les identifiants de zone et les zéros initiaux IPv4 ne sont pas pris en charge.",
+    "endpointCidr": "Saisissez une adresse IP sans préfixe CIDR.",
+    "reversedRange": "L’IP de fin doit être égale ou postérieure à l’IP de début. Les bornes ne sont pas permutées automatiquement.",
+    "expectedFamily": "Utilisez {{family}} comme pour l’IP de début."
+  },
   ip: {
     title: 'Mon IP publique', description: 'Consultez l’adresse IP publique utilisée par votre connexion actuelle à Packetrove.',
     online: 'Vérification en ligne · Résultat non enregistré par l’application', connection: 'Votre connexion actuelle', checking: 'Vérification de votre IP publique…',
@@ -98,6 +124,8 @@ export const fr = {
     familyExplanation: 'Une connexion utilise IPv4 ou IPv6. Cette vérification affiche cette adresse ; elle ne recherche ni les deux familles ni votre adresse locale privée. Actualisez après un changement de réseau ou de configuration du proxy.',
   },
   api: {
+    rangeSummary: "Envoyez start et end de la même famille. Les deux bornes sont incluses. Renvoie les bornes canoniques, la liste CIDR minimale exacte, le nombre de CIDR et le nombre d’adresses en chaîne décimale. Cette requête envoie les entrées au serveur.",
+    rangeResponse: "Cet exemple renvoie {{cidrs}}, représentant exactement {{addresses}} adresses.",
     title: 'Documentation de l’API', loading: 'Chargement de la documentation de l’API…', specification: 'Spécification OpenAPI',
     unavailableTitle: 'La documentation de l’API est indisponible',
     unavailableDescription: 'La documentation n’a pas pu être chargée ou affichée. Vous pouvez revenir au calculateur en conservant vos entrées, le résultat ou les erreurs de validation.',
@@ -111,6 +139,33 @@ export const fr = {
     subtractResponse: "Cet exemple renvoie {{cidrs}}, avec {{remaining}} adresses restantes et aucune couverture supplémentaire.",
   },
   discovery: {
+    range: {
+      "title": "Questions sur la conversion de plages IP",
+      "mcpTitle": "Convertir des plages IP via MCP",
+      "purpose": "Demandez à un agent IA de représenter une plage IP inclusive par sa liste CIDR minimale exacte.",
+      "inputs": "Transmettez start et end comme adresses IPv4 ou IPv6 de même famille, sans préfixes CIDR, avec {{maximumLength}} caractères maximum chacune. end doit être égale ou postérieure à start.",
+      "result": "Lisez range.first et range.last canoniques, cidrs triés, cidrCount et addressCount sous forme de chaîne décimale exacte. Des bornes égales produisent /32 ou /128 ; un espace complet produit /0. Les erreurs indiquent start ou end.",
+      "boundary": "Le navigateur calcule localement. L’API et le MCP distant envoient les bornes au serveur. L’outil ne vérifie pas les allocations réelles et ne modifie ni pare-feu, ni routage, ni VPN. La CLI et la compétence d’agent ne proposent pas cette conversion.",
+      "openTool": "Ouvrir la conversion dans le navigateur",
+      "questions": {
+        "exact": {
+          "question": "Quelle différence avec un CIDR de couverture unique ?",
+          "answer": "Cette liste contient exactement la plage inclusive, sans adresses supplémentaires. Un CIDR unique peut inclure des adresses avant le début ou après la fin. Utilisez la conversion exacte pour une liste d’autorisation correspondant précisément à la plage."
+        },
+        "order": {
+          "question": "Puis-je utiliser des bornes égales ou inversées ?",
+          "answer": "Des bornes égales renvoient un CIDR d’hôte : /32 pour IPv4 ou /128 pour IPv6. Les bornes inversées sont rejetées, jamais permutées silencieusement. Les deux adresses doivent être de la même famille, sans préfixes CIDR."
+        },
+        "counts": {
+          "question": "Quelles adresses sont comptées ?",
+          "answer": "Chaque adresse entre les bornes compte, y compris les bornes et les adresses réseau et de diffusion IPv4. Les nombres restent exacts pour tout l’espace IPv6 ; les adresses ne sont pas énumérées une par une."
+        },
+        "privacy": {
+          "question": "Où vont mes bornes ?",
+          "answer": "Les calculs du navigateur restent en mémoire sur votre appareil, sans transfert, persistance, journalisation ni entrées dans les URL. La Web API et le MCP distant envoient les bornes au serveur. Cette opération existe sur le site, la Web API et le MCP."
+        }
+      }
+    },
     subtract: {
       title: "Questions sur la soustraction de CIDR",
       mcpTitle: "Utiliser la soustraction via MCP",
@@ -245,6 +300,10 @@ export const fr = {
     tooManyOutputs: 'Le résultat complet dépasse {{limit}} CIDR. Réduisez les exclusions ou les plages incluses. Aucun résultat partiel n’est renvoyé.',
   },
   meta: {
+    range: {
+      "title": "Convertisseur de plage IP en CIDR — Packetrove",
+      "description": "Convertissez localement des bornes IPv4 ou IPv6 inclusives en une liste CIDR minimale exacte. Copiez tous les blocs et vérifiez les nombres sans couverture supplémentaire."
+    },
     mcp: {"title": "Guide MCP de Packetrove — CIDR et IP publique", "description": "Connectez Claude Code ou Codex à Packetrove via MCP. Découvrez les arguments, les résultats CIDR exacts, les limites des IP de connexion et les erreurs, sans clé API."},
     home: { title: 'Packetrove — Calculateur CIDR et recherche d’IP publique', description: 'Calculez des CIDR englobants dans votre navigateur et vérifiez votre IP publique. Des outils IPv4 et IPv6 open source pour le web, l’API, la CLI et MCP, sans compte.' },
     cidr: { title: 'Calculateur de CIDR englobant minimal — Packetrove', description: 'Trouvez le plus petit CIDR unique englobant des adresses et plages IPv4 ou IPv6. Calculez dans votre navigateur avec des nombres exacts, la couverture supplémentaire et des exemples.' },

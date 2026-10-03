@@ -1,8 +1,9 @@
-import { IconArrowsMinimize, IconLayersSubtract, IconWorld } from '@tabler/icons-react';
+import { IconArrowsMinimize, IconLayersSubtract, IconWorld, IconListNumbers } from '@tabler/icons-react';
 
 const toolIcons = {
   cidr: IconArrowsMinimize,
   subtract: IconLayersSubtract,
+  range: IconListNumbers,
   ip: IconWorld,
 };
 

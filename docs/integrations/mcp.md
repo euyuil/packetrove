@@ -34,7 +34,7 @@ codex mcp add packetrove \
 
 [Codex MCP documentation](https://developers.openai.com/codex/mcp/)
 
-Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `cidr-cover, cidr-subtract, public-ip`.
+Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `cidr-cover, cidr-subtract, range-to-cidrs, public-ip`.
 
 After configuration, the client discovers available tools with tools/list. Tool descriptions and schemas guide selection and arguments. Reading a web page does not configure a client or grant it tool access.
 
@@ -138,6 +138,50 @@ Read cidrs and the exact decimal-string includedAddressCount, removedAddressCoun
 Remote API and MCP calls send inputs to the server; the browser calculates locally. Remaining ranges are relative to your inputs and do not prove live availability. The tool does not configure WireGuard or change firewall rules.
 
 [Open browser subtraction](https://packetrove.com/cidr-subtract)
+
+## Convert IP ranges through MCP
+
+Ask an AI agent to represent one inclusive start/end IP range as its minimal exact CIDR list.
+
+Tool name: `range-to-cidrs`
+
+Server address: `https://api.packetrove.com/mcp`
+
+Pass start and end as IPv4 or IPv6 addresses from the same family, without CIDR prefixes, up to 64 characters each. End must be at or after start.
+
+### Example arguments
+
+```json
+{
+  "start": "203.0.113.11",
+  "end": "203.0.113.23"
+}
+```
+
+### Example result using documentation addresses
+
+```json
+{
+  "family": "ipv4",
+  "range": {
+    "first": "203.0.113.11",
+    "last": "203.0.113.23"
+  },
+  "cidrs": [
+    "203.0.113.11/32",
+    "203.0.113.12/30",
+    "203.0.113.16/29"
+  ],
+  "cidrCount": 3,
+  "addressCount": "13"
+}
+```
+
+Read canonical range.first and range.last, sorted cidrs, cidrCount, and exact decimal-string addressCount. Equal endpoints produce one /32 or /128; a complete address space produces /0. Errors identify the start or end field.
+
+The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI and agent-skill range conversion are not available.
+
+[Open browser range conversion](https://packetrove.com/range-to-cidrs)
 
 ## Inspect a connection through MCP
 

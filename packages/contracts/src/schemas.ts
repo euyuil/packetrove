@@ -22,6 +22,26 @@ export const CidrCoverRequestSchema = z.strictObject({
 const AddressCountSchema = z.string().regex(/^(0|[1-9][0-9]*)$/)
   .describe('Exact number of addresses as a base-10 string, including network and broadcast addresses.');
 
+export const RangeToCidrsRequestSchema = z.strictObject({
+  start: z.string().min(1).max(MAX_INPUT_LENGTH)
+    .describe('Inclusive start IP address. Use IPv4 or IPv6 without a CIDR prefix; surrounding whitespace is ignored.'),
+  end: z.string().min(1).max(MAX_INPUT_LENGTH)
+    .describe('Inclusive end IP address, in the same family and at or after start. Endpoints are never silently swapped.'),
+});
+
+export const RangeToCidrsResultSchema = z.strictObject({
+  family: z.enum(['ipv4', 'ipv6']),
+  range: z.strictObject({ first: z.string(), last: z.string() })
+    .describe('Canonical inclusive start and end IP addresses.'),
+  cidrs: z.array(z.string().min(1).max(MAX_INPUT_LENGTH)).min(1).max(254)
+    .describe('Complete minimal CIDR list, sorted by network address, with no gaps, overlaps, or additional addresses.'),
+  cidrCount: z.number().int().min(1).max(254),
+  addressCount: AddressCountSchema,
+});
+
+export type RangeToCidrsRequest = z.infer<typeof RangeToCidrsRequestSchema>;
+export type RangeToCidrsResult = z.infer<typeof RangeToCidrsResultSchema>;
+
 export const CidrSubtractRequestSchema = z.strictObject({
   include: z.array(z.string().min(1).max(MAX_INPUT_LENGTH))
     .min(1, 'Include at least one IP address or CIDR range.').max(MAX_SUBTRACTION_INPUTS)
@@ -71,6 +91,8 @@ export const ErrorResponseSchema = z.strictObject({
         .describe('Zero-based index in inputs, or in the identified include/exclude list.'),
       list: z.enum(['include', 'exclude']).optional()
         .describe('The subtraction list containing the invalid entry.'),
+      field: z.enum(['start', 'end']).optional()
+        .describe('The range endpoint containing the invalid input.'),
       message: z.string(),
     })).optional(),
   }),
@@ -149,3 +171,24 @@ export const PUBLIC_IP_EXAMPLES = [
   { name: 'IPv4', request: {}, result: { ip: '203.0.113.1', family: 'ipv4' } },
   { name: 'IPv6', request: {}, result: { ip: '2001:db8::1', family: 'ipv6' } },
 ] satisfies Array<{ name: string; request: z.infer<typeof PublicIpRequestSchema>; result: PublicIpResult }>;
+
+export const RANGE_TO_CIDRS_EXAMPLES: Array<{
+  name: string; request: RangeToCidrsRequest; result: RangeToCidrsResult;
+}> = [
+  {
+    name: 'IPv4', request: { start: '203.0.113.11', end: '203.0.113.23' },
+    result: {
+      family: 'ipv4', range: { first: '203.0.113.11', last: '203.0.113.23' },
+      cidrs: ['203.0.113.11/32', '203.0.113.12/30', '203.0.113.16/29'],
+      cidrCount: 3, addressCount: '13',
+    },
+  },
+  {
+    name: 'IPv6', request: { start: '2001:db8::b', end: '2001:db8::17' },
+    result: {
+      family: 'ipv6', range: { first: '2001:db8::b', last: '2001:db8::17' },
+      cidrs: ['2001:db8::b/128', '2001:db8::c/126', '2001:db8::10/125'],
+      cidrCount: 3, addressCount: '13',
+    },
+  },
+];

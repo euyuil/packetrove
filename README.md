@@ -7,13 +7,14 @@
 **Network tools for humans and agents.**
 
 Packetrove helps developers and network administrators simplify firewall IP
-lists, subtract network ranges, and check a connection's public IP. Use the
-website for a quick calculation, the API or CLI for scripts, or connect AI agents
-through Model Context Protocol (MCP).
+lists, subtract networks, convert IP ranges to CIDRs, and check a connection's
+public IP. Use the website for a quick calculation, the API or CLI for scripts,
+or connect AI agents through Model Context Protocol (MCP).
 
 **[Website](https://packetrove.com) ·
 [CIDR calculator](https://packetrove.com/cidr-cover) ·
 [CIDR subtraction](https://packetrove.com/cidr-subtract) ·
+[IP range to CIDRs](https://packetrove.com/range-to-cidrs) ·
 [My Public IP](https://packetrove.com/public-ip)**
 
 ## What you can do
@@ -22,11 +23,13 @@ through Model Context Protocol (MCP).
   covering your inputs, with its full address range and exact additional coverage.
 - **Subtract CIDR lists exactly.** Remove excluded networks and copy the smallest
   CIDR list representing the remaining addresses, without adding addresses.
+- **Convert an IP range exactly.** Enter inclusive start and end addresses and
+  copy the minimal CIDR list covering that range, with an exact address count.
 - **Check a connection's public IP.** See and copy the IPv4 or IPv6 address
   observed for the connection making the request.
 
 The website supports ten languages. Hosted tools require no account or API key.
-All three tools are available through the website, Web API, and MCP. The CLI
+All four tools are available through the website, Web API, and MCP. The CLI
 provides covering-CIDR calculations and public IP lookup; the agent skill provides
 covering-CIDR calculations.
 
@@ -72,7 +75,8 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
 
 For input formats, limits, and detailed behavior, see the
 [covering-CIDR](docs/user-stories/001-smallest-covering-cidr.md),
-[CIDR subtraction](docs/user-stories/004-cidr-subtraction.md), and
+[CIDR subtraction](docs/user-stories/004-cidr-subtraction.md),
+[IP range conversion](docs/user-stories/006-ip-range-to-cidrs.md), and
 [public IP](docs/user-stories/002-current-public-ip.md) guides.
 
 ## Development

@@ -6,8 +6,9 @@ import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import {
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
   PublicIpRequestSchema, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
+  RangeToCidrsRequestSchema, RangeToCidrsResultSchema,
 } from '@packetrove/contracts';
-import { smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
+import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { App } from './App';
 import { render } from './test-utils';
 import { mcpExamples } from './mcp-examples';
@@ -76,6 +77,10 @@ describe('MCP examples in production HTML', () => {
           expect(CidrSubtractResultSchema.parse(result)).toEqual(subtractCidrs(CidrSubtractRequestSchema.parse(args)));
           expect(args).toEqual(mcpExamples.subtract.arguments);
           expect(result).toEqual(mcpExamples.subtract.result);
+        } else if (name === mcpExamples.range.name) {
+          expect(RangeToCidrsResultSchema.parse(result)).toEqual(rangeToCidrs(RangeToCidrsRequestSchema.parse(args)));
+          expect(args).toEqual(mcpExamples.range.arguments);
+          expect(result).toEqual(mcpExamples.range.result);
         } else {
           expect(name).toBe(mcpExamples.ip.name);
           expect(PublicIpRequestSchema.parse(args)).toEqual({});

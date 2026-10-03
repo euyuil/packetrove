@@ -15,6 +15,8 @@ export const de = {
   },
   footer: { project: 'Projekt', contact: 'Kontakt und Feedback', sendEmail: 'E-Mail senden' },
   home: {
+    rangeDescription: "Wandle inklusive Start- und Endadressen in die minimale exakte CIDR-Liste um. Berechne lokal und kopiere alle Blöcke ohne zusätzliche Adressen.",
+    rangeLink: "IP-Bereichskonverter öffnen",
     galleryTitle: "Werkzeuge entdecken",
     galleryDescription: "Nutze die Pfeile oder wische durch die Beispiele und öffne das gewünschte Werkzeug.",
     galleryPrevious: "Vorheriges Werkzeug",
@@ -103,6 +105,30 @@ export const de = {
     listIssue: '{{list}}: {{message}}',
     outputLimitTitle: 'Das Ergebnis enthält zu viele CIDRs.',
   },
+  range: {
+    "title": "IP-Bereich in CIDRs",
+    "description": "Wandle einen inklusiven IPv4- oder IPv6-Bereich in die kleinste exakte CIDR-Liste um, ohne zusätzliche Adressen.",
+    "inputs": "Dein IP-Bereich",
+    "start": "Start-IP",
+    "end": "End-IP",
+    "startHelp": "Erste enthaltene Adresse. Eine IPv4- oder IPv6-Adresse ohne CIDR-Präfix, höchstens 64 Zeichen.",
+    "endHelp": "Letzte enthaltene Adresse. Gleiche Adressfamilie, gleich oder nach der Start-IP, höchstens 64 Zeichen.",
+    "calculate": "Bereich in CIDRs umwandeln",
+    "result": "Exaktes Bereichsergebnis",
+    "output": "Exakte CIDR-Liste",
+    "addresses": "Adressen im Bereich",
+    "completed": "Berechnung abgeschlossen. Adressen: {{addresses}}. CIDRs: {{cidrs}}.",
+    "pendingDescription": "Gib beide inklusiven Endpunkte ein, um die exakte CIDR-Liste und Adressanzahl zu sehen.",
+    "explanation": "Beide Endpunkte sind enthalten. Das Ergebnis ist die minimale, sortierte CIDR-Liste für genau diesen Bereich, ohne Lücken, Überschneidungen oder zusätzliche Adressen. Ein einzelnes umfassendes CIDR-Netz kann Adressen außerhalb des Bereichs enthalten. Alle Adressen zählen, einschließlich IPv4-Netzwerk- und Broadcast-Adressen; auch große IPv6-Zahlen bleiben exakt.",
+    "examplesTitle": "IP-Bereichsbeispiele",
+    "example": "Inklusiver Bereich: {{start}} bis {{end}}.",
+    "issue": "{{field}}: {{message}}",
+    "emptyEndpoint": "Gib eine IPv4- oder IPv6-Adresse ein.",
+    "invalidEndpoint": "Verwende eine standardmäßige IPv4- oder IPv6-Adresse ohne CIDR-Präfix. Zonenkennungen und führende IPv4-Nullen werden nicht unterstützt.",
+    "endpointCidr": "Gib eine IP-Adresse ohne CIDR-Präfix ein.",
+    "reversedRange": "Die End-IP muss gleich oder nach der Start-IP liegen. Endpunkte werden nicht automatisch vertauscht.",
+    "expectedFamily": "Verwende {{family}} wie bei der Start-IP."
+  },
   ip: {
     title: 'Meine öffentliche IP-Adresse', description: 'Sehen Sie die öffentliche IP-Adresse Ihrer aktuellen Verbindung zu Packetrove.',
     online: 'Online-Abfrage · Die Anwendung speichert das Ergebnis nicht', connection: 'Ihre aktuelle Verbindung', checking: 'Öffentliche IP-Adresse wird abgefragt…',
@@ -113,6 +139,8 @@ export const de = {
     familyExplanation: 'Eine Verbindung verwendet entweder IPv4 oder IPv6. Diese Abfrage zeigt diese Adresse; sie ermittelt weder beide Adressfamilien noch Ihre private lokale Adresse. Aktualisieren Sie die Abfrage nach einem Netzwerkwechsel oder einer Änderung der Proxy-Einstellungen.',
   },
   api: {
+    rangeSummary: "Sende start und end derselben Adressfamilie. Beide Endpunkte sind enthalten. Zurückgegeben werden kanonische Endpunkte, die minimale exakte CIDR-Liste, CIDR-Anzahl und Adressanzahl als Dezimalzeichenfolge. Die Anfrage sendet Eingaben an den Server.",
+    rangeResponse: "Dieses Beispiel liefert {{cidrs}} für exakt {{addresses}} Adressen.",
     title: 'API-Dokumentation', loading: 'API-Dokumentation wird geladen…', specification: 'OpenAPI-Spezifikation',
     unavailableTitle: 'API-Dokumentation nicht verfügbar',
     unavailableDescription: 'Die Dokumentation konnte nicht geladen oder angezeigt werden. Sie können zum Rechner zurückkehren; Ihre Eingaben, das Ergebnis oder die Validierungsfehler bleiben erhalten.',
@@ -126,6 +154,33 @@ export const de = {
     subtractResponse: "Dieses Beispiel liefert {{cidrs}} mit {{remaining}} verbleibenden Adressen und ohne zusätzliche Abdeckung.",
   },
   discovery: {
+    range: {
+      "title": "Fragen zur IP-Bereichsumwandlung",
+      "mcpTitle": "IP-Bereiche über MCP umwandeln",
+      "purpose": "Bitte einen KI-Agenten, einen inklusiven Start-/Endbereich als minimale exakte CIDR-Liste darzustellen.",
+      "inputs": "Übergib start und end als IPv4- oder IPv6-Adressen derselben Familie, ohne CIDR-Präfix, mit höchstens {{maximumLength}} Zeichen je Adresse. end muss gleich oder nach start liegen.",
+      "result": "Lies die kanonischen range.first und range.last, sortierte cidrs, cidrCount und die exakte Dezimalzeichenfolge addressCount. Gleiche Endpunkte ergeben /32 oder /128; der vollständige Adressraum ergibt /0. Fehler nennen start oder end.",
+      "boundary": "Der Browser berechnet lokal. API- und entfernte MCP-Aufrufe senden Endpunkte an den Server. Das Werkzeug prüft keine tatsächlichen Zuweisungen und ändert keine Firewall-, Routing- oder VPN-Konfiguration. CLI und Agenten-Skill unterstützen diese Umwandlung nicht.",
+      "openTool": "Bereichsumwandlung im Browser öffnen",
+      "questions": {
+        "exact": {
+          "question": "Was ist der Unterschied zu einem umfassenden CIDR-Netz?",
+          "answer": "Diese Liste enthält exakt den inklusiven Bereich, ohne zusätzliche Adressen. Ein einzelnes umfassendes CIDR-Netz kann Adressen vor dem Start oder nach dem Ende einschließen. Verwende die exakte Umwandlung für eine präzise Allowlist."
+        },
+        "order": {
+          "question": "Sind gleiche oder vertauschte Endpunkte erlaubt?",
+          "answer": "Gleiche Endpunkte ergeben ein Host-CIDR: /32 für IPv4 oder /128 für IPv6. Umgekehrte Endpunkte werden abgelehnt und nie stillschweigend vertauscht. Beide müssen derselben Familie angehören und dürfen kein CIDR-Präfix enthalten."
+        },
+        "counts": {
+          "question": "Welche Adressen werden gezählt?",
+          "answer": "Jede Adresse zwischen den Endpunkten zählt, einschließlich beider Endpunkte und IPv4-Netzwerk- und Broadcast-Adressen. Die Anzahl bleibt selbst für den vollständigen IPv6-Adressraum exakt; Adressen werden nicht einzeln aufgezählt."
+        },
+        "privacy": {
+          "question": "Wohin werden meine Endpunkte gesendet?",
+          "answer": "Browserberechnungen bleiben im Gerätespeicher, ohne Uploads, Speicherung, Protokollierung oder Eingaben in URLs. Web API und entferntes MCP senden Endpunkte an den Server. Das Werkzeug ist über Website, Web API und MCP verfügbar."
+        }
+      }
+    },
     subtract: {
       title: "Fragen zur CIDR-Subtraktion",
       mcpTitle: "CIDR-Subtraktion über MCP verwenden",
@@ -260,6 +315,10 @@ export const de = {
     tooManyOutputs: 'Das vollständige Ergebnis überschreitet {{limit}} CIDRs. Verwende weniger Ausschlüsse oder kleinere eingeschlossene Bereiche. Es wird kein Teilergebnis zurückgegeben.',
   },
   meta: {
+    range: {
+      "title": "IP-Bereich in CIDRs umwandeln — Packetrove",
+      "description": "Wandle inklusive IPv4- oder IPv6-Endpunkte lokal in eine minimale exakte CIDR-Liste um. Kopiere alle Blöcke und prüfe exakte Zahlen ohne zusätzliche Abdeckung."
+    },
     mcp: {"title": "Packetrove MCP-Anleitung — CIDR und öffentliche IP", "description": "Verbinde Claude Code oder Codex über MCP mit Packetrove. Erfahre mehr über Argumente, exakte CIDR-Ergebnisse, IP-Verbindungsgrenzen und Fehlerbehandlung ohne API-Schlüssel."},
     home: { title: 'Packetrove — CIDR-Rechner und öffentliche IP-Abfrage', description: 'Berechnen Sie umfassende CIDR-Netze lokal im Browser und prüfen Sie Ihre öffentliche IP-Adresse. Open-Source-Werkzeuge für IPv4 und IPv6 über Web, API, CLI und MCP, ohne Konto.' },
     cidr: { title: 'Rechner für das kleinste umfassende CIDR-Netz — Packetrove', description: 'Finden Sie das kleinste einzelne CIDR-Netz für IPv4- oder IPv6-Adressen und Bereiche. Berechnen Sie es im Browser mit exakten Adresszahlen, zusätzlicher Abdeckung und Beispielen.' },

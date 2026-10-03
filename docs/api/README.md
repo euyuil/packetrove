@@ -91,6 +91,36 @@ ranges are relative to the inputs, not evidence of live network availability.
 The API sends inputs to the server; use the website for browser-local
 calculation. Neither interface changes WireGuard or firewall settings.
 
+## IP range to CIDRs
+
+`POST /v1/range-to-cidrs` accepts exactly two fields, `start` and `end`, each
+containing one IPv4 or IPv6 address without a CIDR prefix, up to 64 characters.
+Both endpoints are inclusive, must use the same address family, and `end` must
+be at or after `start`. Whitespace is ignored during parsing. Endpoints are
+never silently swapped. The shared 64 KiB JSON body limit applies.
+
+```sh
+curl -fsS https://api.packetrove.com/v1/range-to-cidrs \
+  -H 'Content-Type: application/json' \
+  -d '{"start":"203.0.113.11","end":"203.0.113.23"}'
+```
+
+This returns canonical `range.first` and `range.last`, `family: "ipv4"`,
+`cidrs: ["203.0.113.11/32", "203.0.113.12/30", "203.0.113.16/29"]`,
+`cidrCount: 3`, and `addressCount: "13"`. The sorted list is minimal and covers
+exactly the inclusive range, without gaps, overlaps, or additional addresses.
+All addresses count, including IPv4 network and broadcast addresses. Address
+counts remain exact decimal strings for the full IPv6 space; calculations do
+not enumerate addresses. Equal endpoints return one `/32` or `/128`, and a
+complete address space returns `/0`. A single IPv6 range needs at most 254 CIDRs.
+
+Invalid endpoints, prefixes, or reversed ranges return `INVALID_INPUT`;
+different families return `MIXED_ADDRESS_FAMILIES`. Issues identify the affected
+`field` as `start` or `end`. The API and remote MCP send inputs to the server;
+use the website for local calculation. See the
+[range-conversion user story](../user-stories/006-ip-range-to-cidrs.md) for
+interaction behavior and exact conversion versus single covering CIDR.
+
 ## Current public IP
 
 The public IP endpoint is `/v1/public-ip`. The former `/v1/ip` path is removed
@@ -132,7 +162,8 @@ network-path and hosting limitations.
 Errors use `{ "error": { "code": "...", "message": "...", "issues": [] } }`.
 The optional `issues` array contains messages and, when applicable, a zero-based
 `index` into `inputs`, or into the subtraction list identified by the optional
-`list` field (`include` or `exclude`). An invalid entry makes the whole calculation fail;
+`list` field (`include` or `exclude`). Range endpoint issues use `field`
+(`start` or `end`). An invalid entry makes the whole calculation fail;
 entries are never silently skipped.
 For a structurally valid calculation request, all invalid addresses or CIDRs
 are reported together in input order, so they can be corrected in one pass.

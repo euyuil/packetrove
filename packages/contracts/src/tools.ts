@@ -3,6 +3,7 @@ import {
   CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, PUBLIC_IP_EXAMPLES,
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
   PublicIpRequestSchema, PublicIpResultSchema,
+  RangeToCidrsRequestSchema, RangeToCidrsResultSchema, RANGE_TO_CIDRS_EXAMPLES,
   MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MAX_REQUEST_BYTES,
 } from './schemas';
 
@@ -80,6 +81,21 @@ export const toolCatalog = {
     },
     mcp: {
       description: `Use to prepare WireGuard AllowedIPs exceptions or calculate remaining address space relative to supplied include and exclude lists. Compute union(include) minus union(exclude) as a minimal sorted canonical CIDR list, without adding addresses. Use one address family, a nonempty include list, and at most ${MAX_SUBTRACTION_INPUTS} entries across both lists, up to ${MAX_INPUT_LENGTH} characters each. Exclude may be empty. Normalize host bits and count overlaps once. Return cidrs, normalizedInclude, normalizedExclude, and exact decimal-string includedAddressCount, removedAddressCount, remainingAddressCount. Complete removal returns an empty list; more than ${MAX_SUBTRACTION_OUTPUTS} output CIDRs returns an error without a partial result. Error issues identify include or exclude and the zero-based entry index. Remote calls submit inputs to this server; the browser calculates locally. This does not inspect live allocation, configure WireGuard, or change firewall rules.`,
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+  }),
+  range: defineTool({
+    id: 'range-to-cidrs', page: 'range', title: 'IP Range to CIDRs', execution: 'local',
+    legacyWebPaths: [], cli: false,
+    removedInterfaces: { apiPaths: [], mcpNames: [], cliCommands: [] },
+    schemaName: 'RangeToCidrs', inputSchema: RangeToCidrsRequestSchema, outputSchema: RangeToCidrsResultSchema,
+    examples: RANGE_TO_CIDRS_EXAMPLES, example: RANGE_TO_CIDRS_EXAMPLES[0]!,
+    api: {
+      method: 'post', tag: 'CIDR', summary: 'Convert an inclusive IP range to its minimal exact CIDR list',
+      description: `Accept exactly one start and one end IP address of the same family, without CIDR prefixes, at most ${MAX_INPUT_LENGTH} characters each. Both endpoints are inclusive; end must be at or after start and endpoints are never swapped. Return canonical endpoints and the minimal sorted non-overlapping CIDR list covering exactly that range, with cidrCount and an exact decimal-string addressCount. Every address counts, including IPv4 network and broadcast addresses. Calculations do not enumerate addresses. The request body must not exceed ${MAX_REQUEST_BYTES} bytes. Calls submit inputs to the server; no live allocation or firewall configuration is inspected or changed.`,
+    },
+    mcp: {
+      description: `Use to prepare an exact CIDR allowlist from one inclusive start/end IPv4 or IPv6 range. Pass start and end IP addresses of the same family, without CIDR prefixes, at most ${MAX_INPUT_LENGTH} characters each; end must be at or after start. Return canonical range.first and range.last, minimal sorted cidrs, cidrCount, and exact decimal-string addressCount, without adding addresses. Equal endpoints return one /32 or /128; complete address spaces return /0. Invalid inputs identify the start or end field; reversed endpoints are never swapped. Browser calculations stay local; remote MCP calls submit endpoints to this server. This does not inspect live address usage, modify firewall rules, or export vendor-specific ACLs.`,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
   }),

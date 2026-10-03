@@ -215,7 +215,10 @@ describe('readiness followed by the production smoke check across separate origi
           const value: unknown = JSON.parse(body);
           const example = tool.examples.find(example => JSON.stringify(example.request) === JSON.stringify(value));
           if (example) send(response, 'application/json', JSON.stringify(example.result));
-          else send(response, 'application/json', JSON.stringify({ error: { code: 'MIXED_ADDRESS_FAMILIES' } }), 400);
+          else send(response, 'application/json', JSON.stringify({ error: {
+            code: tool.inputSchema.safeParse(value).success ? 'MIXED_ADDRESS_FAMILIES' : 'INVALID_INPUT',
+            message: 'Invalid calculation input.',
+          } }), 400);
         });
         return;
       }
