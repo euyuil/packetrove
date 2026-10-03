@@ -46,7 +46,8 @@ describe('website in the Workers runtime', () => {
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
       expect(html).toContain(text.home.subtractDescription);
-      expect(html).toContain(text.home.ipDescription);
+      expect(html.match(/data-tool-id="/g)?.length ?? 0).toBeLessThanOrEqual(3);
+      expect(html).not.toContain('data-tool-id="' + toolCatalog.ip.id + '"');
       expect(html).toContain(escapeHtml(text.home.rangeDescription));
     } else if (page === 'cidr') {
       expect(html).toContain(text.cidr.explanation);

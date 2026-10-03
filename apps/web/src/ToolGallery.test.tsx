@@ -6,6 +6,7 @@ import { I18nextProvider } from 'react-i18next';
 import { renderToString } from 'react-dom/server';
 import { hydrateRoot } from 'react-dom/client';
 import { act } from 'react';
+import { toolCatalog } from '@packetrove/contracts';
 import { App } from './App';
 import { featuredTools } from './ToolGallery';
 import { render } from './test-utils';
@@ -34,6 +35,11 @@ describe('homepage tool gallery', () => {
     const gallery = screen.getByRole('region', { name: text.home.galleryTitle });
     const cards = Array.from(gallery.querySelectorAll<HTMLElement>('article'));
     expect(cards.map(card => card.getAttribute('data-tool-id'))).toEqual(featuredTools.map(tool => tool.id));
+    expect(cards.length).toBeLessThanOrEqual(3);
+    expect(gallery.querySelector(`[data-tool-id="${toolCatalog.ip.id}"]`)).toBeNull();
+    expect(within(screen.getByRole('navigation', { name: text.common.navigation }))
+      .getByRole('link', { name: text.ip.title }).getAttribute('href'))
+      .toBe(localizedPath(toolCatalog.ip.webPath, locale));
     const buttons = within(gallery).getAllByRole('button');
     expect(buttons.map(button => button.getAttribute('aria-label'))).toEqual([text.home.galleryPrevious, text.home.galleryNext]);
     const indicators = within(within(gallery).getByRole('tablist', { name: text.home.galleryTitle })).getAllByRole('tab');
@@ -60,9 +66,6 @@ describe('homepage tool gallery', () => {
         expect(preview.textContent).toContain(tool.example.request.start);
         expect(preview.textContent).toContain(tool.example.request.end);
         expect(preview.textContent).toContain(tool.example.result.cidrs.join('\n'));
-      } else {
-        expect(preview.textContent).toContain(tool.example.result.ip);
-        expect(preview.textContent).toContain(text.home.ipPreview);
       }
     }
     expect(screen.queryByRole('textbox')).toBeNull();
