@@ -14,6 +14,42 @@ export const fr = {
     feedbackPrompt: 'Un problème ou une idée ? Faites-nous en part sur GitHub.', reportBug: 'Signaler un problème', requestFeature: 'Proposer une fonctionnalité',
     notFound: 'Page introuvable', notFoundDescription: 'La page demandée n’existe pas.', returnHome: 'Retour à l’accueil',
   },
+  privacy: {
+    "title": "Politique de confidentialité",
+    "updated": "Dernière mise à jour : 3 octobre 2026.",
+    "introduction": "Cette politique couvre le site web, la Web API, la CLI et le service MCP distant de Packetrove, y compris leur utilisation via des plugins d’IA. Packetrove est maintenu par Liu Yue. Aucun compte ni clé d’API n’est nécessaire.",
+    "cloudflarePolicy": "Politique de confidentialité de Cloudflare",
+    "sections": {
+        "local": {
+            "title": "Calculs locaux et stockage du navigateur",
+            "body": "Les calculs du navigateur et les calculs hors ligne de la CLI conservent les entrées et résultats sur votre appareil. Les brouillons restent dans la mémoire de la page. Le site stocke uniquement dans sessionStorage un indicateur de suggestion de langue déjà traitée pour l’onglet courant, sans adresses ni résultats. Copier un résultat le place dans le presse-papiers du système."
+        },
+        "remote": {
+            "title": "Entrées et résultats des outils distants",
+            "body": "Les calculs via API et MCP distant envoient à Packetrove les adresses IP, CIDR ou bornes de plage fournies. Nous les traitons en mémoire pour renvoyer le résultat, sans base de données ni historique de calcul conservé. Nous ne demandons ni historique de conversation ni identifiants de compte. Le client appelant reçoit le résultat et peut le conserver selon ses propres politiques."
+        },
+        "connection": {
+            "title": "Vérifications de l’IP publique",
+            "body": "Une vérification lit les informations de connexion fournies par Cloudflare et renvoie une adresse observée. L’application ne conserve pas d’historique et ne journalise pas l’IP renvoyée. Un client d’IA hébergé peut observer sa propre adresse de sortie ; utilisez votre navigateur ou une CLI locale pour examiner la connexion de votre appareil."
+        },
+        "logs": {
+            "title": "Journaux opérationnels de l’application",
+            "body": "Les échecs inattendus de requêtes produisent un nom d’événement et un code d’erreur fixes pour diagnostiquer le service. Ces événements générés par l’application ne contiennent ni entrées d’outils, résultats, adresses IP renvoyées, en-têtes de requêtes, ni détails bruts des exceptions. Nous ne créons pas de profils utilisateurs, ne suivons pas les utilisateurs entre sites, ne vendons pas les données des outils et ne les utilisons ni pour la publicité ni pour entraîner des modèles."
+        },
+        "providers": {
+            "title": "Hébergement, destinataires et conservation",
+            "body": "Cloudflare héberge le service et traite les requêtes, notamment les adresses de connexion, les en-têtes et les arguments des outils distants. Les journaux de plateforme peuvent ajouter des horodatages, URL, identifiants de requêtes et métadonnées techniques. Lorsqu’ils sont activés, les Workers Logs accessibles à l’opérateur restent consultables jusqu’à sept jours : actuellement trois jours avec Free, et sept jours annoncés à partir du 1er décembre 2026. Cela ne garantit pas la suppression de tous les enregistrements réseau ou de sécurité de Cloudflare en sept jours. Le traitement d’infrastructure de Cloudflare suit sa propre politique et peut avoir lieu hors de votre pays. Les responsables de Packetrove peuvent accéder aux journaux opérationnels activés pour diagnostiquer le service."
+        },
+        "controls": {
+            "title": "Vos choix",
+            "body": "Utilisez les calculs du navigateur ou de la CLI hors ligne pour éviter d’envoyer vos entrées de calcul à distance. Les vérifications d’IP publique nécessitent toujours une requête réseau. Désactivez le plugin ou supprimez la connexion MCP pour arrêter les futurs appels ; cela ne supprime pas les résultats déjà détenus par votre client d’IA. Nous ne proposons ni historique d’appels lié à un compte ni désactivation des journaux pour un appel individuel."
+        },
+        "contact": {
+            "title": "Questions et demandes de confidentialité",
+            "body": "Contactez le responsable à l’adresse ci-dessous pour les questions de confidentialité et les demandes d’accès ou de suppression applicables. Les appels n’étant pas liés à un compte, nous pourrions ne pas identifier un appel individuel. Les échanges facultatifs par courriel et GitHub restent dans ces services et utilisent leurs contrôles de conservation. Les issues GitHub publiques ne doivent contenir ni données réseau privées ni secrets. Les modifications de cette politique sont publiées sur cette page."
+        }
+    }
+},
   footer: {
     project: 'Ressources du projet', integrations: 'Intégrations', contact: 'Contact et commentaires',
     apiDocumentation: 'Documentation de l’API', cliGuide: 'Guide CLI (en anglais)', sendEmail: 'Envoyer un e-mail',
@@ -315,6 +351,7 @@ export const fr = {
     tooManyOutputs: 'Le résultat complet dépasse {{limit}} CIDR. Réduisez les exclusions ou les plages incluses. Aucun résultat partiel n’est renvoyé.',
   },
   meta: {
+    privacy: {"title": "Politique de confidentialité de Packetrove", "description": "Découvrez le traitement des calculs locaux, entrées distantes, adresses de connexion, journaux opérationnels et données d’hébergement de Packetrove, ainsi que leur conservation et vos choix."},
     range: {
       "title": "Convertisseur de plage IP en CIDR — Packetrove",
       "description": "Convertissez localement des bornes IPv4 ou IPv6 inclusives en une liste CIDR minimale exacte. Copiez tous les blocs et vérifiez les nombres sans couverture supplémentaire."

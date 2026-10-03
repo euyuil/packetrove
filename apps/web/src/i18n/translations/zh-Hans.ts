@@ -13,6 +13,42 @@ export const zhHans = {
   languageSuggestion: {
     title: '想使用中文浏览吗？', switch: '切换为中文', dismiss: '暂不切换',
   },
+  privacy: {
+    "title": "隐私政策",
+    "updated": "最后更新：2026 年 10 月 3 日。",
+    "introduction": "本政策涵盖 Packetrove 网站、Web API、CLI 和远程 MCP 服务，包括通过 AI 插件使用这些服务。Packetrove 由 Liu Yue 维护，无需账户或 API 密钥。",
+    "cloudflarePolicy": "Cloudflare 隐私政策",
+    "sections": {
+        "local": {
+            "title": "本地计算与浏览器存储",
+            "body": "浏览器计算和离线 CLI 计算的输入与结果保留在你的设备上，计算草稿仅保留在页面内存中。网站只在当前标签页的 sessionStorage 中保存一个已处理语言提示的标记，不在其中保存地址或结果。复制结果会将其放入系统剪贴板。"
+        },
+        "remote": {
+            "title": "远程工具的输入与结果",
+            "body": "API 和远程 MCP 计算会将提供的 IP 地址、CIDR 或范围端点发送到 Packetrove。我们在内存中处理这些参数并返回结果，不使用数据库保存计算历史，也不请求会话历史或账户凭据。调用客户端会收到结果，并可能按其自身政策保留结果。"
+        },
+        "connection": {
+            "title": "公网 IP 查询",
+            "body": "公网 IP 查询读取 Cloudflare 提供的连接信息，返回一个观察到的地址。应用不保存查询历史，也不记录返回的 IP。云端 AI 客户端可能查到自己的出口地址；要查询设备的连接，请使用该设备上的浏览器或本地 CLI。"
+        },
+        "logs": {
+            "title": "应用运营日志",
+            "body": "发生意外请求失败时，应用记录固定的事件名称和错误码，用于服务诊断。这些应用生成的事件不包含工具输入、结果、返回的 IP 地址、请求头或原始异常详情。我们不建立用户画像、不进行跨站跟踪、不出售工具数据，也不将其用于广告或模型训练。"
+        },
+        "providers": {
+            "title": "托管、接收方与保留期限",
+            "body": "Cloudflare 托管本服务并处理请求，包括连接地址、请求头和远程工具参数。平台日志可能附加时间、URL、请求标识及技术元数据。启用的 Workers Logs 可供运营者查询最多七天：当前 Free 方案为三天，已公告自 2026 年 12 月 1 日起为七天。这不表示 Cloudflare 的所有网络或安全记录都在七天内删除。Cloudflare 的基础设施处理遵循其自身政策，且可能发生在你所在国家之外。Packetrove 维护者可以访问启用的运营日志来诊断服务。"
+        },
+        "controls": {
+            "title": "你的选择",
+            "body": "使用浏览器计算或离线 CLI 计算，可以避免远程提交计算输入。公网 IP 查询仍需网络请求。停用插件或移除 MCP 连接可停止后续调用，但不会删除 AI 客户端已经保存的结果。我们不提供与账户关联的调用历史，也不提供单次调用的日志退出开关。"
+        },
+        "contact": {
+            "title": "隐私咨询与请求",
+            "body": "如需咨询隐私问题，或提出适用的访问或删除请求，请通过下方邮箱联系维护者。工具调用不关联账户，因此我们可能无法识别某次具体调用。可选的邮件和 GitHub 沟通保留在这些服务中，并使用其保留控制。公开 GitHub issue 不应包含私有网络数据或密钥。本政策的变更会在此页面发布。"
+        }
+    }
+},
   footer: {
     project: '项目资源', integrations: '接入与集成', contact: '联系与反馈',
     apiDocumentation: 'API 文档', cliGuide: '命令行指南（英文）', sendEmail: '发送邮件',
@@ -313,6 +349,7 @@ export const zhHans = {
     tooManyOutputs: '完整结果超过 {{limit}} 个 CIDR。请减少排除项或缩小包含范围，不会返回部分结果。',
   },
   meta: {
+    privacy: {"title": "Packetrove 隐私政策", "description": "了解 Packetrove 如何处理本地计算、远程工具输入、连接地址、运营日志和托管数据，以及保留期限和用户选择。"},
     range: {
       "title": "IP 范围转 CIDR — Packetrove",
       "description": "在本地将包含起止端点的 IPv4 或 IPv6 范围转换为最少精确 CIDR 列表，复制全部网段并核对精确地址数，不增加范围外地址。"

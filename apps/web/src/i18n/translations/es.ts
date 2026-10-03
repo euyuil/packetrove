@@ -14,6 +14,42 @@ export const es = {
     feedbackPrompt: '¿Encontraste un problema o tienes una idea? Cuéntanos en GitHub.', reportBug: 'Informar de un problema', requestFeature: 'Sugerir una función',
     notFound: 'Página no encontrada', notFoundDescription: 'La página solicitada no existe.', returnHome: 'Volver al inicio',
   },
+  privacy: {
+    "title": "Política de privacidad",
+    "updated": "Última actualización: 3 de octubre de 2026.",
+    "introduction": "Esta política cubre el sitio web, la Web API, la CLI y el servicio MCP remoto de Packetrove, incluido su uso mediante plugins de IA. Liu Yue mantiene Packetrove. No se necesita una cuenta ni una clave de API.",
+    "cloudflarePolicy": "Política de privacidad de Cloudflare",
+    "sections": {
+        "local": {
+            "title": "Cálculos locales y almacenamiento del navegador",
+            "body": "Los cálculos del navegador y de la CLI sin conexión mantienen las entradas y los resultados en tu dispositivo. Los borradores permanecen en la memoria de la página. El sitio solo guarda en sessionStorage una marca que indica que se ha atendido la sugerencia de idioma en la pestaña actual; no guarda direcciones ni resultados allí. Copiar un resultado lo coloca en el portapapeles del sistema."
+        },
+        "remote": {
+            "title": "Entradas y resultados de herramientas remotas",
+            "body": "Los cálculos mediante API y MCP remoto envían a Packetrove las direcciones IP, los CIDR o los extremos del rango proporcionados. Los procesamos en memoria para devolver el resultado, sin una base de datos ni un historial de cálculos conservado. No solicitamos el historial de conversaciones ni credenciales de cuenta. El cliente recibe el resultado y puede conservarlo según sus propias políticas."
+        },
+        "connection": {
+            "title": "Consultas de IP pública",
+            "body": "Una consulta de IP pública lee la información de conexión proporcionada por Cloudflare y devuelve una dirección observada. La aplicación no conserva un historial de consultas ni registra la IP devuelta. Un cliente de IA alojado puede observar su propia dirección de salida; utiliza tu navegador o una CLI local para consultar la conexión de tu dispositivo."
+        },
+        "logs": {
+            "title": "Registros operativos de la aplicación",
+            "body": "Los fallos inesperados de solicitudes generan un nombre de evento y un código de error fijos para diagnosticar el servicio. Estos eventos generados por la aplicación no contienen entradas de herramientas, resultados, direcciones IP devueltas, cabeceras de solicitudes ni detalles de excepciones sin filtrar. No creamos perfiles de usuarios, no seguimos a usuarios entre sitios, no vendemos datos de herramientas ni los usamos para publicidad o entrenamiento de modelos."
+        },
+        "providers": {
+            "title": "Alojamiento, destinatarios y conservación",
+            "body": "Cloudflare aloja el servicio y procesa las solicitudes, incluidas las direcciones de conexión, las cabeceras y los argumentos de herramientas remotas. Los registros de la plataforma pueden añadir fechas y horas, URL, identificadores de solicitudes y metadatos técnicos. Cuando están habilitados, los Workers Logs accesibles al operador pueden consultarse durante un máximo de siete días: actualmente tres días en Free, con siete días anunciados a partir del 1 de diciembre de 2026. Esto no garantiza la eliminación de todos los registros de red o seguridad de Cloudflare en siete días. El procesamiento de infraestructura de Cloudflare sigue su propia política y puede realizarse fuera de tu país. Los responsables de Packetrove pueden acceder a los registros operativos habilitados para diagnosticar el servicio."
+        },
+        "controls": {
+            "title": "Tus opciones",
+            "body": "Utiliza los cálculos del navegador o de la CLI sin conexión para evitar enviar entradas de cálculo a un servidor remoto. Las consultas de IP pública siguen necesitando una solicitud de red. Desactiva el plugin o elimina la conexión MCP para detener futuras llamadas; esto no elimina resultados que tu cliente de IA ya conserve. No ofrecemos un historial de llamadas vinculado a una cuenta ni una opción para excluir llamadas individuales del registro."
+        },
+        "contact": {
+            "title": "Consultas y solicitudes de privacidad",
+            "body": "Contacta con el responsable mediante el correo indicado abajo para consultas de privacidad y solicitudes de acceso o eliminación aplicables. Como las llamadas no están vinculadas a una cuenta, puede que no podamos identificar una llamada individual. Las comunicaciones opcionales por correo y GitHub permanecen en esos servicios y utilizan sus controles de conservación. Las incidencias públicas de GitHub no deben contener datos de red privados ni secretos. Los cambios de esta política se publican en esta página."
+        }
+    }
+},
   footer: {
     project: 'Recursos del proyecto', integrations: 'Integraciones', contact: 'Contacto y sugerencias',
     apiDocumentation: 'Documentación de la API', cliGuide: 'Guía de la CLI (en inglés)', sendEmail: 'Enviar un correo',
@@ -331,6 +367,7 @@ export const es = {
     tooManyOutputs: 'El resultado completo supera {{limit}} CIDR. Usa menos exclusiones o rangos incluidos más pequeños. No se devuelve ningún resultado parcial.',
   },
   meta: {
+    privacy: {"title": "Política de privacidad de Packetrove", "description": "Conoce cómo Packetrove procesa cálculos locales, entradas remotas, direcciones de conexión, registros operativos y datos de alojamiento, con plazos de conservación y opciones de usuario."},
     range: {
       "title": "Conversor de rango IP a CIDR — Packetrove",
       "description": "Convierte extremos inclusivos IPv4 o IPv6 en una lista CIDR mínima y exacta localmente. Copia todos los bloques y comprueba cifras exactas sin cobertura adicional."

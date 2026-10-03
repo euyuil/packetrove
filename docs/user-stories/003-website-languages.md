@@ -18,7 +18,7 @@ network results and share a link in my preferred language.
   `/fr` for French (`fr`), `/pt` for Portuguese (`pt-BR`), `/ru` for Russian (`ru`),
   `/ko` for Korean (`ko`), and `/it` for Italian (`it`).
   Each prefix has a homepage, every tool page from the
-  [shared catalog](../tool-catalog.md), `/docs/api`, and `/docs/mcp`.
+  [shared catalog](../tool-catalog.md), `/docs/api`, `/docs/mcp`, and `/privacy`.
   Reserve short language codes and language-tag names for locale prefixes;
   choose descriptive tool URL names according to `AGENTS.md`. Legacy tool paths
   follow the catalog's [name migration](../tool-catalog.md#migration-to-flat-names),

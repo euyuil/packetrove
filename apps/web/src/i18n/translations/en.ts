@@ -12,6 +12,42 @@ export const en = {
     title: 'Would you like to read this page in English?',
     switch: 'Switch to English', dismiss: 'Not now',
   },
+  privacy: {
+    "title": "Privacy Policy",
+    "updated": "Last updated: October 3, 2026.",
+    "introduction": "This policy covers the Packetrove website, Web API, CLI, and remote MCP service, including AI plugin use. Packetrove is maintained by Liu Yue. No account or API key is required.",
+    "cloudflarePolicy": "Cloudflare Privacy Policy",
+    "sections": {
+        "local": {
+            "title": "Local calculations and browser storage",
+            "body": "Browser calculations and offline CLI calculations keep inputs and results on your device. Calculator drafts stay in page memory. The website stores only a handled-language-suggestion flag in sessionStorage for the current tab; it does not store addresses or results there. Copying a result puts it on your system clipboard."
+        },
+        "remote": {
+            "title": "Remote tool inputs and results",
+            "body": "API and remote MCP calculations send the supplied IP addresses, CIDRs, or range endpoints to Packetrove. We process them in memory to return the result, without a database or retained calculation history. We do not request conversation history or account credentials. The calling client receives the result and may retain it under its own policies."
+        },
+        "connection": {
+            "title": "Public IP checks",
+            "body": "A public-IP check reads Cloudflare-provided connection information and returns one observed address. The application does not retain lookup history or log the returned IP. A hosted AI client may observe its own exit address; use your browser or a local CLI to inspect your device connection."
+        },
+        "logs": {
+            "title": "Application operational logs",
+            "body": "Unexpected request failures produce a fixed event name and error code for service diagnostics. These application-generated events contain no tool inputs, results, returned IP addresses, request headers, or raw exception details. We do not build user profiles, track users across sites, sell tool data, use it for advertising, or train models with it."
+        },
+        "providers": {
+            "title": "Hosting, recipients, and retention",
+            "body": "Cloudflare hosts the service and processes requests, including connection addresses, headers, and remote tool arguments. Platform logs may add timestamps, URLs, request identifiers, and technical metadata. Operator-accessible Workers Logs, when enabled, remain queryable for up to seven days: currently three days on Free, with seven days announced from December 1, 2026. This does not promise deletion of all Cloudflare network or security records within seven days. Cloudflare infrastructure processing follows its own policy and may occur outside your country. Packetrove maintainers can access enabled operational logs to diagnose the service."
+        },
+        "controls": {
+            "title": "Your choices",
+            "body": "Use browser calculations or offline CLI calculations to avoid submitting calculation inputs remotely. Public-IP checks still require a network request. Disable the plugin or remove the MCP connection to stop future calls; this does not delete results already held by your AI client. We do not provide an account-linked call history or a per-call logging opt-out."
+        },
+        "contact": {
+            "title": "Privacy questions and requests",
+            "body": "Contact the maintainer using the email below for privacy questions and applicable access or deletion requests. Because tool calls are not linked to an account, we may be unable to identify an individual call. Optional email and GitHub communications remain in those services and use their retention controls. Public GitHub issues should not contain private network data or secrets. Policy changes are published on this page."
+        }
+    }
+},
   footer: {
     project: 'Project Resources', integrations: 'Integrations', contact: 'Contact & Feedback',
     apiDocumentation: 'API Documentation', cliGuide: 'CLI Guide', sendEmail: 'Send an email',
@@ -312,6 +348,7 @@ export const en = {
     tooManyOutputs: 'The complete result exceeds {{limit}} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.',
   },
   meta: {
+    privacy: {"title": "Packetrove Privacy Policy", "description": "Read how Packetrove processes local calculations, remote tool inputs, connection addresses, operational logs, and hosting data, with retention and user choices."},
     range: {
       "title": "IP Range to CIDRs Converter — Packetrove",
       "description": "Convert inclusive IPv4 or IPv6 start/end addresses to a minimal exact CIDR list locally. Copy all blocks and verify exact counts without extra coverage."

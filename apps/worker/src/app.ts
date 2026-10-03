@@ -7,6 +7,7 @@ import { readJsonBody } from './body';
 import { createPacketroveMcpHandler } from './mcp';
 import { executeTool, type ToolExecutor } from './tools';
 import { createToolExecutionContext, ToolExecutionCancelledError } from './tool-context';
+import { logUnexpectedRequestFailure } from './operational-logs';
 
 export function createApp(executor: ToolExecutor = executeTool) {
   const app = new Hono<{ Bindings: Cloudflare.Env }>();
@@ -29,7 +30,7 @@ export function createApp(executor: ToolExecutor = executeTool) {
         : error.code === 'UNSUPPORTED_MEDIA_TYPE' ? 415 : 400;
       return context.json(error.toResponse(), status);
     }
-    if (!(error instanceof ToolExecutionCancelledError)) console.error('Unexpected request failure:', error);
+    if (!(error instanceof ToolExecutionCancelledError)) logUnexpectedRequestFailure();
     return context.json({ error: {
       code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.',
     } } satisfies ErrorResponse, 500);

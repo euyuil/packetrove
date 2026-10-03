@@ -182,8 +182,21 @@ describe('API in the Workers runtime', () => {
     expect(response.status).toBe(405);
     expect(response.headers.get('allow')).toBe('POST');
   });
-  it('does not expose exception details on unexpected errors', async () => {
+  it('keeps exception details out of responses and operational logs', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const app = createApp();
+      app.get('/test-error', () => { throw new Error('private exception detail'); });
+      const response = await app.request('http://localhost/test-error');
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: { code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' } });
+      expect(spy.mock.calls).toEqual([[{ event: 'request_failure', error_code: 'INTERNAL_ERROR' }]]);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+  it('keeps the unexpected-error response when logging fails', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => { throw new Error('Log sink unavailable.'); });
     try {
       const app = createApp();
       app.get('/test-error', () => { throw new Error('private exception detail'); });

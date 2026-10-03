@@ -34,6 +34,7 @@ describe('website in the Workers runtime', () => {
     expect(Array.from(navigation.matchAll(/href="([^"]+)"/g), match => match[1]))
       .toEqual([pagePaths.home, ...catalogTools.map(tool => tool.webPath)].map(path => localizedPath(path, locale)));
     const footer = /<footer\b[^>]*>([\s\S]*?)<\/footer>/.exec(html)?.[1] ?? '';
+    expect(footer).toContain('href="' + localizedPath(pagePaths.privacy, locale) + '"');
     for (const [path, label] of [[pagePaths.api, text.footer.apiDocumentation], [pagePaths.mcp, text.mcp.navigation]] as const) {
       expect(footer).toContain('href="' + localizedPath(path, locale) + '"');
       expect(footer).toContain(escapeHtml(label));
@@ -82,6 +83,13 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain(text.api.ipSummary);
       expect(html).toContain('203.0.113.1');
       expect(html).not.toContain('class="api-reference"');
+    } else if (page === 'privacy') {
+      expect(html).toContain(escapeHtml(text.privacy.introduction));
+      for (const section of Object.values(text.privacy.sections)) {
+        expect(html).toContain(escapeHtml(section.title));
+        expect(html).toContain(escapeHtml(section.body));
+      }
+      expect(html).toContain('href="mailto:hello@packetrove.com"');
     } else {
       expect(html).toContain(escapeHtml(text.mcp.explanation));
       expect(html).toContain('claude mcp add --transport http --scope user packetrove');

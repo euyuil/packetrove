@@ -10,7 +10,7 @@ type Chunk = { file: string; imports?: string[]; isDynamicEntry?: boolean };
 it('keeps every page and locale module out of the production static entry graph', async () => {
   const filename = resolve(dirname(fileURLToPath(import.meta.url)), '../dist/.vite/manifest.json');
   const manifest = JSON.parse(await readFile(filename, 'utf8')) as Record<string, Chunk>;
-  const pages = ['CidrCoverTool', 'CidrSubtractTool', 'RangeToCidrsTool', 'PublicIpTool', 'HomePage', 'ApiDocumentation', 'McpDocumentation'];
+  const pages = ['CidrCoverTool', 'CidrSubtractTool', 'RangeToCidrsTool', 'PublicIpTool', 'HomePage', 'ApiDocumentation', 'McpDocumentation', 'PrivacyPolicy'];
   const deferredModules = [...pages.map(page => `src/${page}.tsx`),
     ...supportedLocales.map(locale => `src/i18n/translations/${locale}.ts`)];
   for (const module of deferredModules) expect(manifest[module]?.isDynamicEntry, module).toBe(true);

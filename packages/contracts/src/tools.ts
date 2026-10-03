@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import { PUBLIC_WEBSITE_ORIGIN } from './identity';
+import { PRIVACY_POLICY_URL, PUBLIC_WEBSITE_ORIGIN } from './identity';
 import {
   CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, PUBLIC_IP_EXAMPLES,
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
@@ -61,7 +61,7 @@ function defineTool<const Definition extends ToolDefinition>(definition: Definit
     webPath,
     api: { ...api, response: api.response as ApiResponseDefinition,
       path: `/v1/${id}` as `/v1/${Definition['id']}`, operationId: id },
-    mcp: { ...mcpMetadata, name: id, resultLink: {
+    mcp: { ...mcpMetadata, description: `${mcp.description} Privacy policy: ${PRIVACY_POLICY_URL}.`, name: id, resultLink: {
       type: 'resource_link' as const, uri: `${PUBLIC_WEBSITE_ORIGIN}${webPath}`,
       name: id, title: definition.title, description: resultLinkDescription, mimeType: 'text/html',
     } },

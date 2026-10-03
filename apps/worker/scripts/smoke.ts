@@ -98,10 +98,17 @@ for (const page of websitePages) {
     for (const tool of catalogTools) {
       assert(navigation.includes('href="' + localizedPath(tool.webPath, page.locale) + '"'), `Shared tool navigation: ${path}`);
     }
-    for (const documentationPath of [pagePaths.api, pagePaths.mcp]) {
+    for (const documentationPath of [pagePaths.api, pagePaths.mcp, pagePaths.privacy]) {
       assert(!navigation.includes('href="' + localizedPath(documentationPath, page.locale) + '"'), `Documentation outside primary navigation: ${path}`);
     }
     const footer = /<footer\b[^>]*>([\s\S]*?)<\/footer>/.exec(pageHtml)?.[1] ?? '';
+    assert(footer.includes('href="' + localizedPath(pagePaths.privacy, page.locale) + '"'), `Privacy policy footer link: ${path}`);
+    if (page.page === 'privacy') {
+      assert(pageHtml.includes(escapeHtml(text.privacy.sections.remote.body)), `Remote data disclosure: ${path}`);
+      assert(pageHtml.includes(escapeHtml(text.privacy.sections.logs.body)), `Application log disclosure: ${path}`);
+      assert(pageHtml.includes(escapeHtml(text.privacy.sections.providers.body)), `Platform retention disclosure: ${path}`);
+      assert(pageHtml.includes('href="mailto:hello@packetrove.com"'), `Privacy contact: ${path}`);
+    }
     for (const [documentationPath, label] of [[pagePaths.api, text.footer.apiDocumentation], [pagePaths.mcp, text.mcp.navigation]] as const) {
       assert(footer.includes('href="' + localizedPath(documentationPath, page.locale) + '"'), `Localized footer documentation: ${path}`);
       assert(footer.includes(escapeHtml(label)), `Footer documentation label: ${path}`);
@@ -111,7 +118,7 @@ for (const page of websitePages) {
       assert(footer.includes(escapeHtml(heading)), `Footer section heading: ${path}`);
     }
     const explanation = page.page === 'home' ? text.home.cidrDescription : page.page === 'api'
-      ? text.api.cidrSummary : text[page.page].explanation;
+      ? text.api.cidrSummary : page.page === 'privacy' ? text.privacy.introduction : text[page.page].explanation;
     assert(pageHtml.includes(escapeHtml(explanation)), `Prerendered explanation: ${path}`);
     if (isToolPage(page.page)) {
       for (const question of Object.values(text.discovery[page.page].questions)) {
