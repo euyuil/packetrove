@@ -61,6 +61,24 @@ function observeNativeAction(type: string, action: () => void) {
 }
 
 describe('language links after reference navigation', () => {
+  it.each(['pushState', 'replaceState'] as const)('keeps the latest %s operation through a failed locale load and retry', async method => {
+    await openDocumentation();
+    const pending = deferred<void>();
+    const isReady = pages.isRoutePrepared;
+    vi.spyOn(pages, 'isRoutePrepared').mockImplementation(path => path !== '/zh/docs/api' && isReady(path));
+    const prepare = vi.spyOn(pages, 'prepareRoute').mockReturnValueOnce(pending.promise).mockResolvedValue();
+    fireEvent.click(openLanguageMenu());
+    act(() => { window.history[method](null, '', '/docs/api' + laterSuffix); });
+    await act(async () => { pending.reject(new Error('Unavailable')); });
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/docs/api' + laterSuffix);
+    const newestSuffix = '?source=retry#tag/Current-public-IP/get/v1/public-ip';
+    act(() => { window.history[method](null, '', '/docs/api' + newestSuffix); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: 'Retry' })); });
+    expect(prepare).toHaveBeenCalledTimes(2);
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/zh/docs/api' + newestSuffix);
+    expect(document.documentElement.lang).toBe('zh-Hans');
+  });
+
   it.each(['pushState', 'replaceState'] as const)('preserves an operation selected with %s during a slow locale load', async method => {
     await openDocumentation();
     const pending = deferred<void>();

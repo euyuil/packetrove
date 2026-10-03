@@ -67,8 +67,16 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
     };
   }, []);
 
-  function loadNavigation(url: URL, mode: 'push' | 'replace') {
+  function loadNavigation(destination: URL, mode: 'push' | 'replace') {
+    const url = new URL(destination.href);
     const locationAtStart = new URL(window.location.href);
+    const targetRoute = resolveRoute(url.pathname);
+    const currentRoute = resolveRoute(locationAtStart.pathname);
+    // Retries can start after the retained reference selects another operation.
+    if (targetRoute.path === currentRoute.path && targetRoute.locale !== currentRoute.locale) {
+      url.search = locationAtStart.search;
+      url.hash = locationAtStart.hash;
+    }
     const generation = ++navigationGeneration.current;
     setFailedNavigation(null);
     const commitNavigation = () => {
