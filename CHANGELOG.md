@@ -1,5 +1,44 @@
 # Changelog
 
+## [0.3.0](https://github.com/euyuil/packetrove/compare/0.2.0...0.3.0) (2026-10-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* unify public tool names across interfaces ([#80](https://github.com/euyuil/packetrove/issues/80))
+
+### Features
+
+* **cli:** add offline version queries ([#94](https://github.com/euyuil/packetrove/issues/94)) ([a46cfc6](https://github.com/euyuil/packetrove/commit/a46cfc63510e8d6d25937fafaaf8f340c06e801c))
+* convert inclusive IP ranges to exact CIDRs ([#83](https://github.com/euyuil/packetrove/issues/83)) ([1861137](https://github.com/euyuil/packetrove/commit/18611379fb152a24e486a75e805428cccaf57ba2))
+* **mcp:** add shared server identity metadata ([#99](https://github.com/euyuil/packetrove/issues/99)) ([1b1319c](https://github.com/euyuil/packetrove/commit/1b1319c93865a0b3e697f2bfa7f7e7b42d6ed90b))
+* **mcp:** link successful results to tool pages ([#102](https://github.com/euyuil/packetrove/issues/102)) ([c3d746d](https://github.com/euyuil/packetrove/commit/c3d746d27bf8883e08d1429bb9e6d54ae2f4a943))
+* **mcp:** prepare official Registry publication ([#103](https://github.com/euyuil/packetrove/issues/103)) ([1d71b33](https://github.com/euyuil/packetrove/commit/1d71b339587d65d703590370720e8c3c31449e24))
+
+
+### Bug Fixes
+
+* **cli:** reject directory standard input ([#85](https://github.com/euyuil/packetrove/issues/85)) ([562d888](https://github.com/euyuil/packetrove/commit/562d88801d358d51336f766f3cb93e125411a668))
+* **ip:** bound public IP responses with shared body reader ([#84](https://github.com/euyuil/packetrove/issues/84)) ([c4d8938](https://github.com/euyuil/packetrove/commit/c4d89387d3d2be191f8f21bc50ad71af10d2804b))
+* **web:** align MCP navigation capitalization ([#90](https://github.com/euyuil/packetrove/issues/90)) ([21f9705](https://github.com/euyuil/packetrove/commit/21f9705e2a17f4e9d9011f3ab6ff2f68078135a4))
+* **web:** identify invalid entries within each input line ([#71](https://github.com/euyuil/packetrove/issues/71)) ([38fecb3](https://github.com/euyuil/packetrove/commit/38fecb3c5e35ef70fea5ebf3eb6cf8b99c9f651b))
+* **web:** improve carousel controls, indicators, and spacing ([#82](https://github.com/euyuil/packetrove/issues/82)) ([8b97060](https://github.com/euyuil/packetrove/commit/8b9706023de85f089f1458b05cb64a38ed3dad13))
+* **web:** improve tool page presentation and interactions ([#75](https://github.com/euyuil/packetrove/issues/75)) ([d5d26f3](https://github.com/euyuil/packetrove/commit/d5d26f30b9045afb34bfcd829aa18487e51b67cd))
+* **web:** place gallery buttons below tool descriptions ([#91](https://github.com/euyuil/packetrove/issues/91)) ([684c3b5](https://github.com/euyuil/packetrove/commit/684c3b575b0148902da232dc78c1247f50ac86aa))
+* **web:** remove tool page category label ([#101](https://github.com/euyuil/packetrove/issues/101)) ([2a69099](https://github.com/euyuil/packetrove/commit/2a690999f236926fdcda2c48029be4b84fd36287))
+* **web:** resolve TypeScript workspace imports during development ([#89](https://github.com/euyuil/packetrove/issues/89)) ([29ce224](https://github.com/euyuil/packetrove/commit/29ce22433ae4cc6a3a9e0fa785385f8a8d2f442f))
+* **web:** restore floating browser language suggestion ([#81](https://github.com/euyuil/packetrove/issues/81)) ([8df29da](https://github.com/euyuil/packetrove/commit/8df29da56f4aaf78ede85e396c420498dd101c7c))
+* **web:** scope gallery shortcuts and preserve visible focus ([#97](https://github.com/euyuil/packetrove/issues/97)) ([d98554e](https://github.com/euyuil/packetrove/commit/d98554ec82d4fe9e7609b62758e193b379cd0664))
+* **web:** simplify and align GitHub footer link ([#87](https://github.com/euyuil/packetrove/issues/87)) ([4ee7930](https://github.com/euyuil/packetrove/commit/4ee7930b4ce627a44e958114d326df93913f318e))
+* **web:** standardize footer link icons ([#98](https://github.com/euyuil/packetrove/issues/98)) ([b4b5585](https://github.com/euyuil/packetrove/commit/b4b5585a9b6ded9079835990946ecad3d745d743))
+* **web:** standardize tool icon and title layouts ([#88](https://github.com/euyuil/packetrove/issues/88)) ([76ad5de](https://github.com/euyuil/packetrove/commit/76ad5ded1e63769d89bbc27d8c01a32c9935a0f4))
+* **web:** use stable product and interface metadata ([#92](https://github.com/euyuil/packetrove/issues/92)) ([72d9afe](https://github.com/euyuil/packetrove/commit/72d9afe3b89c4c707dac98c698078ee662e484ec))
+
+
+### Code Refactoring
+
+* unify public tool names across interfaces ([#80](https://github.com/euyuil/packetrove/issues/80)) ([1f2b325](https://github.com/euyuil/packetrove/commit/1f2b3253c58c049d5999d7b561a7504da87af560))
+
 ## [0.2.0](https://github.com/euyuil/packetrove/compare/0.1.0...0.2.0) (2026-10-02)
 
 
