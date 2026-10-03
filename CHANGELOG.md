@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.4.0](https://github.com/euyuil/packetrove/compare/0.3.0...0.4.0) (2026-10-03)
+
+
+### Features
+
+* **mcp:** distinguish automated checks in execution logs ([#138](https://github.com/euyuil/packetrove/issues/138)) ([b99c2b3](https://github.com/euyuil/packetrove/commit/b99c2b31adcfc0062762155a619fa9d34db2a537))
+* **mcp:** record tool execution counts ([#133](https://github.com/euyuil/packetrove/issues/133)) ([23effa8](https://github.com/euyuil/packetrove/commit/23effa84421321af3509b334a2c8b6ecf0622a83))
+* **plugin:** add MCP-only package with unified product versioning ([#130](https://github.com/euyuil/packetrove/issues/130)) ([2709427](https://github.com/euyuil/packetrove/commit/2709427740b52ac0be066223f867aee1ae6fa39e))
+* **plugin:** add packaged reviewer test cases ([#141](https://github.com/euyuil/packetrove/issues/141)) ([4779f6b](https://github.com/euyuil/packetrove/commit/4779f6bcc4cd0918b304eb1bd1c884d9c20d7dbd))
+* **plugin:** build verified ZIP artifacts manually ([#135](https://github.com/euyuil/packetrove/issues/135)) ([926ca1f](https://github.com/euyuil/packetrove/commit/926ca1fdf0f66d163bed8839af7aa408e85e880a))
+* **privacy:** publish service data handling policy ([#131](https://github.com/euyuil/packetrove/issues/131)) ([00b8893](https://github.com/euyuil/packetrove/commit/00b8893085656364661d235a79717815715917bb))
+* **web:** add support and service policy pages ([#140](https://github.com/euyuil/packetrove/issues/140)) ([be82c6e](https://github.com/euyuil/packetrove/commit/be82c6e3c3cf48eda67194ef1127abac14c4086d))
+* **web:** show API reference before collapsible examples ([#109](https://github.com/euyuil/packetrove/issues/109)) ([03d3ac9](https://github.com/euyuil/packetrove/commit/03d3ac911a974b74b603aed7c38f066d4c27d51d))
+
+
+### Bug Fixes
+
+* **web:** balance responsive footer columns ([#122](https://github.com/euyuil/packetrove/issues/122)) ([8a12f9d](https://github.com/euyuil/packetrove/commit/8a12f9d7d25b7f4f6342064e4c877921cde6cf2a))
+* **web:** collapse MCP guide tool documentation ([#106](https://github.com/euyuil/packetrove/issues/106)) ([4765661](https://github.com/euyuil/packetrove/commit/4765661f43b44bc1c66b7c6a3ffb367e9bf4708a))
+* **web:** enable looping in the homepage carousel ([#129](https://github.com/euyuil/packetrove/issues/129)) ([7e85b73](https://github.com/euyuil/packetrove/commit/7e85b731d95ae7c6a4504e071fe2a632dbf46de1))
+* **web:** keep page loading feedback out of layout ([#139](https://github.com/euyuil/packetrove/issues/139)) ([39ac125](https://github.com/euyuil/packetrove/commit/39ac125c57ba75eaa492b3820294da8fb13b399d))
+* **web:** limit homepage carousel to three tools ([#127](https://github.com/euyuil/packetrove/issues/127)) ([e99ff5d](https://github.com/euyuil/packetrove/commit/e99ff5db9feba6d102e434bb3b5e00e7c90664d0))
+* **web:** move integration guides to the footer ([#108](https://github.com/euyuil/packetrove/issues/108)) ([51b8896](https://github.com/euyuil/packetrove/commit/51b88969a479b18ec4953ef50354e2da81716855))
+* **web:** reveal normalized subtraction inputs ([#105](https://github.com/euyuil/packetrove/issues/105)) ([af934b7](https://github.com/euyuil/packetrove/commit/af934b7a5632d25bd7d0ecc868f79ab75b1e152f))
+* **web:** select and reveal invalid CIDR entries ([#119](https://github.com/euyuil/packetrove/issues/119)) ([29b26aa](https://github.com/euyuil/packetrove/commit/29b26aa270230c1317936ea8e0d9540574a57864))
+
 ## [0.3.0](https://github.com/euyuil/packetrove/compare/0.2.0...0.3.0) (2026-10-03)
 
 
