@@ -139,7 +139,8 @@ Tool page loaders are exhaustive, and cached component identities stay stable
 across language changes. `i18n/locale-resources.ts` loads English fallback and
 the selected locale; the application installs translations into its own i18next
 instance. A browser-language suggestion prepares only its suggested locale
-after hydration. Complete `i18n/resources.ts` imports are reserved for build
+after hydration. Both resource consumers use the literal dynamic imports in
+`i18n/translation-loaders.ts`. Complete `i18n/resources.ts` imports are reserved for build
 scripts and tests, never the browser entry graph.
 
 Navigation retains the current page while resources load. Only the latest

@@ -1,24 +1,15 @@
-import { es } from './translations/es';
-import { de } from './translations/de';
-import { ja } from './translations/ja';
-import { fr } from './translations/fr';
-import { ptBR } from './translations/pt-BR';
-import { ru } from './translations/ru';
-import { ko } from './translations/ko';
-import { it } from './translations/it';
-import type { Locale } from './locales';
+import { supportedLocales, type Locale } from './locales';
+import { translationLoaders } from './translation-loaders';
+export type { TranslationResource } from './translation-resource';
 
-import { en } from './translations/en';
-import { zhHans } from './translations/zh-Hans';
-import type { TranslationResource } from './translation-resource';
+type CompleteResources = {
+  [Language in Locale]: { translation: Awaited<ReturnType<(typeof translationLoaders)[Language]>> };
+};
 
 // Complete resources are used only by build scripts and tests.
-export { en, zhHans };
-export type { TranslationResource };
+export const resources = Object.fromEntries(await Promise.all(supportedLocales.map(async locale =>
+  [locale, { translation: await translationLoaders[locale]() }],
+))) as CompleteResources;
 
-export const resources = {
-  en: { translation: en }, 'zh-Hans': { translation: zhHans },
-  es: { translation: es }, de: { translation: de }, ja: { translation: ja },
-  fr: { translation: fr }, 'pt-BR': { translation: ptBR },
-  ru: { translation: ru }, ko: { translation: ko }, it: { translation: it },
-} satisfies Record<Locale, { translation: TranslationResource }>;
+export const en = resources.en.translation;
+export const zhHans = resources['zh-Hans'].translation;
