@@ -1,9 +1,10 @@
-import { legacyToolPagePaths, PRIVACY_POLICY_PATH, toolPagePaths } from '@packetrove/contracts';
+import { legacyToolPagePaths, PRIVACY_POLICY_PATH, SUPPORT_PATH, TERMS_OF_SERVICE_PATH, toolPagePaths } from '@packetrove/contracts';
 import { locales, supportedLocales, type Locale } from './locales';
 export type { Locale } from './locales';
 export type Page = keyof typeof pagePaths | 'notFound';
 
-export const pagePaths = { home: '/', ...toolPagePaths, api: '/docs/api', mcp: '/docs/mcp', privacy: PRIVACY_POLICY_PATH } as const;
+export const pagePaths = { home: '/', ...toolPagePaths, api: '/docs/api', mcp: '/docs/mcp',
+  privacy: PRIVACY_POLICY_PATH, support: SUPPORT_PATH, terms: TERMS_OF_SERVICE_PATH } as const;
 export const legacyPagePaths = legacyToolPagePaths;
 
 export function localizedPath(path: string, locale: Locale) {

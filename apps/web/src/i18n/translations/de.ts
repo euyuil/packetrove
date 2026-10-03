@@ -14,12 +14,61 @@ export const de = {
     title: 'Möchten Sie diese Seite auf Deutsch lesen?',
     switch: 'Zu Deutsch wechseln', dismiss: 'Jetzt nicht',
   },
+  "support": {
+    "title": "Support",
+    "introduction": "Hilfe zur Packetrove-Website, Web API, CLI und entfernten MCP-Verbindung. Ein Konto oder API-Schlüssel ist nicht erforderlich.",
+    "contactTitle": "Kontakt zum Projektbetreuer",
+    "contactBody": "Der einzelne Projektbetreuer liest die E-Mails an die unten genannte Adresse. Nutzen Sie E-Mail für vertrauliche Hilfe, Datenschutzanfragen oder Sicherheitsmeldungen. Hilfe erfolgt nach verfügbarer Zeit, ohne garantierte Antwortfrist.",
+    "publicTitle": "Öffentliches Feedback",
+    "publicBody": "Melden Sie reproduzierbare Fehler oder Funktionswünsche auf GitHub. Meldungen und Anhänge sind öffentlich. Geben Sie keine Zugangsdaten, tatsächlichen Ergebnisse einer öffentlichen IP-Abfrage oder privaten Netzwerkdaten an.",
+    "detailsTitle": "So lässt sich das Problem nachvollziehen",
+    "detailsBody": "Nennen Sie Werkzeug und Schnittstelle, Browser- oder Clientversion, Schritte, erwartetes Ergebnis und tatsächliches Ergebnis oder Fehlercode. Verwenden Sie künstliche Beispieldaten und entfernen Sie vertrauliche Angaben aus Protokollen und Screenshots.",
+    "guidesTitle": "Anleitungen und Datenschutz",
+    "guidesBody": "Die API- und MCP-Anleitungen erklären Verbindung und Eingaben. Die CLI-Anleitung ist auf Englisch. Die Datenschutzerklärung beschreibt die entfernte Verarbeitung und die Supportkorrespondenz."
+  },
+  "terms": {
+    "title": "Nutzungsbedingungen",
+    "updated": "Zuletzt aktualisiert: 4. Oktober 2026.",
+    "introduction": "Diese Bedingungen gelten für die gehostete Packetrove-Website, Web API und den entfernten MCP-Dienst, die von einem einzelnen Projektbetreuer betrieben werden. Mit der Nutzung stimmen Sie diesen Bedingungen zu.",
+    "sections": {
+      "use": {
+        "title": "Zulässige Nutzung",
+        "body": "Nutzen Sie den Dienst rechtmäßig und nur mit Daten, die Sie verarbeiten dürfen. Beachten Sie die dokumentierten Eingabegrenzen. Stören Sie den Dienst nicht, umgehen Sie keine Sicherheitsmaßnahmen und senden Sie keine Zugangsdaten oder Geheimnisse als Eingaben."
+      },
+      "results": {
+        "title": "Ergebnisse vor der Verwendung prüfen",
+        "body": "Sie sind für die Prüfung der Ergebnisse vor ihrer Anwendung im Netzwerk verantwortlich. Ein abdeckendes CIDR kann Adressen hinzufügen; berechnete Lücken belegen keine tatsächliche Verfügbarkeit. Die öffentliche IP-Abfrage beobachtet die aufrufende Verbindung, möglicherweise die Ausgangsadresse eines AI-Clients. Packetrove konfiguriert keine Netzwerke oder Firewallregeln."
+      },
+      "availability": {
+        "title": "Verfügbarkeit und Verantwortung",
+        "body": "Der gehostete Dienst wird im vorhandenen Zustand und nach Verfügbarkeit angeboten, ohne Garantie für Verfügbarkeit, Richtigkeit oder Eignung. Er kann geändert, eingeschränkt oder eingestellt werden. Soweit gesetzlich zulässig, haftet der Projektbetreuer nicht für Schäden aus der Nutzung. Gesetzlich nicht ausschließbare Rechte und Haftung bleiben unberührt."
+      },
+      "license": {
+        "title": "Open-Source-Lizenz",
+        "body": "Der Packetrove-Quellcode einschließlich der CLI bleibt unter der MIT-Lizenz verfügbar. Diese Bedingungen ändern weder deren Berechtigungen noch Hinweise. Komponenten Dritter behalten ihre eigenen Lizenzen."
+      },
+      "privacy": {
+        "title": "Datenschutz und andere Dienste",
+        "body": "Die Datenschutzerklärung erläutert die Datenverarbeitung durch Packetrove. Für AI-Clients, GitHub und andere von Ihnen gewählte Dienste gelten deren eigene Bedingungen und Datenschutzregeln."
+      },
+      "changes": {
+        "title": "Änderungen dieser Bedingungen",
+        "body": "Änderungen werden hier mit aktualisiertem Datum veröffentlicht und gelten für die anschließende Nutzung des gehosteten Dienstes. Wenn Sie einer Änderung nicht zustimmen, beenden Sie die Nutzung."
+      }
+    },
+    "contactTitle": "Fragen",
+    "contactBody": "Wenden Sie sich bei Fragen zu diesen Bedingungen an den Packetrove-Projektbetreuer. Hilfe finden Sie auf der Supportseite."
+  },
   privacy: {
     "title": "Datenschutzerklärung",
-    "updated": "Zuletzt aktualisiert: 3. Oktober 2026.",
+    "updated": "Zuletzt aktualisiert: 4. Oktober 2026.",
     "introduction": "Diese Erklärung gilt für die Website, Web API, CLI und den entfernten MCP-Dienst von Packetrove, einschließlich der Nutzung über KI-Plugins. Packetrove wird von Liu Yue betreut. Ein Konto oder API-Schlüssel ist nicht erforderlich.",
     "cloudflarePolicy": "Datenschutzerklärung von Cloudflare",
     "sections": {
+        "correspondence": {
+          "title": "Supportkorrespondenz",
+          "body": "Wenn Sie uns schreiben, erhalten wir Ihre E-Mail-Adresse, einen gegebenenfalls angegebenen Namen und Ihre Nachricht. Der einzelne Projektbetreuer nutzt diese Angaben zur Beantwortung und Nachverfolgung. Supportkorrespondenz wird in der Regel langfristig ohne feste Ablauffrist aufbewahrt; kontaktieren Sie uns für eine Löschanfrage. E-Mails liegen beim Maildienst. GitHub-Meldungen und ihr öffentlicher Verlauf liegen bei GitHub und unterliegen dessen Aufbewahrungskontrollen."
+        },
         "local": {
             "title": "Lokale Berechnungen und Browserspeicher",
             "body": "Browserberechnungen und Offline-Berechnungen mit der CLI behalten Eingaben und Ergebnisse auf deinem Gerät. Berechnungsentwürfe bleiben im Seitenspeicher. Die Website speichert in sessionStorage nur eine Markierung für einen bereits behandelten Sprachvorschlag im aktuellen Tab, keine Adressen oder Ergebnisse. Beim Kopieren wird das Ergebnis in der Systemzwischenablage abgelegt."
@@ -366,6 +415,8 @@ export const de = {
     tooManyOutputs: 'Das vollständige Ergebnis überschreitet {{limit}} CIDRs. Verwende weniger Ausschlüsse oder kleinere eingeschlossene Bereiche. Es wird kein Teilergebnis zurückgegeben.',
   },
   meta: {
+    support: {"title":"Packetrove Support","description":"Kontaktieren Sie den Packetrove-Projektbetreuer, melden Sie Probleme sicher und finden Sie API-, MCP-, CLI- und Datenschutzinformationen."},
+    terms: {"title":"Packetrove Nutzungsbedingungen","description":"Lesen Sie die Bedingungen für den gehosteten Packetrove-Dienst: zulässige Nutzung, Ergebnisgrenzen, Verfügbarkeit, Datenschutz und MIT-Lizenz."},
     privacy: {"title": "Packetrove Datenschutzerklärung", "description": "Erfahre, wie Packetrove lokale Berechnungen, entfernte Eingaben, Verbindungsadressen, Betriebsprotokolle und Hostingdaten verarbeitet, einschließlich Aufbewahrung und Wahlmöglichkeiten."},
     range: {
       "title": "IP-Bereich in CIDRs umwandeln — Packetrove",
