@@ -84,7 +84,14 @@ below, followed by input/covered counts and the address range. Keep the warning
 visible without expanding a disclosure.
 
 On submission, focus a visible error summary whose issue links return to the
-input. Retain physical line numbers and associate the summary with the input.
+input. Activating a located issue link with a mouse or keyboard selects that
+specific invalid entry, so repeated values can be corrected independently.
+Reveal an off-screen selection by scrolling only the affected textarea. Use its
+actual text layout, including soft wraps, rather than estimating from line
+numbers. If the selection is taller than the viewport, reveal its start.
+Issues without a valid entry index only focus the input. Keep the original draft
+and URL unchanged, without recalculating. Retain physical line numbers and
+associate the summary with the input.
 A successful calculation updates a short polite, atomic status containing the
 resulting CIDR, rather than announcing the entire result panel. Repeating the
 calculation refreshes that status. Success keeps keyboard focus on the active
@@ -96,9 +103,13 @@ line breaks, in any combination. Empty entries are ignored; input order and
 duplicates are preserved for validation and the entry limit. Invalid entries
 report their original physical line. When a line contains multiple entries,
 errors also identify the entry's position within that line, counting every
-non-empty entry, including valid entries. Both CIDR
-tools use this parsing rule, and either subtraction copy format can be pasted
-directly into the covering calculator.
+non-empty entry, including valid entries. Both CIDR tools use the same parser
+for values, physical lines, per-line positions, and original UTF-16 character
+ranges. Their shared error summary delegates focus, exact selection, and textarea
+visibility to one helper; each page maps its issue index to an entry and its
+input field. Editing or clearing
+the draft removes old errors and their locations. Either subtraction copy format
+can be pasted directly into the covering calculator.
 
 The homepage introduces Packetrove and links to its tools. The calculator has
 its own page at `/cidr-cover`; My Public IP is at `/public-ip`. The calculator includes
