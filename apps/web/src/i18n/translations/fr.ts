@@ -68,6 +68,10 @@ export const fr = {
     lineEntry: 'Ligne {{line}}, élément {{entry}} : {{message}}',
   },
   subtract: {
+    normalizedInclude: "Entrées à inclure normalisées ({{total}})",
+    normalizedExclude: "Entrées à exclure normalisées ({{total}})",
+    normalizedHelp: "Chaque entrée est normalisée séparément. L’ordre de saisie, les entrées répétées et les plages imbriquées sont conservés.",
+    noExcludedInputs: "Aucune entrée à exclure.",
     title: 'Soustraction de CIDR', description: 'Retirez les réseaux IPv4 ou IPv6 exclus de votre espace d’adresses inclus. Obtenez la plus petite liste exacte de CIDR, sans ajouter d’adresses.',
     inputs: 'Vos listes d’adresses', include: 'Inclure', exclude: 'Exclure',
     includeLabel: 'Adresses IP ou CIDR à inclure', excludeLabel: 'Adresses IP ou CIDR à exclure',

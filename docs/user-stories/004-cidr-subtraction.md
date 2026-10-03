@@ -85,6 +85,16 @@ The counts are 16 included addresses, 4 removed, and 12 remaining.
 - An empty exclude list returns the exact minimal union of included ranges.
   Adjacent siblings may merge; gaps are preserved.
 - Duplicate, overlapping, and nested entries count once on each side.
+- After a successful calculation, two initially collapsed disclosures show the
+  normalized include and exclude inputs on demand, with each list's entry count.
+  The ordered, scrollable lists use `normalizedInclude` and `normalizedExclude`
+  from the shared calculation. Each input is normalized separately: input order,
+  duplicate entries, and nested ranges remain visible. These are not merged or
+  deduplicated lists. An empty exclude list shows zero entries and a localized
+  **No excluded inputs** message when expanded. Complete removal still permits
+  inspecting both lists. The controls and explanation use the current language;
+  editing, clearing, or a failed calculation removes the previous lists along
+  with the result. The covering calculator reuses the same disclosure display.
 - The removed count measures the intersection of the two unions, not the full
   exclusion list. An exclusion larger than an included range removes only that
   included range's addresses.

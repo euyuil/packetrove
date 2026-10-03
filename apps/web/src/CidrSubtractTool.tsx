@@ -19,6 +19,7 @@ import { ToolMcpSection } from './ToolMcpSection';
 import { parseAddressEntries } from './parseAddressEntries';
 import { ToolErrorSummary } from './ToolErrorSummary';
 import { ToolResultCounts } from './ToolResultCounts';
+import { NormalizedInputs } from './NormalizedInputs';
 import { useCalculationFeedback } from './useCalculationFeedback';
 
 export type CidrSubtractDraft = { include: string; exclude: string; result: CidrSubtractResult | null; error: ToolError | null };
@@ -159,6 +160,13 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
               <DataList.ItemValue className="network-value">{formatCount(count!)}</DataList.ItemValue>
             </DataList.Item>)}
           </DataList>
+          <Stack gap="sm">
+            <Text size="xs" c="dimmed">{t($ => $.subtract.normalizedHelp)}</Text>
+            <NormalizedInputs label={t($ => $.subtract.normalizedInclude, { total: formatCount(result.normalizedInclude.length) })}
+              entries={result.normalizedInclude} />
+            <NormalizedInputs label={t($ => $.subtract.normalizedExclude, { total: formatCount(result.normalizedExclude.length) })}
+              entries={result.normalizedExclude} emptyMessage={t($ => $.subtract.noExcludedInputs)} />
+          </Stack>
         </> : <Stack align="center" py="xl" gap="sm">
           <Title order={3} size="h4">{t($ => $.subtract.pendingTitle)}</Title>
           <Text size="sm" c="dimmed" ta="center">{t($ => $.subtract.pendingDescription)}</Text>
