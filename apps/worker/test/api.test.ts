@@ -8,6 +8,7 @@ import {
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
 import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { createApp } from '../src/app';
+import { rangeEndpointErrorCases } from './range-endpoint-error-cases';
 
 function post(body: string, headers: Record<string, string> = { 'content-type': 'application/json' }) {
   return exports.default.fetch(`http://localhost${CIDR_COVER_PATH}`, { method: 'POST', headers, body });
@@ -211,13 +212,7 @@ describe('inclusive IP range conversion over API', () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual(rangeToCidrs(request));
   });
-  it.each([
-    { request: { start: 'bad', end: '::/128' }, code: 'INVALID_INPUT', fields: ['start', 'end'] },
-    { request: { start: '', end: '::1' }, code: 'INVALID_INPUT', fields: ['start'] },
-    { request: { start: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
-    { request: { start: '203.0.113.1', end: '::1' }, code: 'MIXED_ADDRESS_FAMILIES', fields: ['end'] },
-    { request: { start: '::2', end: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
-  ])('returns field-specific errors without a partial list: $request', async ({ request, code, fields }) => {
+  it.each(rangeEndpointErrorCases)('returns field-specific errors without a partial list: $request', async ({ request, code, fields }) => {
     const response = await postRange(request);
     expect(response.status).toBe(400);
     const error = ErrorResponseSchema.parse(await response.json()).error;
