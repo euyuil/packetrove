@@ -206,6 +206,19 @@ narrow non-breaking spaces for digit grouping; Russian uses non-breaking spaces;
 Brazilian Portuguese and Italian use dots; Korean uses commas.
 Preserve interpolation names and inline code tokens in every translation.
 
+The translation-resource tests traverse every registered locale and inspect its
+original messages before English fallback. They reject missing or unknown
+ordinary keys, blank values, incorrect object shapes, malformed named
+interpolation, changed parameter names, and changed code content. Complete code
+fragments and parameters may move to fit each language's word order; repeated
+parameters are allowed. Rich text currently supports only paired, non-nested
+`<code>` markers without attributes. Preserve command whitespace and casing.
+Only plural families declared by the English resource may use standard plural
+suffixes. Tests require each locale's `Intl.PluralRules` categories, including
+`other`, and validate every supplied branch, including an optional `zero`
+override. Retain independent language-specific grammar expectations alongside
+these structural checks. The existing `pnpm check` includes both.
+
 The calculation core provides structured local issue reasons separately from
 its serialized errors. Translate these reasons in the web layer rather than
 matching English error messages. `ToolError.toResponse()` continues to return
