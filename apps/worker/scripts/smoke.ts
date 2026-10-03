@@ -13,7 +13,6 @@ import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadat
 import { resources } from '../../web/src/i18n/resources';
 import { escapeHtml, robotsText, websitePages, websiteRedirects } from '../../web/src/seo';
 import { localizedPath, pagePaths } from '../../web/src/i18n/routes';
-import { mcpExamples } from '../../web/src/mcp-examples';
 
 const originArguments = process.argv.slice(2);
 if (originArguments.length !== 2) {
@@ -121,12 +120,12 @@ for (const page of websitePages) {
       documentedTools.map(tool => tool.mcp.name), `MCP documentation catalog coverage: ${path}`);
     for (const definition of documentedTools) {
       const tool = definition.page;
-      const example = mcpExamples[tool];
+      const example = definition.example;
       assert(pageHtml.includes('data-mcp-example="resource-link"')
         && pageHtml.includes(escapeHtml(JSON.stringify(definition.mcp.resultLink, null, 2))),
         `MCP resource link example: ${path}`);
-      assert(pageHtml.includes('data-mcp-tool="' + example.name + '"'), `MCP tool name: ${path}`);
-      assert(pageHtml.includes(escapeHtml(JSON.stringify(example.arguments, null, 2))), `MCP example arguments: ${path}`);
+      assert(pageHtml.includes('data-mcp-tool="' + definition.mcp.name + '"'), `MCP tool name: ${path}`);
+      assert(pageHtml.includes(escapeHtml(JSON.stringify(example.request, null, 2))), `MCP example arguments: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.result, null, 2))), `MCP example result: ${path}`);
       const guidance = text.discovery[tool].result
         .replaceAll('{{maximumOutputs}}', new Intl.NumberFormat(page.locale).format(MAX_SUBTRACTION_OUTPUTS));

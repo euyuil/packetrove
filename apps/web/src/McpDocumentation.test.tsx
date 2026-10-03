@@ -6,12 +6,11 @@ import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import {
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
   PublicIpRequestSchema, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
-  RangeToCidrsRequestSchema, RangeToCidrsResultSchema, PACKETROVE_IDENTITY, PACKETROVE_VERSION,
+  RangeToCidrsRequestSchema, RangeToCidrsResultSchema, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog,
 } from '@packetrove/contracts';
 import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { App } from './App';
 import { render } from './test-utils';
-import { mcpExamples } from './mcp-examples';
 import { websitePages } from './seo';
 import { locales, supportedLocales } from './i18n/locales';
 import { localizedPath, pagePaths } from './i18n/routes';
@@ -82,23 +81,23 @@ describe('MCP examples in production HTML', () => {
         const result = JSON.parse(section.querySelector('[data-mcp-example="result"]')!.textContent!);
         const resourceLink = JSON.parse(section.querySelector('[data-mcp-example="resource-link"]')!.textContent!);
         expect(resourceLink).toEqual(definition.mcp.resultLink);
-        if (name === mcpExamples.cidr.name) {
+        if (name === toolCatalog.cidr.mcp.name) {
           const request = CidrCoverRequestSchema.parse(args);
           expect(CidrCoverResultSchema.parse(result)).toEqual(smallestCoveringCidr(request));
-          expect(args).toEqual(mcpExamples.cidr.arguments);
-          expect(result).toEqual(mcpExamples.cidr.result);
-        } else if (name === mcpExamples.subtract.name) {
+          expect(args).toEqual(toolCatalog.cidr.example.request);
+          expect(result).toEqual(toolCatalog.cidr.example.result);
+        } else if (name === toolCatalog.subtract.mcp.name) {
           expect(CidrSubtractResultSchema.parse(result)).toEqual(subtractCidrs(CidrSubtractRequestSchema.parse(args)));
-          expect(args).toEqual(mcpExamples.subtract.arguments);
-          expect(result).toEqual(mcpExamples.subtract.result);
-        } else if (name === mcpExamples.range.name) {
+          expect(args).toEqual(toolCatalog.subtract.example.request);
+          expect(result).toEqual(toolCatalog.subtract.example.result);
+        } else if (name === toolCatalog.range.mcp.name) {
           expect(RangeToCidrsResultSchema.parse(result)).toEqual(rangeToCidrs(RangeToCidrsRequestSchema.parse(args)));
-          expect(args).toEqual(mcpExamples.range.arguments);
-          expect(result).toEqual(mcpExamples.range.result);
+          expect(args).toEqual(toolCatalog.range.example.request);
+          expect(result).toEqual(toolCatalog.range.example.result);
         } else {
-          expect(name).toBe(mcpExamples.ip.name);
+          expect(name).toBe(toolCatalog.ip.mcp.name);
           expect(PublicIpRequestSchema.parse(args)).toEqual({});
-          expect(PublicIpResultSchema.parse(result)).toEqual(mcpExamples.ip.result);
+          expect(PublicIpResultSchema.parse(result)).toEqual(toolCatalog.ip.example.result);
         }
       }
       if (page.page === 'mcp') {
@@ -150,7 +149,7 @@ describe('localized MCP guide navigation', () => {
     fireEvent.change(screen.getByLabelText(text.subtract.excludeLabel), { target: { value: '203.0.113.64/26' } });
     fireEvent.click(screen.getByRole('button', { name: text.subtract.calculate }));
     expect(screen.getByText(text.discovery.subtract.questions.access.answer)).toBeDefined();
-    expect(document.querySelector('[data-mcp-tool]')?.getAttribute('data-mcp-tool')).toBe(mcpExamples.subtract.name);
+    expect(document.querySelector('[data-mcp-tool]')?.getAttribute('data-mcp-tool')).toBe(toolCatalog.subtract.mcp.name);
     fireEvent.click(screen.getByRole('button', { name: text.discovery.subtract.mcpTitle }));
     fireEvent.click(await screen.findByRole('link', { name: text.home.mcpGuide }));
     expect(window.location.pathname).toBe(localizedPath(pagePaths.mcp, locale));

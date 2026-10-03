@@ -1,10 +1,9 @@
-import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog, tools } from '@packetrove/contracts';
+import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog, tools, type ToolPage } from '@packetrove/contracts';
 import workerManifest from '../../worker/package.json' with { type: 'json' };
 import { createInstance } from 'i18next';
 import type {} from './i18n/i18next';
 import { resources } from './i18n/resources';
 import type { Locale } from './i18n/locales';
-import { mcpExamples, type McpExampleTool } from './mcp-examples';
 
 const translations = new Map<Locale, ReturnType<typeof createInstance>>();
 
@@ -21,11 +20,14 @@ function guideTranslator(locale: Locale) {
   return instance.t;
 }
 
-export function getMcpToolContent(tool: McpExampleTool, locale: Locale) {
+export function getMcpToolContent(tool: ToolPage, locale: Locale) {
   const t = guideTranslator(locale);
-  const example = mcpExamples[tool];
+  const definition = toolCatalog[tool];
+  const example = {
+    name: definition.mcp.name, arguments: definition.example.request, result: definition.example.result,
+  };
   return {
-    tool, example, resourceLink: toolCatalog[tool].mcp.resultLink,
+    tool, example, resourceLink: definition.mcp.resultLink,
     title: t($ => $.discovery[tool].mcpTitle),
     purpose: t($ => $.discovery[tool].purpose),
     inputs: t($ => $.discovery[tool].inputs, {
@@ -37,15 +39,15 @@ export function getMcpToolContent(tool: McpExampleTool, locale: Locale) {
     }),
     boundary: t($ => $.discovery[tool].boundary),
     expansion: tool === 'cidr' ? t($ => $.cidr.exampleResult, {
-      cidr: mcpExamples.cidr.result.cidr, covered: mcpExamples.cidr.result.coveredAddressCount,
-      additional: mcpExamples.cidr.result.additionalAddressCount,
+      cidr: toolCatalog.cidr.example.result.cidr, covered: toolCatalog.cidr.example.result.coveredAddressCount,
+      additional: toolCatalog.cidr.example.result.additionalAddressCount,
     }) : undefined,
     openTool: t($ => $.discovery[tool].openTool),
   };
 }
 
 export function getMcpSdkExample(serverUrl: string, productVersion = PACKETROVE_VERSION) {
-  const example = mcpExamples.cidr;
+  const definition = toolCatalog.cidr;
   return `import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
 const client = new Client(
@@ -57,8 +59,8 @@ try {
   const serverInfo = client.getServerVersion();
   const { tools } = await client.listTools();
   const result = await client.callTool({
-    name: ${JSON.stringify(example.name)},
-    arguments: ${JSON.stringify(example.arguments)},
+    name: ${JSON.stringify(definition.mcp.name)},
+    arguments: ${JSON.stringify(definition.example.request)},
   });
   if (result.isError) throw new Error(JSON.stringify(result.content));
   console.log(serverInfo, tools.map(tool => tool.name), result.structuredContent);

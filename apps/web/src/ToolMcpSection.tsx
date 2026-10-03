@@ -1,16 +1,15 @@
 import type { MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Anchor, Box, Code, Paper, Stack, Text, Title } from '@mantine/core';
-import { MCP_PATH } from '@packetrove/contracts';
+import { MCP_PATH, type ToolPage } from '@packetrove/contracts';
 import { getApiUrl } from './api';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
-import type { McpExampleTool } from './mcp-examples';
 import { getMcpToolContent } from './mcp-guide';
 import { ToolDisclosure } from './ToolDisclosure';
 
 export function ToolMcpSection({ tool, onNavigate, guide = false }: {
-  tool: McpExampleTool;
+  tool: ToolPage;
   onNavigate?: MouseEventHandler<HTMLAnchorElement> | undefined;
   guide?: boolean;
 }) {
