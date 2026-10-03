@@ -78,3 +78,18 @@ export function addressCount(intervals: Interval[]): bigint {
 export function unionAddressCount(intervals: Interval[]): bigint {
   return addressCount(mergeIntervals(intervals));
 }
+
+/** Yield the minimal exact cover in address order; callers retain their output limits. */
+export function* intervalsToCidrs(intervals: Interval[], family: Family, width: number): Generator<string> {
+  for (const interval of intervals) {
+    let cursor = interval.first;
+    while (cursor <= interval.last) {
+      // Every CIDR beginning here is aligned; the largest fitting block is minimal.
+      let hostBits = 0;
+      while (hostBits < width && (cursor & ((1n << BigInt(hostBits + 1)) - 1n)) === 0n) hostBits++;
+      while (cursor + (1n << BigInt(hostBits)) - 1n > interval.last) hostBits--;
+      yield `${formatAddress(cursor, family)}/${width - hostBits}`;
+      cursor += 1n << BigInt(hostBits);
+    }
+  }
+}

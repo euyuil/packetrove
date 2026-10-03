@@ -15,6 +15,8 @@ export const ja = {
   },
   footer: { project: 'プロジェクト', contact: 'お問い合わせ・ご意見', sendEmail: 'メールを送信' },
   home: {
+    rangeDescription: "両端を含む開始・終了 IP を最小の正確な CIDR リストに変換します。ローカルで計算し、追加アドレスなしで全ブロックをコピーできます。",
+    rangeLink: "IP 範囲の変換を開く",
     galleryTitle: "ツールを探す",
     galleryDescription: "左右の矢印を使うかカードをスワイプして例を確認し、必要なツールを開いてください。",
     galleryPrevious: "前のツール",
@@ -103,6 +105,30 @@ export const ja = {
     listIssue: '{{list}}：{{message}}',
     outputLimitTitle: '結果の CIDR が多すぎます。',
   },
+  range: {
+    "title": "IP 範囲を CIDR に変換",
+    "description": "両端を含む IPv4 または IPv6 の範囲を、余分なアドレスを追加せず最小の正確な CIDR リストに変換します。",
+    "inputs": "IP アドレス範囲",
+    "start": "開始 IP",
+    "end": "終了 IP",
+    "startHelp": "最初に含めるアドレス。CIDR プレフィックスのない IPv4 または IPv6 アドレスを 64 文字以内で入力します。",
+    "endHelp": "最後に含めるアドレス。開始 IP と同じ種類で、開始 IP 以上のアドレスを 64 文字以内で入力します。",
+    "calculate": "範囲を CIDR に変換",
+    "result": "正確な範囲の結果",
+    "output": "正確な CIDR リスト",
+    "addresses": "範囲内のアドレス数",
+    "completed": "計算完了。アドレス数: {{addresses}}。CIDR 数: {{cidrs}}。",
+    "pendingDescription": "両端のアドレスを入力すると、正確な CIDR リストとアドレス数が表示されます。",
+    "explanation": "両端のアドレスを含みます。結果はこの範囲だけを正確に覆う最小の CIDR リストで、ネットワークアドレス順に並び、隙間・重複・追加アドレスはありません。単一の包含 CIDR は範囲外のアドレスを含む場合があります。IPv4 のネットワークアドレスとブロードキャストアドレスも数え、大きな IPv6 範囲でも正確です。",
+    "examplesTitle": "IP 範囲の例",
+    "example": "両端を含む範囲: {{start}} から {{end}}。",
+    "issue": "{{field}}: {{message}}",
+    "emptyEndpoint": "IPv4 または IPv6 アドレスを 1 つ入力してください。",
+    "invalidEndpoint": "CIDR プレフィックスのない標準の IPv4 または IPv6 アドレスを使用してください。ゾーン識別子と IPv4 の先頭ゼロには対応していません。",
+    "endpointCidr": "CIDR プレフィックスのない IP アドレスを入力してください。",
+    "reversedRange": "終了 IP は開始 IP 以上にしてください。両端を自動で入れ替えることはありません。",
+    "expectedFamily": "開始 IP と同じ {{family}} を使用してください。"
+  },
   ip: {
     title: '自分のパブリック IP', description: '現在の Packetrove への接続で使われるパブリック IP アドレスを確認します。',
     online: 'オンラインで確認 · アプリは結果を保存しません', connection: '現在の接続', checking: 'パブリック IP を確認しています…',
@@ -113,6 +139,8 @@ export const ja = {
     familyExplanation: '1 つの接続で使われるのは IPv4 または IPv6 のどちらかです。この確認で表示するのはその接続のアドレスで、両方のアドレスやローカルのプライベートアドレスは取得できません。ネットワークやプロキシの設定を変更したら、再取得してください。',
   },
   api: {
+    rangeSummary: "同じアドレス種別の start と end を送信します。両端を含み、正規化した端点、最小の正確な CIDR リスト、CIDR 数、十進数文字列のアドレス数を返します。このリクエストは入力をサーバーに送信します。",
+    rangeResponse: "この例は {{cidrs}} を返し、正確に {{addresses}} 個のアドレスを表します。",
     title: 'API ドキュメント', loading: 'API ドキュメントを読み込んでいます…', specification: 'OpenAPI 仕様',
     unavailableTitle: 'API ドキュメントを表示できません',
     unavailableDescription: 'ドキュメントの読み込みまたは表示に失敗しました。計算器に戻っても、入力、結果、検証エラーは保持されます。',
@@ -126,6 +154,33 @@ export const ja = {
     subtractResponse: "この例は {{cidrs}} を返し、残りは {{remaining}} アドレスです。余分な範囲は追加しません。",
   },
   discovery: {
+    range: {
+      "title": "IP 範囲変換の質問",
+      "mcpTitle": "MCP で IP 範囲を変換",
+      "purpose": "両端を含む IP 範囲を最小の正確な CIDR リストで表すよう AI エージェントに依頼します。",
+      "inputs": "start と end に同じ種類の IPv4 または IPv6 アドレスを指定します。CIDR プレフィックスなしで各 {{maximumLength}} 文字以内、end は start 以上にしてください。",
+      "result": "正規化された range.first と range.last、並べ替えた cidrs、cidrCount、正確な十進数文字列 addressCount を読み取ります。同じ端点は /32 または /128、全アドレス空間は /0 になります。エラーは start または end を示します。",
+      "boundary": "ブラウザーはローカルで計算します。API とリモート MCP は端点をサーバーに送信します。実際の割り当てを調べたり、ファイアウォール・ルーティング・VPN 設定を変更したりしません。CLI とエージェントスキルでは範囲変換は利用できません。",
+      "openTool": "ブラウザーで範囲変換を開く",
+      "questions": {
+        "exact": {
+          "question": "単一の包含 CIDR との違いは？",
+          "answer": "このリストは両端を含む範囲だけを表し、余分なアドレスを含みません。単一の包含 CIDR は開始より前や終了より後のアドレスを含む場合があります。許可リストを指定範囲に正確に合わせるときはこの変換を使います。"
+        },
+        "order": {
+          "question": "同じ端点や逆順の端点は使えますか？",
+          "answer": "同じ端点はホスト CIDR を 1 つ返します。IPv4 は /32、IPv6 は /128 です。逆順はエラーになり、自動で入れ替えません。両端は同じ種類の IP アドレスで、CIDR プレフィックスを付けないでください。"
+        },
+        "counts": {
+          "question": "どのアドレスを数えますか？",
+          "answer": "両端を含むすべてのアドレスを数え、IPv4 のネットワークアドレスとブロードキャストアドレスも含みます。IPv6 の全空間でも正確で、個別に列挙しません。"
+        },
+        "privacy": {
+          "question": "端点はどこに送信されますか？",
+          "answer": "ブラウザー計算は端末のメモリ内に保持され、アップロード・永続化・ログ記録・URL への入力追加を行いません。Web API とリモート MCP は端点をサーバーに送信します。ウェブサイト、Web API、MCP で利用できます。"
+        }
+      }
+    },
     subtract: {
       title: "CIDR 差分のよくある質問",
       mcpTitle: "MCP で CIDR 差分を使う",
@@ -260,6 +315,10 @@ export const ja = {
     tooManyOutputs: '結果全体が {{limit}} 件の CIDR を超えています。除外項目を減らすか、含める範囲を小さくしてください。結果の一部だけを返すことはありません。',
   },
   meta: {
+    range: {
+      "title": "IP 範囲から CIDR への変換 — Packetrove",
+      "description": "両端を含む IPv4・IPv6 範囲をローカルで最小の正確な CIDR リストに変換。全ブロックをコピーし、追加アドレスなしで正確な数を確認できます。"
+    },
     mcp: {"title": "Packetrove MCP ガイド — CIDR とパブリック IP", "description": "MCP で Claude Code や Codex を Packetrove に接続。引数、正確な CIDR の結果、IP の接続範囲、エラー処理を API キーなしで確認できます。"},
     home: { title: 'Packetrove — CIDR 計算器とパブリック IP 確認', description: 'ブラウザー内で集約 CIDR を計算し、パブリック IP を確認できます。Web、API、CLI、MCP で使える IPv4・IPv6 用のオープンソースツールです。アカウントは不要です。' },
     cidr: { title: '最小の集約 CIDR 計算器 — Packetrove', description: 'IPv4 または IPv6 のアドレスと範囲を含む最小の単一 CIDR を求めます。ブラウザー内で正確なアドレス数、追加範囲、計算例を確認できます。' },

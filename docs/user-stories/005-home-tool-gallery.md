@@ -28,7 +28,8 @@ another homepage card. Localized prose uses each catalog entry's page key.
 
 Each card contains a title, explanation, a clearly marked example preview, and a
 link to the localized tool page. Covering CIDRs show extra coverage; subtraction
-shows exact remaining ranges and counts. The public IP preview uses a
+shows exact remaining ranges and counts; range conversion shows inclusive
+endpoints and their exact CIDR list and address count. The public IP preview uses a
 documentation address and explicitly asks visitors to open the tool for a real
 connection check. No example is a user's observed result.
 

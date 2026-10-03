@@ -13,7 +13,7 @@ import { resolveLocale } from './i18n/locales';
 import { ToolIcon } from './ToolIcon';
 
 // Curate homepage order without copying tool definitions or examples.
-export const featuredTools = [toolCatalog.cidr, toolCatalog.subtract, toolCatalog.ip];
+export const featuredTools = [toolCatalog.cidr, toolCatalog.subtract, toolCatalog.range, toolCatalog.ip];
 type CatalogTool = (typeof tools)[number];
 
 function ToolPreview({ tool }: { tool: CatalogTool }) {
@@ -42,6 +42,20 @@ function ToolPreview({ tool }: { tool: CatalogTool }) {
         <Text size="xs" c="dimmed">{t($ => $.subtract.blocks)}</Text>
         <Code block>{tool.example.result.cidrs.join('\n')}</Code>
         <Text size="sm">{t($ => $.subtract.remaining)}: {format(tool.example.result.remainingAddressCount)}</Text>
+      </> : tool.page === 'range' ? <>
+        <SimpleGrid cols={2} spacing="sm">
+          <Stack gap={4} miw={0}>
+            <Text size="xs" c="dimmed">{t($ => $.range.start)}</Text>
+            <Text size="sm" className="network-value">{tool.example.request.start}</Text>
+          </Stack>
+          <Stack gap={4} miw={0}>
+            <Text size="xs" c="dimmed">{t($ => $.range.end)}</Text>
+            <Text size="sm" className="network-value">{tool.example.request.end}</Text>
+          </Stack>
+        </SimpleGrid>
+        <Text size="xs" c="dimmed">{t($ => $.range.output)}</Text>
+        <Code block>{tool.example.result.cidrs.join('\n')}</Code>
+        <Text size="sm">{t($ => $.range.addresses)}: {format(tool.example.result.addressCount)}</Text>
       </> : <>
         <Text size="xs" c="dimmed">{t($ => $.ip.resultLabel)}</Text>
         <Text size="xl" fw={600} className="network-value">{tool.example.result.ip}</Text>

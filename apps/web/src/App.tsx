@@ -6,6 +6,7 @@ import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { CidrCoverTool, type CidrCoverDraft } from './CidrCoverTool';
 import { CidrSubtractTool, type CidrSubtractDraft } from './CidrSubtractTool';
 import { PublicIpTool } from './PublicIpTool';
+import { RangeToCidrsTool, type RangeToCidrsDraft } from './RangeToCidrsTool';
 import { HomePage } from './HomePage';
 import { LanguageSelector } from './LanguageSelector';
 import { SiteFooter } from './SiteFooter';
@@ -22,6 +23,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const [urlSuffix, setUrlSuffix] = useState('');
   const [draft, setDraft] = useState<CidrCoverDraft>({ input: '', result: null, error: null });
   const [subtractDraft, setSubtractDraft] = useState<CidrSubtractDraft>({ include: '', exclude: '', result: null, error: null });
+  const [rangeDraft, setRangeDraft] = useState<RangeToCidrsDraft>({ start: '', end: '', result: null, error: null });
   const { locale, page, path } = resolveRoute(pathname);
   const main = useRef<HTMLElement>(null);
   const previousPath = useRef(path);
@@ -69,6 +71,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
   const toolPages: Record<ToolPage, ReactNode> = {
     cidr: <CidrCoverTool draft={draft} onDraftChange={setDraft} onNavigate={navigate} />,
     subtract: <CidrSubtractTool draft={subtractDraft} onDraftChange={setSubtractDraft} onNavigate={navigate} />,
+    range: <RangeToCidrsTool draft={rangeDraft} onDraftChange={setRangeDraft} onNavigate={navigate} />,
     ip: <PublicIpTool onNavigate={navigate} />,
   };
 

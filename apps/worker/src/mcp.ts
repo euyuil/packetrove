@@ -1,4 +1,4 @@
-import { McpServer, type McpRequestContext } from '@modelcontextprotocol/server';
+import { McpServer, type McpRequestContext, type CallToolResult } from '@modelcontextprotocol/server';
 import { createMcpHandler } from 'agents/mcp/server';
 import type { z } from 'zod';
 import { MCP_PATH, PACKETROVE_VERSION, tools } from '@packetrove/contracts';
@@ -8,11 +8,16 @@ import { executeTool } from './tools';
 export function createMcpServer(context: McpRequestContext) {
   const server = new McpServer({ name: 'Packetrove', version: PACKETROVE_VERSION });
   for (const tool of tools) {
-    server.registerTool<z.ZodType, z.ZodType>(tool.mcp.name, {
+    // Local cores validate the entire request and return shared, located errors.
+    // Retain the catalog's discovery schema while letting malformed inputs reach that validation.
+    const inputSchema = tool.execution === 'local' ? {
+      '~standard': { ...tool.inputSchema['~standard'], validate: (value: unknown) => ({ value }) },
+    } : tool.inputSchema;
+    server.registerTool<z.ZodType, typeof inputSchema>(tool.mcp.name, {
       title: tool.title, description: tool.mcp.description,
-      inputSchema: tool.inputSchema, outputSchema: tool.outputSchema,
+      inputSchema, outputSchema: tool.outputSchema,
       annotations: tool.mcp.annotations,
-    }, async (request: unknown) => {
+    }, async (request: unknown): Promise<CallToolResult> => {
       try {
         const result = executeTool(tool.page, request, context.requestInfo?.headers);
         return { structuredContent: result, content: [{ type: 'text', text: JSON.stringify(result) }] };

@@ -4,7 +4,7 @@ import {
 } from '@packetrove/contracts';
 import { ToolError, type InputIssueDetail } from './errors';
 import {
-  addressCount, formatAddress, mergeIntervals, parseInput,
+  addressCount, intervalsToCidrs, mergeIntervals, parseInput,
   type Family, type Interval, type ParsedInput,
 } from './ip-range';
 
@@ -29,23 +29,15 @@ function subtractIntervals(include: Interval[], exclude: Interval[]): Interval[]
   return remaining;
 }
 
-function intervalsToCidrs(intervals: Interval[], family: Family, width: number): string[] {
+function subtractionCidrs(intervals: Interval[], family: Family, width: number): string[] {
   const cidrs: string[] = [];
-  for (const interval of intervals) {
-    let cursor = interval.first;
-    while (cursor <= interval.last) {
-      // The largest aligned block that fits is part of the unique minimal cover.
-      let hostBits = 0;
-      while (hostBits < width && (cursor & ((1n << BigInt(hostBits + 1)) - 1n)) === 0n) hostBits++;
-      while (cursor + (1n << BigInt(hostBits)) - 1n > interval.last) hostBits--;
-      if (cidrs.length === MAX_SUBTRACTION_OUTPUTS) {
-        throw new ToolError('INVALID_INPUT', 'The result contains too many CIDRs.', [{
-          message: `The complete result exceeds ${MAX_SUBTRACTION_OUTPUTS} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.`,
-        }], [{ reason: 'TOO_MANY_OUTPUTS', limit: MAX_SUBTRACTION_OUTPUTS }]);
-      }
-      cidrs.push(`${formatAddress(cursor, family)}/${width - hostBits}`);
-      cursor += 1n << BigInt(hostBits);
+  for (const cidr of intervalsToCidrs(intervals, family, width)) {
+    if (cidrs.length === MAX_SUBTRACTION_OUTPUTS) {
+      throw new ToolError('INVALID_INPUT', 'The result contains too many CIDRs.', [{
+        message: `The complete result exceeds ${MAX_SUBTRACTION_OUTPUTS} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.`,
+      }], [{ reason: 'TOO_MANY_OUTPUTS', limit: MAX_SUBTRACTION_OUTPUTS }]);
     }
+    cidrs.push(cidr);
   }
   return cidrs;
 }
@@ -115,7 +107,7 @@ export function subtractCidrs(value: unknown): CidrSubtractResult {
     family,
     normalizedInclude: parsed.include.map(entry => entry.cidr),
     normalizedExclude: parsed.exclude.map(entry => entry.cidr),
-    cidrs: intervalsToCidrs(remaining, family, width),
+    cidrs: subtractionCidrs(remaining, family, width),
     includedAddressCount: includedAddressCount.toString(),
     removedAddressCount: (includedAddressCount - remainingAddressCount).toString(),
     remainingAddressCount: remainingAddressCount.toString(),
