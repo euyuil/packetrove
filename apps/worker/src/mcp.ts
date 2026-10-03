@@ -1,11 +1,12 @@
-import { McpServer, type McpRequestContext, type CallToolResult } from '@modelcontextprotocol/server';
+import { McpServer, type McpRequestContext, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import { createMcpHandler } from 'agents/mcp/server';
 import type { z } from 'zod';
 import { MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_WEBSITE_ORIGIN, tools } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
-import { executeTool } from './tools';
+import { executeTool, type ToolExecutor } from './tools';
+import { createToolExecutionContext } from './tool-context';
 
-function createMcpServer(context: McpRequestContext) {
+export function createMcpServer(context: McpRequestContext, executor: ToolExecutor = executeTool) {
   const server = new McpServer({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
   for (const tool of tools) {
     // Local cores validate the entire request and return shared, located errors.
@@ -17,9 +18,11 @@ function createMcpServer(context: McpRequestContext) {
       title: tool.title, description: tool.mcp.description,
       inputSchema, outputSchema: tool.outputSchema,
       annotations: tool.mcp.annotations,
-    }, async (request: unknown): Promise<CallToolResult> => {
+    }, async (request: unknown, callContext: ServerContext): Promise<CallToolResult> => {
       try {
-        const result = executeTool(tool.page, request, context.requestInfo?.headers);
+        const executionContext = createToolExecutionContext(callContext.http?.req ?? context.requestInfo,
+          callContext.mcpReq.signal);
+        const result = await executor(tool.page, request, executionContext);
         return { structuredContent: result, content: [
           { type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink,
         ] };
@@ -39,8 +42,10 @@ const allowedHostnames = [
   'api.packetrove.com',
 ];
 
-export const mcpHandler = createMcpHandler(createMcpServer, {
-  route: MCP_PATH, responseMode: 'json',
-  allowedHostnames,
-  allowedOriginHostnames: [...allowedHostnames, new URL(PUBLIC_WEBSITE_ORIGIN).hostname],
-});
+export function createPacketroveMcpHandler(executor: ToolExecutor = executeTool) {
+  return createMcpHandler(context => createMcpServer(context, executor), {
+    route: MCP_PATH, responseMode: 'json',
+    allowedHostnames,
+    allowedOriginHostnames: [...allowedHostnames, new URL(PUBLIC_WEBSITE_ORIGIN).hostname],
+  });
+}

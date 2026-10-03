@@ -75,6 +75,10 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
   Browser and CLI lookups have a ten-second deadline and a 64 KiB response limit.
 - The application does not store or log returned IP addresses. Lookup results
   and errors are not cached.
+- The [Privacy Policy](https://packetrove.com/privacy) describes remote input
+  processing, browser storage, operational error logs, hosting, retention, and
+  user choices. Cloudflare's platform processing is separate from application
+  storage and logging.
 
 For input formats, limits, and detailed behavior, see the
 [covering-CIDR](docs/user-stories/001-smallest-covering-cidr.md),

@@ -1,13 +1,14 @@
 import { PublicIpResultSchema, type PublicIpResult } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
+import type { ConnectionMetadata } from './tool-context';
 
 /** Read connection metadata supplied by the deployment's Cloudflare HTTP boundary. */
-export function getPublicIp(headers?: Headers): PublicIpResult {
+export function getPublicIp(connection: ConnectionMetadata): PublicIpResult {
   const unavailable = () => new ToolError(
     'CLIENT_IP_UNAVAILABLE',
     'The current connection IP is unavailable. Use an endpoint with Cloudflare connection metadata.',
   );
-  const ip = headers?.get('cf-connecting-ip');
+  const ip = connection.address;
   if (!ip) throw unavailable();
   const result = PublicIpResultSchema.safeParse({ ip, family: ip.includes(':') ? 'ipv6' : 'ipv4' });
   if (!result.success) throw unavailable();
@@ -16,7 +17,7 @@ export function getPublicIp(headers?: Headers): PublicIpResult {
   // preserved IPv6 header in that case; an unrelated header cannot override a
   // normal IPv4 or IPv6 connection address.
   if (result.data.family === 'ipv4' && Number(ip.split('.')[0]) >= 240) {
-    const original = PublicIpResultSchema.safeParse({ ip: headers?.get('cf-connecting-ipv6'), family: 'ipv6' });
+    const original = PublicIpResultSchema.safeParse({ ip: connection.originalIpv6Address, family: 'ipv6' });
     if (!original.success) throw unavailable();
     return original.data;
   }

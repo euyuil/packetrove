@@ -113,6 +113,29 @@ custom domain changes, update the separate exact hostname allowlists in
 [`apps/worker/src/mcp.ts`](../apps/worker/src/mcp.ts) and rerun checks. Clients
 without an Origin header are supported. Unrelated browser Origins are rejected.
 
+## Privacy policy and operational errors
+
+The static `/privacy` page and every localized counterpart use the same page
+registry, prerendering, metadata, and sitemap as the other website pages. The
+footer and MCP guide link to the same-language policy. MCP tool descriptions
+link to the canonical English policy for client and directory discovery.
+Use `https://packetrove.com/privacy` as the plugin's privacy-policy URL only
+after the revision is deployed and the public page is verified.
+
+Unexpected HTTP failures emit only `request_failure` and the fixed
+`INTERNAL_ERROR` code. The application logger does not receive exception
+objects, request data, or results, and logging failure cannot replace the HTTP
+error response. This change does not enable MCP usage statistics.
+
+Application event fields are not a whitelist for Cloudflare's complete log
+record. Review actual observability settings and full persisted events before
+making platform-data claims. Workers Logs retention is currently three days on
+Free and seven days on Paid; Cloudflare has announced seven days for Free from
+December 1, 2026. This limit concerns operator-queryable Workers Logs, not all
+Cloudflare network or security processing. See the
+[Workers Logs documentation](https://developers.cloudflare.com/workers/observability/logs/workers-logs/)
+and [new Observability pricing](https://developers.cloudflare.com/observability/pricing/).
+
 ## Manual build and deploy
 
 Run local validation before publishing:

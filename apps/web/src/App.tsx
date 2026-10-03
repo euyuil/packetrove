@@ -125,7 +125,7 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
     loadNavigation(new URL(event.currentTarget.href), 'push');
   }
 
-  const PageView = page === 'home' || page === 'api' || page === 'mcp' ? getPreparedPage(page) : null;
+  const PageView = page === 'home' || page === 'api' || page === 'mcp' || page === 'privacy' ? getPreparedPage(page) : null;
 
   return <ToolDraftProvider><Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
     <Stack gap="lg">
@@ -154,10 +154,12 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       </Alert>}
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
         aria-label={homePage ? t($ => $.common.home) : isToolPage(page) ? t($ => $[page].title)
-          : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title) : t($ => $.common.notFound)}>
+          : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title)
+          : page === 'privacy' ? t($ => $.privacy.title) : t($ => $.common.notFound)}>
         {homePage && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : isToolPage(page) ? <ToolPageView page={page} onNavigate={navigate} />
           : page === 'mcp' && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
+          : page === 'privacy' && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>

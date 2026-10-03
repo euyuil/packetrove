@@ -47,7 +47,9 @@ describe('browser navigation and integration documentation', () => {
     const cli = within(integrations).getByRole('link', { name: text.footer.cliGuide });
     expect(cli.getAttribute('target')).toBe('_blank');
     expect(cli.getAttribute('rel')).toBe('noopener noreferrer');
-    expect(within(footer).getByRole('region', { name: text.footer.project }).querySelectorAll('a')).toHaveLength(2);
+    expect(within(footer).getByRole('region', { name: text.footer.project }).querySelectorAll('a')).toHaveLength(3);
+    expect(within(footer).getByRole('link', { name: text.privacy.title }).getAttribute('href'))
+      .toBe(localizedPath(pagePaths.privacy, locale));
     expect(within(footer).getByRole('region', { name: text.footer.contact }).querySelectorAll('a')).toHaveLength(3);
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -59,18 +61,19 @@ describe('browser navigation and integration documentation', () => {
     for (const name of ['Project Resources', 'Integrations', 'Contact & Feedback']) {
       expect(footer.getByRole('heading', { name })).toBeDefined();
     }
-    for (const name of ['API Documentation', 'MCP Guide', 'CLI Guide', 'Report a bug', 'Request a feature', 'Send an email', 'Source code: MIT']) {
+    for (const name of ['API Documentation', 'MCP Guide', 'CLI Guide', 'Privacy Policy', 'Report a bug', 'Request a feature', 'Send an email', 'Source code: MIT']) {
       expect(footer.getByRole('link', { name })).toBeDefined();
     }
   });
 
-  it.each(['mcp', 'api', 'notFound'] as const)('keeps the mobile menu limited to browser tasks on the %s page', async page => {
+  it.each(['mcp', 'api', 'privacy', 'notFound'] as const)('keeps the mobile menu limited to browser tasks on the %s page', async page => {
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     window.history.replaceState({}, '', page === 'notFound' ? '/missing' : pagePaths[page]);
     render(<App />);
     const text = resources.en.translation;
-    const label = page === 'mcp' ? text.mcp.navigation : page === 'api' ? text.footer.apiDocumentation : text.common.notFound;
+    const label = page === 'mcp' ? text.mcp.navigation : page === 'api' ? text.footer.apiDocumentation
+      : page === 'privacy' ? text.privacy.title : text.common.notFound;
     const trigger = within(screen.getByRole('navigation')).getByRole('button', { name: text.common.navigation + ': ' + label });
     fireEvent.click(trigger);
     const menu = await screen.findByRole('menu');

@@ -66,6 +66,8 @@ See [Cloudflare's header documentation](https://developers.cloudflare.com/fundam
 - Keep the result in memory for display. Do not store lookup history, add
   analytics, or log the IP in application logs or production verification.
   Cloudflare still processes the request under the operator's platform settings.
+  The public [Privacy Policy](https://packetrove.com/privacy) explains that
+  hosting boundary and the limits of operator-accessible log retention.
 - Set a request timeout and provide useful loading, error, and retry behavior.
   Emphasize the address and copy action; present refresh as a secondary action.
   Reserve address space across loading and address-family changes, and prefer

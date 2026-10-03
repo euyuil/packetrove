@@ -349,6 +349,8 @@ The website’s `/mcp` path is not the service endpoint: GET returns 404 and POS
 
 [Deployment, self-hosting, and production verification](../deployment.md)
 
+[Privacy Policy](https://packetrove.com/privacy)
+
 [MCP Registry publication and version policy](../cli-publishing.md#publish-to-the-official-mcp-registry)
 
 ## Client presentation check
