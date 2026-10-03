@@ -19,7 +19,8 @@ export function ToolNavigation({ page, locale, onNavigate }: {
   ];
   const current = entries.find(entry => entry.page === page);
   const label = current?.label ?? (page === 'api' ? t($ => $.footer.apiDocumentation)
-    : page === 'mcp' ? t($ => $.mcp.navigation) : page === 'privacy' ? t($ => $.privacy.title) : t($ => $.common.notFound));
+    : page === 'mcp' ? t($ => $.mcp.navigation) : page === 'privacy' ? t($ => $.privacy.title)
+    : page === 'support' ? t($ => $.support.title) : page === 'terms' ? t($ => $.terms.title) : t($ => $.common.notFound));
 
   return <Box component="nav" aria-label={t($ => $.common.navigation)}>
     <Group gap="sm" visibleFrom="sm">

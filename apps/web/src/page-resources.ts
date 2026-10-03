@@ -10,14 +10,16 @@ type PageProps = {
   documentationUrl: string;
   sourceUrl: string;
 };
-const otherPages = createResourceCache<'home' | 'api' | 'mcp' | 'privacy', ComponentType<PageProps>>({
+const otherPages = createResourceCache<'home' | 'api' | 'mcp' | 'privacy' | 'support' | 'terms', ComponentType<PageProps>>({
   home: () => import('./HomePage').then(module => module.HomePage),
   api: () => import('./ApiDocumentation').then(module => module.default),
   mcp: () => import('./McpDocumentation').then(module => module.McpDocumentation),
   privacy: () => import('./PrivacyPolicy').then(module => module.PrivacyPolicy),
+  support: () => import('./SupportPage').then(module => module.SupportPage),
+  terms: () => import('./TermsOfService').then(module => module.TermsOfService),
 });
 
-export const getPreparedPage = (page: 'home' | 'api' | 'mcp' | 'privacy') => otherPages.get(page);
+export const getPreparedPage = (page: 'home' | 'api' | 'mcp' | 'privacy' | 'support' | 'terms') => otherPages.get(page);
 
 export function isRoutePrepared(pathname: string) {
   const { locale, page } = resolveRoute(pathname);

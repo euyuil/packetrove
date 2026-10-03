@@ -18,7 +18,8 @@ network results and share a link in my preferred language.
   `/fr` for French (`fr`), `/pt` for Portuguese (`pt-BR`), `/ru` for Russian (`ru`),
   `/ko` for Korean (`ko`), and `/it` for Italian (`it`).
   Each prefix has a homepage, every tool page from the
-  [shared catalog](../tool-catalog.md), `/docs/api`, `/docs/mcp`, and `/privacy`.
+  [shared catalog](../tool-catalog.md), `/docs/api`, `/docs/mcp`, `/privacy`,
+  `/support`, and `/terms`.
   Reserve short language codes and language-tag names for locale prefixes;
   choose descriptive tool URL names according to `AGENTS.md`. Legacy tool paths
   follow the catalog's [name migration](../tool-catalog.md#migration-to-flat-names),
@@ -196,6 +197,15 @@ navigation. Loading failures keep drafts and metadata, offer localized retry,
 and align the address with the retained page. Locale changes do not remount a
 tool. Initial resource failures preserve the prerendered page and use its embedded
 localized retry wording; no language bundle is needed to display that error.
+
+Pending navigation shows no loading indicator during its first second. If it is
+still pending after one second, show a three-pixel indeterminate bar fixed to the
+top of the viewport. Its appearance and removal must not move existing content,
+cover controls, intercept pointer input, or take keyboard focus. Keep a polite,
+localized status message available to assistive technology. Under reduced-motion
+preferences, show a stationary bar. Commit a prepared destination immediately;
+the indicator must not delay navigation. A continuous pending sequence uses one
+indicator even when the user chooses another destination.
 
 Keep complete sentences in translations, using named interpolation parameters
 for values and `Trans` for inline components. Translate display text while

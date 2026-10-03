@@ -109,6 +109,7 @@ See [Contributing](CONTRIBUTING.md) for complete setup, checks, and Git hooks.
 
 ## Documentation and contributing
 
+- [Support](https://packetrove.com/support) · [Terms of Service](https://packetrove.com/terms)
 - [Contribute or report an issue](CONTRIBUTING.md)
 - [Self-hosting](docs/deployment.md)
 - [Continuous integration and deployment](docs/continuous-integration.md)

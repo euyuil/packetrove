@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Anchor, Box, Button, Container, Divider, Group, Loader, Stack, Text, Title } from '@mantine/core';
+import { Alert, Anchor, Box, Button, Container, Divider, Group, Stack, Text, Title } from '@mantine/core';
 import { isToolPage } from '@packetrove/contracts';
 import packetroveLogo from './assets/packetrove-logo-160x160.png';
 import { ToolDraftProvider } from './ToolDraftProvider';
@@ -14,6 +14,7 @@ import { ToolNavigation } from './ToolNavigation';
 import { getPreparedPage, isRoutePrepared, prepareRoute } from './page-resources';
 import { installLocale } from './i18n/locale-resources';
 import { subscribeHistoryWrites } from './history-writes';
+import { PageLoadingIndicator } from './PageLoadingIndicator';
 
 export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
@@ -125,9 +126,12 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
     loadNavigation(new URL(event.currentTarget.href), 'push');
   }
 
-  const PageView = page === 'home' || page === 'api' || page === 'mcp' || page === 'privacy' ? getPreparedPage(page) : null;
+  const PageView = page === 'home' || page === 'api' || page === 'mcp' || page === 'privacy'
+    || page === 'support' || page === 'terms' ? getPreparedPage(page) : null;
 
-  return <ToolDraftProvider><Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
+  return <ToolDraftProvider>
+    <PageLoadingIndicator loading={loading} label={t($ => $.common.pageLoading)} />
+    <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
     <Stack gap="lg">
       <Group component="header" justify="space-between">
         <Anchor href={href('/')} onClick={navigate} aria-label={t($ => $.common.homeLabel)} underline="never" c="var(--mantine-color-text)">
@@ -141,9 +145,6 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       </Group>
       <Divider />
       <ToolNavigation page={page} locale={locale} onNavigate={navigate} />
-      {loading && <Group role="status" aria-label={t($ => $.common.pageLoading)} gap="sm">
-        <Loader size="sm" /><Text>{t($ => $.common.pageLoading)}</Text>
-      </Group>}
       {failedNavigation && <Alert role="alert" color="red">
         <Stack gap="sm">
           <Text>{t($ => $.common.pageLoadFailure)}</Text>
@@ -155,11 +156,13 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
       <Box component="main" ref={main} tabIndex={-1} className="mantine-focus-never"
         aria-label={homePage ? t($ => $.common.home) : isToolPage(page) ? t($ => $[page].title)
           : apiPage ? t($ => $.api.title) : page === 'mcp' ? t($ => $.mcp.title)
-          : page === 'privacy' ? t($ => $.privacy.title) : t($ => $.common.notFound)}>
+          : page === 'privacy' ? t($ => $.privacy.title) : page === 'support' ? t($ => $.support.title)
+          : page === 'terms' ? t($ => $.terms.title) : t($ => $.common.notFound)}>
         {homePage && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : isToolPage(page) ? <ToolPageView page={page} onNavigate={navigate} />
           : page === 'mcp' && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
-          : page === 'privacy' && PageView ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
+          : (page === 'privacy' || page === 'support' || page === 'terms') && PageView
+            ? <PageView onNavigate={navigate} documentationUrl={documentationUrl} sourceUrl={sourceUrl} />
           : apiPage ? <ApiDocumentationBoundary fallback={
             <Stack component="section" role="alert" aria-labelledby="api-documentation-error-heading">
               <Title order={1} size="h2" id="api-documentation-error-heading">{t($ => $.api.unavailableTitle)}</Title>

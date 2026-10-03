@@ -14,12 +14,61 @@ export const it = {
     feedbackPrompt: 'Hai trovato un errore o hai un’idea? Scrivici su GitHub.', reportBug: 'Segnala un errore', requestFeature: 'Proponi una funzionalità',
     notFound: 'Pagina non trovata', notFoundDescription: 'La pagina richiesta non esiste.', returnHome: 'Torna alla pagina iniziale',
   },
+  "support": {
+    "title": "Assistenza",
+    "introduction": "Ottieni aiuto per il sito Packetrove, la Web API, la CLI e la connessione MCP remota. Non servono un account o una chiave API.",
+    "contactTitle": "Contatta il responsabile",
+    "contactBody": "La persona che mantiene il progetto legge i messaggi all’indirizzo indicato sotto. Usa l’email per assistenza privata, richieste sulla privacy o segnalazioni di sicurezza. L’assistenza dipende dal tempo disponibile, senza tempi di risposta garantiti.",
+    "publicTitle": "Segnalazioni pubbliche",
+    "publicBody": "Segnala errori riproducibili o proponi funzionalità su GitHub. Segnalazioni e allegati sono pubblici. Non includere credenziali, risultati reali di ricerche IP pubbliche o dati di reti private.",
+    "detailsTitle": "Aiutaci a riprodurre il problema",
+    "detailsBody": "Indica strumento e interfaccia, versione del browser o client, passaggi, risultato atteso e risultato effettivo o codice di errore. Usa dati di esempio fittizi e rimuovi informazioni riservate da log e schermate.",
+    "guidesTitle": "Guide di connessione e privacy",
+    "guidesBody": "Le guide API e MCP spiegano connessioni e dati di ingresso. La guida CLI è in inglese. L’informativa sulla privacy descrive l’elaborazione remota e la corrispondenza di assistenza."
+  },
+  "terms": {
+    "title": "Termini di servizio",
+    "updated": "Ultimo aggiornamento: 4 ottobre 2026.",
+    "introduction": "Questi termini si applicano al sito ospitato, alla Web API e al servizio MCP remoto di Packetrove, gestiti dalla persona che mantiene il progetto. Utilizzandoli, accetti questi termini.",
+    "sections": {
+      "use": {
+        "title": "Uso consentito",
+        "body": "Usa il servizio legalmente e solo con dati che sei autorizzato a elaborare. Rispetta i limiti di ingresso documentati. Non interrompere il servizio, aggirare i controlli di sicurezza o inviare credenziali o segreti come dati di ingresso."
+      },
+      "results": {
+        "title": "Verifica i risultati prima dell’uso",
+        "body": "Devi verificare i risultati prima di applicarli a una rete. Un CIDR di copertura può aggiungere indirizzi; gli spazi calcolati non dimostrano disponibilità reale. La ricerca IP pubblico osserva la connessione chiamante, che può essere l’uscita di un client AI. Packetrove non configura reti o regole firewall."
+      },
+      "availability": {
+        "title": "Disponibilità e responsabilità",
+        "body": "Il servizio ospitato è fornito così com’è e secondo disponibilità, senza garanzie di disponibilità, precisione o idoneità. Può cambiare, essere limitato o cessare. Nei limiti consentiti dalla legge, il responsabile non risponde delle perdite derivanti dall’uso. Restano validi diritti e responsabilità che la legge vieta di escludere."
+      },
+      "license": {
+        "title": "Licenza open source",
+        "body": "Il codice sorgente di Packetrove, inclusa la CLI, resta disponibile con licenza MIT. Questi termini non modificano i permessi o gli avvisi di tale licenza. I componenti di terze parti mantengono le proprie licenze."
+      },
+      "privacy": {
+        "title": "Privacy e altri servizi",
+        "body": "L’informativa sulla privacy spiega il trattamento dei dati di Packetrove. I client AI, GitHub e gli altri servizi che scegli hanno termini e informative propri."
+      },
+      "changes": {
+        "title": "Modifiche ai termini",
+        "body": "Le revisioni sono pubblicate qui con una data aggiornata e si applicano all’uso successivo del servizio ospitato. Se non accetti una revisione, smetti di usare il servizio ospitato."
+      }
+    },
+    "contactTitle": "Domande",
+    "contactBody": "Contatta il responsabile di Packetrove per domande su questi termini o consulta la pagina di assistenza."
+  },
   privacy: {
     "title": "Informativa sulla privacy",
     "updated": "Ultimo aggiornamento: 4 ottobre 2026.",
     "introduction": "Questa informativa riguarda il sito web, la Web API, la CLI e il servizio MCP remoto di Packetrove, anche tramite plugin di IA. Packetrove è mantenuto da Liu Yue. Non servono un account o una chiave API.",
     "cloudflarePolicy": "Informativa sulla privacy di Cloudflare",
     "sections": {
+        "correspondence": {
+          "title": "Corrispondenza di assistenza",
+          "body": "Se ci scrivi, riceviamo il tuo indirizzo email, l’eventuale nome fornito e il messaggio. Il responsabile usa questi dati per rispondere e seguire la richiesta. La corrispondenza di assistenza viene generalmente conservata a lungo, senza scadenza fissa; puoi contattarci per chiederne l’eliminazione. Le email sono conservate nel servizio di posta. Le segnalazioni GitHub e la loro cronologia pubblica restano su GitHub e seguono i suoi controlli di conservazione."
+        },
         "local": {
             "title": "Calcoli locali e archiviazione del browser",
             "body": "I calcoli nel browser e quelli offline della CLI mantengono dati inseriti e risultati sul tuo dispositivo. Le bozze restano nella memoria della pagina. Il sito salva in sessionStorage solo un indicatore del suggerimento di lingua già gestito nella scheda corrente, senza indirizzi o risultati. Copiare un risultato lo inserisce negli appunti di sistema."
@@ -351,6 +400,8 @@ export const it = {
     tooManyOutputs: 'Il risultato completo supera {{limit}} CIDR. Riduci le esclusioni o gli intervalli inclusi. Non viene restituito un risultato parziale.',
   },
   meta: {
+    support: {"title":"Packetrove Assistenza","description":"Contatta il responsabile di Packetrove, segnala problemi in modo sicuro e trova informazioni su API, MCP, CLI e privacy."},
+    terms: {"title":"Packetrove Termini di servizio","description":"Leggi i termini del servizio ospitato Packetrove: uso consentito, limiti dei risultati, disponibilità, privacy e licenza MIT."},
     privacy: {"title": "Informativa sulla privacy di Packetrove", "description": "Scopri come Packetrove tratta calcoli locali, dati remoti, indirizzi di connessione, log operativi e dati di hosting, con conservazione e scelte dell’utente."},
     range: {
       "title": "Convertitore intervallo IP in CIDR — Packetrove",

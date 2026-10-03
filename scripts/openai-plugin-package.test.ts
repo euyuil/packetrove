@@ -50,8 +50,6 @@ describe('OpenAI plugin package', () => {
       version, image: { format: 'png', width: 1254, height: 1254, bytes: 935895 },
       pendingListingFields: [
         'author.name', 'extensions.com.openai.interface.developerName',
-        'extensions.com.openai.interface.supportURL', 'extensions.com.openai.interface.privacyPolicyURL',
-        'extensions.com.openai.interface.termsOfServiceURL',
       ],
     });
     expect(fetch).not.toHaveBeenCalled();
