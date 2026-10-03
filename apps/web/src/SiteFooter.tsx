@@ -26,9 +26,9 @@ export function SiteFooter({ sourceUrl, documentationUrl, apiDocumentationHref, 
           <Title order={2} size="sm" fw={600} id="footer-project-heading">{t($ => $.footer.project)}</Title>
           <Anchor size="sm" href={sourceUrl} target="_blank" rel="noopener noreferrer" c="dimmed" underline="hover"
             aria-label={sourceLabel} title={sourceLabel}>
-            <Group component="span" gap={6} wrap="nowrap">
-              <IconBrandGithub size={16} stroke={1.75} aria-hidden="true" focusable="false" />
-              {commit && <code>{commit.slice(0, 7)}</code>}
+            <Group component="span" gap={6} wrap="nowrap" align="center">
+              <IconBrandGithub size="1em" stroke={1.75} aria-hidden="true" focusable="false" />
+              {commit && <Text component="code" inherit ff="monospace" lh={1}>{commit.slice(0, 7)}</Text>}
             </Group>
           </Anchor>
           <Anchor size="sm" href={apiDocumentationHref} onClick={onNavigate} c="dimmed" underline="hover">
