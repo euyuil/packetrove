@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
 import * as core from '@packetrove/core';
 import { App } from './App';
-import { render } from './test-utils';
+import { deferred, render } from './test-utils';
 
 let originalClipboard: PropertyDescriptor | undefined;
 beforeEach(() => {
@@ -38,13 +38,6 @@ async function visitIpAndReturn() {
   fireEvent.click(screen.getByRole('link', { name: 'Home' }));
   expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
   openTool('Smallest Covering CIDR');
-}
-
-function deferred<Value>() {
-  let resolve!: (value: Value) => void;
-  let reject!: (reason: Error) => void;
-  const promise = new Promise<Value>((complete, fail) => { resolve = complete; reject = fail; });
-  return { promise, resolve, reject };
 }
 
 describe('tool navigation in one page session', () => {
