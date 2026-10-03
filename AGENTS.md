@@ -180,6 +180,22 @@
 - GitHub Actions validates pull requests targeting `main` with `pnpm check`.
   Production deployment and live checks run only after `main` is updated or
   through a manual workflow run on `main`.
+- After each pull request or merge request is merged, assess whether the
+  corresponding feature is fully implemented. A merged request alone does not
+  establish feature completion. Preserve feature branches while implementation
+  is incomplete.
+- For a completed, merged feature, fetch the latest `origin/main` and check out
+  that revision in the local worktree with `HEAD` detached. Worktree cleanup
+  updates its Git revision and checkout state while keeping the worktree
+  directory. Preserve any uncommitted work when changing the checkout.
+- Delete the corresponding local and remote feature branches once the feature
+  is complete and merged. The remote branch may be deleted as part of merging
+  the request. Verify the request's merged state and delivered functionality;
+  squash merging does not necessarily make the original feature commits
+  ancestors of `main`.
+- Perform this cleanup as part of completing the merge workflow, without
+  requesting separate confirmation. Report local and remote branch removal,
+  the worktree's final revision, and its detached HEAD state.
 
 ## Local development and commit checks
 
