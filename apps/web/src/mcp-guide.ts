@@ -1,4 +1,4 @@
-import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_VERSION, tools } from '@packetrove/contracts';
+import { MAX_INPUTS, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, tools } from '@packetrove/contracts';
 import workerManifest from '../../worker/package.json' with { type: 'json' };
 import { createInstance } from 'i18next';
 import type {} from './i18n/i18next';
@@ -54,13 +54,14 @@ const client = new Client(
 );
 try {
   await client.connect(new StreamableHTTPClientTransport(new URL(${JSON.stringify(serverUrl)})));
+  const serverInfo = client.getServerVersion();
   const { tools } = await client.listTools();
   const result = await client.callTool({
     name: ${JSON.stringify(example.name)},
     arguments: ${JSON.stringify(example.arguments)},
   });
   if (result.isError) throw new Error(JSON.stringify(result.content));
-  console.log(tools.map(tool => tool.name), result.structuredContent);
+  console.log(serverInfo, tools.map(tool => tool.name), result.structuredContent);
 } finally {
   await client.close();
 }`;
@@ -86,6 +87,12 @@ export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = 
     connectDescription: t($ => $.mcp.connectDescription),
     check: t($ => $.mcp.check, { tools: toolContent.map(tool => tool.example.name).join(', ') }),
     discovery: t($ => $.mcp.discovery),
+    identity: {
+      title: t($ => $.mcp.identityTitle),
+      explanation: t($ => $.mcp.identityExplanation),
+      metadata: { ...PACKETROVE_IDENTITY, version: productVersion },
+      presentation: t($ => $.mcp.identityPresentation),
+    },
     tools: toolContent,
     labels: {
       toolName: t($ => $.mcp.toolName), serverAddress: t($ => $.home.serverAddress),

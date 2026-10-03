@@ -1,8 +1,9 @@
+import { PACKETROVE_IDENTITY, PUBLIC_WEBSITE_ORIGIN } from '@packetrove/contracts';
 import { resources } from './resources';
 import { supportedLocales } from './locales';
 import { localizedPath, type Locale, type Page } from './routes';
 
-export const WEBSITE_ORIGIN = 'https://packetrove.com';
+export const WEBSITE_ORIGIN = PUBLIC_WEBSITE_ORIGIN;
 
 export function getPageMetadata(locale: Locale, page: Page, path: string) {
   const translations = resources[locale].translation;
@@ -11,7 +12,7 @@ export function getPageMetadata(locale: Locale, page: Page, path: string) {
   const meta: Array<{ attribute: 'name' | 'property'; key: string; content: string }> = [
     { attribute: 'name', key: 'description', content: description },
     { attribute: 'property', key: 'og:type', content: 'website' },
-    { attribute: 'property', key: 'og:site_name', content: 'Packetrove' },
+    { attribute: 'property', key: 'og:site_name', content: PACKETROVE_IDENTITY.name },
     { attribute: 'property', key: 'og:title', content: title },
     { attribute: 'property', key: 'og:description', content: description },
     { attribute: 'property', key: 'og:image', content: image },

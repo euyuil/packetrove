@@ -6,7 +6,7 @@ import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import {
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
   PublicIpRequestSchema, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
-  RangeToCidrsRequestSchema, RangeToCidrsResultSchema,
+  RangeToCidrsRequestSchema, RangeToCidrsResultSchema, PACKETROVE_IDENTITY, PACKETROVE_VERSION,
 } from '@packetrove/contracts';
 import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
 import { App } from './App';
@@ -48,6 +48,9 @@ describe('MCP examples in production HTML', () => {
     }
     expect(document.querySelector('[data-mcp-sdk-example]')!.textContent).toBe(guide.sdk.code);
     expect(markdown).toContain('```js\n' + guide.sdk.code + '\n```');
+    const identity = JSON.stringify({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION }, null, 2);
+    expect(document.querySelector('[data-mcp-server-identity]')!.textContent).toBe(identity);
+    expect(markdown).toContain('```json\n' + identity + '\n```');
     expect(markdown).not.toMatch(/\{\{|<\/?code>/);
   });
 
@@ -55,6 +58,13 @@ describe('MCP examples in production HTML', () => {
     'publishes executable arguments and contract-valid results at $pathname', async page => {
       const html = await readFile(resolve(dirname(fileURLToPath(import.meta.url)), '../dist', page.entry), 'utf8');
       const document = new DOMParser().parseFromString(html, 'text/html');
+      if (page.page === 'mcp') {
+        expect(document.querySelector('[data-mcp-server-identity]')!.textContent)
+          .toBe(JSON.stringify({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION }, null, 2));
+        expect(document.querySelector('#mcp-identity-heading')?.textContent)
+          .toBe(resources[page.locale].translation.mcp.identityTitle);
+        expect(document.querySelector('main')!.textContent).toContain(resources[page.locale].translation.mcp.identityPresentation);
+      }
       const tools = document.querySelectorAll('[data-mcp-tool]');
       const expected = catalogTools.filter(tool => page.page === 'mcp' || page.page === tool.page);
       expect(Array.from(tools, section => section.getAttribute('data-mcp-tool')))

@@ -6,7 +6,7 @@ import type { Transport as LegacyTransportContract } from '@modelcontextprotocol
 import { CallToolResultSchema as LegacyCallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
-  PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
+  PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
 } from '@packetrove/contracts';
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
@@ -41,6 +41,20 @@ const mcpFetch: typeof fetch = async (input, init) => {
   assert.match(response.headers.get('cache-control') ?? '', /\bno-store\b/, 'MCP responses must not be stored.');
   return response;
 };
+
+for (const icon of PACKETROVE_IDENTITY.icons) {
+  const url = new URL(icon.src);
+  assert.equal(url.protocol, 'https:', 'MCP icon must use HTTPS.');
+  assert.equal(url.origin, WEBSITE_ORIGIN, 'MCP icon must be project-owned.');
+  const response = await timedFetch(new URL(url.pathname, origin));
+  assert.equal(response.status, 200, 'MCP icon availability');
+  assert.equal(response.headers.get('content-type')?.split(';')[0], icon.mimeType, 'MCP icon MIME type');
+  const bytes = Buffer.from(await response.arrayBuffer());
+  assert.deepEqual(bytes.subarray(0, 8), Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), 'MCP icon PNG signature');
+  assert.equal(bytes.subarray(12, 16).toString(), 'IHDR', 'MCP icon PNG dimensions');
+  assert.deepEqual(icon.sizes, [`${bytes.readUInt32BE(16)}x${bytes.readUInt32BE(20)}`], 'MCP icon advertised size');
+}
+console.log('PASS project-owned MCP icon availability, MIME type, and image dimensions');
 
 const website = await timedFetch(`${origin}/`);
 assert.equal(website.status, 200, 'Website status');
@@ -269,7 +283,7 @@ const client = new Client({ name: 'packetrove-smoke', version: '0.1.0' }, {
 });
 try {
   await client.connect(new StreamableHTTPClientTransport(new URL(`${apiOrigin}/mcp`), { fetch: mcpFetch }));
-  assert.equal(client.getServerVersion()?.version, PACKETROVE_VERSION);
+  assert.deepEqual(client.getServerVersion(), { ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION }, 'Modern MCP service identity');
   const tools = (await client.listTools()).tools;
   assert.deepEqual(tools.map(tool => tool.name).sort(), catalogTools.map(tool => tool.mcp.name).sort(), 'MCP catalog coverage');
   for (const name of catalogTools.flatMap(tool => [...tool.removedInterfaces.mcpNames])) {
@@ -303,8 +317,7 @@ try {
   });
   // SDK 1.30 declares sessionId differently on its transport and interface.
   await legacyClient.connect(transport as LegacyTransportContract);
-  assert.equal(legacyClient.getServerVersion()?.name, 'Packetrove');
-  assert.equal(legacyClient.getServerVersion()?.version, PACKETROVE_VERSION);
+  assert.deepEqual(legacyClient.getServerVersion(), { ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION }, 'Legacy MCP service identity');
   assert.deepEqual((await legacyClient.listTools()).tools.map(tool => tool.name).sort(),
     catalogTools.map(tool => tool.mcp.name).sort(), 'Legacy MCP catalog coverage');
   const result = await legacyClient.callTool({ name: MCP_TOOL_NAME, arguments: example.request });

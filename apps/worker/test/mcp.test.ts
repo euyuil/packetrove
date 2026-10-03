@@ -9,7 +9,7 @@ import { smallestCoveringCidr } from '@packetrove/core';
 import {
   CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, CIDR_SUBTRACT_TOOL_NAME, CidrSubtractResultSchema,
   CidrCoverResultSchema, ErrorResponseSchema, tools as catalogTools,
-  MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_VERSION,
+  MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_IDENTITY, PACKETROVE_VERSION,
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
   RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema, toolCatalog,
 } from '@packetrove/contracts';
@@ -25,12 +25,12 @@ const workerFetch: typeof fetch = async (input, init) => {
   return response;
 };
 
-async function connectedClient(url = 'http://localhost/mcp', origin?: string, ip?: string) {
+async function connectedClient(url = 'http://localhost/mcp', origin?: string, ip?: string, fetcher = workerFetch) {
   const client = new Client({ name: 'packetrove-tests', version: '0.1.0' }, {
     versionNegotiation: { mode: 'auto' },
   });
   await client.connect(new StreamableHTTPClientTransport(new URL(url), {
-    fetch: workerFetch,
+    fetch: fetcher,
     requestInit: { headers: { ...(origin ? { origin } : {}), ...(ip ? { 'cf-connecting-ip': ip } : {}) } },
   }));
   return client;
@@ -40,7 +40,7 @@ describe('stateless MCP in the Workers runtime', () => {
   it('discovers a read-only tool with input and output schemas', async () => {
     const client = await connectedClient();
     try {
-      expect(client.getServerVersion()).toMatchObject({ name: 'Packetrove', version: PACKETROVE_VERSION });
+      expect(client.getServerVersion()).toEqual({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
       const { tools } = await client.listTools();
       expect(tools.map(tool => tool.name).sort()).toEqual(catalogTools.map(tool => tool.mcp.name).sort());
       for (const definition of catalogTools) {
@@ -61,6 +61,51 @@ describe('stateless MCP in the Workers runtime', () => {
         annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
         inputSchema: { type: 'object', additionalProperties: false },
       });
+    } finally { await client.close(); }
+  });
+  it.each(['current', 'legacy'] as const)('supports discovery and calls when a %s client ignores optional identity fields', async runtime => {
+    const requiredIdentityOnly: typeof fetch = async (input, init) => {
+      const response = await workerFetch(input, init);
+      if (response.status === 202 || response.status === 204) return response;
+      const omitOptionalIdentity = (text: string) => {
+        const message = JSON.parse(text) as { result?: {
+          serverInfo?: { name: string; version: string };
+          _meta?: Record<string, unknown>;
+        } };
+        if (message.result?.serverInfo) {
+          const { name, version } = message.result.serverInfo;
+          message.result.serverInfo = { name, version };
+        }
+        const identity = message.result?._meta?.['io.modelcontextprotocol/serverInfo'] as
+          { name: string; version: string } | undefined;
+        if (identity) {
+          message.result!._meta!['io.modelcontextprotocol/serverInfo'] = { name: identity.name, version: identity.version };
+        }
+        return JSON.stringify(message);
+      };
+      const type = response.headers.get('content-type') ?? '';
+      if (!type.includes('application/json') && !type.includes('text/event-stream')) return response;
+      const text = await response.text();
+      const body = type.includes('application/json') ? omitOptionalIdentity(text)
+        : text.replace(/^data: (.+)$/gm, (_line, data: string) => 'data: ' + omitOptionalIdentity(data));
+      return new Response(body, { status: response.status, headers: response.headers });
+    };
+    const client = runtime === 'current'
+      ? await connectedClient('http://localhost/mcp', undefined, undefined, requiredIdentityOnly)
+      : new LegacyClient({ name: 'legacy-packetrove-tests', version: '0.1.0' });
+    try {
+      if (runtime === 'legacy') {
+        const transport = new LegacyTransport(new URL('http://localhost/mcp'), { fetch: requiredIdentityOnly });
+        await (client as LegacyClient).connect(transport as LegacyTransportContract);
+      }
+      // The client omits its own optional fields and sees only required server identity fields.
+      expect(client.getServerVersion()).toEqual({ name: 'Packetrove', version: PACKETROVE_VERSION });
+      expect((await client.listTools()).tools.map(tool => tool.name)).toEqual(catalogTools.map(tool => tool.mcp.name));
+      const example = CIDR_COVER_EXAMPLES[1]!;
+      const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
+      expect(response.isError).not.toBe(true);
+      expect(response.structuredContent).toEqual(example.result);
+      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(example.result) }]);
     } finally { await client.close(); }
   });
   it.each(catalogTools.filter(tool => tool.execution === 'local'))('keeps malformed-request errors identical to the API for $id', async tool => {
@@ -239,8 +284,7 @@ describe('stateless MCP in the Workers runtime', () => {
     // SDK 1.30 declares sessionId differently on its transport and interface.
     await client.connect(transport as LegacyTransportContract);
     try {
-      expect(client.getServerVersion()?.name).toBe('Packetrove');
-      expect(client.getServerVersion()?.version).toBe(PACKETROVE_VERSION);
+      expect(client.getServerVersion()).toEqual({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
       expect((await client.listTools()).tools[0]?.name).toBe(MCP_TOOL_NAME);
       const example = CIDR_COVER_EXAMPLES[1]!;
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });

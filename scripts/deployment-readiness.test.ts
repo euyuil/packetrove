@@ -3,7 +3,7 @@ import { createServer, type Server } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { tools } from '../packages/contracts/src/index';
+import { PACKETROVE_IDENTITY, tools } from '../packages/contracts/src/index';
 import { websitePages, websiteRedirects } from '../apps/web/src/seo';
 import { waitForDeployment } from './deployment-readiness';
 
@@ -174,6 +174,11 @@ describe('readiness followed by the production smoke check across separate origi
       requested.push(path);
       if (request.method === 'POST') return send(response, 'text/plain', '', 405);
       const url = new URL(path, 'http://localhost');
+      const icon = PACKETROVE_IDENTITY.icons.find(icon => new URL(icon.src).pathname === url.pathname);
+      if (icon) {
+        response.writeHead(200, { 'content-type': icon.mimeType });
+        return response.end(readFileSync(new URL('../apps/web/dist' + url.pathname, import.meta.url)));
+      }
       const redirect = websiteRedirects.find(candidate => candidate.from === url.pathname);
       if (redirect) {
         response.writeHead(301, { location: redirect.to + url.search });

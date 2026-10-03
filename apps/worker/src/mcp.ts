@@ -1,12 +1,12 @@
 import { McpServer, type McpRequestContext, type CallToolResult } from '@modelcontextprotocol/server';
 import { createMcpHandler } from 'agents/mcp/server';
 import type { z } from 'zod';
-import { MCP_PATH, PACKETROVE_VERSION, tools } from '@packetrove/contracts';
+import { MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_WEBSITE_ORIGIN, tools } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
 import { executeTool } from './tools';
 
 export function createMcpServer(context: McpRequestContext) {
-  const server = new McpServer({ name: 'Packetrove', version: PACKETROVE_VERSION });
+  const server = new McpServer({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
   for (const tool of tools) {
     // Local cores validate the entire request and return shared, located errors.
     // Retain the catalog's discovery schema while letting malformed inputs reach that validation.
@@ -40,5 +40,5 @@ const allowedHostnames = [
 export const mcpHandler = createMcpHandler(createMcpServer, {
   route: MCP_PATH, responseMode: 'json',
   allowedHostnames,
-  allowedOriginHostnames: [...allowedHostnames, 'packetrove.com'],
+  allowedOriginHostnames: [...allowedHostnames, new URL(PUBLIC_WEBSITE_ORIGIN).hostname],
 });

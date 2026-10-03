@@ -261,6 +261,9 @@ export const fr = {
     }
   },
   mcp: {
+    identityTitle: "Identité du serveur",
+    identityExplanation: "Le serveur fournit l’identité de service suivante, avec sa version publiée. Les noms, descriptions et schémas de chaque outil sont répertoriés séparément via tools/list.",
+    identityPresentation: "Les clients décident d’afficher ou non le titre, la description, le site web ou l’icône et peuvent ignorer les champs facultatifs. Une découverte réussie du protocole ne prouve pas qu’un client affiche ces informations. L’icône PNG mesure 32×32 et n’a aucune restriction de thème.",
     navigation: "Guide MCP",
     sdkTitle: "Exécuter un exemple Node.js",
     sdkDescription: "Dans un nouveau dossier, enregistre le code dans <code>packetrove-example.mjs</code>, puis exécute les commandes. L’exemple utilise <code>@modelcontextprotocol/client@{{version}}</code>, découvre les outils et appelle l’outil CIDR avec des adresses de documentation.",
