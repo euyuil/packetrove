@@ -72,6 +72,29 @@ node packages/cli/dist/cli.js cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --j
 
 Alternatively, use `pnpm --silent cli` with the same arguments.
 
+## Version and help
+
+This source revision supports offline version queries:
+
+```sh
+packetrove --version
+packetrove --version --json
+```
+
+`--version` writes the CLI package version and a newline to stdout. Adding
+`--json` writes an object with a single `version` string field instead. Both
+exit with status `0`, without reading standard input or making a network request.
+The version comes from the CLI package manifest embedded during the build;
+the executable also works outside the source repository. It identifies the
+package version, rather than a Git commit or the currently deployed services.
+A source build can contain unreleased changes under that same package version.
+Previously published packages only gain this option in a release containing it.
+
+Version queries accept only `--version` and optional `--json`. Combining them
+with a command, positional inputs, `--stdin`, `--api-origin`, or `--help` reports
+`INVALID_INPUT` to stderr and exits with status `1`. Use `packetrove --help`
+separately for the commands available in that installed package.
+
 ## Input, output, and errors
 
 ```text
@@ -114,7 +137,7 @@ JSON error issue
 indexes are zero-based positions in the combined input list. Readable errors
 display one-based input numbers. Address counts remain decimal strings, including
 IPv6 counts larger than JavaScript's safe integer limit. Exit status is `0` for
-success or help and `1` for errors. Use `packetrove --help` for usage.
+success, help, or version queries and `1` for errors. Use `packetrove --help` for usage.
 
 If stdout cannot be written, including when a pipe receiver closes early, the
 CLI reports `INTERNAL_ERROR` to stderr in the selected JSON or readable format
@@ -188,5 +211,5 @@ install the archive globally.
 `pnpm check` also packs the CLI in a temporary workspace, installs that archive
 offline with both npm and pnpm in isolated consumers, and runs the installed
 `packetrove` command. It checks the executable, public package metadata, README,
-license notices, and structured success and error output without publishing or
-installing anything globally.
+license notices, the installed package version, and structured success and error
+output without publishing or installing anything globally.
