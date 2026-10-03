@@ -45,7 +45,7 @@ describe('web internationalization', () => {
     openLanguageMenu();
     expect(screen.getByRole('menuitem', { name: 'English' }).getAttribute('href')).toBe('/');
     expect(document.documentElement.lang).toBe('zh-Hans');
-    expect(document.title).toBe('Packetrove — CIDR 计算器与公网 IP 查询');
+    expect(document.title).toBe('Packetrove — 面向用户与智能体的网络工具');
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe('https://packetrove.com/zh/');
     expect(document.head.querySelector('link[hreflang="en"]')?.getAttribute('href')).toBe('https://packetrove.com/');
     expect(fetch).not.toHaveBeenCalled();
@@ -260,7 +260,7 @@ describe('web internationalization', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'API 文档' })).toBeDefined();
     expect(screen.getByText('交互式接口文档与规范使用英文。')).toBeDefined();
     expect(await screen.findByText('English API reference')).toBeDefined();
-    expect(document.title).toBe('Packetrove API 文档 — CIDR 与公网 IP');
+    expect(document.title).toBe('Packetrove API 文档');
   });
 
   it('uses plural forms without rounding large address counts', () => {
