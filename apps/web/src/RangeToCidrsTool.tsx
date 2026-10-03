@@ -150,6 +150,6 @@ export function RangeToCidrsTool({ draft, onDraftChange, onNavigate }: {
       </ToolExampleCard>)}
     </ToolExamples>
     <ToolQuestions tool="range" />
-    <ToolMcpSection tool="range" {...(onNavigate ? { onNavigate } : {})} />
+    <ToolMcpSection tool="range" onNavigate={onNavigate} />
   </Stack>;
 }

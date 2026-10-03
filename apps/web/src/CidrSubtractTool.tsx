@@ -180,6 +180,6 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
     </Stack>
     <CidrSubtractExamples />
     <ToolQuestions tool="subtract" />
-    <ToolMcpSection tool="subtract" {...(onNavigate ? { onNavigate } : {})} />
+    <ToolMcpSection tool="subtract" onNavigate={onNavigate} />
   </Stack>;
 }
