@@ -37,6 +37,9 @@ export default function ApiDocumentation({ onNavigate }: { onNavigate: MouseEven
         {tool.page === 'subtract' && <Text size="sm" c="dimmed">{t($ => $.api.subtractResponse, {
           cidrs: tool.example.result.cidrs.join(', '), remaining: tool.example.result.remainingAddressCount,
         })}</Text>}
+        {tool.page === 'range' && <Text size="sm" c="dimmed">{t($ => $.api.rangeResponse, {
+          cidrs: tool.example.result.cidrs.join(', '), addresses: tool.example.result.addressCount,
+        })}</Text>}
       </Stack>
     </Paper>)}
     {interactive && <Suspense fallback={<Group role="status"><Loader size="sm" /><Text>{t($ => $.api.loading)}</Text></Group>}>

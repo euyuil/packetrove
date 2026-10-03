@@ -15,6 +15,8 @@ export const es = {
   },
   footer: { project: 'Proyecto', contact: 'Contacto y sugerencias', sendEmail: 'Enviar un correo' },
   home: {
+    rangeDescription: "Convierte direcciones IP inicial y final inclusivas en una lista CIDR mínima y exacta. Calcula localmente y copia todos los bloques sin añadir direcciones.",
+    rangeLink: "Abrir conversor de rangos IP",
     galleryTitle: "Explora las herramientas",
     galleryDescription: "Usa las flechas o desliza las tarjetas para ver ejemplos y abrir la herramienta que necesitas.",
     galleryPrevious: "Herramienta anterior",
@@ -104,6 +106,30 @@ export const es = {
     listIssue: '{{list}}: {{message}}',
     outputLimitTitle: 'El resultado contiene demasiados CIDR.',
   },
+  range: {
+    "title": "Rango IP a CIDR",
+    "description": "Convierte un rango inclusivo IPv4 o IPv6 en la lista CIDR exacta más pequeña, sin añadir direcciones.",
+    "inputs": "Tu rango IP",
+    "start": "IP inicial",
+    "end": "IP final",
+    "startHelp": "Primera dirección incluida. Introduce una dirección IPv4 o IPv6 sin prefijo CIDR, de hasta 64 caracteres.",
+    "endHelp": "Última dirección incluida. Usa la misma familia y una dirección igual o posterior a la IP inicial, de hasta 64 caracteres.",
+    "calculate": "Convertir rango a CIDR",
+    "result": "Resultado exacto del rango",
+    "output": "Lista CIDR exacta",
+    "addresses": "Direcciones del rango",
+    "completed": "Cálculo completado. Direcciones: {{addresses}}. CIDR: {{cidrs}}.",
+    "pendingDescription": "Introduce ambos extremos inclusivos para ver la lista CIDR exacta y el número de direcciones.",
+    "explanation": "Ambos extremos están incluidos. El resultado es la lista CIDR mínima y ordenada que cubre exactamente el rango, sin huecos, solapamientos ni direcciones añadidas. Un solo CIDR de cobertura puede incluir direcciones externas. Se cuentan todas las direcciones, incluidas las de red y difusión IPv4, con precisión incluso en rangos IPv6 grandes.",
+    "examplesTitle": "Ejemplos de rangos IP",
+    "example": "Rango inclusivo: de {{start}} a {{end}}.",
+    "issue": "{{field}}: {{message}}",
+    "emptyEndpoint": "Introduce una dirección IPv4 o IPv6.",
+    "invalidEndpoint": "Usa una dirección IPv4 o IPv6 estándar sin prefijo CIDR. No se admiten identificadores de zona ni ceros iniciales en IPv4.",
+    "endpointCidr": "Introduce una dirección IP sin prefijo CIDR.",
+    "reversedRange": "La IP final debe ser igual o posterior a la inicial. Los extremos no se intercambian automáticamente.",
+    "expectedFamily": "Usa {{family}} para coincidir con la IP inicial."
+  },
   ip: {
     title: 'Mi IP pública', description: 'Consulta la dirección IP pública utilizada por tu conexión actual a Packetrove.',
     online: 'Consulta en línea · La aplicación no guarda el resultado', connection: 'Tu conexión actual', checking: 'Consultando tu IP pública…',
@@ -114,6 +140,8 @@ export const es = {
     familyExplanation: 'Cada conexión utiliza IPv4 o IPv6. Esta consulta muestra esa dirección; no descubre ambas familias ni tu dirección local privada. Actualiza después de cambiar de red o de configurar el proxy.',
   },
   api: {
+    rangeSummary: "Envía start y end de la misma familia. Ambos extremos son inclusivos. Devuelve extremos canónicos, lista CIDR mínima y exacta, número de CIDR y número de direcciones como cadena decimal. Esta solicitud envía datos al servidor.",
+    rangeResponse: "Este ejemplo devuelve {{cidrs}}, que representa exactamente {{addresses}} direcciones.",
     title: 'Documentación de la API', loading: 'Cargando la documentación de la API…', specification: 'Especificación OpenAPI',
     unavailableTitle: 'La documentación de la API no está disponible',
     unavailableDescription: 'No se pudo cargar o mostrar la documentación. Puedes volver a la calculadora conservando las entradas, el resultado o los errores de validación.',
@@ -127,6 +155,33 @@ export const es = {
     subtractResponse: "Este ejemplo devuelve {{cidrs}}, con {{remaining}} direcciones restantes y sin cobertura adicional.",
   },
   discovery: {
+    range: {
+      "title": "Preguntas sobre conversión de rangos IP",
+      "mcpTitle": "Convertir rangos IP con MCP",
+      "purpose": "Pide a un agente de IA que represente un rango IP inclusivo como su lista CIDR mínima y exacta.",
+      "inputs": "Pasa start y end como direcciones IPv4 o IPv6 de la misma familia, sin prefijos CIDR, de hasta {{maximumLength}} caracteres cada una. end debe ser igual o posterior a start.",
+      "result": "Lee range.first y range.last canónicos, cidrs ordenados, cidrCount y addressCount como cadena decimal exacta. Extremos iguales producen /32 o /128; un espacio completo produce /0. Los errores identifican start o end.",
+      "boundary": "El navegador calcula localmente. La API y el MCP remoto envían los extremos al servidor. La herramienta no inspecciona asignaciones reales ni cambia la configuración de cortafuegos, rutas o VPN. No hay conversión de rangos en la CLI ni en la habilidad del agente.",
+      "openTool": "Abrir conversión en el navegador",
+      "questions": {
+        "exact": {
+          "question": "¿En qué se diferencia de un único CIDR de cobertura?",
+          "answer": "Esta lista contiene exactamente el rango inclusivo, sin direcciones adicionales. Un solo CIDR de cobertura puede incluir direcciones anteriores al inicio o posteriores al final. Usa conversión exacta cuando una lista de permitidos deba coincidir con el rango."
+        },
+        "order": {
+          "question": "¿Puedo usar extremos iguales o invertidos?",
+          "answer": "Extremos iguales devuelven un CIDR de host: /32 para IPv4 o /128 para IPv6. Los extremos invertidos se rechazan y nunca se intercambian sin avisar. Ambos deben ser direcciones de la misma familia sin prefijos CIDR."
+        },
+        "counts": {
+          "question": "¿Qué direcciones se cuentan?",
+          "answer": "Se cuenta cada dirección entre los extremos, incluidos ambos extremos y las direcciones de red y difusión IPv4. El número sigue siendo exacto para todo el espacio IPv6; las direcciones no se enumeran individualmente."
+        },
+        "privacy": {
+          "question": "¿Adónde van mis extremos?",
+          "answer": "Los cálculos del navegador permanecen en la memoria del dispositivo, sin cargas, persistencia, registros ni datos en URL. La Web API y el MCP remoto envían extremos al servidor. La operación está disponible en la web, Web API y MCP."
+        }
+      }
+    },
     subtract: {
       title: "Preguntas sobre la resta de CIDR",
       mcpTitle: "Usar la resta mediante MCP",
@@ -261,6 +316,10 @@ export const es = {
     tooManyOutputs: 'El resultado completo supera {{limit}} CIDR. Usa menos exclusiones o rangos incluidos más pequeños. No se devuelve ningún resultado parcial.',
   },
   meta: {
+    range: {
+      "title": "Conversor de rango IP a CIDR — Packetrove",
+      "description": "Convierte extremos inclusivos IPv4 o IPv6 en una lista CIDR mínima y exacta localmente. Copia todos los bloques y comprueba cifras exactas sin cobertura adicional."
+    },
     mcp: {"title": "Guía MCP de Packetrove — Herramientas CIDR e IP pública", "description": "Conecta Claude Code o Codex a Packetrove mediante MCP. Consulta argumentos, resultados CIDR exactos, límites de la conexión IP y gestión de errores sin clave de API."},
     home: { title: 'Packetrove — Calculadora CIDR y consulta de IP pública', description: 'Calcula CIDR de cobertura en tu navegador y consulta tu IP pública. Herramientas IPv4 e IPv6 de código abierto para la web, API, CLI y MCP, sin cuenta.' },
     cidr: { title: 'Calculadora de CIDR mínimo de cobertura — Packetrove', description: 'Encuentra el CIDR único más pequeño que cubre direcciones y rangos IPv4 o IPv6. Calcula en tu navegador con recuentos exactos, cobertura adicional y ejemplos.' },

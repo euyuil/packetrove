@@ -34,6 +34,7 @@ export function createOpenApiDocument() {
           } },
           400: errorResponse(tool.page === 'subtract'
             ? 'Invalid JSON, invalid input, mixed address families, or output limit exceeded. Entry issues include a zero-based index and identify the include/exclude list.'
+            : tool.page === 'range' ? 'Invalid JSON, invalid endpoints, mixed address families, or reversed range. Issues identify the start or end field.'
             : 'Invalid JSON, invalid input, or mixed address families. Input issues include a zero-based index.'),
           413: errorResponse('Request body exceeds 64 KiB.'),
           415: errorResponse('Expected an application/json request body.'),

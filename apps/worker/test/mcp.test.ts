@@ -4,12 +4,14 @@ import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.j
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { smallestCoveringCidr } from '@packetrove/core';
 import {
   CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, CIDR_SUBTRACT_TOOL_NAME, CidrSubtractResultSchema,
   CidrCoverResultSchema, ErrorResponseSchema, tools as catalogTools,
   MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_VERSION,
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
+  RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema, toolCatalog,
 } from '@packetrove/contracts';
 import { mcpExamples } from '../../web/src/mcp-examples';
 
@@ -46,6 +48,8 @@ describe('stateless MCP in the Workers runtime', () => {
           title: definition.title, description: definition.mcp.description, annotations: definition.mcp.annotations,
           inputSchema: { type: 'object' }, outputSchema: { type: 'object' },
         });
+        const schema = z.toJSONSchema(definition.inputSchema, { io: 'input' });
+        expect(tools.find(tool => tool.name === definition.mcp.name)?.inputSchema).toEqual(schema);
       }
       expect(tools[0]).toMatchObject({
         name: MCP_TOOL_NAME, annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
@@ -57,6 +61,21 @@ describe('stateless MCP in the Workers runtime', () => {
         annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
         inputSchema: { type: 'object', additionalProperties: false },
       });
+    } finally { await client.close(); }
+  });
+  it.each(catalogTools.filter(tool => tool.execution === 'local'))('keeps malformed-request errors identical to the API for $id', async tool => {
+    const client = await connectedClient();
+    try {
+      await client.listTools();
+      const api = await exports.default.fetch(`http://localhost${tool.api.path}`, {
+        method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}',
+      });
+      expect(api.status).toBe(400);
+      const response = await client.callTool({ name: tool.mcp.name, arguments: {} });
+      expect(response.isError).toBe(true);
+      const content = response.content?.[0];
+      if (content?.type !== 'text') throw new Error('Missing error content');
+      expect(ErrorResponseSchema.parse(JSON.parse(content.text))).toEqual(await api.json());
     } finally { await client.close(); }
   });
   it.each(CIDR_COVER_EXAMPLES)('returns the API result for $name', async ({ request, result }) => {
@@ -76,6 +95,45 @@ describe('stateless MCP in the Workers runtime', () => {
       expect(response.isError).not.toBe(true);
       expect(CidrSubtractResultSchema.parse(response.structuredContent)).toEqual(result);
       expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+    } finally { await client.close(); }
+  });
+  it.each(RANGE_TO_CIDRS_EXAMPLES)('returns the exact IP range $name result', async ({ request, result }) => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: toolCatalog.range.mcp.name, arguments: request });
+      expect(response.isError).not.toBe(true);
+      expect(RangeToCidrsResultSchema.parse(response.structuredContent)).toEqual(result);
+      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+    } finally { await client.close(); }
+  });
+  it('returns the full IPv6 range as /0 with an exact string count', async () => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: toolCatalog.range.mcp.name, arguments: {
+        start: '::', end: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
+      } });
+      expect(RangeToCidrsResultSchema.parse(response.structuredContent)).toMatchObject({
+        cidrs: ['::/0'], cidrCount: 1, addressCount: '340282366920938463463374607431768211456',
+      });
+    } finally { await client.close(); }
+  });
+  it.each([
+    { request: { start: 'bad', end: '::/128' }, code: 'INVALID_INPUT', fields: ['start', 'end'] },
+    { request: { start: '', end: '::1' }, code: 'INVALID_INPUT', fields: ['start'] },
+    { request: { start: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
+    { request: { start: '203.0.113.1', end: '::1' }, code: 'MIXED_ADDRESS_FAMILIES', fields: ['end'] },
+    { request: { start: '::2', end: '::1' }, code: 'INVALID_INPUT', fields: ['end'] },
+  ])('returns shared range endpoint errors: $request', async ({ request, code, fields }) => {
+    const client = await connectedClient();
+    try {
+      const response = await client.callTool({ name: toolCatalog.range.mcp.name, arguments: request });
+      expect(response.isError).toBe(true);
+      expect(response.structuredContent).toBeUndefined();
+      const content = response.content?.[0];
+      if (content?.type !== 'text') throw new Error('Missing error content');
+      const error = ErrorResponseSchema.parse(JSON.parse(content.text)).error;
+      expect(error.code).toBe(code);
+      expect(error.issues?.map(issue => issue.field)).toEqual(fields);
     } finally { await client.close(); }
   });
   it.each([

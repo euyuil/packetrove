@@ -36,9 +36,9 @@ Start the website with hot reload:
 pnpm dev:web
 ```
 
-Open `http://localhost:5173`. Both CIDR tools work with the web development
-server alone. For public IP lookup, API calls, and MCP development, use another
-terminal:
+Open `http://localhost:5173`. CIDR calculations and IP range conversion work
+with the web development server alone. For public IP lookup, API calls, and
+MCP development, use another terminal:
 
 ```sh
 pnpm dev:api

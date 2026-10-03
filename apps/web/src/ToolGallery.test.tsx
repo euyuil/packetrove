@@ -20,6 +20,7 @@ afterEach(() => {
 });
 
 const position = () => document.getElementById('tool-gallery-status')!.textContent;
+const expectedPosition = (current: number) => `${current} of ${featuredTools.length}`;
 
 describe('homepage tool gallery', () => {
   it.each(supportedLocales)('renders shared example previews and localized links without queries: %s', locale => {
@@ -49,6 +50,10 @@ describe('homepage tool gallery', () => {
         expect(preview.textContent).toContain(tool.example.request.include.join(', '));
         expect(preview.textContent).toContain(tool.example.request.exclude.join(', '));
         expect(preview.textContent).toContain(tool.example.result.cidrs.join('\n'));
+      } else if (tool.page === 'range') {
+        expect(preview.textContent).toContain(tool.example.request.start);
+        expect(preview.textContent).toContain(tool.example.request.end);
+        expect(preview.textContent).toContain(tool.example.result.cidrs.join('\n'));
       } else {
         expect(preview.textContent).toContain(tool.example.result.ip);
         expect(preview.textContent).toContain(text.home.ipPreview);
@@ -69,25 +74,25 @@ describe('homepage tool gallery', () => {
     next.focus();
     fireEvent.click(next);
     expect(document.activeElement).toBe(next);
-    expect(position()).toContain('2 of 3');
+    expect(position()).toContain(expectedPosition(2));
     expect(position()).toContain(resources.en.translation.subtract.title);
     carousel.focus();
     fireEvent.keyDown(carousel, { key: 'End' });
     expect(next.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(next);
-    expect(position()).toContain('3 of 3');
+    expect(position()).toContain(expectedPosition(featuredTools.length));
     fireEvent.keyDown(carousel, { key: 'ArrowLeft' });
-    expect(position()).toContain('2 of 3');
+    expect(position()).toContain(expectedPosition(featuredTools.length - 1));
     fireEvent.keyDown(carousel, { key: 'Home' });
     expect(previous.getAttribute('aria-disabled')).toBe('true');
     fireEvent.click(previous);
-    expect(position()).toContain('1 of 3');
+    expect(position()).toContain(expectedPosition(1));
     fireEvent.keyDown(carousel, { key: 'ArrowRight' });
-    expect(position()).toContain('2 of 3');
+    expect(position()).toContain(expectedPosition(2));
     fireEvent.click(next);
-    expect(position()).toContain('3 of 3');
+    expect(position()).toContain(expectedPosition(3));
     fireEvent.click(previous);
-    expect(position()).toContain('2 of 3');
+    expect(position()).toContain(expectedPosition(2));
     expect(document.activeElement).toBe(carousel);
   });
 
@@ -96,11 +101,11 @@ describe('homepage tool gallery', () => {
     const gallery = screen.getByRole('region', { name: 'Explore the tools' });
     expect(within(gallery).getAllByRole('article')).toHaveLength(1);
     expect(within(gallery).queryByRole('link', { name: resources.en.translation.home.subtractLink })).toBeNull();
-    expect(gallery.querySelectorAll('[inert]')).toHaveLength(2);
+    expect(gallery.querySelectorAll('[inert]')).toHaveLength(featuredTools.length - 1);
     fireEvent.click(within(gallery).getByRole('button', { name: 'Next tool' }));
     expect(within(gallery).getByRole('link', { name: resources.en.translation.home.subtractLink })).toBeDefined();
     expect(within(gallery).queryByRole('link', { name: resources.en.translation.home.cidrLink })).toBeNull();
-    expect(gallery.querySelectorAll('[inert]')).toHaveLength(2);
+    expect(gallery.querySelectorAll('[inert]')).toHaveLength(featuredTools.length - 1);
   });
 
   it('hydrates a stable initial preview without random order or tool calls', async () => {
@@ -120,7 +125,7 @@ describe('homepage tool gallery', () => {
     let root: ReturnType<typeof hydrateRoot>;
     await act(async () => { root = hydrateRoot(host, view(), { onRecoverableError: recover }); });
     expect(host.querySelector('[data-tool-id]')?.getAttribute('data-tool-id')).toBe(featuredTools[0]!.id);
-    expect(host.querySelector('#tool-gallery-status')?.textContent).toContain('1 of 3');
+    expect(host.querySelector('#tool-gallery-status')?.textContent).toContain(expectedPosition(1));
     expect(viewport.style.overflowX).toBe('hidden');
     expect(host.querySelectorAll('#tool-gallery-carousel [inert]')).toHaveLength(featuredTools.length - 1);
     expect(recover).not.toHaveBeenCalled();

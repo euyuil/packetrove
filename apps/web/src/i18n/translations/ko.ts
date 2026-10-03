@@ -15,6 +15,8 @@ export const ko = {
   },
   footer: { project: '프로젝트', contact: '문의 및 의견', sendEmail: '이메일 보내기' },
   home: {
+    rangeDescription: "양 끝을 포함하는 시작 및 끝 IP를 최소의 정확한 CIDR 목록으로 변환하세요. 로컬에서 계산하고 추가 주소 없이 모든 블록을 복사합니다.",
+    rangeLink: "IP 범위 변환 열기",
     galleryTitle: "도구 둘러보기",
     galleryDescription: "좌우 화살표를 누르거나 카드를 스와이프해 예제를 살펴본 다음 필요한 도구를 여세요.",
     galleryPrevious: "이전 도구",
@@ -87,6 +89,30 @@ export const ko = {
     lineEntry: '{{list}}, {{line}}행, {{entry}}번째 항목: {{message}}',
     outputLimitTitle: '결과에 CIDR이 너무 많습니다.',
   },
+  range: {
+    "title": "IP 범위를 CIDR로 변환",
+    "description": "양 끝을 포함한 IPv4 또는 IPv6 범위를 추가 주소 없이 가장 작은 정확한 CIDR 목록으로 변환합니다.",
+    "inputs": "IP 주소 범위",
+    "start": "시작 IP",
+    "end": "끝 IP",
+    "startHelp": "처음 포함할 주소입니다. CIDR 접두사 없는 IPv4 또는 IPv6 주소 하나를 최대 64자로 입력하세요.",
+    "endHelp": "마지막으로 포함할 주소입니다. 시작 IP와 같은 주소 체계이며 시작 IP 이상인 주소를 최대 64자로 입력하세요.",
+    "calculate": "범위를 CIDR로 변환",
+    "result": "정확한 범위 결과",
+    "output": "정확한 CIDR 목록",
+    "addresses": "범위의 주소 수",
+    "completed": "계산 완료. 주소: {{addresses}}. CIDR: {{cidrs}}.",
+    "pendingDescription": "양 끝 주소를 입력하면 정확한 CIDR 목록과 주소 수가 표시됩니다.",
+    "explanation": "양 끝 주소를 모두 포함합니다. 결과는 해당 범위만 정확히 덮는 최소 CIDR 목록이며 네트워크 주소순으로 정렬되고 빈틈, 중복, 추가 주소가 없습니다. 단일 포함 CIDR은 범위 밖 주소를 포함할 수 있습니다. IPv4 네트워크 및 브로드캐스트 주소도 계산하며 큰 IPv6 범위에서도 수는 정확합니다.",
+    "examplesTitle": "IP 범위 예제",
+    "example": "양 끝을 포함하는 범위: {{start}}부터 {{end}}까지.",
+    "issue": "{{field}}: {{message}}",
+    "emptyEndpoint": "IPv4 또는 IPv6 주소 하나를 입력하세요.",
+    "invalidEndpoint": "CIDR 접두사 없는 표준 IPv4 또는 IPv6 주소를 사용하세요. 영역 식별자와 IPv4 앞자리 0은 지원하지 않습니다.",
+    "endpointCidr": "CIDR 접두사 없는 IP 주소를 입력하세요.",
+    "reversedRange": "끝 IP는 시작 IP 이상이어야 합니다. 양 끝은 자동으로 바뀌지 않습니다.",
+    "expectedFamily": "시작 IP와 같은 {{family}}를 사용하세요."
+  },
   ip: {
     title: '내 공인 IP', description: '현재 Packetrove 연결에서 사용하는 공인 IP 주소를 확인하세요.',
     online: '온라인 조회 · 앱에서 결과를 저장하지 않음', connection: '현재 연결', checking: '공인 IP 확인 중…',
@@ -97,6 +123,8 @@ export const ko = {
     familyExplanation: '한 연결은 IPv4 또는 IPv6를 사용합니다. 이 조회는 해당 연결의 주소를 표시하며 두 종류의 주소나 로컬 사설 주소를 모두 찾는 기능은 아닙니다. 네트워크나 프록시 설정을 바꾼 후에는 새로고침하세요.',
   },
   api: {
+    rangeSummary: "같은 주소 체계의 start와 end를 제출합니다. 양 끝을 포함하며 정규화된 끝점, 최소의 정확한 CIDR 목록, CIDR 수, 십진 문자열 주소 수를 반환합니다. 이 요청은 입력을 서버로 보냅니다.",
+    rangeResponse: "이 예제는 {{cidrs}}를 반환하며 정확히 {{addresses}}개 주소를 나타냅니다.",
     title: 'API 문서', loading: 'API 문서 불러오는 중…', specification: 'OpenAPI 명세',
     unavailableTitle: 'API 문서를 표시할 수 없습니다',
     unavailableDescription: '문서를 불러오거나 표시하지 못했습니다. 계산기로 돌아가도 입력, 결과, 검증 오류는 유지됩니다.',
@@ -110,6 +138,33 @@ export const ko = {
     subtractResponse: "이 예시는 {{cidrs}}를 반환하며 {{remaining}}개의 주소가 남습니다. 추가 범위는 포함하지 않습니다.",
   },
   discovery: {
+    range: {
+      "title": "IP 범위 변환 질문",
+      "mcpTitle": "MCP로 IP 범위 변환",
+      "purpose": "AI 에이전트에게 양 끝을 포함하는 IP 범위를 최소의 정확한 CIDR 목록으로 나타내도록 요청하세요.",
+      "inputs": "같은 주소 체계의 IPv4 또는 IPv6 주소를 start와 end로 전달하세요. CIDR 접두사 없이 각각 최대 {{maximumLength}}자이며 end는 start 이상이어야 합니다.",
+      "result": "정규화된 range.first와 range.last, 정렬된 cidrs, cidrCount, 정확한 십진 문자열 addressCount를 읽으세요. 같은 끝점은 /32 또는 /128, 전체 주소 공간은 /0을 반환합니다. 오류는 start 또는 end를 표시합니다.",
+      "boundary": "브라우저는 로컬에서 계산합니다. API와 원격 MCP는 끝점을 서버로 보냅니다. 도구는 실제 할당을 조사하거나 방화벽, 라우팅, VPN 설정을 변경하지 않습니다. CLI 및 에이전트 스킬에서는 범위 변환을 제공하지 않습니다.",
+      "openTool": "브라우저 범위 변환 열기",
+      "questions": {
+        "exact": {
+          "question": "단일 포함 CIDR과 어떻게 다른가요?",
+          "answer": "이 목록은 양 끝을 포함하는 범위만 나타내며 추가 주소가 없습니다. 단일 포함 CIDR은 시작 전이나 끝 이후 주소를 포함할 수 있습니다. 허용 목록이 주어진 범위와 정확히 일치해야 할 때 정확한 변환을 사용하세요."
+        },
+        "order": {
+          "question": "같거나 역순인 끝점을 사용할 수 있나요?",
+          "answer": "같은 끝점은 호스트 CIDR 하나를 반환합니다. IPv4는 /32, IPv6는 /128입니다. 역순 끝점은 거부하며 자동으로 바꾸지 않습니다. 둘 다 같은 주소 체계의 주소여야 하고 CIDR 접두사가 없어야 합니다."
+        },
+        "counts": {
+          "question": "어떤 주소를 계산하나요?",
+          "answer": "양 끝과 IPv4 네트워크 및 브로드캐스트 주소를 포함하여 범위의 모든 주소를 계산합니다. 전체 IPv6 공간에서도 수는 정확하며 주소를 하나씩 열거하지 않습니다."
+        },
+        "privacy": {
+          "question": "끝점은 어디로 전송되나요?",
+          "answer": "브라우저 계산은 장치 메모리에만 유지되며 업로드, 영구 저장, 로그 기록, URL에 입력 추가를 하지 않습니다. Web API와 원격 MCP는 끝점을 서버로 보냅니다. 웹사이트, Web API, MCP에서 이용할 수 있습니다."
+        }
+      }
+    },
     subtract: {
       title: 'CIDR 빼기 관련 질문',
       mcpTitle: "MCP로 CIDR 차집합 사용",
@@ -244,6 +299,10 @@ export const ko = {
     tooManyOutputs: '전체 결과가 {{limit}}개의 CIDR을 초과합니다. 제외 항목을 줄이거나 포함 범위를 좁히세요. 부분 결과는 반환하지 않습니다.',
   },
   meta: {
+    range: {
+      "title": "IP 범위를 CIDR로 변환 — Packetrove",
+      "description": "양 끝을 포함하는 IPv4 또는 IPv6 범위를 로컬에서 최소의 정확한 CIDR 목록으로 변환하세요. 모든 블록을 복사하고 추가 범위 없이 정확한 수를 확인합니다."
+    },
     mcp: { title: 'Packetrove MCP 가이드 — CIDR 및 공인 IP 도구', description: 'Claude Code 또는 Codex를 MCP로 Packetrove에 연결하세요. API 키 없이 도구 인수, 정확한 CIDR 결과, IP 연결의 범위 및 오류 처리를 확인하세요.' },
     home: { title: 'Packetrove — CIDR 계산기와 공인 IP 조회', description: '브라우저에서 포괄 CIDR을 계산하고 공인 IP를 확인하세요. 웹, API, CLI, MCP를 위한 오픈 소스 IPv4 및 IPv6 도구로 계정이 필요 없습니다.' },
     cidr: { title: '최소 포괄 CIDR 계산기 — Packetrove', description: 'IPv4 또는 IPv6 주소와 범위를 모두 포함하는 가장 작은 단일 CIDR을 찾으세요. 브라우저에서 정확한 주소 수, 추가 범위, 예제를 확인할 수 있습니다.' },

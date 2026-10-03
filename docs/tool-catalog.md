@@ -3,7 +3,7 @@
 Every Packetrove product tool has a website page, a Web API endpoint, and an
 MCP tool. All three use the same schemas, examples, calculation or lookup
 semantics, and structured errors. CLI and skill coverage is documented
-separately; subtraction is not currently a CLI operation.
+separately; subtraction and IP range conversion are not currently CLI operations.
 
 `packages/contracts/src/tools.ts` is the authoritative catalog. It records each
 tool's identifier, page key, canonical website path, API method and path,
@@ -28,7 +28,7 @@ Catalog definitions cannot override derived interface names.
 
 The `cli` declaration records implemented coverage. Enabled entries drive CLI
 discovery, usage, and an exhaustive handler map; disabled entries expose no
-command. Subtraction remains unavailable in the CLI. Naming changes do not
+command. Subtraction and IP range conversion remain unavailable in the CLI. Naming changes do not
 expand the CLI or skill's calculation scope.
 
 ## Migration to flat names

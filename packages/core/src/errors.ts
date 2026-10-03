@@ -1,10 +1,11 @@
 import type { ErrorCode, ErrorResponse, InputIssue } from '@packetrove/contracts';
 
 export type InputIssueDetail = (
-  | { reason: 'INVALID_INPUT' | 'INVALID_ADDRESS' | 'EMPTY_INPUTS' }
+  | { reason: 'INVALID_INPUT' | 'INVALID_ADDRESS' | 'EMPTY_INPUTS'
+    | 'EMPTY_ENDPOINT' | 'INVALID_ENDPOINT' | 'ENDPOINT_CIDR' | 'REVERSED_RANGE' }
   | { reason: 'TOO_MANY_INPUTS' | 'INPUT_TOO_LONG' | 'TOO_MANY_OUTPUTS'; limit: number }
   | { reason: 'EXPECTED_FAMILY'; family: 'ipv4' | 'ipv6' }
-) & { list?: 'include' | 'exclude' };
+) & { list?: 'include' | 'exclude'; field?: 'start' | 'end' };
 
 export class ToolError extends Error {
   constructor(
