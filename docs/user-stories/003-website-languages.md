@@ -158,7 +158,10 @@ stay visible.
 The web application uses `i18next` and `react-i18next`. Translation resources are in `apps/web/src/i18n/translations/`.
 The browser prepares English fallback and the requested locale before rendering;
 other locales load only when navigating or showing a browser-language suggestion.
-`i18n/resources.ts` aggregates all languages for build scripts and tests.
+`i18n/translation-loaders.ts` is the single exhaustive index of literal dynamic
+imports. The runtime cache and `i18n/resources.ts` both use that index. The latter
+loads all registered resources once during module evaluation for build scripts
+and tests, keeping their synchronous metadata and page-entry interfaces intact.
 English defines the ordinary key structure; every other resource must satisfy
 that structure. Entry counts use a shared type with a required `other` form and
 optional standard plural suffixes; the resource tests require the forms needed
@@ -181,7 +184,7 @@ the tab's reminder flag; `LanguageSelector.tsx` displays the suggestion with
 Mantine `Popover`. No detection request or additional dependency is needed.
 
 When adding a locale, add its registry entry, complete translations and metadata,
-its exhaustive loader in `i18n/locale-resources.ts`, and flag import together. Static HTML entries are generated from the shared
+its exhaustive loader in `i18n/translation-loaders.ts`, and flag import together. Static HTML entries are generated from the shared
 template and the registered page paths; no per-language HTML copies are needed. The menu
 renders the configured entries without adding another header button. Preserve
 the existing page, query string, and fragment in every language link.
