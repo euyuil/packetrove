@@ -2,11 +2,14 @@ import {
   CidrSubtractRequestSchema, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS,
   type CidrSubtractResult, type InputIssue,
 } from '@packetrove/contracts';
-import { ToolError, type InputIssueDetail } from './errors';
+import { ToolError } from './errors';
+import { isIpInputIssueDetail, type IpInputIssueDetail } from './ip-input-errors';
 import {
   addressCount, intervalsToCidrs, mergeIntervals, parseInput,
   type Family, type Interval, type ParsedInput,
 } from './ip-range';
+
+type SubtractIssueDetail = IpInputIssueDetail & { list?: 'include' | 'exclude' };
 
 function subtractIntervals(include: Interval[], exclude: Interval[]): Interval[] {
   const remaining: Interval[] = [];
@@ -33,7 +36,7 @@ function subtractionCidrs(intervals: Interval[], family: Family, width: number):
   const cidrs: string[] = [];
   for (const cidr of intervalsToCidrs(intervals, family, width)) {
     if (cidrs.length === MAX_SUBTRACTION_OUTPUTS) {
-      throw new ToolError('INVALID_INPUT', 'The result contains too many CIDRs.', [{
+      throw new ToolError<SubtractIssueDetail>('INVALID_INPUT', 'The result contains too many CIDRs.', [{
         message: `The complete result exceeds ${MAX_SUBTRACTION_OUTPUTS} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.`,
       }], [{ reason: 'TOO_MANY_OUTPUTS', limit: MAX_SUBTRACTION_OUTPUTS }]);
     }
@@ -46,7 +49,7 @@ function subtractionCidrs(intervals: Interval[], family: Family, width: number):
 export function subtractCidrs(value: unknown): CidrSubtractResult {
   const request = CidrSubtractRequestSchema.safeParse(value);
   if (!request.success) {
-    const details: InputIssueDetail[] = request.error.issues.map(issue => {
+    const details: SubtractIssueDetail[] = request.error.issues.map(issue => {
       const list = issue.path[0] === 'include' || issue.path[0] === 'exclude' ? issue.path[0] : undefined;
       if (list && issue.code === 'too_small' && issue.path.length === 1) {
         return { reason: 'EMPTY_INPUTS', list };
@@ -57,20 +60,20 @@ export function subtractCidrs(value: unknown): CidrSubtractResult {
       }
       return { reason: 'INVALID_INPUT', ...(list ? { list } : {}) };
     });
-    throw new ToolError('INVALID_INPUT', 'Invalid calculation input.', request.error.issues.map(issue => {
+    throw new ToolError<SubtractIssueDetail>('INVALID_INPUT', 'Invalid calculation input.', request.error.issues.map(issue => {
       const index = typeof issue.path[1] === 'number' ? issue.path[1] : undefined;
       const list = issue.path[0] === 'include' || issue.path[0] === 'exclude' ? issue.path[0] : undefined;
       return { ...(index === undefined ? {} : { index }), ...(list ? { list } : {}), message: issue.message };
     }), details);
   }
   if (request.data.include.length + request.data.exclude.length > MAX_SUBTRACTION_INPUTS) {
-    throw new ToolError('INVALID_INPUT', 'Too many entries across the include and exclude lists.', [{
+    throw new ToolError<SubtractIssueDetail>('INVALID_INPUT', 'Too many entries across the include and exclude lists.', [{
       message: `Use at most ${MAX_SUBTRACTION_INPUTS} entries across both lists.`,
     }], [{ reason: 'TOO_MANY_INPUTS', limit: MAX_SUBTRACTION_INPUTS }]);
   }
   const parsed: Record<'include' | 'exclude', ParsedInput[]> = { include: [], exclude: [] };
   const issues: InputIssue[] = [];
-  const details: InputIssueDetail[] = [];
+  const details: SubtractIssueDetail[] = [];
   for (const list of ['include', 'exclude'] as const) {
     for (const [index, input] of request.data[list].entries()) {
       try {
@@ -78,14 +81,15 @@ export function subtractCidrs(value: unknown): CidrSubtractResult {
       } catch (error) {
         if (!(error instanceof ToolError) || !error.issues?.length) throw error;
         issues.push(...error.issues.map(issue => ({ ...issue, list })));
-        details.push(...error.issues.map((_, issueIndex) => ({
-          ...(error.details?.[issueIndex] || { reason: 'INVALID_INPUT' as const }), list,
-        })));
+        details.push(...error.issues.map((_, issueIndex): SubtractIssueDetail => {
+          const detail = error.details?.[issueIndex];
+          return { ...(isIpInputIssueDetail(detail) ? detail : { reason: 'INVALID_INPUT' as const }), list };
+        }));
       }
     }
   }
   if (issues.length) {
-    throw new ToolError('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', issues, details);
+    throw new ToolError<SubtractIssueDetail>('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', issues, details);
   }
   const { family, width } = parsed.include[0]!;
   for (const list of ['include', 'exclude'] as const) {
@@ -97,7 +101,7 @@ export function subtractCidrs(value: unknown): CidrSubtractResult {
     }
   }
   if (issues.length) {
-    throw new ToolError('MIXED_ADDRESS_FAMILIES', 'Use either IPv4 or IPv6 throughout one calculation.', issues, details);
+    throw new ToolError<SubtractIssueDetail>('MIXED_ADDRESS_FAMILIES', 'Use either IPv4 or IPv6 throughout one calculation.', issues, details);
   }
   const include = mergeIntervals(parsed.include);
   const remaining = subtractIntervals(include, mergeIntervals(parsed.exclude));

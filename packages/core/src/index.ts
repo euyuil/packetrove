@@ -3,14 +3,16 @@ import {
   ErrorResponseSchema, PublicIpResultSchema, type PublicIpResult,
   type CidrCoverResult, type InputIssue,
 } from '@packetrove/contracts';
-import { ToolError, type InputIssueDetail } from './errors';
+import { ToolError } from './errors';
+import { isIpInputIssueDetail, type IpInputIssueDetail } from './ip-input-errors';
 import { formatAddress, parseInput, unionAddressCount, type ParsedInput } from './ip-range';
 import { BodyLimitError, readBoundedText } from './bounded-text';
 
 export { ToolError, type InputIssueDetail } from './errors';
+export { isIpInputIssueDetail, type IpInputIssueDetail } from './ip-input-errors';
 export { BodyLimitError, readBoundedText } from './bounded-text';
 export { subtractCidrs } from './subtract';
-export { rangeToCidrs } from './range-to-cidrs';
+export { rangeToCidrs, type RangeToCidrsIssueDetail } from './range-to-cidrs';
 
 // Public IP results and service errors are small; allow formatting headroom
 // without accepting an unbounded response from a misconfigured endpoint.
@@ -20,10 +22,10 @@ export const MAX_PUBLIC_IP_RESPONSE_BYTES = 64 * 1_024;
 export function smallestCoveringCidr(value: unknown): CidrCoverResult {
   const request = CidrCoverRequestSchema.safeParse(value);
   if (!request.success) {
-    throw new ToolError('INVALID_INPUT', 'Invalid calculation input.', request.error.issues.map(issue => {
+    throw new ToolError<IpInputIssueDetail>('INVALID_INPUT', 'Invalid calculation input.', request.error.issues.map(issue => {
       const index = issue.path[0] === 'inputs' && typeof issue.path[1] === 'number' ? issue.path[1] : undefined;
       return { ...(index === undefined ? {} : { index }), message: issue.message };
-    }), request.error.issues.map((issue): InputIssueDetail => {
+    }), request.error.issues.map((issue): IpInputIssueDetail => {
       if (issue.path[0] === 'inputs' && issue.code === 'too_small' && issue.path.length === 1) {
         return { reason: 'EMPTY_INPUTS' };
       }
@@ -35,23 +37,26 @@ export function smallestCoveringCidr(value: unknown): CidrCoverResult {
   }
   const parsed: ParsedInput[] = [];
   const issues: InputIssue[] = [];
-  const details: InputIssueDetail[] = [];
+  const details: IpInputIssueDetail[] = [];
   for (const [index, input] of request.data.inputs.entries()) {
     try {
       parsed.push(parseInput(input, index));
     } catch (error) {
       if (!(error instanceof ToolError) || error.code !== 'INVALID_INPUT' || !error.issues?.length) throw error;
       issues.push(...error.issues);
-      details.push(...error.issues.map((_, index) => error.details?.[index] || { reason: 'INVALID_INPUT' as const }));
+      details.push(...error.issues.map((_, index) => {
+        const detail = error.details?.[index];
+        return isIpInputIssueDetail(detail) ? detail : { reason: 'INVALID_INPUT' as const };
+      }));
     }
   }
   if (issues.length) {
-    throw new ToolError('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', issues, details);
+    throw new ToolError<IpInputIssueDetail>('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', issues, details);
   }
   const { family, width } = parsed[0]!;
   const differentFamily = parsed.findIndex(entry => entry.family !== family);
   if (differentFamily !== -1) {
-    throw new ToolError('MIXED_ADDRESS_FAMILIES', 'Use either IPv4 or IPv6 throughout one calculation.', [
+    throw new ToolError<IpInputIssueDetail>('MIXED_ADDRESS_FAMILIES', 'Use either IPv4 or IPv6 throughout one calculation.', [
       { index: differentFamily, message: `Expected ${family === 'ipv4' ? 'IPv4' : 'IPv6'} to match the first input.` },
     ], [{ reason: 'EXPECTED_FAMILY', family }]);
   }

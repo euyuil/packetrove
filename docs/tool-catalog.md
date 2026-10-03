@@ -111,6 +111,16 @@ A reload or a new application instance starts fresh. Register the page component
 in the exhaustive map in `apps/web/src/ToolPageView.tsx`; the application shell
 does not declare tool-specific state.
 
+The shared `InputIssue` contract accepts tool-defined `field`, `list`, and
+`path` locations. `inputIssuePath` resolves explicit paths before legacy
+locations, including an empty path for the whole request. Each tool view maps
+only recognized locations to its own inputs; unknown or deeper paths remain
+general errors. `ToolError` accepts a tool-owned detail type for local error
+reasons and required translation parameters. These details never enter the
+public response. Keep domain reason unions and their translation resolvers
+with the domain modules, rather than extending the shared error class or a
+central tool switch. Existing tools preserve their public issue shapes.
+
 The website MCP guide and `docs/integrations/mcp.md` consume the shared content
 model in `apps/web/src/mcp-guide.ts`. It combines catalog entries and examples
 with localized prose and client commands. Generate the English repository

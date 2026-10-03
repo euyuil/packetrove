@@ -1,6 +1,7 @@
 import ipaddr from 'ipaddr.js';
 import type { CidrCoverResult } from '@packetrove/contracts';
 import { ToolError } from './errors';
+import type { IpInputIssueDetail } from './ip-input-errors';
 
 export type Family = CidrCoverResult['family'];
 export type Interval = { first: bigint; last: bigint };
@@ -20,7 +21,7 @@ export function formatAddress(value: bigint, family: Family): string {
 }
 
 export function parseInput(input: string, index: number): ParsedInput {
-  const fail = () => new ToolError('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', [
+  const fail = () => new ToolError<IpInputIssueDetail>('INVALID_INPUT', 'Expected valid IP addresses or CIDRs.', [
     { index, message: 'Use a standard IPv4 or IPv6 address with an optional valid CIDR prefix. Zone identifiers and IPv4 leading zeros are not supported.' },
   ], [{ reason: 'INVALID_ADDRESS' }]);
   const entry = input.trim();

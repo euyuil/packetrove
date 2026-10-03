@@ -1,19 +1,14 @@
 import type { ErrorCode, ErrorResponse, InputIssue } from '@packetrove/contracts';
 
-export type InputIssueDetail = (
-  | { reason: 'INVALID_INPUT' | 'INVALID_ADDRESS' | 'EMPTY_INPUTS'
-    | 'EMPTY_ENDPOINT' | 'INVALID_ENDPOINT' | 'ENDPOINT_CIDR' | 'REVERSED_RANGE' }
-  | { reason: 'TOO_MANY_INPUTS' | 'INPUT_TOO_LONG' | 'TOO_MANY_OUTPUTS'; limit: number }
-  | { reason: 'EXPECTED_FAMILY'; family: 'ipv4' | 'ipv6' }
-) & { list?: 'include' | 'exclude'; field?: 'start' | 'end' };
+export type InputIssueDetail = { reason: string; list?: string; field?: string };
 
-export class ToolError extends Error {
+export class ToolError<Detail extends InputIssueDetail = InputIssueDetail> extends Error {
   constructor(
     public readonly code: ErrorCode,
     message: string,
     public readonly issues?: InputIssue[],
     // Local presentation details follow the issues array and are omitted from toResponse().
-    public readonly details?: InputIssueDetail[],
+    public readonly details?: Detail[],
   ) {
     super(message);
     this.name = 'ToolError';

@@ -165,7 +165,13 @@ Errors use `{ "error": { "code": "...", "message": "...", "issues": [] } }`.
 The optional `issues` array contains messages and, when applicable, a zero-based
 `index` into `inputs`, or into the subtraction list identified by the optional
 `list` field (`include` or `exclude`). Range endpoint issues use `field`
-(`start` or `end`). An invalid entry makes the whole calculation fail;
+(`start` or `end`). Field and list names are defined by each tool. Tools may
+also provide `path`, an array of nonempty field names and zero-based integer
+indexes from the request root, such as `["records", 2, "hostname"]`.
+An empty path identifies the whole request. When present, `path` takes
+precedence over `field`, `list`, and `index`; existing tools retain their legacy
+location fields. Clients should show unknown locations as general errors
+rather than guessing an input. An invalid entry makes the whole calculation fail;
 entries are never silently skipped.
 For a structurally valid calculation request, all invalid addresses or CIDRs
 are reported together in input order, so they can be corrected in one pass.
