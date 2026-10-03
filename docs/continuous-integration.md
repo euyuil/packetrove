@@ -27,10 +27,15 @@ The workflow runs `pnpm check`, which includes:
 - Offline MCP Registry manifest field checks and consistency with shared server
   identity, endpoint, and product version. Official publisher validation and
   Registry publication remain separate manual network operations.
+- Offline OpenAI plugin manifest, asset, unified-version, and archive-integrity
+  validation. Deliberately omitted publishing fields are reported for the draft;
+  actual OpenAI setup and submission remain manual.
 - Production builds for the website and offline CLI.
 - Wrangler deployment dry runs for the API and website Workers.
 - Shared calculation, CLI, web application, website isolation, API, and MCP tests.
   Worker tests execute in the local Workers runtime on the GitHub runner.
+- Valid and invalid plugin packages, ZIP extraction and byte preservation, and
+  rejection of unvalidated artifact source revisions.
 - Prerendered multilingual content and metadata, hydration, canonical and alternate
   language links, sitemap entries, and robots policy.
 - Tool questions and MCP guide examples in production HTML for every registered
@@ -155,6 +160,18 @@ for the GitHub App secrets, first-release baseline, trusted-publisher fields, ve
 rules, and recovery. Recovery skips publication preview and upload for an identical
 existing npm archive, verifies it independently, and rejects a collision with
 different package contents.
+
+## Manual OpenAI plugin artifacts
+
+[`build-openai-plugin.yml`](../.github/workflows/build-openai-plugin.yml) runs only
+when manually dispatched on `main` for an explicit full commit SHA already on
+`main` with successful CI. It validates and builds the ZIP at the source
+revision's unified product version, then uploads the ZIP, checksum, and build
+information as a downloadable artifact retained for 30 days. It needs only
+read-only repository and Actions permissions, uses no production secrets, and
+does not deploy or submit to OpenAI. See the
+[plugin guide](integrations/openai-plugin.md#build-and-download-a-github-actions-artifact)
+for inputs, draft versus complete listing checks, and download instructions.
 
 ## Cloudflare credentials
 
