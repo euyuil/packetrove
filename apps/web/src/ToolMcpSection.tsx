@@ -1,6 +1,6 @@
 import type { MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Anchor, Box, Code, Paper, Stack, Text, Title } from '@mantine/core';
+import { Anchor, Box, Code, Stack, Text } from '@mantine/core';
 import { MCP_PATH, type ToolPage } from '@packetrove/contracts';
 import { getApiUrl } from './api';
 import { localizedPath, pagePaths } from './i18n/routes';
@@ -39,13 +39,7 @@ export function ToolMcpSection({ tool, onNavigate, guide = false }: {
       {guide ? content.openTool : t($ => $.home.mcpGuide)}
     </Anchor>
   </Stack>;
-  return guide ? <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} miw={0}
-    aria-labelledby={headingId} data-mcp-tool={example.name}>
-    <Stack gap="md">
-      <Title order={2} size="h3" id={headingId}>{content.title}</Title>
-      {body}
-    </Stack>
-  </Paper> : <Box data-mcp-tool={example.name}>
+  return <Box miw={0} data-mcp-tool={example.name}>
     <ToolDisclosure headingId={headingId} title={content.title}>{body}</ToolDisclosure>
   </Box>;
 }
