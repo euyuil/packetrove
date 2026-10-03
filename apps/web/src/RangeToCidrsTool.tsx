@@ -1,12 +1,13 @@
 import type { FormEvent, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Badge, Button, Code, DataList, Group, SimpleGrid, Stack, Text, Textarea, TextInput, Title } from '@mantine/core';
-import { toolCatalog, type RangeToCidrsResult } from '@packetrove/contracts';
+import { inputIssuePath, toolCatalog, type InputIssue, type RangeToCidrsResult } from '@packetrove/contracts';
 import { rangeToCidrs, ToolError } from '@packetrove/core';
 import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
 import { useCalculationFeedback } from './useCalculationFeedback';
-import { errorMessage, issueMessage } from './i18n/errors';
+import { errorMessage } from './i18n/errors';
+import { rangeIssueMessage } from './range-errors';
 import { resolveLocale } from './i18n/locales';
 import { ToolPageHeader } from './ToolPageHeader';
 import { ToolPanel } from './ToolPanel';
@@ -20,6 +21,11 @@ import { useToolDraft } from './ToolDraftProvider';
 export type RangeToCidrsDraft = { start: string; end: string; result: RangeToCidrsResult | null; error: ToolError | null };
 
 const draftDefinition = { createInitialDraft: (): RangeToCidrsDraft => ({ start: '', end: '', result: null, error: null }) };
+
+function endpointField(issue: InputIssue) {
+  const path = inputIssuePath(issue);
+  return path?.length === 1 && (path[0] === 'start' || path[0] === 'end') ? path[0] : undefined;
+}
 
 export function RangeToCidrsPage({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> }) {
   const [draft, onDraftChange] = useToolDraft(draftDefinition);
@@ -70,10 +76,11 @@ export function RangeToCidrsTool({ draft, onDraftChange, onNavigate }: {
   }
 
   const issues = error?.issues?.map((issue, index) => {
-    const message = issueMessage(issue, error.details?.[index], t, locale);
-    return issue.field ? {
-      inputId: 'range-' + issue.field,
-      message: t($ => $.range.issue, { field: t($ => issue.field === 'start' ? $.range.start : $.range.end), message }),
+    const message = rangeIssueMessage(issue, error.details?.[index], t, locale);
+    const field = endpointField(issue);
+    return field ? {
+      inputId: 'range-' + field,
+      message: t($ => $.range.issue, { field: t($ => field === 'start' ? $.range.start : $.range.end), message }),
     } : { message };
   });
 
@@ -86,7 +93,10 @@ export function RangeToCidrsTool({ draft, onDraftChange, onNavigate }: {
             {error && <ToolErrorSummary ref={feedback.errorSummary} id="range-errors"
               title={errorMessage(error, t, locale)} issues={issues} />}
             {(['start', 'end'] as const).map(field => {
-              const affected = Boolean(error && (!error.issues?.length || error.issues.some(issue => !issue.field || issue.field === field)));
+              const affected = Boolean(error && (!error.issues?.length || error.issues.some(issue => {
+                const path = inputIssuePath(issue);
+                return path === undefined || path.length === 0 || endpointField(issue) === field;
+              })));
               return <TextInput key={field} id={'range-' + field}
                 label={t($ => field === 'start' ? $.range.start : $.range.end)}
                 description={t($ => field === 'start' ? $.range.startHelp : $.range.endHelp)}

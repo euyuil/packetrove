@@ -89,10 +89,12 @@ export const ErrorResponseSchema = z.strictObject({
     issues: z.array(z.strictObject({
       index: z.number().int().nonnegative().optional()
         .describe('Zero-based index in inputs, or in the identified include/exclude list.'),
-      list: z.enum(['include', 'exclude']).optional()
-        .describe('The subtraction list containing the invalid entry.'),
-      field: z.enum(['start', 'end']).optional()
-        .describe('The range endpoint containing the invalid input.'),
+      list: z.string().min(1).optional()
+        .describe('The input list containing the invalid entry. Existing subtraction errors use include or exclude.'),
+      field: z.string().min(1).optional()
+        .describe('The input field containing the invalid value. Existing range errors use start or end.'),
+      path: z.array(z.union([z.string().min(1), z.number().int().nonnegative()])).optional()
+        .describe('Input field names and zero-based array indices, from the request root. An empty path identifies the whole request. Takes precedence over legacy field, list, and index locations.'),
       message: z.string(),
     })).optional(),
   }),

@@ -4,6 +4,7 @@ import { toolCatalog } from './tools';
 export * from './schemas';
 export * from './tools';
 export * from './identity';
+export * from './input-issues';
 
 export const PACKETROVE_VERSION = manifest.version;
 export const MCP_PATH = '/mcp';

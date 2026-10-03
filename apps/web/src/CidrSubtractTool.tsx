@@ -4,7 +4,8 @@ import {
   Alert, Badge, Button, DataList, Group, SimpleGrid, Stack, Text, Textarea, Title,
 } from '@mantine/core';
 import {
-  CIDR_SUBTRACT_EXAMPLES, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS, type CidrSubtractResult,
+  CIDR_SUBTRACT_EXAMPLES, MAX_INPUT_LENGTH, MAX_SUBTRACTION_INPUTS, MAX_SUBTRACTION_OUTPUTS,
+  inputIssuePath, type CidrSubtractResult, type InputIssue,
 } from '@packetrove/contracts';
 import { subtractCidrs, ToolError } from '@packetrove/core';
 import { ClipboardCopyButton } from './ClipboardCopyButton';
@@ -26,6 +27,16 @@ import { useToolDraft } from './ToolDraftProvider';
 export type CidrSubtractDraft = { include: string; exclude: string; result: CidrSubtractResult | null; error: ToolError | null };
 
 const draftDefinition = { createInitialDraft: (): CidrSubtractDraft => ({ include: '', exclude: '', result: null, error: null }) };
+
+function subtractionIssuePath(issue: InputIssue, detail?: { list?: string }) {
+  const path = inputIssuePath(issue);
+  return path === undefined && detail?.list !== undefined ? [detail.list] : path;
+}
+
+function subtractionList(path: readonly (string | number)[] | undefined) {
+  return path && (path.length === 1 || (path.length === 2 && typeof path[1] === 'number'))
+    && (path[0] === 'include' || path[0] === 'exclude') ? path[0] : undefined;
+}
 
 export function CidrSubtractPage({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> }) {
   const [draft, onDraftChange] = useToolDraft(draftDefinition);
@@ -81,10 +92,11 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
   const issueItems = error?.issues?.map((issue, index) => {
     const detail = error.details?.[index];
     const message = issueMessage(issue, detail, t, locale);
-    if (!detail?.list) return { message };
-    const inputList = detail.list;
+    const path = subtractionIssuePath(issue, detail);
+    const inputList = subtractionList(path);
+    if (!inputList) return { message };
     const list = t($ => inputList === 'include' ? $.subtract.include : $.subtract.exclude);
-    const entry = issue.index === undefined ? undefined : entries[inputList][issue.index];
+    const entry = typeof path?.[1] === 'number' ? entries[inputList][path[1]] : undefined;
     return { inputId: 'subtract-' + inputList, message: !entry ? t($ => $.subtract.listIssue, { list, message })
       : t($ => entry.entriesOnLine > 1 ? $.subtract.lineEntry : $.subtract.line, {
         list, line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
@@ -103,7 +115,10 @@ export function CidrSubtractTool({ draft, onDraftChange, onNavigate }: {
             } issues={issueItems} />}
             {(['include', 'exclude'] as const).map(list => {
               // Associate each input with the shared error summary instead of Mantine's own error element.
-              const affected = Boolean(error && (!error.details?.length || error.details.some(detail => !detail.list || detail.list === list)));
+              const affected = Boolean(error && (!error.issues?.length || error.issues.some((issue, index) => {
+                const path = subtractionIssuePath(issue, error.details?.[index]);
+                return path === undefined || path.length === 0 || subtractionList(path) === list;
+              })));
               return <Textarea key={list} id={'subtract-' + list}
                 label={t($ => list === 'include' ? $.subtract.includeLabel : $.subtract.excludeLabel)}
                 description={t($ => list === 'include' ? $.subtract.includeHelp : $.subtract.excludeHelp)}

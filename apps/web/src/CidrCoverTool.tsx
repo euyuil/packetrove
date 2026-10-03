@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Alert, Badge, Button, DataList, Group, SimpleGrid, Stack, Text, Textarea, Title, VisuallyHidden,
 } from '@mantine/core';
-import { CIDR_COVER_EXAMPLES, MAX_INPUTS, type CidrCoverResult } from '@packetrove/contracts';
+import { CIDR_COVER_EXAMPLES, MAX_INPUTS, inputIssuePath, type CidrCoverResult, type InputIssue } from '@packetrove/contracts';
 import { smallestCoveringCidr, ToolError } from '@packetrove/core';
 import { ClipboardCopyButton } from './ClipboardCopyButton';
 import { useClipboardFeedback } from './useClipboardFeedback';
@@ -25,6 +25,14 @@ import { useToolDraft } from './ToolDraftProvider';
 export type CidrCoverDraft = { input: string; result: CidrCoverResult | null; error: ToolError | null };
 
 const draftDefinition = { createInitialDraft: (): CidrCoverDraft => ({ input: '', result: null, error: null }) };
+
+function coveringIssueLocation(issue: InputIssue): { known: boolean; index?: number } {
+  const path = inputIssuePath(issue);
+  if (path === undefined || path.length === 0 || (path.length === 1 && path[0] === 'inputs')) return { known: true };
+  if (path.length === 1 && typeof path[0] === 'number') return { known: true, index: path[0] };
+  if (path.length === 2 && path[0] === 'inputs' && typeof path[1] === 'number') return { known: true, index: path[1] };
+  return { known: false };
+}
 
 export function CidrCoverPage({ onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> }) {
   const [draft, onDraftChange] = useToolDraft(draftDefinition);
@@ -69,12 +77,15 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
 
   const issueItems = error?.issues?.map((issue, index) => {
     const message = issueMessage(issue, error.details?.[index], t, locale);
-    const entry = issue.index === undefined ? undefined : entries[issue.index];
+    const location = coveringIssueLocation(issue);
+    if (!location.known) return { message };
+    const entry = location.index === undefined ? undefined : entries[location.index];
     return { inputId: 'addresses', message: !entry ? message
       : t($ => entry.entriesOnLine > 1 ? $.cidr.lineEntry : $.cidr.line, {
         line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
       }) };
   });
+  const affected = Boolean(error && (!error.issues?.length || error.issues.some(issue => coveringIssueLocation(issue).known)));
 
   return (
     <Stack gap="xl">
@@ -91,8 +102,8 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
                 descriptionProps={{ id: 'input-help' }}
                 autosize minRows={4} maxRows={10} spellCheck={false} autoCapitalize="off" autoCorrect="off"
                 classNames={{ input: 'network-value' }}
-                attributes={{ input: { 'aria-describedby': 'input-help' + (error ? ' input-error' : '') } }}
-                error={Boolean(error)}
+                attributes={{ input: { 'aria-describedby': 'input-help' + (affected ? ' input-error' : '') } }}
+                error={affected}
                 placeholder={'203.0.113.1\n203.0.113.2\n203.0.113.6'}
                 onChange={event => replaceInput(event.currentTarget.value)} />
               <Group justify="space-between">

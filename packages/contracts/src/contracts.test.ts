@@ -1,6 +1,30 @@
 import { describe, expect, it } from 'vitest';
 import { CIDR_COVER_EXAMPLES, CidrCoverRequestSchema, CidrCoverResultSchema, PublicIpResultSchema,
-  RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsRequestSchema, RangeToCidrsResultSchema, ErrorResponseSchema } from './index';
+  RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsRequestSchema, RangeToCidrsResultSchema, ErrorResponseSchema, inputIssuePath } from './index';
+
+describe('generic input issue locations', () => {
+  const message = 'Check this input.';
+  it('accepts tool-defined fields, lists, and nested input paths without changing legacy locations', () => {
+    const issues = [
+      { field: 'hostname', message }, { list: 'records', index: 2, message },
+      { path: ['records', 2, 'hostname'], message }, { path: [], message },
+      { field: 'start', message }, { list: 'exclude', index: 1, message },
+    ];
+    expect(ErrorResponseSchema.parse({ error: { code: 'INVALID_INPUT', message, issues } }).error.issues).toEqual(issues);
+  });
+  it.each([[''], [-1], [0.5], [true], [null]])('rejects invalid path segments: %j', (...path) => {
+    expect(ErrorResponseSchema.safeParse({ error: { code: 'INVALID_INPUT', message, issues: [{ path, message }] } }).success).toBe(false);
+  });
+  it('prefers an explicit path, including the whole request, over legacy locations', () => {
+    expect(inputIssuePath({ message, field: 'start', list: 'exclude', index: 3, path: ['records', 2] })).toEqual(['records', 2]);
+    expect(inputIssuePath({ message, list: 'exclude', path: [] })).toEqual([]);
+    expect(inputIssuePath({ message, field: 'start', list: 'exclude', index: 3 })).toEqual(['start']);
+    expect(inputIssuePath({ message, list: 'exclude', index: 3 })).toEqual(['exclude', 3]);
+    expect(inputIssuePath({ message, list: 'include' })).toEqual(['include']);
+    expect(inputIssuePath({ message, index: 0 })).toEqual([0]);
+    expect(inputIssuePath({ message })).toBeUndefined();
+  });
+});
 
 describe('public contract examples', () => {
   it.each(CIDR_COVER_EXAMPLES)('validates $name', ({ request, result }) => {

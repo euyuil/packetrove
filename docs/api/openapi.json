@@ -69,19 +69,29 @@
                     },
                     "list": {
                       "type": "string",
-                      "enum": [
-                        "include",
-                        "exclude"
-                      ],
-                      "description": "The subtraction list containing the invalid entry."
+                      "minLength": 1,
+                      "description": "The input list containing the invalid entry. Existing subtraction errors use include or exclude."
                     },
                     "field": {
                       "type": "string",
-                      "enum": [
-                        "start",
-                        "end"
-                      ],
-                      "description": "The range endpoint containing the invalid input."
+                      "minLength": 1,
+                      "description": "The input field containing the invalid value. Existing range errors use start or end."
+                    },
+                    "path": {
+                      "type": "array",
+                      "items": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          {
+                            "type": "integer",
+                            "minimum": 0
+                          }
+                        ]
+                      },
+                      "description": "Input field names and zero-based array indices, from the request root. An empty path identifies the whole request. Takes precedence over legacy field, list, and index locations."
                     },
                     "message": {
                       "type": "string"
