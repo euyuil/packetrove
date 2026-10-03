@@ -17,7 +17,7 @@ firewall configuration is a separate task.
   or user; do not assume a checkout path. A missing build requires `pnpm install`
   and `pnpm build` in that repository.
 - If a Packetrove MCP server is already configured, call its
-  `smallest_covering_cidr` tool. Do not invent a hosted server URL.
+  `cidr-cover` tool. Do not invent a hosted server URL.
 
 For setup, the [Packetrove MCP guide](https://packetrove.com/docs/mcp) documents
 the public remote server and client commands. Reading it does not configure
@@ -35,7 +35,7 @@ zeros are rejected. CIDRs with host bits set are normalized to network addresses
 For the CLI, request JSON and check the exit status:
 
 ```sh
-packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+packetrove cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
 ```
 
 For newline-separated input, use `--stdin --json`. Pass addresses as argument

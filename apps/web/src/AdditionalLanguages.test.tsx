@@ -61,7 +61,7 @@ describe('additional website languages', () => {
     render(<App />);
     const translation = resources[locale].translation;
     expect(screen.getByRole('heading', { level: 1, name: heading })).toBeDefined();
-    expect(screen.getByRole('link', { name: translation.cidr.title }).getAttribute('href')).toBe(prefix + '/cidr');
+    expect(screen.getByRole('link', { name: translation.cidr.title }).getAttribute('href')).toBe(prefix + '/cidr-cover');
     expect(screen.getByRole('link', { name: translation.ip.title }).getAttribute('href')).toBe(prefix + '/public-ip');
     expect(screen.getByRole('link', { name: translation.home.apiGuide }).getAttribute('href')).toBe(prefix + '/docs/api');
     expect(document.documentElement.lang).toBe(locale);
@@ -88,7 +88,7 @@ describe('additional website languages', () => {
   });
 
   it.each(additionalLanguages)('preserves the draft, exact IPv6 counts, and URL suffixes when switching to $locale', ({ locale, prefix, count }) => {
-    window.history.replaceState({}, '', '/cidr?source=example#tool');
+    window.history.replaceState({}, '', '/cidr-cover?source=example#tool');
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
@@ -96,7 +96,7 @@ describe('additional website languages', () => {
     calculate('::/0');
     chooseLanguage(locale);
     const translation = resources[locale].translation;
-    expect(window.location.pathname).toBe(prefix + '/cidr');
+    expect(window.location.pathname).toBe(prefix + '/cidr-cover');
     expect(window.location.search).toBe('?source=example');
     expect(window.location.hash).toBe('#tool');
     expect((screen.getByLabelText(translation.cidr.inputLabel) as HTMLTextAreaElement).value).toBe('::/0');
@@ -114,7 +114,7 @@ describe('additional website languages', () => {
   });
 
   it.each(additionalLanguages)('retranslates physical-line validation errors in $locale', ({ locale }) => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     render(<App />);
     calculate('\n203.0.113.1\n\nbad');
     const english = screen.getByRole('alert').textContent;
@@ -149,7 +149,7 @@ describe('additional website languages', () => {
   });
 
   it.each(additionalLanguages)('retranslates clipboard feedback in $locale without repeating a write', async ({ locale }) => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     const user = userEvent.setup();
     const write = vi.spyOn(navigator.clipboard, 'writeText');
     render(<App />);
@@ -191,7 +191,7 @@ describe('additional website languages', () => {
   it.each(additionalLanguages)('localizes API failure recovery in $locale and preserves the calculation', async ({ locale, prefix, count }) => {
     reference.fail = true;
     vi.spyOn(console, 'error').mockImplementation(() => {});
-    window.history.replaceState({}, '', prefix + '/cidr');
+    window.history.replaceState({}, '', prefix + '/cidr-cover');
     render(<App />);
     calculate('::/0');
     act(() => {
@@ -201,7 +201,7 @@ describe('additional website languages', () => {
     const translation = resources[locale].translation;
     expect(await screen.findByRole('heading', { name: translation.api.unavailableTitle })).toBeDefined();
     fireEvent.click(screen.getByRole('link', { name: translation.api.returnToCalculator }));
-    expect(window.location.pathname).toBe(prefix + '/cidr');
+    expect(window.location.pathname).toBe(prefix + '/cidr-cover');
     expect(screen.getAllByText(count, { normalizer: text => text })).toHaveLength(2);
   });
 

@@ -123,7 +123,7 @@ describe('bundled public IP CLI', () => {
     ['public-ip', '--api-origin', 'https://example.com/api'],
     ['public-ip', '--api-origin', ['https://', 'test', ':', 'test', '@example.com'].join('')],
     ['public-ip', '--api-origin', 'https://example.com?ip=203.0.113.1'],
-    ['cidr', 'cover', '203.0.113.1', '--api-origin', 'https://example.com'],
+    ['cidr-cover', '203.0.113.1', '--api-origin', 'https://example.com'],
   ].map(args => ({ args })))('rejects invalid lookup arguments without contacting a service: $args', async ({ args }) => {
     const execution = await run([...args, '--json']);
     expect(execution.status).toBe(1);

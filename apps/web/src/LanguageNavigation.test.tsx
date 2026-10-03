@@ -19,7 +19,7 @@ vi.mock('./ApiReference', () => ({ default: () => <>
 </> }));
 
 const selectedSuffix = '?source=selected&mode=one#tag/Current-public-IP/get/v1/public-ip';
-const laterSuffix = '?source=later#tag/CIDR-cover/post/v1/cidr/cover';
+const laterSuffix = '?source=later#tag/CIDR-cover/post/v1/cidr-cover';
 
 afterEach(() => {
   cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals();
@@ -134,7 +134,7 @@ describe('language links after reference navigation', () => {
   });
 
   it('preserves history and the real local calculator draft through reference and language navigation', async () => {
-    window.history.replaceState(null, '', '/cidr');
+    window.history.replaceState(null, '', '/cidr-cover');
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const calculate = vi.spyOn(core, 'smallestCoveringCidr');

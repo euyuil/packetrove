@@ -4,6 +4,12 @@ The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
 locally without a Worker, Cloudflare account, or network connection. The `public-ip`
 command queries the current connection through an IP lookup API.
 
+This source revision uses the flat commands `cidr-cover` and `public-ip`.
+Previously published versions keep their original commands, which may include
+`cidr cover`. Use a release containing the [flat-name migration](../tool-catalog.md#migration-to-flat-names)
+or build from source. Check `packetrove --help` for an installed version's
+commands; the source build rejects the previous command without an alias.
+
 ## Install from npm
 
 The package is published to npm as `@packetrove/cli`. Users need only a supported
@@ -12,13 +18,13 @@ Node.js version and npm:
 ```sh
 npm install --global @packetrove/cli
 packetrove --help
-packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+packetrove cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
 ```
 
 For a one-off calculation, use a published package without a global installation:
 
 ```sh
-npx @packetrove/cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+npx @packetrove/cli cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
 ```
 
 Use `@packetrove/cli@<version>` to pin a published version for reproducible
@@ -54,14 +60,14 @@ Install dependencies and build once using a supported Node.js version:
 ```sh
 pnpm install
 pnpm build
-pnpm cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6
+pnpm cli cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6
 ```
 
 For scripts and agents, call the built executable directly so stdout contains
 only the result, without package-manager lifecycle messages:
 
 ```sh
-node packages/cli/dist/cli.js cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+node packages/cli/dist/cli.js cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
 ```
 
 Alternatively, use `pnpm --silent cli` with the same arguments.
@@ -69,8 +75,8 @@ Alternatively, use `pnpm --silent cli` with the same arguments.
 ## Input, output, and errors
 
 ```text
-packetrove cidr cover <IP-or-CIDR>... [--stdin] [--json]
-packetrove cidr cover --stdin [--json]
+packetrove cidr-cover <IP-or-CIDR>... [--stdin] [--json]
+packetrove cidr-cover --stdin [--json]
 ```
 
 Positional inputs come first, followed by nonblank standard-input lines. With
@@ -90,7 +96,7 @@ validation message, without echoing an input value or adding a truncation field.
 For a newline-separated file:
 
 ```sh
-node packages/cli/dist/cli.js cidr cover --stdin --json < addresses.txt
+node packages/cli/dist/cli.js cidr-cover --stdin --json < addresses.txt
 ```
 
 Without `--json`, output includes the CIDR, range, exact counts, normalized

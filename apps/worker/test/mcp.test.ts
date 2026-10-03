@@ -247,10 +247,10 @@ describe('stateless MCP in the Workers runtime', () => {
 });
 
 describe('public IP over MCP', () => {
-  it('rejects the removed get_public_ip tool name', async () => {
+  it.each(catalogTools.flatMap(tool => [...tool.removedInterfaces.mcpNames]))('rejects removed MCP name %s', async name => {
     const client = await connectedClient('http://localhost/mcp', undefined, '203.0.113.1');
     try {
-      await expect(client.callTool({ name: 'get_public_ip', arguments: {} })).rejects.toThrow(/not found/i);
+      await expect(client.callTool({ name, arguments: {} })).rejects.toThrow(/not found/i);
     } finally { await client.close(); }
   });
 

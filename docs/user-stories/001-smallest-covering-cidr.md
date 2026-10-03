@@ -102,9 +102,9 @@ tools use this parsing rule, and either subtraction copy format can be pasted
 directly into the covering calculator.
 
 The homepage introduces Packetrove and links to its tools. The calculator has
-its own page at `/cidr`; My Public IP is at `/public-ip`. The calculator includes
+its own page at `/cidr-cover`; My Public IP is at `/public-ip`. The calculator includes
 questions about firewall entry limits, extra coverage, overlaps, exact counts,
-and local input processing. Its MCP section shows `smallest_covering_cidr`
+and local input processing. Its MCP section shows `cidr-cover`
 arguments and results, and links to the same-language `/docs/mcp` guide.
 Remote API and MCP calculations send inputs to the server; the browser and
 built CLI calculate locally.

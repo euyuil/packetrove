@@ -13,6 +13,16 @@ function post(body: string, headers: Record<string, string> = { 'content-type': 
 }
 
 describe('API in the Workers runtime', () => {
+  it.each(tools.flatMap(tool => [...tool.removedInterfaces.apiPaths]))('rejects removed tool endpoint %s without a redirect', async path => {
+    for (const method of ['GET', 'POST']) {
+      const response = await exports.default.fetch(`http://localhost${path}`, {
+        method, headers: { 'content-type': 'application/json' }, ...(method === 'POST' ? { body: '{}' } : {}),
+      });
+      expect(response.status).toBe(404);
+      expect(response.headers.get('location')).toBeNull();
+      expect(ErrorResponseSchema.parse(await response.json()).error.code).toBe('NOT_FOUND');
+    }
+  });
   it.each(tools)('serves every catalog entry: $id', async tool => {
     const response = await exports.default.fetch(`http://localhost${tool.api.path}`, {
       method: tool.api.method.toUpperCase(),
@@ -137,7 +147,7 @@ describe('API in the Workers runtime', () => {
     expect(unsupported.headers.get('allow')).toBe('GET, HEAD');
     expect(ErrorResponseSchema.parse(await unsupported.json()).error.code).toBe('METHOD_NOT_ALLOWED');
   });
-  it.each(['/', '/cidr', '/ip', '/public-ip', '/docs/api', '/assets/main.js', '/_headers', '/api/v1/ip', '/api/v1/public-ip', '/api/openapi.json', '/v1/ip'])('does not serve website assets or old API paths at %s', async path => {
+  it.each(['/', '/cidr-cover', '/ip', '/public-ip', '/docs/api', '/assets/main.js', '/_headers', '/api/v1/ip', '/api/v1/public-ip', '/api/openapi.json', '/v1/ip'])('does not serve website assets or old API paths at %s', async path => {
     const response = await exports.default.fetch(`http://localhost${path}`, {
       headers: { 'sec-fetch-mode': 'navigate', accept: 'text/html' },
     });

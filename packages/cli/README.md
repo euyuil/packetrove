@@ -23,7 +23,7 @@ packetrove --help
 Alternatively, run a published version without a global installation:
 
 ```sh
-npx @packetrove/cli cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
+npx @packetrove/cli cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --json
 ```
 
 Supported Node.js versions are 22.22.2 or later in the 22.x line, 24.15.0 or
@@ -33,8 +33,8 @@ later in the 24.x line, and 26 or later. To build your own copy, follow the
 ## Cover IP addresses and CIDR ranges
 
 ```sh
-packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6
-packetrove cidr cover --stdin --json < addresses.txt
+packetrove cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6
+packetrove cidr-cover --stdin --json < addresses.txt
 ```
 
 Use 1 to 1,000 IPv4 entries or IPv6 entries. CIDR host bits are normalized;

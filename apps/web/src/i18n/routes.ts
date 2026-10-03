@@ -1,10 +1,10 @@
-import { toolPagePaths } from '@packetrove/contracts';
+import { legacyToolPagePaths, toolPagePaths } from '@packetrove/contracts';
 import { locales, supportedLocales, type Locale } from './locales';
 export type { Locale } from './locales';
 export type Page = keyof typeof pagePaths | 'notFound';
 
 export const pagePaths = { home: '/', ...toolPagePaths, api: '/docs/api', mcp: '/docs/mcp' } as const;
-export const legacyPagePaths: Readonly<Record<string, string>> = { '/ip': pagePaths.ip };
+export const legacyPagePaths = legacyToolPagePaths;
 
 export function localizedPath(path: string, locale: Locale) {
   const prefix = locales[locale].prefix;

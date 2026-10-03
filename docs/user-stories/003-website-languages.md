@@ -17,11 +17,12 @@ network results and share a link in my preferred language.
   `/es` for Spanish (`es`), `/de` for German (`de`), `/ja` for Japanese (`ja`),
   `/fr` for French (`fr`), `/pt` for Portuguese (`pt-BR`), `/ru` for Russian (`ru`),
   `/ko` for Korean (`ko`), and `/it` for Italian (`it`).
-  Each prefix has a homepage, `/cidr`, `/cidr/subtract`, `/public-ip`, `/docs/api`, and `/docs/mcp` page.
+  Each prefix has a homepage, `/cidr-cover`, `/cidr-subtract`, `/public-ip`, `/docs/api`, and `/docs/mcp` page.
   Reserve short language codes and language-tag names for locale prefixes;
-  choose descriptive tool URL names according to `AGENTS.md`. Legacy `/ip`,
-  `/ip/`, and `/ip.html` links redirect permanently to `/public-ip` in each
-  supported locale, preserving query strings. Aliases are not canonical pages.
+  choose descriptive tool URL names according to `AGENTS.md`. Legacy tool paths
+  follow the catalog's [name migration](../tool-catalog.md#migration-to-flat-names),
+  redirecting permanently within the same locale and preserving query strings.
+  Aliases are not canonical pages.
 - Let the URL determine the language. Provide a header dropdown with `English`,
   `Deutsch`, `Español`, `Français`, `Italiano`, `Português`, `Русский`,
   `中文`, `日本語`, and `한국어` entries in that fixed order, without

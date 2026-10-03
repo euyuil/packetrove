@@ -17,7 +17,7 @@ const fetch = vi.fn(() => { throw new Error('Unexpected input upload'); });
 beforeEach(() => {
   fetch.mockClear();
   vi.stubGlobal('fetch', fetch);
-  window.history.replaceState({}, '', '/cidr');
+  window.history.replaceState({}, '', '/cidr-cover');
 });
 afterEach(() => {
   expect(fetch).not.toHaveBeenCalled();
@@ -35,7 +35,7 @@ function change(label: string, value: string) {
 
 describe('address error entry locations', () => {
   it.each(supportedLocales)('identifies both covering errors among valid entries in %s', locale => {
-    window.history.replaceState({}, '', locales[locale].prefix + '/cidr');
+    window.history.replaceState({}, '', locales[locale].prefix + '/cidr-cover');
     const calculation = vi.spyOn(core, 'smallestCoveringCidr');
     const text = resources[locale].translation;
     const t = createI18n(locale).t;
@@ -55,7 +55,7 @@ describe('address error entry locations', () => {
   });
 
   it.each(supportedLocales)('identifies both exclusion errors while retaining the list in %s', locale => {
-    window.history.replaceState({}, '', locales[locale].prefix + '/cidr/subtract');
+    window.history.replaceState({}, '', locales[locale].prefix + '/cidr-subtract');
     const calculation = vi.spyOn(core, 'subtractCidrs');
     const text = resources[locale].translation;
     const t = createI18n(locale).t;
@@ -82,7 +82,7 @@ describe('address error entry locations', () => {
   });
 
   it('retains the shared error order across both lists and restarts entry positions on each physical line', () => {
-    window.history.replaceState({}, '', '/cidr/subtract');
+    window.history.replaceState({}, '', '/cidr-subtract');
     const calculation = vi.spyOn(core, 'subtractCidrs');
     render(<App />);
     change('Included IP addresses or CIDRs', '\n\nbad, 203.0.113.1，broken\r\ninvalid');
@@ -111,7 +111,7 @@ describe('address error entry locations', () => {
   });
 
   it.each(['cover', 'subtract'])('does not invent a location for unindexed %s entry-limit errors', tool => {
-    window.history.replaceState({}, '', tool === 'cover' ? '/cidr' : '/cidr/subtract');
+    window.history.replaceState({}, '', tool === 'cover' ? '/cidr-cover' : '/cidr-subtract');
     render(<App />);
     change(tool === 'cover' ? 'IP addresses or CIDR ranges' : 'Included IP addresses or CIDRs',
       new Array(MAX_INPUTS + 1).fill('203.0.113.1').join(', '));
@@ -133,7 +133,7 @@ describe('address error entry locations', () => {
   });
 
   it.each(['cover', 'subtract'])('clears obsolete %s error locations on edit and Clear while retaining the draft until then', tool => {
-    window.history.replaceState({}, '', tool === 'cover' ? '/cidr' : '/cidr/subtract');
+    window.history.replaceState({}, '', tool === 'cover' ? '/cidr-cover' : '/cidr-subtract');
     render(<App />);
     const label = tool === 'cover' ? 'IP addresses or CIDR ranges' : 'Included IP addresses or CIDRs';
     const calculate = tool === 'cover' ? 'Calculate covering CIDR' : 'Subtract CIDRs';

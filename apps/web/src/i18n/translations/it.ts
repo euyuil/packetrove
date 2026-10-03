@@ -214,7 +214,7 @@ export const it = {
     deploymentTitle: "Distribuzione e limiti della connessione",
     serverBehavior: "Il server supporta richieste moderne senza stato e inizializzazione, scoperta e chiamate del precedente Streamable HTTP. Non offre sessioni persistenti o flussi di eventi server autonomi.",
     connectionPrivacy: "I metadati dell’IP pubblico vengono letti per ogni chiamata, con istanze separate per client concorrenti. Risultati ed errori MCP usano Cache-Control: no-store, no-transform. L’applicazione non conserva né registra gli indirizzi consultati.",
-    toolMigration: "Il precedente nome <code>get_public_ip</code> non ha un alias di compatibilità. Aggiorna la scoperta e usa <code>{{ipTool}}</code> nelle chiamate salvate.",
+    toolMigration: "I nomi precedenti non hanno alias di compatibilità: {{toolRenames}}. Aggiorna la scoperta degli strumenti e le chiamate salvate.",
     endpointMigration: "Il percorso <code>/mcp</code> del sito non è il servizio: GET restituisce 404 e POST 405, senza proxy o reindirizzamenti. Configura i client con <code>{{serverUrl}}</code>. Per la tua distribuzione, aggiorna domini e liste esatte separate di Host e Origin del browser; sono supportati client senza intestazione Origin.",
     deploymentGuide: "Distribuzione, hosting autonomo e verifica in produzione",
     title: 'Collega Packetrove a un agente IA',

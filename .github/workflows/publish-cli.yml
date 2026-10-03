@@ -108,7 +108,7 @@ jobs:
           : > "$RUNNER_TEMP/packetrove-consumer.npmrc"
           (
             cd "$RUNNER_TEMP/packetrove-npm-consumer"
-            npm --cache "$RUNNER_TEMP/packetrove-consumer-cache" --userconfig "$RUNNER_TEMP/packetrove-consumer.npmrc" exec --yes --ignore-scripts --registry=https://registry.npmjs.org/ --package="@packetrove/cli@$RELEASE_VERSION" -- packetrove cidr cover 203.0.113.1 203.0.113.2 203.0.113.6 --json > "$RUNNER_TEMP/packetrove-published-result.json"
+            npm --cache "$RUNNER_TEMP/packetrove-consumer-cache" --userconfig "$RUNNER_TEMP/packetrove-consumer.npmrc" exec --yes --ignore-scripts --registry=https://registry.npmjs.org/ --package="@packetrove/cli@$RELEASE_VERSION" -- packetrove cidr-cover 203.0.113.1 203.0.113.2 203.0.113.6 --json > "$RUNNER_TEMP/packetrove-published-result.json"
           )
           node scripts/cli-release.ts verify "$RUNNER_TEMP/packetrove-published-result.json"
           echo "Published and verified @packetrove/cli@$RELEASE_VERSION from $RELEASE_TAG." >> "$GITHUB_STEP_SUMMARY"

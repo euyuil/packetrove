@@ -17,6 +17,11 @@ The page links to the same-language [MCP connection guide](https://packetrove.co
 for agent setup and tool examples. MCP tool names, results, and errors follow
 the same shared contracts.
 
+Tool endpoints use `/v1/<canonical-name>`, with the same name in the website,
+MCP, and OpenAPI `operationId`. The previous nested CIDR API paths have no
+redirects or aliases. See the [flat-name migration](../tool-catalog.md#migration-to-flat-names)
+for the old-to-new mapping and caller changes.
+
 If the interactive reference module fails to load or render, the documentation area
 shows an error message with a link back to the calculator. Site navigation and
 the calculator's input, result, or validation error remain in the current page
@@ -30,12 +35,12 @@ specification is served at [openapi.json](https://api.packetrove.com/openapi.jso
 For example:
 
 ```sh
-curl https://api.packetrove.com/v1/cidr/cover \
+curl https://api.packetrove.com/v1/cidr-cover \
   -H 'Content-Type: application/json' \
   -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
 ```
 
-`POST /v1/cidr/cover` accepts an object with an `inputs` array containing
+`POST /v1/cidr-cover` accepts an object with an `inputs` array containing
 1 to 1,000 IP addresses or CIDRs. Each string can contain at most 64 characters.
 Use `Content-Type: application/json`; the request body limit is 64 KiB.
 
@@ -61,13 +66,13 @@ addresses. The tool calculates a result and does not edit firewall rules.
 
 ## Exact CIDR subtraction
 
-`POST /v1/cidr/subtract` accepts required `include` and `exclude` arrays. Include
+`POST /v1/cidr-subtract` accepts required `include` and `exclude` arrays. Include
 must contain at least one address or CIDR; exclude may be empty. Use one address
 family and at most 1,000 entries across both lists, up to 64 characters each.
 The shared 64 KiB JSON request-body limit applies.
 
 ```sh
-curl -fsS https://api.packetrove.com/v1/cidr/subtract \
+curl -fsS https://api.packetrove.com/v1/cidr-subtract \
   -H 'Content-Type: application/json' \
   -d '{"include":["203.0.113.0/24"],"exclude":["203.0.113.64/26"]}'
 ```

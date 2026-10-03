@@ -230,7 +230,7 @@ export const es = {
     deploymentTitle: "Despliegue y límites de conexión",
     serverBehavior: "El servidor admite solicitudes modernas sin estado e inicialización, descubrimiento y llamadas del transporte Streamable HTTP anterior. No ofrece sesiones persistentes ni flujos de eventos independientes del servidor.",
     connectionPrivacy: "Los metadatos de la IP pública se leen en cada llamada y las instancias del servidor se aíslan entre clientes concurrentes. Los resultados y errores MCP usan Cache-Control: no-store, no-transform. La aplicación no conserva ni registra las direcciones consultadas.",
-    toolMigration: "El nombre anterior <code>get_public_ip</code> no tiene un alias compatible. Actualiza el descubrimiento de herramientas y usa <code>{{ipTool}}</code> en las llamadas guardadas.",
+    toolMigration: "Los nombres anteriores no tienen alias de compatibilidad: {{toolRenames}}. Actualiza el descubrimiento de herramientas y las llamadas guardadas.",
     endpointMigration: "La ruta <code>/mcp</code> del sitio no es el servicio: GET devuelve 404 y POST 405, sin reenviar ni redirigir llamadas. Configura los clientes con <code>{{serverUrl}}</code>. En tu despliegue, actualiza los dominios y las listas exactas separadas de Host y Origin del navegador; se admiten clientes sin cabecera Origin.",
     deploymentGuide: "Despliegue, alojamiento propio y verificación de producción",
     title: "Conectar Packetrove a un agente de IA",

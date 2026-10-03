@@ -172,7 +172,7 @@ describe('public IP web tool', () => {
     vi.stubGlobal('fetch', async () => Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
     render(<App />);
     expect(screen.getByRole('heading', { name: 'My Public IP', level: 1 })).toBeDefined();
-    expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('href')).toBe('/cidr');
+    expect(screen.getByRole('link', { name: 'Smallest Covering CIDR' }).getAttribute('href')).toBe('/cidr-cover');
     expect(screen.getByRole('link', { name: 'My Public IP' }).getAttribute('aria-current')).toBe('page');
     expect(await screen.findByText('203.0.113.1')).toBeDefined();
   });

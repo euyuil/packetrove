@@ -7,7 +7,7 @@ import { render } from './test-utils';
 let originalClipboard: PropertyDescriptor | undefined;
 beforeEach(() => {
   originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
-  window.history.replaceState({}, '', '/cidr');
+  window.history.replaceState({}, '', '/cidr-cover');
 });
 afterEach(() => {
   cleanup();
@@ -62,7 +62,7 @@ describe('tool navigation in one page session', () => {
     expect(await screen.findByText('198.51.100.2')).toBeDefined();
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
     openTool('Smallest Covering CIDR');
-    expect(window.location.pathname).toBe('/cidr');
+    expect(window.location.pathname).toBe('/cidr-cover');
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe(input);
     expect(screen.getByText('203.0.113.0/30')).toBeDefined();
     expect(calculation).toHaveBeenCalledExactlyOnceWith({ inputs: ['203.0.113.1', '203.0.113.2'] });
@@ -164,7 +164,7 @@ describe('tool navigation in one page session', () => {
     expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
     openTool('Smallest Covering CIDR');
-    expect(window.location.pathname).toBe('/cidr');
+    expect(window.location.pathname).toBe('/cidr-cover');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
     expect(fetch).not.toHaveBeenCalled();
   });
@@ -179,16 +179,16 @@ describe('tool navigation in one page session', () => {
     expect(screen.getByRole('heading', { name: 'Network tools for humans and agents', level: 1 })).toBeDefined();
     expect(screen.queryByLabelText('IP addresses or CIDR ranges')).toBeNull();
     openTool('Smallest Covering CIDR');
-    expect(window.location.pathname).toBe('/cidr');
+    expect(window.location.pathname).toBe('/cidr-cover');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
   });
   it('follows the tool href when the current path has a query or fragment', () => {
-    window.history.replaceState(null, '', '/cidr?source=example#top');
+    window.history.replaceState(null, '', '/cidr-cover?source=example#top');
     const fetch = lookup();
     render(<App />);
     calculate('203.0.113.1');
     openTool('Smallest Covering CIDR');
-    expect(window.location.pathname).toBe('/cidr');
+    expect(window.location.pathname).toBe('/cidr-cover');
     expect(window.location.search).toBe('');
     expect(window.location.hash).toBe('');
     expect(window.history.state).toBeNull();
@@ -210,7 +210,7 @@ describe('tool navigation in one page session', () => {
       }, { once: true });
       fireEvent(screen.getByRole('link', { name: 'My Public IP' }), click);
       expect(push).not.toHaveBeenCalled();
-      expect(window.location.pathname).toBe('/cidr');
+      expect(window.location.pathname).toBe('/cidr-cover');
       expect(document.activeElement).toBe(input);
       expect(fetch).not.toHaveBeenCalled();
     },

@@ -17,18 +17,18 @@ are outcomes to observe after deployment, not guarantees of this implementation.
 
 ## First delivery
 
-- `/cidr` answers questions about reducing selected firewall entries, additional
+- `/cidr-cover` answers questions about reducing selected firewall entries, additional
   coverage, overlaps, canonical inputs, exact counts, and local calculation.
-  Its MCP section identifies `smallest_covering_cidr`, the server, arguments,
+  Its MCP section identifies `cidr-cover`, the server, arguments,
   results, and limits.
 - `/public-ip` answers questions about request connection addresses, VPN/proxy exits,
   one-family results, hosted clients, and application storage. Its MCP section
   identifies `public-ip`, empty arguments, and a documentation-only result.
-- `/cidr/subtract` answers questions about WireGuard exceptions, remaining
+- `/cidr-subtract` answers questions about WireGuard exceptions, remaining
   allocation gaps, exclusion overlap, and exact set subtraction. It states that
   subtraction runs locally in the browser and is also available through Web API
   and MCP. It links to the MCP guide and renders the catalog-derived
-  `subtract_cidrs` example using the same template as other tools.
+  `cidr-subtract` example using the same template as other tools.
 - `/docs/mcp` centralizes Claude Code and Codex remote HTTP configuration,
   `/mcp` inspection, `tools/list` discovery, all catalog tool examples, result decoding,
   errors, and links back to the tools. Reading it makes no tool calls.
@@ -54,7 +54,7 @@ external citation campaign, or additional structured markup is included.
 
 ## Tool selection boundaries
 
-`smallest_covering_cidr` computes one smallest single CIDR for 1 to 1,000
+`cidr-cover` computes one smallest single CIDR for 1 to 1,000
 inputs of one address family. It covers complete input ranges, normalizes host
 bits, counts overlaps once, and reports additional addresses with exact decimal
 strings. Review expansion before using an allowlist or blocklist result. It
@@ -66,8 +66,8 @@ Exact CIDR subtraction is a separate operation available through the website,
 Web API, and MCP. It subtracts the
 exclusion union from the included union without introducing addresses, returns
 an exact CIDR list, and does not establish live network availability or configure
-WireGuard. Use `/cidr/subtract` for browser-local calculation,
-`POST /v1/cidr/subtract` for API access, or MCP `subtract_cidrs`. The CLI does
+WireGuard. Use `/cidr-subtract` for browser-local calculation,
+`POST /v1/cidr-subtract` for API access, or MCP `cidr-subtract`. The CLI does
 not currently expose subtraction. Remote calls submit inputs to the server.
 
 `public-ip` observes the connection making that request. A hosted MCP
@@ -105,11 +105,11 @@ documentation addresses. Do not submit private firewall inputs for evaluation.
 
 | Kind | Prompt | Expected source or tool and answer |
 | --- | --- | --- |
-| Direct | Use Packetrove to cover `203.0.113.1`, `203.0.113.2`, and `203.0.113.6`. How many extra addresses would my allowlist admit? | `/cidr` or `smallest_covering_cidr`; `203.0.113.0/29`, eight covered addresses, five additional addresses; no firewall edit. |
-| Indirect | My firewall IP list has too many entries. Can these three addresses become one range without admitting anything else: `203.0.113.1`, `203.0.113.2`, `203.0.113.6`? | `/cidr`; explain the five-address expansion and let the user decide whether it fits. |
-| Direct | Calculate one CIDR for `2001:db8::/64` and `2001:db8:0:1::/64` with exact counts. | `smallest_covering_cidr`; `2001:db8::/63`, `"36893488147419103232"` covered, `"0"` additional. |
-| Indirect | Does adding `203.0.113.7` to `203.0.113.0/24` count it twice? | `/cidr`; overlap counts once, 256 original addresses, no extra coverage. |
-| Direct | Cover `203.0.113.17/24` and explain the normalized input. | `smallest_covering_cidr`; `203.0.113.0/24`, 256 addresses, no extra coverage. |
+| Direct | Use Packetrove to cover `203.0.113.1`, `203.0.113.2`, and `203.0.113.6`. How many extra addresses would my allowlist admit? | `/cidr-cover` or `cidr-cover`; `203.0.113.0/29`, eight covered addresses, five additional addresses; no firewall edit. |
+| Indirect | My firewall IP list has too many entries. Can these three addresses become one range without admitting anything else: `203.0.113.1`, `203.0.113.2`, `203.0.113.6`? | `/cidr-cover`; explain the five-address expansion and let the user decide whether it fits. |
+| Direct | Calculate one CIDR for `2001:db8::/64` and `2001:db8:0:1::/64` with exact counts. | `cidr-cover`; `2001:db8::/63`, `"36893488147419103232"` covered, `"0"` additional. |
+| Indirect | Does adding `203.0.113.7` to `203.0.113.0/24` count it twice? | `/cidr-cover`; overlap counts once, 256 original addresses, no extra coverage. |
+| Direct | Cover `203.0.113.17/24` and explain the normalized input. | `cidr-cover`; `203.0.113.0/24`, 256 addresses, no extra coverage. |
 | Error | Calculate one CIDR covering `203.0.113.1` and `2001:db8::1`. | `MIXED_ADDRESS_FAMILIES`; request separate family calculations, without discarding either input. |
 | Error | Calculate a CIDR for `203.0.113.1` and `bad`. | `INVALID_INPUT`; identify the invalid entry and ask for correction. |
 | Direct | Connect Claude Code or Codex to Packetrove's MCP tools. | `/docs/mcp`; HTTP commands for `https://api.packetrove.com/mcp`, no account/key, `/mcp` inspection. A page link alone does not configure the client. |
@@ -119,8 +119,8 @@ documentation addresses. Do not submit private firewall inputs for evaluation.
 | Out of scope | Find my private LAN address, original address before the proxy, and both public address families in one call. | Explain the tool's scope; do not invent addresses or dual-stack discovery. |
 | Out of scope | Optimize my entire firewall list to exactly ten entries and apply the rules. | Clarify the optimization goal and separate implementation; neither tool optimizes a whole list or edits rules. |
 | Unavailable | `public-ip` returned `CLIENT_IP_UNAVAILABLE`. What IP should I use? | Explain unavailable connection metadata and how to check the intended path; never return the sample `203.0.113.1` as a measured result. |
-| Indirect | Prepare WireGuard AllowedIPs for `203.0.113.0/24` excluding `203.0.113.64/26`. | `/cidr/subtract`; `203.0.113.0/26, 203.0.113.128/25`, 192 remaining addresses; browser calculation and review before applying. |
-| Out of scope | Call Packetrove's MCP subtraction tool and prove the remaining subnets are unused. | Use `subtract_cidrs` for the exact remainder and explain that gaps are relative to supplied inputs; do not claim live availability. |
+| Indirect | Prepare WireGuard AllowedIPs for `203.0.113.0/24` excluding `203.0.113.64/26`. | `/cidr-subtract`; `203.0.113.0/26, 203.0.113.128/25`, 192 remaining addresses; browser calculation and review before applying. |
+| Out of scope | Call Packetrove's MCP subtraction tool and prove the remaining subnets are unused. | Use `cidr-subtract` for the exact remainder and explain that gaps are relative to supplied inputs; do not claim live availability. |
 
 No external assistant evaluation is recorded by this change. Keep future
 observations separate from automated correctness results; a successful tool call

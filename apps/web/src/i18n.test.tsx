@@ -37,7 +37,7 @@ describe('web internationalization', () => {
     vi.stubGlobal('fetch', fetch);
     render(<App />);
     expect(screen.getByRole('heading', { level: 1, name: '面向用户与智能体的网络工具' })).toBeDefined();
-    expect(screen.getByRole('link', { name: '最小覆盖 CIDR' }).getAttribute('href')).toBe('/zh/cidr');
+    expect(screen.getByRole('link', { name: '最小覆盖 CIDR' }).getAttribute('href')).toBe('/zh/cidr-cover');
     expect(screen.getByRole('link', { name: '我的公网 IP' }).getAttribute('href')).toBe('/zh/public-ip');
     expect(screen.getByRole('link', { name: '阅读 API 指南' }).getAttribute('href')).toBe('/zh/docs/api');
     expect(within(screen.getByRole('banner')).queryByRole('link', { name: 'API 文档' })).toBeNull();
@@ -59,8 +59,8 @@ describe('web internationalization', () => {
   });
 
   it.each([
-    { path: '/cidr?source=example#tool', button: 'Language: English', current: 'English' },
-    { path: '/zh/cidr?source=example#tool', button: '语言: 中文', current: '中文' },
+    { path: '/cidr-cover?source=example#tool', button: 'Language: English', current: 'English' },
+    { path: '/zh/cidr-cover?source=example#tool', button: '语言: 中文', current: '中文' },
   ])('shows the current language and accessible, local flag icons at $path', ({ path, button, current }) => {
     window.history.replaceState({}, '', path);
     render(<App />);
@@ -75,10 +75,10 @@ describe('web internationalization', () => {
     const english = within(dropdown).getByRole('menuitem', { name: 'English' });
     const chinese = within(dropdown).getByRole('menuitem', { name: '中文' });
     expect(english.tagName).toBe('A');
-    expect(english.getAttribute('href')).toBe('/cidr?source=example#tool');
+    expect(english.getAttribute('href')).toBe('/cidr-cover?source=example#tool');
     expect(english.getAttribute('lang')).toBe('en');
     expect(english.getAttribute('hreflang')).toBe('en');
-    expect(chinese.getAttribute('href')).toBe('/zh/cidr?source=example#tool');
+    expect(chinese.getAttribute('href')).toBe('/zh/cidr-cover?source=example#tool');
     expect(chinese.getAttribute('lang')).toBe('zh-Hans');
     expect(chinese.getAttribute('hreflang')).toBe('zh-Hans');
     for (const item of [english, chinese]) {
@@ -111,7 +111,7 @@ describe('web internationalization', () => {
   });
 
   it.each(['ctrlKey', 'metaKey', 'shiftKey', 'altKey'])('preserves native link behavior for %s language clicks', modifier => {
-    window.history.replaceState({}, '', '/cidr?source=example#tool');
+    window.history.replaceState({}, '', '/cidr-cover?source=example#tool');
     render(<App />);
     openLanguageMenu();
     const link = screen.getByRole('menuitem', { name: '中文' });
@@ -122,27 +122,27 @@ describe('web internationalization', () => {
     }, { once: true });
     fireEvent.click(link, { [modifier]: true });
     expect(preventedByApp).toBe(false);
-    expect(window.location.pathname).toBe('/cidr');
-    expect(link.getAttribute('href')).toBe('/zh/cidr?source=example#tool');
+    expect(window.location.pathname).toBe('/cidr-cover');
+    expect(link.getAttribute('href')).toBe('/zh/cidr-cover?source=example#tool');
     expect(screen.getByRole('heading', { level: 1, name: 'Smallest Covering CIDR' })).toBeDefined();
   });
 
   it('preserves drafts, exact IPv6 counts, query strings, and fragments through language and page changes', () => {
-    window.history.replaceState({}, '', '/cidr?source=example#tool');
+    window.history.replaceState({}, '', '/cidr-cover?source=example#tool');
     const fetch = vi.fn();
     vi.stubGlobal('fetch', fetch);
     const storage = vi.spyOn(Storage.prototype, 'setItem');
     render(<App />);
     calculate('::/0');
     chooseLanguage('中文');
-    expect(window.location.pathname).toBe('/zh/cidr');
+    expect(window.location.pathname).toBe('/zh/cidr-cover');
     expect(window.location.search).toBe('?source=example');
     expect(window.location.hash).toBe('#tool');
     expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('::/0');
     expect(screen.getAllByText('340,282,366,920,938,463,463,374,607,431,768,211,456')).toHaveLength(2);
     expect(screen.getByText('精确覆盖：此 CIDR 没有增加额外地址。')).toBeDefined();
     expect(document.title).toBe('最小覆盖 CIDR 计算器 — Packetrove');
-    expect(document.head.querySelector('meta[property="og:url"]')?.getAttribute('content')).toBe('https://packetrove.com/zh/cidr');
+    expect(document.head.querySelector('meta[property="og:url"]')?.getAttribute('content')).toBe('https://packetrove.com/zh/cidr-cover');
     fireEvent.click(screen.getByRole('link', { name: '首页' }));
     fireEvent.click(screen.getByRole('link', { name: '最小覆盖 CIDR' }));
     expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('::/0');
@@ -155,7 +155,7 @@ describe('web internationalization', () => {
   });
 
   it('retranslates retained validation errors with physical input line numbers', () => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     render(<App />);
     calculate('\n203.0.113.1\n\nbad\n::/129');
     const english = screen.getByRole('alert').textContent;
@@ -174,14 +174,14 @@ describe('web internationalization', () => {
     { input: 'a'.repeat(MAX_INPUT_LENGTH + 1), message: '第 1 行：每项最多支持 64 个字符。' },
     { input: '203.0.113.1\n::1', message: '第 2 行：请使用 IPv4，与第一项保持一致。' },
   ])('explains Chinese validation: $message', ({ input, message }) => {
-    window.history.replaceState({}, '', '/zh/cidr');
+    window.history.replaceState({}, '', '/zh/cidr-cover');
     render(<App />);
     calculate(input, true);
     expect(screen.getByRole('alert').textContent).toContain(message);
   });
 
   it('retranslates clipboard success and failure without another clipboard write', async () => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     const user = userEvent.setup();
     const write = vi.spyOn(navigator.clipboard, 'writeText');
     render(<App />);
@@ -237,7 +237,7 @@ describe('web internationalization', () => {
   });
 
   it('handles history language changes and unknown Chinese pages without losing a draft', () => {
-    window.history.replaceState({}, '', '/cidr');
+    window.history.replaceState({}, '', '/cidr-cover');
     render(<App />);
     calculate('203.0.113.1');
     act(() => {

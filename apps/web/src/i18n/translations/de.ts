@@ -229,7 +229,7 @@ export const de = {
     deploymentTitle: "Bereitstellung und Verbindungsgrenzen",
     serverBehavior: "Der Server unterstützt moderne zustandslose Anfragen sowie Initialisierung, Erkennung und Aufrufe über älteres Streamable HTTP. Er bietet keine dauerhaften Sitzungen oder eigenständigen Server-Ereignisströme.",
     connectionPrivacy: "Die öffentliche IP wird für jede Werkzeuganfrage aus den Verbindungsmetadaten gelesen. Gleichzeitige Clients verwenden getrennte Serverinstanzen. MCP-Ergebnisse und Fehler nutzen Cache-Control: no-store, no-transform. Die Anwendung speichert oder protokolliert keine abgefragten Adressen.",
-    toolMigration: "Der frühere Werkzeugname <code>get_public_ip</code> hat keinen Kompatibilitätsalias. Aktualisiere die Werkzeugerkennung und verwende <code>{{ipTool}}</code> in gespeicherten Aufrufen.",
+    toolMigration: "Frühere Werkzeugnamen haben keine Kompatibilitätsaliase: {{toolRenames}}. Aktualisiere die Werkzeugerkennung und gespeicherte Aufrufe.",
     endpointMigration: "Der Website-Pfad <code>/mcp</code> ist kein Dienstendpunkt: GET liefert 404 und POST 405, ohne Werkzeugaufrufe weiterzuleiten. Konfiguriere Clients mit <code>{{serverUrl}}</code>. Passe bei eigener Bereitstellung Domains sowie die getrennten exakten Host- und Browser-Origin-Freigaben an. Clients ohne Origin-Header werden unterstützt.",
     deploymentGuide: "Bereitstellung, Selbsthosting und Produktionsprüfung",
     title: "Packetrove mit einem KI-Agenten verbinden",

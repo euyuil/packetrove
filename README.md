@@ -12,8 +12,8 @@ website for a quick calculation, the API or CLI for scripts, or connect AI agent
 through Model Context Protocol (MCP).
 
 **[Website](https://packetrove.com) ·
-[CIDR calculator](https://packetrove.com/cidr) ·
-[CIDR subtraction](https://packetrove.com/cidr/subtract) ·
+[CIDR calculator](https://packetrove.com/cidr-cover) ·
+[CIDR subtraction](https://packetrove.com/cidr-subtract) ·
 [My Public IP](https://packetrove.com/public-ip)**
 
 ## What you can do
@@ -35,10 +35,10 @@ own inputs. Gallery previews use documentation addresses and make no live lookup
 
 ## Quick start
 
-Open the [CIDR calculator](https://packetrove.com/cidr), or call the API:
+Open the [CIDR calculator](https://packetrove.com/cidr-cover), or call the API:
 
 ```sh
-curl https://api.packetrove.com/v1/cidr/cover \
+curl https://api.packetrove.com/v1/cidr-cover \
   -H 'Content-Type: application/json' \
   -d '{"inputs":["203.0.113.1","203.0.113.2","203.0.113.6"]}'
 ```
@@ -56,6 +56,9 @@ API address counts are decimal strings to preserve exact IPv6 values.
 | Command-line interface (CLI) | `npm install --global @packetrove/cli` · [CLI guide](docs/integrations/cli.md) |
 | Model Context Protocol (MCP) | [Connection guide](https://packetrove.com/docs/mcp) · [Technical guide](docs/integrations/mcp.md) |
 | Agent skill | [Covering-CIDR skill setup](docs/integrations/skill.md) |
+
+Tools share flat public names across interfaces. For changes to existing calls
+and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-flat-names).
 
 ## Privacy and scope
 

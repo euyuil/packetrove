@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema } from '@packetrove/contracts';
+import { cliTools, tools, CIDR_COVER_EXAMPLES, CidrCoverResultSchema, ErrorResponseSchema } from '@packetrove/contracts';
 import { smallestCoveringCidr } from '@packetrove/core';
 
 const bundle = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
@@ -17,15 +17,21 @@ function run(args: string[], input = '') {
 }
 
 describe('bundled offline CLI', () => {
+  it.each(tools.flatMap(tool => [...tool.removedInterfaces.cliCommands]))('rejects removed CLI command %s with a structured error', command => {
+    const execution = run([...command.split(' '), '203.0.113.1', '--json']);
+    expect(execution.status).toBe(1);
+    expect(execution.stdout).toBe('');
+    expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error.code).toBe('INVALID_INPUT');
+  });
   it.each(CIDR_COVER_EXAMPLES)('prints the shared JSON result for $name', ({ request, result }) => {
-    const execution = run(['cidr', 'cover', ...request.inputs, '--json']);
+    const execution = run(['cidr-cover', ...request.inputs, '--json']);
     expect(execution.status).toBe(0);
     expect(execution.stderr).toBe('');
     expect(CidrCoverResultSchema.parse(JSON.parse(execution.stdout))).toEqual(result);
   });
   it('preserves dotted-tail IPv6 values in the bundled shared calculation', () => {
     const inputs = ['::192.0.2.1', '::c000:201'];
-    const execution = run(['cidr', 'cover', ...inputs, '--json']);
+    const execution = run(['cidr-cover', ...inputs, '--json']);
     expect(execution.status).toBe(0);
     expect(execution.stderr).toBe('');
     const result = CidrCoverResultSchema.parse(JSON.parse(execution.stdout));
@@ -34,17 +40,17 @@ describe('bundled offline CLI', () => {
     expect(result.inputAddressCount).toBe('1');
   });
   it('combines positional inputs and nonblank stdin lines in order', () => {
-    const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin', '--json'], '\r\n 203.0.113.2 \r\n\r\n203.0.113.6\n');
+    const execution = run(['cidr-cover', '203.0.113.1', '--stdin', '--json'], '\r\n 203.0.113.2 \r\n\r\n203.0.113.6\n');
     expect(execution.status).toBe(0);
     expect(JSON.parse(execution.stdout)).toEqual(CIDR_COVER_EXAMPLES[1]!.result);
   });
   it('accepts stdin without positional addresses', () => {
-    const execution = run(['cidr', 'cover', '--stdin', '--json'], '203.0.113.99/24\n');
+    const execution = run(['cidr-cover', '--stdin', '--json'], '203.0.113.99/24\n');
     expect(execution.status).toBe(0);
     expect(JSON.parse(execution.stdout).normalizedInputs).toEqual(['203.0.113.0/24']);
   });
   it('prints exact counts and the expansion consequence in human-readable output', () => {
-    const execution = run(['cidr', 'cover', '203.0.113.1', '203.0.113.2']);
+    const execution = run(['cidr-cover', '203.0.113.1', '203.0.113.2']);
     expect(execution.status).toBe(0);
     expect(execution.stdout).toContain('CIDR: 203.0.113.0/30');
     expect(execution.stdout).toContain('Additional addresses: 2');
@@ -52,11 +58,11 @@ describe('bundled offline CLI', () => {
     expect(execution.stderr).toBe('');
   });
   it.each([
-    { args: ['cidr', 'cover', '203.0.113.1', '::1', '--json'], code: 'MIXED_ADDRESS_FAMILIES' },
-    { args: ['cidr', 'cover', 'invalid', '--json'], code: 'INVALID_INPUT' },
-    { args: ['cidr', 'cover', '--json'], code: 'INVALID_INPUT' },
+    { args: ['cidr-cover', '203.0.113.1', '::1', '--json'], code: 'MIXED_ADDRESS_FAMILIES' },
+    { args: ['cidr-cover', 'invalid', '--json'], code: 'INVALID_INPUT' },
+    { args: ['cidr-cover', '--json'], code: 'INVALID_INPUT' },
     { args: ['unknown', '--json'], code: 'INVALID_INPUT' },
-    { args: ['cidr', 'cover', '203.0.113.1', '--unknown', '--json'], code: 'INVALID_INPUT' },
+    { args: ['cidr-cover', '203.0.113.1', '--unknown', '--json'], code: 'INVALID_INPUT' },
   ])('writes $code to stderr with a nonzero status for $args', ({ args, code }) => {
     const execution = run(args);
     expect(execution.status).toBe(1);
@@ -64,12 +70,12 @@ describe('bundled offline CLI', () => {
     expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error.code).toBe(code);
   });
   it('reports the one-based input number in readable errors', () => {
-    const execution = run(['cidr', 'cover', '203.0.113.1', 'invalid']);
+    const execution = run(['cidr-cover', '203.0.113.1', 'invalid']);
     expect(execution.status).toBe(1);
     expect(execution.stderr).toContain('Input 2:');
   });
   it('returns every invalid entry in one machine-readable error with a failure status', () => {
-    const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin', '--json'], '\n bad\n\n203.0.113.2\n::/129\n');
+    const execution = run(['cidr-cover', '203.0.113.1', '--stdin', '--json'], '\n bad\n\n203.0.113.2\n::/129\n');
     expect(execution.status).toBe(1);
     expect(execution.stdout).toBe('');
     const response = ErrorResponseSchema.parse(JSON.parse(execution.stderr));
@@ -78,19 +84,19 @@ describe('bundled offline CLI', () => {
     expect(response.error.issues?.every(issue => issue.message.length > 0)).toBe(true);
   });
   it('reports all one-based input numbers in readable errors', () => {
-    const execution = run(['cidr', 'cover', '203.0.113.1', 'bad', '203.0.113.2', '::/129']);
+    const execution = run(['cidr-cover', '203.0.113.1', 'bad', '203.0.113.2', '::/129']);
     expect(execution.status).toBe(1);
     expect(execution.stdout).toBe('');
     expect(execution.stderr.match(/^Input \d+:/gm)).toEqual(['Input 2:', 'Input 4:']);
   });
   it('rejects too many piped entries instead of silently truncating them', () => {
-    const execution = run(['cidr', 'cover', '--stdin', '--json'], '203.0.113.1\n'.repeat(1_001));
+    const execution = run(['cidr-cover', '--stdin', '--json'], '203.0.113.1\n'.repeat(1_001));
     expect(execution.status).toBe(1);
     expect(execution.stdout).toBe('');
     expect(JSON.parse(execution.stderr).error.code).toBe('INVALID_INPUT');
   });
   it('returns every piped length issue after positional inputs without echoing truncated values', () => {
-    const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin', '--json'],
+    const execution = run(['cidr-cover', '203.0.113.1', '--stdin', '--json'],
       ' \r\n' + 'x'.repeat(65) + '\r\n203.0.113.2\n203.0.113.6' + ' '.repeat(100) + 'x');
     expect(execution.status).toBe(1);
     expect(execution.stdout).toBe('');
@@ -100,7 +106,7 @@ describe('bundled offline CLI', () => {
     expect(response.error.issues?.every(issue => Object.keys(issue).sort().join(',') === 'index,message')).toBe(true);
   });
   it('reports the one-based input number for a piped overlong entry in readable errors', () => {
-    const execution = run(['cidr', 'cover', '203.0.113.1', '--stdin'], 'x'.repeat(65));
+    const execution = run(['cidr-cover', '203.0.113.1', '--stdin'], 'x'.repeat(65));
     expect(execution.status).toBe(1);
     expect(execution.stdout).toBe('');
     expect(execution.stderr).toMatch(/^INVALID_INPUT:/);
@@ -110,9 +116,11 @@ describe('bundled offline CLI', () => {
   it('shows usage without needing inputs', () => {
     const execution = run(['--help']);
     expect(execution.status).toBe(0);
-    expect(execution.stdout).toContain('packetrove cidr cover');
-    expect(execution.stdout).toContain('packetrove public-ip');
-    expect(execution.stdout).not.toContain('packetrove ip');
+    for (const tool of cliTools) expect(execution.stdout).toContain('packetrove ' + tool.cli.command);
+    for (const tool of tools) {
+      if (!tool.cli) expect(execution.stdout).not.toContain('packetrove ' + tool.id);
+      for (const previous of tool.removedInterfaces.cliCommands) expect(execution.stdout).not.toContain('packetrove ' + previous);
+    }
     expect(execution.stderr).toBe('');
   });
   it('runs from outside the workspace without installed dependencies or network access', () => {
@@ -120,7 +128,7 @@ describe('bundled offline CLI', () => {
     try {
       const executable = join(directory, 'cli.mjs');
       copyFileSync(bundle, executable);
-      const execution = spawnSync(process.execPath, [executable, 'cidr', 'cover', '::/0', '--json'], {
+      const execution = spawnSync(process.execPath, [executable, 'cidr-cover', '::/0', '--json'], {
         cwd: directory, encoding: 'utf8', timeout: 10_000,
         env: { ...process.env, HTTP_PROXY: 'http://127.0.0.1:1', HTTPS_PROXY: 'http://127.0.0.1:1' },
       });

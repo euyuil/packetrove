@@ -229,7 +229,7 @@ export const ja = {
     deploymentTitle: "デプロイと接続の制限",
     serverBehavior: "サーバーは新しいステートレス要求と、従来の Streamable HTTP の初期化、検出、呼び出しに対応します。永続セッションや独立したサーバーイベントストリームは提供しません。",
     connectionPrivacy: "公開 IP の接続情報は呼び出しごとに読み取られ、同時接続するクライアントのサーバーインスタンスは分離されます。MCP の結果とエラーは Cache-Control: no-store, no-transform を使用します。アプリは照会アドレスを保存・記録しません。",
-    toolMigration: "旧ツール名 <code>get_public_ip</code> に互換エイリアスはありません。ツール検出を更新し、保存済みの呼び出しでは <code>{{ipTool}}</code> を使ってください。",
+    toolMigration: "旧ツール名に互換エイリアスはありません：{{toolRenames}}。ツール検出と保存済みの呼び出しを更新してください。",
     endpointMigration: "ウェブサイトの <code>/mcp</code> はサービスではなく、GET は 404、POST は 405 を返し、呼び出しを転送しません。クライアントには <code>{{serverUrl}}</code> を設定してください。独自デプロイではドメインと、Host およびブラウザー Origin の個別の完全一致許可リストを更新します。Origin ヘッダーのないクライアントも対応します。",
     deploymentGuide: "デプロイ、セルフホスティング、本番確認",
     title: "Packetrove を AI エージェントに接続する",

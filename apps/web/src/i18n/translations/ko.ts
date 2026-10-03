@@ -213,7 +213,7 @@ export const ko = {
     deploymentTitle: "배포 및 연결 제한",
     serverBehavior: "서버는 최신 무상태 요청과 기존 Streamable HTTP의 초기화, 검색, 호출을 지원합니다. 영구 세션이나 독립적인 서버 이벤트 스트림은 제공하지 않습니다.",
     connectionPrivacy: "공인 IP 연결 정보는 도구 호출마다 읽으며 동시 클라이언트의 서버 인스턴스는 격리됩니다. MCP 결과와 오류는 Cache-Control: no-store, no-transform을 사용합니다. 애플리케이션은 조회 주소를 저장하거나 기록하지 않습니다.",
-    toolMigration: "기존 도구 이름 <code>get_public_ip</code>에는 호환 별칭이 없습니다. 도구 검색을 새로 하고 저장된 호출에는 <code>{{ipTool}}</code>를 사용하세요.",
+    toolMigration: "기존 도구 이름에는 호환 별칭이 없습니다: {{toolRenames}}. 도구 검색과 저장된 호출을 업데이트하세요.",
     endpointMigration: "웹사이트의 <code>/mcp</code>는 서비스가 아닙니다. GET은 404, POST는 405를 반환하며 도구 호출을 프록시하거나 리디렉션하지 않습니다. 클라이언트에 <code>{{serverUrl}}</code>을 설정하세요. 직접 배포할 때는 도메인과 별도의 정확한 Host 및 브라우저 Origin 허용 목록을 갱신하세요. Origin 헤더가 없는 클라이언트도 지원합니다.",
     deploymentGuide: "배포, 자체 호스팅 및 운영 검증",
     title: 'Packetrove를 AI 에이전트에 연결하기',

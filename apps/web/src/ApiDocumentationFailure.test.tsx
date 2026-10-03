@@ -14,7 +14,7 @@ function deferred<Value>() {
 
 beforeEach(() => {
   vi.resetModules();
-  window.history.replaceState(null, '', '/cidr');
+  window.history.replaceState(null, '', '/cidr-cover');
 });
 afterEach(() => {
   cleanup();
@@ -61,7 +61,7 @@ async function failDocumentation(documentation: ReturnType<typeof deferred<Docum
 
 function returnToCalculator() {
   fireEvent.click(screen.getByRole('link', { name: 'Return to the calculator' }));
-  expect(window.location.pathname).toBe('/cidr');
+  expect(window.location.pathname).toBe('/cidr-cover');
 }
 
 describe('API documentation failure isolation', () => {
@@ -127,7 +127,7 @@ describe('API documentation failure isolation', () => {
     await waitFor(() => expect(window.location.pathname).toBe('/'));
     expect(screen.getByRole('heading', { name: 'Network tools for humans and agents' })).toBeDefined();
     act(() => { window.history.back(); });
-    await waitFor(() => expect(window.location.pathname).toBe('/cidr'));
+    await waitFor(() => expect(window.location.pathname).toBe('/cidr-cover'));
     expect((screen.getByLabelText('IP addresses or CIDR ranges') as HTMLTextAreaElement).value).toBe('203.0.113.1');
     await waitFor(() => expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2));
     act(() => { window.history.forward(); });
@@ -153,7 +153,7 @@ describe('API documentation failure isolation', () => {
     expect(screen.getByRole('heading', { name: 'API 文档暂时无法显示' })).toBeDefined();
     expect(screen.getByRole('navigation', { name: '主导航' })).toBeDefined();
     const calculator = screen.getByRole('link', { name: '返回计算器' });
-    expect(calculator.getAttribute('href')).toBe('/zh/cidr');
+    expect(calculator.getAttribute('href')).toBe('/zh/cidr-cover');
     fireEvent.click(calculator);
     expect((screen.getByLabelText('IP 地址或 CIDR 网段') as HTMLTextAreaElement).value).toBe('203.0.113.1');
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
