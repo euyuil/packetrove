@@ -33,7 +33,7 @@ export function createMcpGuideMarkdown(productVersion?: string) {
       `### ${guide.labels.exampleResult}`, code('json', JSON.stringify(tool.example.result, null, 2)),
       `### ${guide.labels.resourceLink}`, code('json', JSON.stringify(tool.resourceLink, null, 2)),
       tool.result, tool.boundary);
-    if (tool.expansion) parts.push(tool.expansion);
+    if (tool.exampleNote) parts.push(tool.exampleNote);
     parts.push(`[${tool.openTool}](${WEBSITE_ORIGIN}${pagePaths[tool.tool]})`);
   }
   parts.push(`## ${guide.errorsTitle}`, text(guide.results), text(guide.resultLinks), text(guide.errors), guide.httpErrors,

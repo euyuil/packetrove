@@ -1,71 +1,20 @@
 import { useCallback, useMemo, useRef, useState, type KeyboardEventHandler, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Badge, Box, Button, Code, Group, Paper, SimpleGrid, Stack, Text, Title, VisuallyHidden,
+  Box, Button, Group, Paper, SimpleGrid, Stack, Text, Title, VisuallyHidden,
 } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
 import { useReducedMotion } from '@mantine/hooks';
 import type { EmblaCarouselType } from 'embla-carousel';
 import { IconArrowRight } from '@tabler/icons-react';
-import { toolCatalog, type tools } from '@packetrove/contracts';
+import { toolCatalog } from '@packetrove/contracts';
 import { localizedPath } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
 import { ToolHeading } from './ToolHeading';
+import { ToolPreview } from './ToolPreview';
 
 // Curate homepage order without copying tool definitions or examples.
 export const featuredTools = [toolCatalog.cidr, toolCatalog.subtract, toolCatalog.range, toolCatalog.ip];
-type CatalogTool = (typeof tools)[number];
-
-function ToolPreview({ tool }: { tool: CatalogTool }) {
-  const { t, i18n } = useTranslation();
-  const format = (value: string) => new Intl.NumberFormat(resolveLocale(i18n.resolvedLanguage)).format(BigInt(value));
-  return <Paper withBorder p="md" bg="var(--mantine-color-gray-0)" data-tool-preview={tool.id}>
-    <Stack gap="sm">
-      <Badge size="sm" variant="outline">{t($ => $.home.previewLabel)}</Badge>
-      {tool.page === 'cidr' ? <>
-        <Text size="xs" c="dimmed">{t($ => $.home.previewInputs)}</Text>
-        <Code block>{tool.example.request.inputs.join('\n')}</Code>
-        <Text size="xs" c="dimmed">{t($ => $.cidr.resultLabel)}</Text>
-        <Text size="xl" fw={600} className="network-value">{tool.example.result.cidr}</Text>
-        <Text size="sm">{t($ => $.cidr.additional)}: {format(tool.example.result.additionalAddressCount)}</Text>
-      </> : tool.page === 'subtract' ? <>
-        <SimpleGrid cols={2} spacing="sm">
-          <Stack gap={4} miw={0}>
-            <Text size="xs" c="dimmed">{t($ => $.subtract.includeLabel)}</Text>
-            <Text size="sm" className="network-value">{tool.example.request.include.join(', ')}</Text>
-          </Stack>
-          <Stack gap={4} miw={0}>
-            <Text size="xs" c="dimmed">{t($ => $.subtract.excludeLabel)}</Text>
-            <Text size="sm" className="network-value">{tool.example.request.exclude.join(', ')}</Text>
-          </Stack>
-        </SimpleGrid>
-        <Text size="xs" c="dimmed">{t($ => $.subtract.blocks)}</Text>
-        <Code block>{tool.example.result.cidrs.join('\n')}</Code>
-        <Text size="sm">{t($ => $.subtract.remaining)}: {format(tool.example.result.remainingAddressCount)}</Text>
-      </> : tool.page === 'range' ? <>
-        <SimpleGrid cols={2} spacing="sm">
-          <Stack gap={4} miw={0}>
-            <Text size="xs" c="dimmed">{t($ => $.range.start)}</Text>
-            <Text size="sm" className="network-value">{tool.example.request.start}</Text>
-          </Stack>
-          <Stack gap={4} miw={0}>
-            <Text size="xs" c="dimmed">{t($ => $.range.end)}</Text>
-            <Text size="sm" className="network-value">{tool.example.request.end}</Text>
-          </Stack>
-        </SimpleGrid>
-        <Text size="xs" c="dimmed">{t($ => $.range.output)}</Text>
-        <Code block>{tool.example.result.cidrs.join('\n')}</Code>
-        <Text size="sm">{t($ => $.range.addresses)}: {format(tool.example.result.addressCount)}</Text>
-      </> : <>
-        <Text size="xs" c="dimmed">{t($ => $.ip.resultLabel)}</Text>
-        <Text size="xl" fw={600} className="network-value">{tool.example.result.ip}</Text>
-        <Badge variant="light">{tool.example.result.family === 'ipv4' ? 'IPv4' : 'IPv6'}</Badge>
-        <Text size="sm" c="dimmed">{t($ => $.home.ipPreview)}</Text>
-      </>}
-    </Stack>
-  </Paper>;
-}
-
 export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTMLAnchorElement> }) {
   const { t, i18n } = useTranslation();
   const locale = resolveLocale(i18n.resolvedLanguage);
@@ -135,7 +84,7 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
                   </Button>
                 </Group>
               </Stack>
-              <ToolPreview tool={tool} />
+              <ToolPreview tool={tool.page} />
             </SimpleGrid>
           </Paper>
         </Carousel.Slide>)}

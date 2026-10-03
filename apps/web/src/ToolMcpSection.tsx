@@ -34,7 +34,7 @@ export function ToolMcpSection({ tool, onNavigate, guide = false }: {
     <Code block data-mcp-example="resource-link">{JSON.stringify(content.resourceLink, null, 2)}</Code>
     <Text size="sm" c="dimmed">{content.result}</Text>
     <Text size="sm" c="dimmed">{content.boundary}</Text>
-    {content.expansion && <Text size="sm" c="dimmed">{content.expansion}</Text>}
+    {content.exampleNote && <Text size="sm" c="dimmed">{content.exampleNote}</Text>}
     <Anchor href={localizedPath(guide ? pagePaths[tool] : pagePaths.mcp, locale)} onClick={onNavigate}>
       {guide ? content.openTool : t($ => $.home.mcpGuide)}
     </Anchor>
