@@ -36,8 +36,15 @@ values, results, returned IP addresses, or request headers to this logger.
 Each registered tool callback emits one `mcp_tool_execution` event after its
 awaited execution finishes and the callback prepares a success or error result.
 The event includes the trusted catalog tool identifier, `outcome: success` or
-`outcome: error`, and a controlled `error_code` only on error. Retries count as
-separate executions. Initialization, discovery, unknown tool names, and input
+`outcome: error`, a controlled `error_code` only on error, and `traffic_source`.
+The source is `automated_check` only when the current call's dedicated token
+matches the configured Worker secret; otherwise it is `public_call`. Verified
+checks may include `automation_run_id`, restricted to a positive decimal string
+of at most 20 digits. This checks the identifier's format, not a GitHub run's
+existence. Missing or invalid credentials and identifiers must not reject calls
+or change tool results. No automation credential is required for public use.
+Missing or malformed Worker configuration leaves calls classified as public.
+Retries count as separate executions. Initialization, discovery, unknown tool names, and input
 rejections before the callback do not count. Local calculator inputs still
 reach shared-core validation and therefore count as errors when invalid.
 Cancellation after callback entry can also count as an error with
@@ -49,10 +56,14 @@ all attempted requests, successful deliveries, or a complete audit record.
 Quota exhaustion, sampling, runtime termination, and logging failures may
 omit records. Logging failure must preserve the original tool response.
 
-Application statistics must not receive or emit inputs, outputs, lookup
-addresses, arbitrary headers, exception objects, request identifiers, raw
-messages, or duration fields. Cloudflare may independently attach platform
-metadata to its complete persisted record. All localized policy pages, MCP
+Application events must not emit inputs, outputs, lookup addresses, raw request
+headers, automation tokens, exception objects, request identifiers, raw messages,
+or duration fields. The logger receives only the derived source and, for verified
+checks, the validated run identifier; it never receives the authentication token
+or complete request headers. Verification reads each call's request separately,
+without retaining initialization metadata or sharing client state. Cloudflare
+may independently attach platform metadata to its complete persisted record.
+All localized policy pages, MCP
 guide summaries, and tool discovery descriptions disclose these events in
 the same revision that enables them.
 
@@ -118,6 +129,15 @@ manifest check does not establish public availability or directory readiness.
   details in the controlled application event, including when logging fails.
 - Current and legacy MCP clients record each successful or failed callback
   once, including retries, and retain their existing results and errors.
+- Both clients classify matching tokens as automated checks and missing,
+  mismatched, or malformed tokens as public calls without changing results.
+- Run identifiers appear only for verified checks with valid identifier formats.
+- Changing headers between initialization and calls changes only that call's
+  source, and concurrent clients retain independent source and run metadata.
+- Automated smoke requests carry their credential only to the exact MCP
+  endpoint, preserve protocol headers and bodies, and never follow redirects.
+- GitHub Actions requires a correctly formatted dedicated secret before
+  production deployment. Manual smoke checks remain usable without it.
 - Deferred execution produces no completion event until it settles; concurrent
   tools, outcomes, and connections remain isolated.
 - Discovery and pre-callback rejections produce no tool execution events.

@@ -11,7 +11,7 @@ const origin = 'https://service.example';
 const commit = '0123456789abcdef0123456789abcdef01234567';
 const previousCommit = '89abcdef0123456789abcdef0123456789abcdef';
 
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
 
 function clock() {
   vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'performance'] });
@@ -143,9 +143,14 @@ async function close(server: Server) {
 
 async function smoke(target: string, apiTarget: string) {
   const script = fileURLToPath(new URL('../apps/worker/scripts/smoke.ts', import.meta.url));
+  const smokeEnvironment: NodeJS.ProcessEnv = { ...process.env, VITE_GIT_COMMIT: commit };
+  // Local manual smoke fixtures must not inherit production automation credentials.
+  delete smokeEnvironment.GITHUB_ACTIONS;
+  delete smokeEnvironment.PACKETROVE_AUTOMATION_TOKEN;
+  delete smokeEnvironment.GITHUB_RUN_ID;
   return new Promise<{ status: number | null; stdout: string; stderr: string }>((resolve, reject) => {
     const child = spawn(process.execPath, ['--import', 'tsx', script, target, apiTarget], {
-      env: { ...process.env, VITE_GIT_COMMIT: commit }, timeout: 15_000,
+      env: smokeEnvironment, timeout: 15_000,
     });
     let stdout = '';
     let stderr = '';
@@ -158,6 +163,9 @@ async function smoke(target: string, apiTarget: string) {
 
 describe('readiness followed by the production smoke check across separate origins', () => {
   it.each(['API', 'MCP'])('still fails for a functional %s error after the version is ready', async failed => {
+    vi.stubEnv('GITHUB_ACTIONS', 'true');
+    vi.stubEnv('PACKETROVE_AUTOMATION_TOKEN', 'private-test-automation-configuration');
+    vi.stubEnv('GITHUB_RUN_ID', '1234567890');
     const requested: string[] = [];
     const apiRequested: string[] = [];
     const builtPages = new Map(websitePages.map(page => [page.pathname,
