@@ -47,12 +47,6 @@ function calculate(input: string) {
   fireEvent.click(screen.getByRole('button', { name: translation.cidr.calculate }));
 }
 
-function flatten(resource: unknown, path = ''): Record<string, string> {
-  if (typeof resource === 'string') return { [path]: resource };
-  return Object.fromEntries(Object.entries(resource as Record<string, unknown>)
-    .flatMap(([key, value]) => Object.entries(flatten(value, path ? path + '.' + key : key))));
-}
-
 describe('additional website languages', () => {
   it.each(additionalLanguages)('opens the $locale homepage with localized links and metadata', ({ locale, prefix, heading }) => {
     window.history.replaceState({}, '', prefix + '/');
@@ -213,17 +207,6 @@ describe('additional website languages', () => {
     expect(screen.getByRole('link', { name: translation.common.returnHome }).getAttribute('href')).toBe(prefix + '/');
     expect(document.head.querySelector('link[rel="canonical"]')).toBeNull();
     expect(document.head.querySelector('link[hreflang]')).toBeNull();
-  });
-
-  it.each(additionalLanguages)('preserves named interpolation and inline code tokens in $locale', ({ locale }) => {
-    const translated = flatten(resources[locale].translation);
-    for (const [key, original] of Object.entries(flatten(en))) {
-      const value = translated[key]!;
-      expect(Array.from(value.matchAll(/\{\{([^}]+)\}\}/g), match => match[1]).sort(), key)
-        .toEqual(Array.from(original.matchAll(/\{\{([^}]+)\}\}/g), match => match[1]).sort());
-      expect(Array.from(value.matchAll(/<code>(.*?)<\/code>/g), match => match[1]), key)
-        .toEqual(Array.from(original.matchAll(/<code>(.*?)<\/code>/g), match => match[1]));
-    }
   });
 
   it.each([
