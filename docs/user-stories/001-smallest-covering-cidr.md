@@ -83,6 +83,12 @@ action first, with the additional-address count and coverage warning immediately
 below, followed by input/covered counts and the address range. Keep the warning
 visible without expanding a disclosure.
 
+Zero additional addresses use the exact-coverage message. For nonzero extra
+coverage, the warning explains that applying the CIDR expands the addresses
+allowed or blocked by the list, with the exact localized count shown in the
+adjacent additional-address row. The warning does not repeat or pluralize that
+count.
+
 On submission, focus a visible error summary whose issue links return to the
 input. Activating a located issue link with a mouse or keyboard selects that
 specific invalid entry, so repeated values can be corrected independently.

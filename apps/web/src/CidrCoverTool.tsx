@@ -147,8 +147,7 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
                 </Group>
                 {result.additionalAddressCount === '0'
                   ? t($ => $.cidr.exact)
-                  : t($ => result.additionalAddressCount === '1' ? $.cidr.expansionOne : $.cidr.expansionOther,
-                    { total: formatCount(result.additionalAddressCount) })}
+                  : t($ => $.cidr.expansion)}
               </Alert>
               <ToolResultCounts items={[
                 { label: t($ => $.cidr.unique), value: formatCount(result.inputAddressCount) },
