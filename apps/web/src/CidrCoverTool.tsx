@@ -29,7 +29,7 @@ const draftDefinition = { createInitialDraft: (): CidrCoverDraft => ({ input: ''
 function coveringIssueLocation(issue: InputIssue): { known: boolean; index?: number } {
   const path = inputIssuePath(issue);
   if (path === undefined || path.length === 0 || (path.length === 1 && path[0] === 'inputs')) return { known: true };
-  if (path.length === 1 && typeof path[0] === 'number') return { known: true, index: path[0] };
+  if (issue.path === undefined && path.length === 1 && typeof path[0] === 'number') return { known: true, index: path[0] };
   if (path.length === 2 && path[0] === 'inputs' && typeof path[1] === 'number') return { known: true, index: path[1] };
   return { known: false };
 }
@@ -80,7 +80,7 @@ export function CidrCoverTool({ draft, onDraftChange, onNavigate }: {
     const location = coveringIssueLocation(issue);
     if (!location.known) return { message };
     const entry = location.index === undefined ? undefined : entries[location.index];
-    return { inputId: 'addresses', message: !entry ? message
+    return { inputId: 'addresses', selection: entry && { start: entry.start, end: entry.end }, message: !entry ? message
       : t($ => entry.entriesOnLine > 1 ? $.cidr.lineEntry : $.cidr.line, {
         line: formatCount(entry.line), entry: formatCount(entry.positionInLine), message,
       }) };

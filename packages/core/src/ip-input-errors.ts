@@ -9,6 +9,8 @@ export type IpInputIssueDetail = (
 /** Validate local interpolation data before a generic error reaches an IP view. */
 export function isIpInputIssueDetail(detail: unknown): detail is IpInputIssueDetail {
   if (!detail || typeof detail !== 'object' || !('reason' in detail)) return false;
+  if ('list' in detail && detail.list !== undefined && typeof detail.list !== 'string') return false;
+  if ('field' in detail && detail.field !== undefined && typeof detail.field !== 'string') return false;
   switch (detail.reason) {
     case 'INVALID_INPUT': case 'INVALID_ADDRESS': case 'EMPTY_INPUTS': return true;
     case 'TOO_MANY_INPUTS': case 'INPUT_TOO_LONG': case 'TOO_MANY_OUTPUTS':

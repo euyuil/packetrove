@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { type InputIssue } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
 import { CidrCoverTool } from './CidrCoverTool';
@@ -22,7 +22,7 @@ function renderTool(tool: 'cover' | 'subtract' | 'range', issue: InputIssue) {
 
 describe('tool-owned input location rendering', () => {
   it.each(['cover', 'subtract', 'range'] as const)('does not invent links or affected fields for unknown %s paths', tool => {
-    for (const issue of [{ field: 'hostname', message }, { list: 'records', index: 1, message },
+    for (const issue of [{ field: 'hostname', message }, { list: 'records', index: 1, message }, { path: [0], message },
       { path: ['start', 'hostname'], field: 'start', message }]) {
       const view = renderTool(tool, issue);
       expect(within(screen.getByRole('alert')).queryByRole('link')).toBeNull();
@@ -44,6 +44,12 @@ describe('tool-owned input location rendering', () => {
     renderTool(tool, { path, field: 'hostname', list: 'records', message });
     expect(within(screen.getByRole('alert')).getByRole('link').getAttribute('href')).toBe('#' + inputId);
     expect(document.getElementById(inputId)?.getAttribute('aria-invalid')).toBe('true');
+    fireEvent.click(within(screen.getByRole('alert')).getByRole('link'));
+    expect(document.activeElement?.id).toBe(inputId);
+    const input = document.getElementById(inputId);
+    if (input instanceof HTMLTextAreaElement) {
+      expect([input.selectionStart, input.selectionEnd]).toEqual([0, input.value.length]);
+    }
     for (const input of screen.getAllByRole('textbox')) {
       if (input.id !== inputId) expect(input.getAttribute('aria-invalid')).not.toBe('true');
     }

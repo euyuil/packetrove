@@ -18,7 +18,8 @@ describe('tool-owned error details', () => {
     expect(isIpInputIssueDetail({ reason: 'EXPECTED_FAMILY', family: 'ipv6' })).toBe(true);
     for (const detail of [undefined, { reason: 'TOO_MANY_INPUTS' },
       { reason: 'TOO_MANY_INPUTS', limit: NaN }, { reason: 'TOO_MANY_INPUTS', limit: -1 },
-      { reason: 'EXPECTED_FAMILY', family: 'unknown' }, { reason: 'UNSUPPORTED_HOSTNAME' }]) {
+      { reason: 'EXPECTED_FAMILY', family: 'unknown' }, { reason: 'UNSUPPORTED_HOSTNAME' },
+      { reason: 'INVALID_INPUT', list: 42 }, { reason: 'INVALID_INPUT', field: null }]) {
       expect(isIpInputIssueDetail(detail)).toBe(false);
     }
   });
