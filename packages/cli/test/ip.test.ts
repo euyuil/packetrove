@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ErrorResponseSchema, PublicIpResultSchema } from '@packetrove/contracts';
+import { MAX_PUBLIC_IP_RESPONSE_BYTES } from '@packetrove/core';
 
 const bundle = fileURLToPath(new URL('../dist/cli.js', import.meta.url));
 
@@ -80,6 +81,22 @@ describe('bundled public IP CLI', () => {
       expect(execution.status).toBe(1);
       expect(execution.stdout).toBe('');
       expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error.code).toBe(code);
+    });
+  });
+
+  it.each([200, 503])('rejects an oversized streaming HTTP %s response before it ends', async status => {
+    await withApi((_request, response) => {
+      response.writeHead(status, { 'content-type': 'application/json' });
+      response.write(' '.repeat(MAX_PUBLIC_IP_RESPONSE_BYTES));
+      response.write('x');
+      // No content-length or EOF: the CLI must enforce its limit while reading.
+    }, async origin => {
+      const execution = await run(['public-ip', '--api-origin', origin, '--json']);
+      expect(execution.status).toBe(1);
+      expect(execution.stdout).toBe('');
+      expect(ErrorResponseSchema.parse(JSON.parse(execution.stderr)).error).toEqual({
+        code: 'INVALID_RESPONSE', message: 'The IP lookup service returned an invalid response. Please try again.',
+      });
     });
   });
 

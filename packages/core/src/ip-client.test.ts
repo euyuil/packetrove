@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { lookupPublicIp } from './index';
+import { lookupPublicIp, MAX_PUBLIC_IP_RESPONSE_BYTES } from './index';
 
 const apiModes: Array<{ name: string; missing: Array<'any' | 'timeout'> }> = [
   { name: 'native helpers available', missing: [] },
@@ -47,6 +47,52 @@ describe('shared public IP HTTP client', () => {
       error: { code: 'CLIENT_IP_UNAVAILABLE', message: 'Connection metadata is unavailable.' },
     }, { status: 503 }));
     await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'CLIENT_IP_UNAVAILABLE' });
+  });
+  it.each([undefined, '1'])('accepts valid JSON exactly at the actual byte limit (content-length: %s)', async length => {
+    const result = { ip: '203.0.113.1', family: 'ipv4' };
+    const json = JSON.stringify(result);
+    vi.stubGlobal('fetch', async () => new Response(json + ' '.repeat(MAX_PUBLIC_IP_RESPONSE_BYTES - json.length), {
+      ...(length === undefined ? {} : { headers: { 'content-length': length } }),
+    }));
+    expect(await lookupPublicIp('/v1/public-ip')).toEqual(result);
+  });
+  it.each([200, 503])('cancels an oversized HTTP %s body before EOF and reports INVALID_RESPONSE', async status => {
+    let pulls = 0;
+    const cancel = vi.fn();
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulls++;
+        controller.enqueue(new Uint8Array(pulls === 1 ? MAX_PUBLIC_IP_RESPONSE_BYTES : 1));
+      },
+      cancel,
+    }, { highWaterMark: 0 });
+    vi.stubGlobal('fetch', async () => new Response(stream, { status, headers: { 'content-length': '1' } }));
+    await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({
+      code: 'INVALID_RESPONSE', message: 'The IP lookup service returned an invalid response. Please try again.',
+    });
+    expect(pulls).toBe(2);
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(stream.locked).toBe(false);
+  });
+  it('rejects previously valid oversized JSON instead of accepting its service error code', async () => {
+    const json = JSON.stringify({ error: { code: 'CLIENT_IP_UNAVAILABLE', message: '€'.repeat(MAX_PUBLIC_IP_RESPONSE_BYTES / 2) } });
+    expect(json.length).toBeLessThan(MAX_PUBLIC_IP_RESPONSE_BYTES);
+    vi.stubGlobal('fetch', async () => new Response(json, { status: 503 }));
+    await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'INVALID_RESPONSE' });
+  });
+  it('preserves replacement decoding and split multibyte text in a structured service error', async () => {
+    const before = new TextEncoder().encode('{"error":{"code":"CLIENT_IP_UNAVAILABLE","message":"');
+    const after = new TextEncoder().encode('"}}');
+    vi.stubGlobal('fetch', async () => new Response(new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(before);
+        controller.enqueue(Uint8Array.of(0xff, 0xe2));
+        controller.enqueue(Uint8Array.of(0x82, 0xac));
+        controller.enqueue(after);
+        controller.close();
+      },
+    }), { status: 503 }));
+    await expect(lookupPublicIp('/v1/public-ip')).rejects.toMatchObject({ code: 'CLIENT_IP_UNAVAILABLE', message: '�€' });
   });
   it.each([
     Response.json({ ip: '2001:db8::1', family: 'ipv4' }),
@@ -136,18 +182,19 @@ describe.each(apiModes)('IP request cancellation with $name', ({ missing }) => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
-  it.each(['success', 'network failure', 'invalid JSON'])('releases the timeout and caller listener after %s', async outcome => {
+  it.each(['success', 'network failure', 'invalid JSON', 'oversized body'])('releases the timeout and caller listener after %s', async outcome => {
     const caller = new AbortController();
     let request!: AbortSignal;
     const removeListener = vi.spyOn(caller.signal, 'removeEventListener');
     vi.stubGlobal('fetch', async (_endpoint: string | URL, options: RequestInit) => {
       request = options.signal!;
       if (outcome === 'network failure') throw new Error('private network detail');
+      if (outcome === 'oversized body') return new Response(' '.repeat(MAX_PUBLIC_IP_RESPONSE_BYTES + 1));
       return outcome === 'invalid JSON' ? new Response('{') : Response.json({ ip: '203.0.113.1', family: 'ipv4' });
     });
     const pending = lookupPublicIp('/v1/public-ip', caller.signal);
     if (outcome === 'success') await expect(pending).resolves.toMatchObject({ family: 'ipv4' });
-    else await expect(pending).rejects.toMatchObject({ code: outcome === 'invalid JSON' ? 'INVALID_RESPONSE' : 'NETWORK_ERROR' });
+    else await expect(pending).rejects.toMatchObject({ code: outcome === 'network failure' ? 'NETWORK_ERROR' : 'INVALID_RESPONSE' });
     expect(removeListener).toHaveBeenCalledWith('abort', expect.any(Function));
     expect(vi.getTimerCount()).toBe(0);
     caller.abort();

@@ -5,10 +5,16 @@ import {
 } from '@packetrove/contracts';
 import { ToolError, type InputIssueDetail } from './errors';
 import { formatAddress, parseInput, unionAddressCount, type ParsedInput } from './ip-range';
+import { BodyLimitError, readBoundedText } from './bounded-text';
 
 export { ToolError, type InputIssueDetail } from './errors';
+export { BodyLimitError, readBoundedText } from './bounded-text';
 export { subtractCidrs } from './subtract';
 export { rangeToCidrs } from './range-to-cidrs';
+
+// Public IP results and service errors are small; allow formatting headroom
+// without accepting an unbounded response from a misconfigured endpoint.
+export const MAX_PUBLIC_IP_RESPONSE_BYTES = 64 * 1_024;
 
 /** Calculate a single enclosing CIDR without enumerating addresses. */
 export function smallestCoveringCidr(value: unknown): CidrCoverResult {
@@ -93,8 +99,11 @@ export async function lookupPublicIp(endpoint: string | URL, signal?: AbortSigna
       signal: request.signal,
     } as const;
     response = await fetch(endpoint, options);
-    text = await response.text();
-  } catch {
+    text = await readBoundedText(response.body, MAX_PUBLIC_IP_RESPONSE_BYTES);
+  } catch (error) {
+    if (error instanceof BodyLimitError) {
+      throw new ToolError('INVALID_RESPONSE', 'The IP lookup service returned an invalid response. Please try again.');
+    }
     throw new ToolError('NETWORK_ERROR', 'Unable to reach the IP lookup service. Check your connection and try again.');
   } finally {
     clearTimeout(timeout);
