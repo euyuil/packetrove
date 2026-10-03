@@ -128,6 +128,7 @@ export const ptBR = {
     familyExplanation: 'Uma conexão usa IPv4 ou IPv6. Esta consulta mostra esse endereço; ela não identifica as duas famílias nem seu endereço local privado. Atualize após mudar de rede ou alterar a configuração do proxy.',
   },
   api: {
+    examplesTitle: 'Resumos dos endpoints e exemplos',
     rangeSummary: "Envie start e end da mesma família. Ambos os limites são inclusivos. Retorna limites canônicos, lista CIDR mínima exata, número de CIDRs e total de endereços como string decimal. A solicitação envia dados ao servidor.",
     rangeResponse: "Este exemplo retorna {{cidrs}}, representando exatamente {{addresses}} endereços.",
     title: 'Documentação da API', loading: 'Carregando a documentação da API…', specification: 'Especificação OpenAPI',

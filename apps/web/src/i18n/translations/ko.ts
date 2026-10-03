@@ -127,6 +127,7 @@ export const ko = {
     familyExplanation: '한 연결은 IPv4 또는 IPv6를 사용합니다. 이 조회는 해당 연결의 주소를 표시하며 두 종류의 주소나 로컬 사설 주소를 모두 찾는 기능은 아닙니다. 네트워크나 프록시 설정을 바꾼 후에는 새로고침하세요.',
   },
   api: {
+    examplesTitle: '엔드포인트 개요 및 예제',
     rangeSummary: "같은 주소 체계의 start와 end를 제출합니다. 양 끝을 포함하며 정규화된 끝점, 최소의 정확한 CIDR 목록, CIDR 수, 십진 문자열 주소 수를 반환합니다. 이 요청은 입력을 서버로 보냅니다.",
     rangeResponse: "이 예제는 {{cidrs}}를 반환하며 정확히 {{addresses}}개 주소를 나타냅니다.",
     title: 'API 문서', loading: 'API 문서 불러오는 중…', specification: 'OpenAPI 명세',

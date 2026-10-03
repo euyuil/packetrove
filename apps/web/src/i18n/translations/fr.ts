@@ -128,6 +128,7 @@ export const fr = {
     familyExplanation: 'Une connexion utilise IPv4 ou IPv6. Cette vérification affiche cette adresse ; elle ne recherche ni les deux familles ni votre adresse locale privée. Actualisez après un changement de réseau ou de configuration du proxy.',
   },
   api: {
+    examplesTitle: 'Résumés des endpoints et exemples',
     rangeSummary: "Envoyez start et end de la même famille. Les deux bornes sont incluses. Renvoie les bornes canoniques, la liste CIDR minimale exacte, le nombre de CIDR et le nombre d’adresses en chaîne décimale. Cette requête envoie les entrées au serveur.",
     rangeResponse: "Cet exemple renvoie {{cidrs}}, représentant exactement {{addresses}} adresses.",
     title: 'Documentation de l’API', loading: 'Chargement de la documentation de l’API…', specification: 'Spécification OpenAPI',
