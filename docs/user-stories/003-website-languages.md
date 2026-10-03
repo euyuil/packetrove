@@ -60,10 +60,14 @@ network results and share a link in my preferred language.
   calculator input, IP results, or a language override.
 - Switch the current page in place, preserving calculator input, results, and
   validation errors. Retranslate stored errors and clipboard feedback.
-- Link to API documentation in the shared footer on every page, between GitHub
-  and the license in the Project section. Translate the label and use the current
-  page's locale. Same-tab navigation preserves calculator drafts, results, and
-  errors; modified clicks retain native browser behavior.
+- Group API documentation, the MCP guide, and the CLI guide in the shared footer's
+  Integrations section on every page, separately from project resources and
+  contact links. API and MCP links use the current page's locale; the CLI link
+  opens the existing repository guide at the deployed source revision and
+  identifies its English language in non-English interfaces. Same-tab website
+  navigation preserves calculator drafts, results, and errors; modified clicks
+  retain native browser behavior. Mark the current API or MCP page's footer link
+  with `aria-current="page"`.
 - After navigating to a different page in the same tab, including browser back
   and forward, focus the named main content region without drawing an outline
   around the entire region. Keep it outside the sequential tab order and preserve
@@ -109,10 +113,18 @@ their existing contracts. Further locales are future work.
 
 On narrow screens, replace the wrapped navigation button rows with a menu
 showing the current page and complete localized destination names. Its entries
-come from the shared tool catalog and retain native links and same-tab draft
+include only Home and browser tools from the shared tool catalog, with integration
+guides available in the footer. They retain native links and same-tab draft
 preservation. Escape returns focus to the menu button; selecting a different
 page focuses its main region, while reselecting the current page returns focus
 to the button.
+
+English primary-navigation labels, footer section headings, and footer destination
+names use title case. Footer actions and explanatory text use sentence case.
+Preserve acronyms and product names, and follow each other locale's writing
+conventions. Store each role's intended wording in translation resources; the
+footer's `API Documentation` label is separate from the page heading's
+`API documentation` text.
 
 Use the shared theme for readable secondary text on white cards and the page
 background. Buttons keep visible default backgrounds or borders. On narrow

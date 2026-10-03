@@ -13,7 +13,10 @@ export const it = {
     feedbackPrompt: 'Hai trovato un errore o hai un’idea? Scrivici su GitHub.', reportBug: 'Segnala un errore', requestFeature: 'Proponi una funzionalità',
     notFound: 'Pagina non trovata', notFoundDescription: 'La pagina richiesta non esiste.', returnHome: 'Torna alla pagina iniziale',
   },
-  footer: { project: 'Progetto', contact: 'Contatti e feedback', sendEmail: 'Invia un’e-mail' },
+  footer: {
+    project: 'Risorse del progetto', integrations: 'Integrazioni', contact: 'Contatti e feedback',
+    apiDocumentation: 'Documentazione API', cliGuide: 'Guida CLI (in inglese)', sendEmail: 'Invia un’e-mail',
+  },
   home: {
     rangeDescription: "Converti indirizzi IP iniziale e finale inclusivi nella lista CIDR minima esatta. Calcola localmente e copia tutti i blocchi senza aggiungere indirizzi.",
     rangeLink: "Apri convertitore di intervalli IP",

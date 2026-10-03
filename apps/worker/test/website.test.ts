@@ -31,7 +31,18 @@ describe('website in the Workers runtime', () => {
     expect(html).toContain('href="' + localizedPath('/public-ip', locale) + '"');
     expect(html).toContain('href="' + localizedPath(toolCatalog.range.webPath, locale) + '"');
     const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? '';
-    expect(navigation).toContain('href="' + localizedPath(pagePaths.mcp, locale) + '"');
+    expect(Array.from(navigation.matchAll(/href="([^"]+)"/g), match => match[1]))
+      .toEqual([pagePaths.home, ...catalogTools.map(tool => tool.webPath)].map(path => localizedPath(path, locale)));
+    const footer = /<footer\b[^>]*>([\s\S]*?)<\/footer>/.exec(html)?.[1] ?? '';
+    for (const [path, label] of [[pagePaths.api, text.footer.apiDocumentation], [pagePaths.mcp, text.mcp.navigation]] as const) {
+      expect(footer).toContain('href="' + localizedPath(path, locale) + '"');
+      expect(footer).toContain(escapeHtml(label));
+    }
+    expect(footer).toContain('/docs/integrations/cli.md');
+    expect(footer).toContain(escapeHtml(text.footer.cliGuide));
+    for (const heading of [text.footer.project, text.footer.integrations, text.footer.contact]) {
+      expect(footer).toContain(escapeHtml(heading));
+    }
     if (page === 'home') {
       expect(html).toContain(text.home.cidrDescription);
       expect(html).toContain(text.home.subtractDescription);

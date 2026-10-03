@@ -13,7 +13,10 @@ export const de = {
     title: 'Möchten Sie diese Seite auf Deutsch lesen?',
     switch: 'Zu Deutsch wechseln', dismiss: 'Jetzt nicht',
   },
-  footer: { project: 'Projekt', contact: 'Kontakt und Feedback', sendEmail: 'E-Mail senden' },
+  footer: {
+    project: 'Projektressourcen', integrations: 'Integrationen', contact: 'Kontakt und Feedback',
+    apiDocumentation: 'API-Dokumentation', cliGuide: 'CLI-Anleitung (Englisch)', sendEmail: 'E-Mail senden',
+  },
   home: {
     rangeDescription: "Wandle inklusive Start- und Endadressen in die minimale exakte CIDR-Liste um. Berechne lokal und kopiere alle Blöcke ohne zusätzliche Adressen.",
     rangeLink: "IP-Bereichskonverter öffnen",

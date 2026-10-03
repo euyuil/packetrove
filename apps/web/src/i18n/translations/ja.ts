@@ -13,7 +13,10 @@ export const ja = {
     feedbackPrompt: '問題やアイデアがあれば、GitHub でお知らせください。', reportBug: '問題を報告', requestFeature: '機能を提案',
     notFound: 'ページが見つかりません', notFoundDescription: '指定されたページは存在しません。', returnHome: 'ホームに戻る',
   },
-  footer: { project: 'プロジェクト', contact: 'お問い合わせ・ご意見', sendEmail: 'メールを送信' },
+  footer: {
+    project: 'プロジェクト情報', integrations: '連携', contact: 'お問い合わせ・ご意見',
+    apiDocumentation: 'API ドキュメント', cliGuide: 'CLI ガイド（英語）', sendEmail: 'メールを送信',
+  },
   home: {
     rangeDescription: "両端を含む開始・終了 IP を最小の正確な CIDR リストに変換します。ローカルで計算し、追加アドレスなしで全ブロックをコピーできます。",
     rangeLink: "IP 範囲の変換を開く",
