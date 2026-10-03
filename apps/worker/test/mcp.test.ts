@@ -2,6 +2,7 @@ import { exports } from 'cloudflare:workers';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { CallToolResultSchema as LegacyCallToolResultSchema, ResourceLinkSchema as LegacyResourceLinkSchema } from '@modelcontextprotocol/sdk/types.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
@@ -9,7 +10,7 @@ import { smallestCoveringCidr } from '@packetrove/core';
 import {
   CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, CIDR_SUBTRACT_TOOL_NAME, CidrSubtractResultSchema,
   CidrCoverResultSchema, ErrorResponseSchema, tools as catalogTools,
-  MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_IDENTITY, PACKETROVE_VERSION,
+  MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_WEBSITE_ORIGIN,
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
   RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema, toolCatalog,
 } from '@packetrove/contracts';
@@ -34,6 +35,12 @@ async function connectedClient(url = 'http://localhost/mcp', origin?: string, ip
     requestInit: { headers: { ...(origin ? { origin } : {}), ...(ip ? { 'cf-connecting-ip': ip } : {}) } },
   }));
   return client;
+}
+
+function expectSuccessContent(content: unknown, tool: (typeof catalogTools)[number], result: unknown) {
+  const originalResult = tool.execution === 'connection' ? PublicIpResultSchema.parse(result) : result;
+  expect(content).toEqual([{ type: 'text', text: JSON.stringify(originalResult) }, tool.mcp.resultLink]);
+  expect(LegacyResourceLinkSchema.parse((content as unknown[])[1])).toEqual(tool.mcp.resultLink);
 }
 
 describe('stateless MCP in the Workers runtime', () => {
@@ -105,7 +112,7 @@ describe('stateless MCP in the Workers runtime', () => {
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
       expect(response.isError).not.toBe(true);
       expect(response.structuredContent).toEqual(example.result);
-      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(example.result) }]);
+      expectSuccessContent(response.content, toolCatalog.cidr, example.result);
     } finally { await client.close(); }
   });
   it.each(catalogTools.filter(tool => tool.execution === 'local'))('keeps malformed-request errors identical to the API for $id', async tool => {
@@ -118,6 +125,7 @@ describe('stateless MCP in the Workers runtime', () => {
       expect(api.status).toBe(400);
       const response = await client.callTool({ name: tool.mcp.name, arguments: {} });
       expect(response.isError).toBe(true);
+      expect(response.content).toHaveLength(1);
       const content = response.content?.[0];
       if (content?.type !== 'text') throw new Error('Missing error content');
       expect(ErrorResponseSchema.parse(JSON.parse(content.text))).toEqual(await api.json());
@@ -130,7 +138,7 @@ describe('stateless MCP in the Workers runtime', () => {
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: request });
       expect(response.isError).not.toBe(true);
       expect(CidrCoverResultSchema.parse(response.structuredContent)).toEqual(result);
-      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+      expectSuccessContent(response.content, toolCatalog.cidr, result);
     } finally { await client.close(); }
   });
   it.each(CIDR_SUBTRACT_EXAMPLES)('returns the exact subtraction $name result', async ({ request, result }) => {
@@ -139,7 +147,7 @@ describe('stateless MCP in the Workers runtime', () => {
       const response = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: request });
       expect(response.isError).not.toBe(true);
       expect(CidrSubtractResultSchema.parse(response.structuredContent)).toEqual(result);
-      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+      expectSuccessContent(response.content, toolCatalog.subtract, result);
     } finally { await client.close(); }
   });
   it.each(RANGE_TO_CIDRS_EXAMPLES)('returns the exact IP range $name result', async ({ request, result }) => {
@@ -148,7 +156,7 @@ describe('stateless MCP in the Workers runtime', () => {
       const response = await client.callTool({ name: toolCatalog.range.mcp.name, arguments: request });
       expect(response.isError).not.toBe(true);
       expect(RangeToCidrsResultSchema.parse(response.structuredContent)).toEqual(result);
-      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+      expectSuccessContent(response.content, toolCatalog.range, result);
     } finally { await client.close(); }
   });
   it('returns the full IPv6 range as /0 with an exact string count', async () => {
@@ -173,6 +181,7 @@ describe('stateless MCP in the Workers runtime', () => {
     try {
       const response = await client.callTool({ name: toolCatalog.range.mcp.name, arguments: request });
       expect(response.isError).toBe(true);
+      expect(response.content).toHaveLength(1);
       expect(response.structuredContent).toBeUndefined();
       const content = response.content?.[0];
       if (content?.type !== 'text') throw new Error('Missing error content');
@@ -200,6 +209,7 @@ describe('stateless MCP in the Workers runtime', () => {
     try {
       const response = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: { include: ['bad'], exclude: ['::/129'] } });
       expect(response.isError).toBe(true);
+      expect(response.content).toHaveLength(1);
       expect(response.structuredContent).toBeUndefined();
       const content = response.content?.[0];
       if (content?.type !== 'text') throw new Error('Missing error content');
@@ -220,6 +230,7 @@ describe('stateless MCP in the Workers runtime', () => {
     try {
       const response = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: request });
       expect(response.isError).toBe(true);
+      expect(response.content).toHaveLength(1);
       expect(response.structuredContent).toBeUndefined();
       const content = response.content?.[0];
       if (content?.type !== 'text') throw new Error('Missing error content');
@@ -233,7 +244,7 @@ describe('stateless MCP in the Workers runtime', () => {
       const response = await client.callTool({ name: example.name, arguments: example.arguments });
       expect(response.isError).not.toBe(true);
       expect(response.structuredContent).toEqual(example.result);
-      expect(response.content).toHaveLength(1);
+      expectSuccessContent(response.content, catalogTools.find(tool => tool.mcp.name === example.name)!, example.result);
       const content = response.content?.[0];
       if (content?.type !== 'text') throw new Error('Missing result content');
       expect(JSON.parse(content.text)).toEqual(example.result);
@@ -248,7 +259,7 @@ describe('stateless MCP in the Workers runtime', () => {
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: request });
       expect(response.isError).not.toBe(true);
       expect(CidrCoverResultSchema.parse(response.structuredContent)).toEqual(result);
-      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }]);
+      expectSuccessContent(response.content, toolCatalog.cidr, result);
     } finally { await client.close(); }
   });
   it('returns actionable business errors as tool errors', async () => {
@@ -256,6 +267,7 @@ describe('stateless MCP in the Workers runtime', () => {
     try {
       const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: { inputs: ['::1', '203.0.113.1'] } });
       expect(response.isError).toBe(true);
+      expect(response.content).toHaveLength(1);
       const text = response.content?.find(content => content.type === 'text');
       expect(text?.type).toBe('text');
       if (text?.type !== 'text') throw new Error('Missing error content');
@@ -268,6 +280,7 @@ describe('stateless MCP in the Workers runtime', () => {
       const response = await client.callTool({ name: MCP_TOOL_NAME,
         arguments: { inputs: ['203.0.113.1', 'bad', '203.0.113.2', '::/129'] } });
       expect(response.isError).toBe(true);
+      expect(response.content).toHaveLength(1);
       expect(response.structuredContent).toBeUndefined();
       const text = response.content?.find(content => content.type === 'text');
       if (text?.type !== 'text') throw new Error('Missing error content');
@@ -286,14 +299,62 @@ describe('stateless MCP in the Workers runtime', () => {
     try {
       expect(client.getServerVersion()).toEqual({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
       expect((await client.listTools()).tools[0]?.name).toBe(MCP_TOOL_NAME);
-      const example = CIDR_COVER_EXAMPLES[1]!;
-      const response = await client.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
-      expect(response.structuredContent).toEqual(example.result);
-      const subtraction = CIDR_SUBTRACT_EXAMPLES[0]!;
-      const subtractResponse = await client.callTool({ name: CIDR_SUBTRACT_TOOL_NAME, arguments: subtraction.request });
-      expect(CidrSubtractResultSchema.parse(subtractResponse.structuredContent)).toEqual(subtraction.result);
+      for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
+        for (const example of tool.examples) {
+          const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
+          expect(response.isError).not.toBe(true);
+          expect(response.structuredContent).toEqual(example.result);
+          expectSuccessContent(response.content, tool, example.result);
+          // A text-only consumer can ignore optional resource links and retain the complete answer.
+          const text = LegacyCallToolResultSchema.parse(response).content.find(item => item.type === 'text');
+          if (text?.type !== 'text') throw new Error('Missing JSON result');
+          expect(JSON.parse(text.text)).toEqual(example.result);
+        }
+      }
     } finally { await client.close(); }
   });
+  it.each(catalogTools)('keeps the $id link independent of inputs, results, and request language', async tool => {
+    const destinations: string[] = [];
+    const results: unknown[] = [];
+    for (const example of tool.examples) {
+      const client = new Client({ name: 'optional-link-tests', version: '0.1.0' }, {
+        versionNegotiation: { mode: 'auto' },
+      });
+      await client.connect(new StreamableHTTPClientTransport(new URL('http://localhost/mcp'), {
+        fetch: workerFetch, requestInit: { headers: {
+          'accept-language': 'zh-CN,fr;q=0.9',
+          ...(tool.execution === 'connection' ? { 'cf-connecting-ip': (example.result as { ip: string }).ip } : {}),
+        } },
+      }));
+      try {
+        await client.listTools();
+        const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
+        expect(response.structuredContent).toEqual(example.result);
+        expectSuccessContent(response.content, tool, example.result);
+        const link = response.content?.find(item => item.type === 'resource_link');
+        if (link?.type !== 'resource_link') throw new Error('Missing optional tool page link');
+        const destination = new URL(link.uri);
+        expect(destination.protocol).toBe('https:');
+        expect(destination.origin).toBe(PUBLIC_WEBSITE_ORIGIN);
+        expect(destination.pathname).toBe(tool.webPath);
+        expect(destination.search).toBe('');
+        expect(destination.hash).toBe('');
+        expect(destination.username).toBe('');
+        expect(destination.password).toBe('');
+        expect(link.title).toBe(tool.title);
+        expect(link.mimeType).toBe('text/html');
+        destinations.push(link.uri);
+        results.push(response.structuredContent);
+        // The original text content remains a complete answer for clients ignoring links.
+        const text = response.content?.find(item => item.type === 'text');
+        if (text?.type !== 'text') throw new Error('Missing JSON result');
+        expect(JSON.parse(text.text)).toEqual(example.result);
+      } finally { await client.close(); }
+    }
+    expect(new Set(results.map(result => JSON.stringify(result))).size).toBeGreaterThan(1);
+    expect(new Set(destinations)).toEqual(new Set([PUBLIC_WEBSITE_ORIGIN + tool.webPath]));
+  });
+
   it('enforces the shared HTTP body limit', async () => {
     const response = await exports.default.fetch('http://localhost/mcp', {
       method: 'POST', headers: { 'content-type': 'application/json' },
@@ -365,7 +426,7 @@ describe('public IP over MCP', () => {
       const response = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
       expect(response.isError).not.toBe(true);
       expect(PublicIpResultSchema.parse(response.structuredContent)).toEqual(result);
-      expect(response.content).toHaveLength(1);
+      expectSuccessContent(response.content, toolCatalog.ip, result);
       const text = response.content?.[0];
       if (text?.type !== 'text') throw new Error('Missing result content');
       expect(PublicIpResultSchema.parse(JSON.parse(text.text))).toEqual(result);
@@ -403,6 +464,7 @@ describe('public IP over MCP', () => {
     try {
       const response = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
       expect(response.isError).toBe(true);
+      expect(response.content).toHaveLength(1);
       const text = response.content?.find(content => content.type === 'text');
       if (text?.type !== 'text') throw new Error('Missing error content');
       expect(ErrorResponseSchema.parse(JSON.parse(text.text)).error.code).toBe('CLIENT_IP_UNAVAILABLE');
@@ -419,6 +481,7 @@ describe('public IP over MCP', () => {
       const response = await client.callTool({ name: PUBLIC_IP_TOOL_NAME, arguments: {} });
       expect(response.isError).not.toBe(true);
       expect(PublicIpResultSchema.parse(response.structuredContent)).toEqual({ ip: '203.0.113.1', family: 'ipv4' });
+      expectSuccessContent(response.content, toolCatalog.ip, { ip: '203.0.113.1', family: 'ipv4' });
     } finally { await client.close(); }
   });
 });

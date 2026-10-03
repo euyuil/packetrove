@@ -48,6 +48,15 @@ are outcomes to observe after deployment, not guarantees of this implementation.
   The guide is included in the sitemap. Hydration keeps existing behavior.
 - MCP descriptions explain intended uses and limits; schemas, annotations,
   names, structured errors, and calculation behavior retain their contracts.
+- Each successful MCP response retains the structured result and its first JSON
+  text block, then appends one standard `resource_link` for that tool. The shared
+  catalog derives its canonical HTTPS destination and names; the default is the
+  English page, independent of request language. CIDR covering links to its extra
+  coverage explanation, subtraction and range conversion to their exact browser
+  calculators and limits, and public IP to a fresh browser-connection check.
+  Opening a page does not restore the MCP inputs or result. Links contain no
+  inputs, results, query strings, fragments, or tracking data. Their generation
+  makes no outbound requests. Errors contain no optional page link.
 
 No registry submission, analytics, paid model evaluation, special AI files,
 external citation campaign, or additional structured markup is included.
@@ -92,6 +101,38 @@ after an authorized merge and deployment.
 
 These checks establish correctness and accessibility of the supplied content.
 They do not measure how often an external AI system discovers or cites it.
+
+## Result-link compatibility observations
+
+The maintained [MCP guide](../integrations/mcp.md) shows the exact link content
+beside each documentation-address result and explains client-controlled
+presentation. The protocol permits optional
+[resource links in tool results](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#resource-links).
+A client can display a link, use it as context, ignore it, or leave it unopened;
+Packetrove does not require attribution or promise automatic citations.
+
+The 2026-10-03 local verification uses the pinned server
+`@modelcontextprotocol/server@2.0.0`, with the following observations. SDK
+acceptance and text-only decoding establish compatibility; they do not establish
+how a target application's interface presents the link.
+
+| Client | Observed response handling | Link presentation |
+| --- | --- | --- |
+| `@modelcontextprotocol/client@2.0.0` | All catalog tools retain valid structured results and exact JSON text; optional resource links survive tool calls. | Returned to the caller; no application interface evaluated. |
+| `@modelcontextprotocol/sdk@1.30.0` | Legacy initialization, discovery, and all catalog tool calls accept the additive content. A text-only consumer can ignore the link and decode the unchanged complete answer. | Returned to the caller; no application interface evaluated. |
+| Codex CLI `0.160.0` | Actual calls through experimental app-server `mcpServer/tool/call` retain the structured result, JSON text, and `resource_link` for all four tools. Calculation calls use documentation-address inputs; the public-IP call uses a documentation-only header injected into the local test endpoint. | Present in raw app-server responses. TUI and desktop rendering unverified; do not assume displayed or ignored. |
+| Claude Code `2.1.288` | The npm-cached CLI reports `Connected` with `claude mcp get` using a fresh temporary configuration and the local feature endpoint. A configured tool-result call was not evaluated. | Unverified; the isolated interactive client requires account login. No login or model request performed. |
+
+The Codex check uses an ephemeral context, command-line MCP overrides, and
+temporary state and log directories; it does not modify persisted client
+configuration or make model requests. The injected `203.0.113.1` public-IP test
+is a compatibility check of a documentation-only local request context, not an
+observation of a real user's network connection.
+
+After deployment, record the target client and exact version, date, tool,
+documentation-only input, retained answer, and whether the link was displayed,
+ignored, or available only in raw content. Opening `public-ip` observes a new
+browser connection rather than replaying the MCP caller's returned address.
 
 ## Manual prompt checks
 
