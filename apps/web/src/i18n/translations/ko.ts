@@ -67,6 +67,10 @@ export const ko = {
     lineEntry: '{{line}}행, {{entry}}번째 항목: {{message}}',
   },
   subtract: {
+    normalizedInclude: "정규화된 포함 입력 ({{total}})",
+    normalizedExclude: "정규화된 제외 입력 ({{total}})",
+    normalizedHelp: "각 항목을 개별적으로 정규화합니다. 입력 순서, 중복 항목, 중첩 범위가 유지됩니다.",
+    noExcludedInputs: "제외 입력이 없습니다.",
     title: 'CIDR 빼기', description: '포함할 주소 공간에서 제외할 IPv4 또는 IPv6 네트워크를 빼세요. 추가 주소 없이 정확한 범위를 나타내는 최소 CIDR 목록을 얻을 수 있습니다.',
     inputs: '주소 목록', include: '포함', exclude: '제외',
     includeLabel: '포함할 IP 주소 또는 CIDR', excludeLabel: '제외할 IP 주소 또는 CIDR',

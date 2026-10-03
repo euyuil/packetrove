@@ -76,6 +76,10 @@ export const en = {
   },
   subtract: {
     title: 'CIDR Subtraction', description: 'Subtract excluded IPv4 or IPv6 networks from your included address space. Get the smallest exact CIDR list, with no added addresses.',
+    normalizedInclude: "Normalized include inputs ({{total}})",
+    normalizedExclude: "Normalized exclude inputs ({{total}})",
+    normalizedHelp: "Each entry is normalized separately. Input order, repeated entries, and nested ranges are preserved.",
+    noExcludedInputs: "No excluded inputs.",
     inputs: 'Your address lists', include: 'Include', exclude: 'Exclude',
     includeLabel: 'Included IP addresses or CIDRs', excludeLabel: 'Excluded IP addresses or CIDRs',
     includeHelp: 'Separate entries with commas, spaces, tabs, or line breaks. Include at least one address or range.',
@@ -399,6 +403,10 @@ export const zhHans = {
   },
   subtract: {
     title: 'CIDR 相减', description: '从包含的 IPv4 或 IPv6 地址空间中扣除排除网段，得到不增加额外地址的最少 CIDR 列表。',
+    normalizedInclude: "规范化包含输入（{{total}} 项）",
+    normalizedExclude: "规范化排除输入（{{total}} 项）",
+    normalizedHelp: "每项输入分别规范化，保留输入顺序、重复条目和嵌套网段。",
+    noExcludedInputs: "没有排除输入。",
     inputs: '输入地址列表', include: '包含列表', exclude: '排除列表',
     includeLabel: '包含的 IP 地址或 CIDR 网段', excludeLabel: '排除的 IP 地址或 CIDR 网段',
     includeHelp: '可用逗号、空格、制表符或换行分隔。至少包含一个地址或网段。',

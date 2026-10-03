@@ -68,6 +68,10 @@ export const ptBR = {
     lineEntry: 'Linha {{line}}, item {{entry}}: {{message}}',
   },
   subtract: {
+    normalizedInclude: "Entradas incluídas normalizadas ({{total}})",
+    normalizedExclude: "Entradas excluídas normalizadas ({{total}})",
+    normalizedHelp: "Cada entrada é normalizada separadamente. A ordem de entrada, as entradas repetidas e os intervalos aninhados são preservados.",
+    noExcludedInputs: "Nenhuma entrada excluída.",
     title: 'Subtração de CIDRs', description: 'Remova as redes IPv4 ou IPv6 excluídas do espaço de endereços incluído. Obtenha a menor lista exata de CIDRs, sem adicionar endereços.',
     inputs: 'Suas listas de endereços', include: 'Incluir', exclude: 'Excluir',
     includeLabel: 'Endereços IP ou CIDRs incluídos', excludeLabel: 'Endereços IP ou CIDRs excluídos',
