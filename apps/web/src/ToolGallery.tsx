@@ -1,7 +1,7 @@
 import { useMemo, useState, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Badge, Box, Button, Code, Group, Paper, SimpleGrid, Stack, Text, ThemeIcon, Title, VisuallyHidden,
+  Badge, Box, Button, Code, Group, Paper, SimpleGrid, Stack, Text, Title, VisuallyHidden,
 } from '@mantine/core';
 import { Carousel } from '@mantine/carousel';
 import { useReducedMotion } from '@mantine/hooks';
@@ -10,7 +10,7 @@ import { IconArrowRight } from '@tabler/icons-react';
 import { toolCatalog, type tools } from '@packetrove/contracts';
 import { localizedPath } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
-import { ToolIcon } from './ToolIcon';
+import { ToolHeading } from './ToolHeading';
 
 // Curate homepage order without copying tool definitions or examples.
 export const featuredTools = [toolCatalog.cidr, toolCatalog.subtract, toolCatalog.range, toolCatalog.ip];
@@ -104,8 +104,7 @@ export function ToolGallery({ onNavigate }: { onNavigate: MouseEventHandler<HTML
             <Stack gap="lg" h="100%">
               <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="xl" style={{ flex: 1 }}>
                 <Stack gap="md">
-                  <ThemeIcon variant="light" size={48}><ToolIcon tool={tool.page} size={28} /></ThemeIcon>
-                  <Title order={3} size="h2" id={'home-' + tool.page + '-heading'}>{t($ => $[tool.page].title)}</Title>
+                  <ToolHeading tool={tool.page} order={3} size="h2" id={'home-' + tool.page + '-heading'} />
                   <Text c="dimmed">{t($ => $.home[`${tool.page}Description`])}</Text>
                 </Stack>
                 <ToolPreview tool={tool} />
