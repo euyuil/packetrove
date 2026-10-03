@@ -3,6 +3,7 @@ import { act, cleanup, fireEvent, screen, waitFor } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 import { PublicIpTool } from './PublicIpTool';
+import { MAX_PUBLIC_IP_RESPONSE_BYTES } from '@packetrove/core';
 import { render } from './test-utils';
 
 function hideStaticAbortMethods() {
@@ -97,6 +98,20 @@ describe('public IP web tool', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('invalid response'));
     expect(screen.queryByText('2001:db8::7')).toBeNull();
+  });
+
+  it('shows an oversized response as invalid and can retry without displaying the body', async () => {
+    const fetch = vi.fn().mockResolvedValueOnce(new Response('<html>Unexpected lookup page</html>' + ' '.repeat(MAX_PUBLIC_IP_RESPONSE_BYTES)))
+      .mockResolvedValueOnce(Response.json({ ip: '203.0.113.1', family: 'ipv4' }));
+    vi.stubGlobal('fetch', fetch);
+    render(<PublicIpTool />);
+    expect((await screen.findByRole('alert')).textContent).toContain('invalid response');
+    expect(screen.queryByText(/Unexpected lookup page/)).toBeNull();
+    expect(screen.queryByText('203.0.113.1')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(await screen.findByText('203.0.113.1')).toBeDefined();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 
   it('copies the IP and explains clipboard failures', async () => {
