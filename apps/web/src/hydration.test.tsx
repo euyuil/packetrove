@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, screen, waitFor } from '@testing-library/react';
 import { hydrateRoot, type Root } from 'react-dom/client';
+import { tools } from '@packetrove/contracts';
 import { Application, IDENTIFIER_PREFIX } from './Application';
 import { websitePages } from './seo';
 import { locales, supportedLocales, type Locale } from './i18n/locales';
@@ -103,6 +104,19 @@ describe('hydration of production HTML', () => {
         credentials: 'omit', cache: 'no-store',
       }));
     } else {
+      expect(fetch).not.toHaveBeenCalled();
+    }
+    if (page.page === 'mcp') {
+      for (const tool of tools) {
+        const control = screen.getByRole('button', { name: resources[page.locale].translation.discovery[tool.page].mcpTitle });
+        expect(control.getAttribute('aria-expanded')).toBe('false');
+        const panel = document.getElementById(control.getAttribute('aria-controls')!)!;
+        const example = panel.querySelector('[data-mcp-example="arguments"]');
+        expect(example).not.toBeNull();
+        fireEvent.click(control);
+        expect(control.getAttribute('aria-expanded')).toBe('true');
+        expect(panel.querySelector('[data-mcp-example="arguments"]')).toBe(example);
+      }
       expect(fetch).not.toHaveBeenCalled();
     }
     if (page.page === 'api') expect(await screen.findByText('Interactive API reference')).toBeDefined();
