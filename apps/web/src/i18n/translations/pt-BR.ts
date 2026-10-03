@@ -16,7 +16,7 @@ export const ptBR = {
   },
   privacy: {
     "title": "Política de privacidade",
-    "updated": "Última atualização: 3 de outubro de 2026.",
+    "updated": "Última atualização: 4 de outubro de 2026.",
     "introduction": "Esta política abrange o site, a Web API, a CLI e o serviço MCP remoto do Packetrove, incluindo o uso por plugins de IA. O Packetrove é mantido por Liu Yue. Não é necessário ter conta nem chave de API.",
     "cloudflarePolicy": "Política de privacidade da Cloudflare",
     "sections": {
@@ -34,7 +34,7 @@ export const ptBR = {
         },
         "logs": {
             "title": "Logs operacionais do aplicativo",
-            "body": "Ao concluir uma função de ferramenta MCP, um evento operacional registra um nome fixo, o nome da ferramenta, sucesso ou erro e um código de erro controlado em caso de falha. Usamos esses eventos para contar execuções e diagnosticar erros. Novas tentativas contam separadamente; descoberta e solicitações rejeitadas antes da função não entram na contagem. Falhas HTTP inesperadas geram um evento e um código fixos. Esses eventos da aplicação não contêm entradas, resultados, endereços IP retornados, cabeçalhos ou detalhes das exceções originais. Não criamos perfis, não rastreamos entre sites, não vendemos dados das ferramentas nem os usamos para publicidade ou treinamento de modelos."
+            "body": "Ao concluir uma função de ferramenta MCP, um evento operacional registra um nome fixo, o nome da ferramenta, sucesso ou erro e um código de erro controlado em caso de falha. Usamos esses eventos para contar execuções e diagnosticar erros. Novas tentativas contam separadamente; descoberta e solicitações rejeitadas antes da função não entram na contagem. Falhas HTTP inesperadas geram um evento e um código fixos. Esses eventos da aplicação não contêm entradas, resultados, endereços IP retornados, cabeçalhos brutos da solicitação, tokens de automação ou detalhes das exceções originais. Não criamos perfis, não rastreamos entre sites, não vendemos dados das ferramentas nem os usamos para publicidade ou treinamento de modelos. Os eventos distinguem verificações automatizadas validadas das demais chamadas públicas. As verificações validadas também podem registrar um identificador de execução da automação com formato válido."
         },
         "providers": {
             "title": "Hospedagem, destinatários e retenção",
@@ -315,7 +315,7 @@ export const ptBR = {
     httpErrors: "Erros de negócio usam o JSON de erro compartilhado. O SDK MCP valida o protocolo. JSON inválido, tipos de conteúdo não suportados e corpos muito grandes são rejeitados na camada HTTP.",
     deploymentTitle: "Implantação e limites de conexão",
     serverBehavior: "O servidor aceita solicitações modernas sem estado e inicialização, descoberta e chamadas do Streamable HTTP anterior. Não oferece sessões persistentes nem fluxos de eventos independentes do servidor.",
-    operationalLogging: "Contamos execuções com eventos operacionais que contêm o nome da ferramenta, sucesso ou erro e um código de erro controlado. Entradas, resultados e endereços consultados são excluídos. A Cloudflare pode adicionar metadados da solicitação; veja a política de privacidade para tratamento e retenção.",
+    operationalLogging: "Contamos execuções com eventos operacionais que contêm o nome da ferramenta, sucesso ou erro, um código de erro controlado e uma classificação da origem da chamada. Verificações automatizadas validadas também podem registrar um identificador de execução da automação. Entradas, resultados, endereços consultados, cabeçalhos brutos da solicitação e tokens de automação são excluídos. A Cloudflare pode adicionar metadados da solicitação; veja a política de privacidade para tratamento e retenção.",
     connectionPrivacy: "Os metadados de IP público são lidos em cada chamada, com instâncias isoladas entre clientes simultâneos. Resultados e erros MCP usam Cache-Control: no-store, no-transform. O aplicativo não armazena nem registra endereços consultados.",
     toolMigration: "Os nomes anteriores não têm aliases de compatibilidade: {{toolRenames}}. Atualize a descoberta de ferramentas e as chamadas salvas.",
     endpointMigration: "O caminho <code>/mcp</code> do site não é o serviço: GET retorna 404 e POST 405, sem proxy ou redirecionamento. Configure os clientes com <code>{{serverUrl}}</code>. Na sua implantação, atualize domínios e listas exatas separadas de Host e Origin do navegador; clientes sem cabeçalho Origin são aceitos.",

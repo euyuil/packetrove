@@ -75,8 +75,10 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
   Browser and CLI lookups have a ten-second deadline and a 64 KiB response limit.
 - The application does not store or log returned IP addresses. Lookup results
   and errors are not cached.
-- MCP execution counts use operational events with the tool name, outcome, and
-  a controlled error code, excluding inputs and results. The
+- MCP execution counts use operational events with the tool name, outcome,
+  controlled error code, and traffic source. Verified automated checks may also
+  record an automation run identifier. Inputs, results, raw request headers, and
+  automation tokens are excluded. The
   [deployment guide](docs/deployment.md#mcp-tool-execution-counts) describes the
   free-tier limits and per-tool queries.
 - The [Privacy Policy](https://packetrove.com/privacy) describes remote input

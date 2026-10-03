@@ -142,21 +142,78 @@ After this revision is deployed, each completed MCP tool callback writes one
 structured event to the existing API Worker log:
 
 ```json
-{"event":"mcp_tool_execution","tool":"cidr-cover","outcome":"success"}
+{"event":"mcp_tool_execution","tool":"cidr-cover","outcome":"success","traffic_source":"public_call"}
 ```
 
 A failed callback adds a controlled error code:
 
 ```json
-{"event":"mcp_tool_execution","tool":"cidr-cover","outcome":"error","error_code":"INVALID_INPUT"}
+{"event":"mcp_tool_execution","tool":"cidr-cover","outcome":"error","traffic_source":"public_call","error_code":"INVALID_INPUT"}
 ```
 
-The tool identifier comes from the catalog closure. No inputs, results,
-connection addresses, arbitrary headers, exception details, request identifiers,
-or duration fields are passed to this application logger. Recording an event
+The tool identifier comes from the catalog closure. Events also identify the
+traffic source and may include a validated automation run identifier for
+verified checks. No inputs, results, connection addresses, raw request headers,
+automation tokens, exception details, request identifiers, or duration fields
+are passed to this application logger. Recording an event
 uses the current invocation; it does not perform another API request or write
 to a database. The public policy, MCP guide, and tool descriptions disclose this
 logging in the same revision.
+
+### Automated check classification
+
+Before merging a change that enables marked production smoke checks, configure
+the same dedicated `PACKETROVE_AUTOMATION_TOKEN` secret in the API Worker and
+GitHub Actions. Use 32 cryptographically random bytes encoded as 64 lowercase
+hexadecimal characters. Generate and transfer the value privately; do not reuse
+a deployment credential or put it in tracked configuration, command arguments,
+public logs, or workflow artifacts. These interactive commands accept the same
+value without including it in shell history:
+
+```sh
+pnpm --filter @packetrove/worker exec wrangler secret put PACKETROVE_AUTOMATION_TOKEN
+gh secret set PACKETROVE_AUTOMATION_TOKEN --repo <owner/repository>
+```
+
+This is an optional Worker secret: local development, builds, tests, and public
+MCP clients require no production credential. Missing or malformed Worker
+configuration classifies calls as `public_call`; it does not prevent execution.
+The deployment workflow checks its GitHub Actions secret before publishing and
+passes it only to the configuration check and production smoke step.
+
+| Request header | Value and handling |
+| --- | --- |
+| `Packetrove-Automation-Token` | Dedicated secret, compared using the Worker's timing-safe comparison. It is never passed to the application logger or returned to the caller. |
+| `Packetrove-Automation-Run-Id` | `GITHUB_RUN_ID`; logged only for a matching token and a positive decimal string of at most 20 digits. Invalid or missing values are omitted. |
+
+Marked smoke requests use these headers for initialization, discovery, and
+every tool call through both MCP clients. The fetch wrapper sends them only to
+the exact configured `/mcp` URL and rejects redirects. Website and Web API
+checks do not receive the automation token. Manual smoke checks without this
+environment variable remain unmarked. Supplying a token requires a valid
+`GITHUB_RUN_ID`; malformed local configuration fails before network checks.
+
+Matching credentials produce `traffic_source: automated_check`. Missing,
+mismatched, or malformed credentials produce `traffic_source: public_call`;
+the request still runs with its original result and error semantics. The
+classification uses the current tool-call request, not remembered initialization
+headers. It grants no service permissions and adds no required MCP argument,
+result field, or client configuration.
+
+An automated execution can look like this:
+
+```json
+{"event":"mcp_tool_execution","tool":"cidr-cover","outcome":"success","traffic_source":"automated_check","automation_run_id":"1234567890"}
+```
+
+The run identifier is a correlation hint, not proof that a GitHub run exists;
+the token identifies a holder of the configured automation credential. Public
+calls include unmarked programs and manual checks, not just people. Old events
+without a source cannot be reliably classified retrospectively. A mismatched
+Worker and GitHub secret still allows smoke calculations to pass, so inspect
+the production log classification after configuration and deployment. Rotate
+the shared secret if it is exposed; request header values are not added to the
+application events, but platform-enriched records must still be inspected.
 
 ### Counting boundary
 
@@ -220,13 +277,17 @@ objects expose the fields below for filtering and grouping.
 
 | Saved-query name | Filters | Group By |
 | --- | --- | --- |
-| MCP tool executions | `event = mcp_tool_execution` | `tool` |
-| MCP tool errors | `event = mcp_tool_execution`, `outcome = error` | `tool`, `error_code` |
+| MCP tool executions | `event = mcp_tool_execution` | `tool`, `traffic_source` |
+| MCP tool errors | `event = mcp_tool_execution`, `outcome = error` | `tool`, `traffic_source`, `error_code` |
+| MCP public executions | `event = mcp_tool_execution`, `traffic_source = public_call` | `tool` |
+| MCP public errors | `event = mcp_tool_execution`, `traffic_source = public_call`, `outcome = error` | `tool`, `error_code` |
+| MCP automated check executions | `event = mcp_tool_execution`, `traffic_source = automated_check` | `tool`, `automation_run_id` |
 
 Sort by count descending and save each query under the listed name. Expand an
 event in the Events tab to inspect its application fields and complete platform
 envelope. The query excludes initialization, discovery, SDK warnings, and
-`request_failure` events. The default window is one day; retained history
+`request_failure` events. Public-call queries exclude intentional validation
+errors from verified smoke checks. The default window is one day; retained history
 depends on the active plan. Saved queries do not extend retention or establish
 monthly history. See the
 [Query Builder guide](https://developers.cloudflare.com/workers/observability/query-builder/).
@@ -239,7 +300,9 @@ account-level log usage. After the authorized merge and successful deployment:
 1. Verify the public policy, MCP discovery descriptions, and API observability
    settings match this revision.
 2. Use documentation-address MCP examples to confirm that indexed
-   `mcp_tool_execution` fields are available and both queries can be saved.
+   `mcp_tool_execution` fields are available and the queries can be saved.
+   Confirm that the deployment smoke run is `automated_check` with its run
+   identifier, while an unmarked documentation-address call is `public_call`.
    Inspect success and controlled-error events without printing real lookup
    addresses.
 3. Inspect complete persisted records privately, including any URL, request

@@ -13,6 +13,7 @@ import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadat
 import { resources } from '../../web/src/i18n/resources';
 import { escapeHtml, robotsText, websitePages, websiteRedirects } from '../../web/src/seo';
 import { localizedPath, pagePaths } from '../../web/src/i18n/routes';
+import { createMcpSmokeFetch, readSmokeAutomation } from '../../../scripts/mcp-smoke-transport';
 
 const originArguments = process.argv.slice(2);
 if (originArguments.length !== 2) {
@@ -30,13 +31,15 @@ const apiOrigin = parseOrigin(originArguments[1]!);
 assert.notEqual(origin, apiOrigin, 'Website and API must use separate origins.');
 const expectedCommit = process.env.VITE_GIT_COMMIT;
 if (expectedCommit) assert.match(expectedCommit, /^[0-9a-f]{40}$/i, 'Expected a full Git commit SHA.');
+const automation = readSmokeAutomation(process.env);
 
 const timedFetch: typeof fetch = async (input, init) => {
   const request = new Request(input, init);
   return fetch(request, { signal: AbortSignal.any([request.signal, AbortSignal.timeout(15_000)]) });
 };
+const scopedMcpFetch = createMcpSmokeFetch(new URL(`${apiOrigin}/mcp`), automation, timedFetch);
 const mcpFetch: typeof fetch = async (input, init) => {
-  const response = await timedFetch(input, init);
+  const response = await scopedMcpFetch(input, init);
   assert.equal(response.headers.get('mcp-session-id'), null, 'MCP must remain stateless.');
   assert.match(response.headers.get('cache-control') ?? '', /\bno-store\b/, 'MCP responses must not be stored.');
   return response;

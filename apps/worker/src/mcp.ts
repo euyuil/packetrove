@@ -6,8 +6,9 @@ import { ToolError } from '@packetrove/core';
 import { executeTool, type ToolExecutor } from './tools';
 import { createToolExecutionContext } from './tool-context';
 import { logMcpToolExecution, type McpToolExecutionOutcome } from './operational-logs';
+import { getMcpTrafficSource } from './automation-source';
 
-export function createMcpServer(context: McpRequestContext, executor: ToolExecutor = executeTool) {
+export function createMcpServer(context: McpRequestContext, executor: ToolExecutor = executeTool, automationToken?: string) {
   const server = new McpServer({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
   for (const tool of tools) {
     // Local cores validate the entire request and return shared, located errors.
@@ -20,10 +21,11 @@ export function createMcpServer(context: McpRequestContext, executor: ToolExecut
       inputSchema, outputSchema: tool.outputSchema,
       annotations: tool.mcp.annotations,
     }, async (request: unknown, callContext: ServerContext): Promise<CallToolResult> => {
+      const callRequest = callContext.http?.req ?? context.requestInfo;
+      const source = getMcpTrafficSource(callRequest, automationToken);
       let outcome: McpToolExecutionOutcome = { outcome: 'success' };
       try {
-        const executionContext = createToolExecutionContext(callContext.http?.req ?? context.requestInfo,
-          callContext.mcpReq.signal);
+        const executionContext = createToolExecutionContext(callRequest, callContext.mcpReq.signal);
         const result = await executor(tool.page, request, executionContext);
         return { structuredContent: result, content: [
           { type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink,
@@ -35,7 +37,7 @@ export function createMcpServer(context: McpRequestContext, executor: ToolExecut
         return { isError: true, content: [{ type: 'text', text: JSON.stringify(failure.toResponse()) }] };
       } finally {
         // Count executions, including errors and retries, without passing request data.
-        logMcpToolExecution(tool.id, outcome);
+        logMcpToolExecution(tool.id, outcome, source);
       }
     });
   }
@@ -48,8 +50,8 @@ const allowedHostnames = [
   'api.packetrove.com',
 ];
 
-export function createPacketroveMcpHandler(executor: ToolExecutor = executeTool) {
-  return createMcpHandler(context => createMcpServer(context, executor), {
+export function createPacketroveMcpHandler(executor: ToolExecutor = executeTool, automationToken?: string) {
+  return createMcpHandler(context => createMcpServer(context, executor, automationToken), {
     route: MCP_PATH, responseMode: 'json',
     allowedHostnames,
     allowedOriginHostnames: [...allowedHostnames, new URL(PUBLIC_WEBSITE_ORIGIN).hostname],

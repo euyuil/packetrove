@@ -16,7 +16,7 @@ export const de = {
   },
   privacy: {
     "title": "Datenschutzerklärung",
-    "updated": "Zuletzt aktualisiert: 3. Oktober 2026.",
+    "updated": "Zuletzt aktualisiert: 4. Oktober 2026.",
     "introduction": "Diese Erklärung gilt für die Website, Web API, CLI und den entfernten MCP-Dienst von Packetrove, einschließlich der Nutzung über KI-Plugins. Packetrove wird von Liu Yue betreut. Ein Konto oder API-Schlüssel ist nicht erforderlich.",
     "cloudflarePolicy": "Datenschutzerklärung von Cloudflare",
     "sections": {
@@ -34,7 +34,7 @@ export const de = {
         },
         "logs": {
             "title": "Betriebsprotokolle der Anwendung",
-            "body": "Nach Abschluss eines MCP-Werkzeug-Callbacks wird ein Betriebsereignis mit festem Ereignisnamen, Werkzeugname, Erfolg oder Fehler und bei Fehlern einem kontrollierten Fehlercode erzeugt. Wir zählen damit Werkzeugausführungen und untersuchen Fehler. Wiederholungen zählen einzeln; Erkennung und vor dem Callback abgewiesene Anfragen sind nicht enthalten. Unerwartete HTTP-Fehler erzeugen einen festen Ereignisnamen und Fehlercode. Diese Anwendungsereignisse enthalten keine Eingaben, Ergebnisse, zurückgegebenen IP-Adressen, Header oder ursprünglichen Ausnahmedetails. Wir erstellen keine Nutzerprofile, verfolgen Nutzer nicht über Websites hinweg und verkaufen keine Werkzeugdaten. Wir verwenden diese Daten weder für Werbung noch für Modelltraining."
+            "body": "Nach Abschluss eines MCP-Werkzeug-Callbacks wird ein Betriebsereignis mit festem Ereignisnamen, Werkzeugname, Erfolg oder Fehler und bei Fehlern einem kontrollierten Fehlercode erzeugt. Wir zählen damit Werkzeugausführungen und untersuchen Fehler. Wiederholungen zählen einzeln; Erkennung und vor dem Callback abgewiesene Anfragen sind nicht enthalten. Unerwartete HTTP-Fehler erzeugen einen festen Ereignisnamen und Fehlercode. Diese Anwendungsereignisse enthalten keine Eingaben, Ergebnisse, zurückgegebenen IP-Adressen, unverarbeiteten Anfrage-Header, Automatisierungstoken oder ursprünglichen Ausnahmedetails. Wir erstellen keine Nutzerprofile, verfolgen Nutzer nicht über Websites hinweg und verkaufen keine Werkzeugdaten. Wir verwenden diese Daten weder für Werbung noch für Modelltraining. Die Ereignisse unterscheiden verifizierte automatische Prüfungen von anderen öffentlichen Aufrufen. Bei verifizierten Prüfungen kann außerdem eine Automatisierungslaufkennung mit gültigem Format gespeichert werden."
         },
         "providers": {
             "title": "Hosting, Empfänger und Aufbewahrung",
@@ -330,7 +330,7 @@ export const de = {
     httpErrors: "Fachliche Fehler verwenden das gemeinsame Fehler-JSON. Das MCP SDK prüft das Protokoll. Ungültiges JSON, nicht unterstützte Medientypen und zu große Anfragen werden auf HTTP-Ebene abgewiesen.",
     deploymentTitle: "Bereitstellung und Verbindungsgrenzen",
     serverBehavior: "Der Server unterstützt moderne zustandslose Anfragen sowie Initialisierung, Erkennung und Aufrufe über älteres Streamable HTTP. Er bietet keine dauerhaften Sitzungen oder eigenständigen Server-Ereignisströme.",
-    operationalLogging: "Wir zählen Werkzeugausführungen mit Betriebsereignissen, die Werkzeugname, Erfolg oder Fehler und einen kontrollierten Fehlercode enthalten. Eingaben, Ergebnisse und ermittelte Adressen sind nicht enthalten. Cloudflare kann Anfrage-Metadaten ergänzen; Verarbeitung und Aufbewahrung sind in der Datenschutzerklärung beschrieben.",
+    operationalLogging: "Wir zählen Werkzeugausführungen mit Betriebsereignissen, die Werkzeugname, Erfolg oder Fehler, einen kontrollierten Fehlercode und eine Klassifizierung der Aufrufquelle enthalten. Verifizierte automatische Prüfungen können außerdem eine Automatisierungslaufkennung erfassen. Eingaben, Ergebnisse, ermittelte Adressen, unverarbeitete Anfrage-Header und Automatisierungstoken sind ausgeschlossen. Cloudflare kann Anfrage-Metadaten ergänzen; Verarbeitung und Aufbewahrung sind in der Datenschutzerklärung beschrieben.",
     connectionPrivacy: "Die öffentliche IP wird für jede Werkzeuganfrage aus den Verbindungsmetadaten gelesen. Gleichzeitige Clients verwenden getrennte Serverinstanzen. MCP-Ergebnisse und Fehler nutzen Cache-Control: no-store, no-transform. Die Anwendung speichert oder protokolliert keine abgefragten Adressen.",
     toolMigration: "Frühere Werkzeugnamen haben keine Kompatibilitätsaliase: {{toolRenames}}. Aktualisiere die Werkzeugerkennung und gespeicherte Aufrufe.",
     endpointMigration: "Der Website-Pfad <code>/mcp</code> ist kein Dienstendpunkt: GET liefert 404 und POST 405, ohne Werkzeugaufrufe weiterzuleiten. Konfiguriere Clients mit <code>{{serverUrl}}</code>. Passe bei eigener Bereitstellung Domains sowie die getrennten exakten Host- und Browser-Origin-Freigaben an. Clients ohne Origin-Header werden unterstützt.",

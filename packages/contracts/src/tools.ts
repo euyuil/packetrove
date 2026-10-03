@@ -61,7 +61,7 @@ function defineTool<const Definition extends ToolDefinition>(definition: Definit
     webPath,
     api: { ...api, response: api.response as ApiResponseDefinition,
       path: `/v1/${id}` as `/v1/${Definition['id']}`, operationId: id },
-    mcp: { ...mcpMetadata, description: `${mcp.description} Operational events record the tool name, success or error, and a controlled error code; they exclude inputs and results. Cloudflare may attach platform metadata. Privacy policy: ${PRIVACY_POLICY_URL}.`, name: id, resultLink: {
+    mcp: { ...mcpMetadata, description: `${mcp.description} Operational events record the tool name, success or error, a controlled error code, and a traffic source classification. Verified automated checks may also record an automation run identifier. Events exclude inputs, results, raw request headers, and automation tokens. Cloudflare may attach platform metadata. Privacy policy: ${PRIVACY_POLICY_URL}.`, name: id, resultLink: {
       type: 'resource_link' as const, uri: `${PUBLIC_WEBSITE_ORIGIN}${webPath}`,
       name: id, title: definition.title, description: resultLinkDescription, mimeType: 'text/html',
     } },

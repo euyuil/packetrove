@@ -8,10 +8,10 @@ import { createPacketroveMcpHandler } from './mcp';
 import { executeTool, type ToolExecutor } from './tools';
 import { createToolExecutionContext, ToolExecutionCancelledError } from './tool-context';
 import { logUnexpectedRequestFailure } from './operational-logs';
+import type { AutomationBindings } from './automation-source';
 
 export function createApp(executor: ToolExecutor = executeTool) {
-  const app = new Hono<{ Bindings: Cloudflare.Env }>();
-  const mcpHandler = createPacketroveMcpHandler(executor);
+  const app = new Hono<{ Bindings: Cloudflare.Env & AutomationBindings }>();
   for (const path of ['/v1/*', '/health', '/openapi.json']) {
     app.use(path, cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
   }
@@ -57,6 +57,7 @@ export function createApp(executor: ToolExecutor = executeTool) {
     context.header('Cache-Control', 'no-store, no-transform');
   });
   app.all('/mcp', async context => {
+    const mcpHandler = createPacketroveMcpHandler(executor, context.env?.PACKETROVE_AUTOMATION_TOKEN);
     if (context.req.method === 'POST') {
       const parsedBody = await readJsonBody(context.req.raw);
       return mcpHandler.fetch(context.req.raw, { parsedBody });

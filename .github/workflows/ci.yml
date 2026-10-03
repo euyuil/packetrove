@@ -60,6 +60,12 @@ jobs:
             echo "Deployment skipped: $GITHUB_SHA has been superseded by $latest_sha on main." >> "$GITHUB_STEP_SUMMARY"
           fi
 
+      - name: Check automated smoke credential
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
+        env:
+          PACKETROVE_AUTOMATION_TOKEN: ${{ secrets.PACKETROVE_AUTOMATION_TOKEN }}
+        run: pnpm exec tsx --eval 'import { readSmokeAutomation } from "./scripts/mcp-smoke-transport.ts"; readSmokeAutomation(process.env);'
+
       - name: Deploy API and MCP Worker
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
         env:
@@ -90,6 +96,8 @@ jobs:
 
       - name: Verify production website, API, and MCP
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main' && steps.revision.outputs.current == 'true'
+        env:
+          PACKETROVE_AUTOMATION_TOKEN: ${{ secrets.PACKETROVE_AUTOMATION_TOKEN }}
         run: |
           for attempt in 1 2 3; do
             echo "Production smoke check attempt $attempt of 3"
