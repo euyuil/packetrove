@@ -46,8 +46,12 @@ observed result.
 
 The gallery has no automatic rotation or random initial selection. Visitors can
 drag or swipe the cards, use labeled previous/next buttons, or focus the gallery
-container itself and use unmodified Left/Right, Home, and End. These container
-shortcuts do not intercept keys from card links or the previous/next buttons.
+container itself and use unmodified Left/Right, Home, and End. Previous/next
+buttons, dragging or swiping, and container Left/Right navigation wrap between
+the first and last cards. Both arrow buttons remain available throughout the
+current three-card gallery. Home and End select the first and last cards.
+These container shortcuts do not intercept keys from card links or the
+previous/next buttons.
 Indicators retain their own arrow-key, Home, and End selection and move focus to
 the selected indicator. Enter or Space activates a focused previous/next button
 without moving focus away from it; a card link retains normal link navigation.
@@ -76,9 +80,11 @@ order, avoiding hydration changes caused by randomness.
 
 Tests cover all ten locales, the three-tool limit, the selected previews and
 retained public IP navigation, catalog-derived examples and links, no network or
-storage writes, localized arrow and indicator navigation controls, bounded button
-navigation, indicator selection and keyboard focus, container-only shortcuts,
-focus recovery before hiding a card, offscreen focus exclusion, and hydration.
+storage writes, localized arrow and indicator navigation controls, first/last
+wrapping for buttons and container arrow keys, enabled controls and synchronized
+indicators and status after wrapping, indicator selection and keyboard focus,
+container-only shortcuts, focus recovery before hiding a card, offscreen focus
+exclusion, and hydration.
 Existing navigation and calculation tests continue to verify
 opening a tool, browser-local calculation, and retained drafts. Review desktop
 and mobile layouts, dragging, swiping,
