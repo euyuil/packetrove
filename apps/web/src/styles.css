@@ -28,10 +28,6 @@ body {
   display: none;
 }
 
-.tool-gallery [data-inactive] {
-  opacity: 0.4;
-}
-
 .api-reference {
   --scalar-font: var(--mantine-font-family);
   --scalar-font-code: var(--mantine-font-family-monospace);
