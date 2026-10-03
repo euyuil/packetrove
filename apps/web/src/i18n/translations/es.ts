@@ -161,7 +161,7 @@ export const es = {
       "purpose": "Pide a un agente de IA que represente un rango IP inclusivo como su lista CIDR mínima y exacta.",
       "inputs": "Pasa start y end como direcciones IPv4 o IPv6 de la misma familia, sin prefijos CIDR, de hasta {{maximumLength}} caracteres cada una. end debe ser igual o posterior a start.",
       "result": "Lee range.first y range.last canónicos, cidrs ordenados, cidrCount y addressCount como cadena decimal exacta. Extremos iguales producen /32 o /128; un espacio completo produce /0. Los errores identifican start o end.",
-      "boundary": "El navegador calcula localmente. La API y el MCP remoto envían los extremos al servidor. La herramienta no inspecciona asignaciones reales ni cambia la configuración de cortafuegos, rutas o VPN. No hay conversión de rangos en la CLI ni en la habilidad del agente.",
+      "boundary": "El navegador calcula localmente. La API y el MCP remoto envían los extremos al servidor. La herramienta no inspecciona asignaciones reales ni cambia la configuración de cortafuegos, rutas o VPN. No hay conversión de rangos en la CLI.",
       "openTool": "Abrir conversión en el navegador",
       "questions": {
         "exact": {

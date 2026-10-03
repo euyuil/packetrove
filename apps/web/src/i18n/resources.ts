@@ -152,7 +152,7 @@ export const en = {
       "purpose": "Ask an AI agent to represent one inclusive start/end IP range as its minimal exact CIDR list.",
       "inputs": "Pass start and end as IPv4 or IPv6 addresses from the same family, without CIDR prefixes, up to {{maximumLength}} characters each. End must be at or after start.",
       "result": "Read canonical range.first and range.last, sorted cidrs, cidrCount, and exact decimal-string addressCount. Equal endpoints produce one /32 or /128; a complete address space produces /0. Errors identify the start or end field.",
-      "boundary": "The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI and agent-skill range conversion are not available.",
+      "boundary": "The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI range conversion is not available.",
       "openTool": "Open browser range conversion",
       "questions": {
         "exact": {
@@ -468,7 +468,7 @@ export const zhHans = {
       "purpose": "让智能体将一组包含起止端点的 IP 范围表示为最少且精确的 CIDR 列表。",
       "inputs": "start 和 end 须是不含 CIDR 前缀且属于同一地址族的 IPv4 或 IPv6 地址，每个最多 {{maximumLength}} 个字符。end 须等于或晚于 start。",
       "result": "读取规范化 range.first、range.last，已排序的 cidrs、cidrCount，以及精确十进制字符串 addressCount。端点相同返回一个 /32 或 /128；完整地址空间返回 /0。错误会指出 start 或 end 字段。",
-      "boundary": "浏览器在本地计算；API 和远程 MCP 调用会将端点发送到服务器。工具不检查实际地址分配，也不修改防火墙、路由或 VPN 配置。CLI 和智能体技能尚不支持范围转换。",
+      "boundary": "浏览器在本地计算；API 和远程 MCP 调用会将端点发送到服务器。工具不检查实际地址分配，也不修改防火墙、路由或 VPN 配置。CLI 尚不支持范围转换。",
       "openTool": "打开浏览器范围转换",
       "questions": {
         "exact": {
