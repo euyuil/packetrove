@@ -1,14 +1,17 @@
 name: CI and deployment
+run-name: ${{ github.event_name == 'pull_request' && format('CI PR #{0}', github.event.pull_request.number) || format('CI {0} {1}', github.ref_name, github.sha) }}
 
 on:
   pull_request:
     branches: [main, develop, 'release-*']
+    types: [opened, synchronize, reopened, edited, labeled, unlabeled]
   push:
     branches: [main, develop, 'release-*']
   workflow_dispatch:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('pull-request-{0}', github.event.pull_request.number) || format('production-{0}', github.ref) }}
@@ -30,6 +33,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/merge', github.event.pull_request.number) || github.sha }}
           persist-credentials: false
 
       - name: Set up pnpm from package.json
@@ -47,6 +51,13 @@ jobs:
 
       - name: Run project validation
         run: pnpm check
+
+      - name: Validate pull request destination
+        if: github.event_name == 'pull_request' && vars.DEVELOPMENT_WORKFLOW_ENABLED == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
+        run: pnpm exec tsx scripts/pr-routing.ts
 
       - name: Check whether this revision is still current
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'

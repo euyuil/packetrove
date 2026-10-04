@@ -187,10 +187,11 @@
 
 ## Development and release merge policy
 
-The owner has agreed the following target policy. Branch protection, CI, and
-environment migration are pending; follow the transition workflow below until
-activation. See [development and releases](docs/development-and-releases.md)
-for the preserved commit diagram, environment mapping, proposals, and rollout.
+The owner has agreed the following target policy. CI and all three environments
+are available; branch protection and contributor cutover are pending. Follow the
+transition workflow below until activation. See
+[development and releases](docs/development-and-releases.md) for the preserved
+commit diagram, environment mapping, manual release procedure, and rollout.
 
 - Never push directly to `main`, `develop`, or `release-*`.
 - After activation, branch ordinary development from the latest `origin/develop`
@@ -205,9 +206,10 @@ for the preserved commit diagram, environment mapping, proposals, and rollout.
 - When these lifecycle operations use GitHub pull requests, use Merge pull
   request, or pass `--merge` to the GitHub CLI. GitHub's standard PR merge creates
   a merge commit; do not substitute rebase merging for a true fast-forward.
-- The lifecycle merge route and any restriction to a sole automated merger are
-  implementation decisions, not agreed requirements. Automation does not grant
-  permission to bypass branch protection or merge without owner authorization.
+- Release promotion and synchronization use the manual release coordinator's
+  protected pull requests. Restricting all merges to a sole automated merger
+  remains a separate decision. Automation does not grant permission to bypass
+  branch protection or merge without owner authorization.
 
 ## Pull request workflow
 

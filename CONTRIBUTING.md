@@ -132,7 +132,8 @@ requires squash pull requests for daily development into `develop`, pre-release
 fixes into `release-*`, and hotfixes into `main`. Merges between those branches
 must preserve ancestry through a merge commit or a true fast-forward; squash
 and rebase are prohibited for these lifecycle operations. Direct pushes to all
-three branch patterns are prohibited. Release orchestration remains a proposal.
+three branch patterns are prohibited. The manual release coordinator is installed
+behind an activation variable; branch protection and contributor cutover are pending.
 
 **During migration**, branch from the latest `origin/main`. Use Conventional
 Commits and a Conventional Commit pull request title.
