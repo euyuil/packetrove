@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import { PRIVACY_POLICY_URL, PUBLIC_WEBSITE_ORIGIN } from './identity';
+import { PRIVACY_POLICY_URL, PUBLIC_WEBSITE_ORIGIN, publicOrigin } from './identity';
 import {
   CERTIFICATE_BUNDLE_EXAMPLES, CertificateBundleRequestSchema, CertificateBundleResultSchema,
   MAX_PEM_BYTES, MAX_CERTIFICATES,
@@ -187,6 +187,10 @@ export type ToolApiDefinition = Pick<ToolDefinition, 'schemaName' | 'inputSchema
 };
 export type ToolId = (typeof toolCatalog)[ToolPage]['id'];
 export const tools = Object.values(toolCatalog);
+
+export function getToolResultLink(tool: (typeof tools)[number], websiteOrigin = PUBLIC_WEBSITE_ORIGIN) {
+  return { ...tool.mcp.resultLink, uri: new URL(tool.webPath, publicOrigin(websiteOrigin)).href };
+}
 export type CliToolPage = {
   [Page in ToolPage]: (typeof toolCatalog)[Page]['cli'] extends null ? never : Page;
 }[ToolPage];

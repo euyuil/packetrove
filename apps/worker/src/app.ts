@@ -57,7 +57,8 @@ export function createApp(executor: ToolExecutor = executeTool) {
     context.header('Cache-Control', 'no-store, no-transform');
   });
   app.all('/mcp', async context => {
-    const mcpHandler = createPacketroveMcpHandler(executor, context.env?.PACKETROVE_AUTOMATION_TOKEN);
+    const mcpHandler = createPacketroveMcpHandler(executor, context.env?.PACKETROVE_AUTOMATION_TOKEN,
+      context.env?.PUBLIC_API_ORIGIN, context.env?.PUBLIC_WEBSITE_ORIGIN);
     if (context.req.method === 'POST') {
       const parsedBody = await readJsonBody(context.req.raw);
       return mcpHandler.fetch(context.req.raw, { parsedBody });

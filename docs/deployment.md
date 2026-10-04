@@ -405,6 +405,56 @@ After DNS and certificate provisioning, run:
 pnpm smoke https://packetrove.com https://api.packetrove.com
 ```
 
+## Permanent development and staging environments
+
+The two Worker configurations also define named `development` and `staging`
+environments. Each has a separate website Worker and API/MCP Worker:
+
+| Environment | Website | API and MCP |
+| --- | --- | --- |
+| Development | `https://dev.packetrove.com` | `https://api.dev.packetrove.com` |
+| Staging | `https://staging.packetrove.com` | `https://api.staging.packetrove.com` |
+
+The **Deploy development or staging** workflow deploys only current revisions
+with successful branch CI. Development selects `develop`; before that branch
+exists, a manual run can bootstrap it from validated `main`. Staging selects the
+single `release-<version>` branch while it exists and otherwise selects validated
+`main`. Updates to other branches cannot replace an active staging candidate.
+Deployment records identify the actual source SHA and become successful only
+after website, API, and modern and legacy MCP smoke checks pass.
+
+Create GitHub environments named `development` and `staging`. Give each a distinct
+`NON_PRODUCTION_AUTOMATION_TOKEN` environment secret, generated as described for
+the production automation token. The deployment workflow uploads it directly to
+that environment's API Worker using a temporary secret file, removes that file,
+and never prints the value. It uses the existing repository-level Cloudflare
+deployment credentials for Workers in the same account and zone.
+
+Bootstrap and verify both environments manually before setting the repository
+variable `NON_PRODUCTION_DEPLOYMENTS_ENABLED=true`. That variable enables automatic
+deployment after successful CI for `develop`, an active release branch, or idle
+staging's `main`. Pull request validation does not deploy environments.
+
+```sh
+gh workflow run deploy-environment.yml --ref main -f environment=development
+gh workflow run deploy-environment.yml --ref main -f environment=staging
+```
+
+For a local environment build, set both public origins before building, then
+use the corresponding Wrangler `--env` value for both Workers:
+
+```sh
+VITE_WEBSITE_ORIGIN=https://dev.packetrove.com VITE_API_ORIGIN=https://api.dev.packetrove.com pnpm --filter @packetrove/web build
+pnpm --filter @packetrove/worker run deploy --env development
+pnpm --filter @packetrove/worker run deploy:website --env development
+pnpm smoke https://dev.packetrove.com https://api.dev.packetrove.com
+```
+
+All environments share the account's existing free-plan quota. These
+configurations do not activate a paid subscription. See the
+[development and release policy](development-and-releases.md) for branch routing
+and candidate lifecycle rules.
+
 ## Browser state and self-hosting
 
 The production website calls `https://api.packetrove.com/v1/public-ip` directly with
@@ -419,17 +469,19 @@ credentials. Future login cookies should use the `__Host-` prefix with `Secure`,
 same-site, so `SameSite` does not replace host-only scoping or request validation.
 Browser local storage is separate per origin and is not sent with API requests.
 
-For your own deployment, change the custom domains in both configuration files
-and the separate MCP Host and Origin allowlists. Build the website with
-`VITE_API_ORIGIN=https://api.example.com`, using your actual API origin. The CLI
+For your own deployment, change the custom domains and `PUBLIC_API_ORIGIN` and
+`PUBLIC_WEBSITE_ORIGIN` variables in the API Worker configuration. MCP derives its
+exact Host and browser Origin allowlists from those variables. Build the website
+with `VITE_API_ORIGIN=https://api.example.com` and
+`VITE_WEBSITE_ORIGIN=https://www.example.com`, using your actual origins. The CLI
 can use `public-ip --api-origin https://api.example.com`. OpenAPI uses a relative server
 URL so it resolves against the host serving the specification. Local Vite
 serves the website separately and points IP requests to `http://localhost:8787`.
 
-Set `WEBSITE_ORIGIN` in
-[page-metadata.ts](../apps/web/src/i18n/page-metadata.ts) to your website origin
-before rebuilding. Canonical URLs, alternate-language links, social metadata,
-and the sitemap use this value; changing Worker domains alone does not update them.
+Canonical URLs, alternate-language links, social metadata, the sitemap, and MCP
+website examples use `VITE_WEBSITE_ORIGIN`. Changing Worker domains alone does
+not rebuild website metadata. Generated repository integration guides retain the
+public production defaults; the CLI's default API origin also remains production.
 
 ## Costs and limits
 

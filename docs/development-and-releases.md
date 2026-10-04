@@ -127,10 +127,12 @@ new version.
 
 ## Implementation work
 
-The current CI checks pull requests to `main` and deploys production from `main`.
-The Worker configurations contain production domains, and release-please both
-prepares versions and creates releases from `main`. Implement the transition
-in this order:
+CI now validates `main`, `develop`, and `release-*`, while production deploys
+only from `main`. Named Worker configurations and the environment deployment
+workflow support development and staging; activate automatic deployment only
+after bootstrap verification. Legacy release-please defaults to finalizing an
+owner-merged PR; preparing another legacy candidate requires explicit manual
+selection. Complete the transition in this order:
 
 1. Extend validation to pull requests targeting `develop` and `release-*`,
    retaining `Validate project` and keeping PR validation separate from deployment.

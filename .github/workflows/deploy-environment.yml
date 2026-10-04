@@ -1,0 +1,166 @@
+name: Deploy development or staging
+
+on:
+  workflow_run:
+    workflows: [CI and deployment]
+    branches: [main, develop, 'release-*']
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Permanent environment to deploy
+        required: true
+        type: choice
+        options: [development, staging]
+      source_ref:
+        description: Expected source branch; leave empty to select develop or the active candidate
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+  deployments: write
+
+concurrency:
+  group: environment-${{ github.event.workflow_run.head_branch == 'develop' && 'development' || inputs.environment || 'staging' }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy and verify environment
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (vars.NON_PRODUCTION_DEPLOYMENTS_ENABLED == 'true' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-26.04
+    timeout-minutes: 15
+    environment: ${{ github.event.workflow_run.head_branch == 'develop' && 'development' || inputs.environment || 'staging' }}
+    env:
+      DEPLOYMENT_ENVIRONMENT: ${{ github.event.workflow_run.head_branch == 'develop' && 'development' || inputs.environment || 'staging' }}
+      GH_TOKEN: ${{ github.token }}
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - name: Check out trusted deployment orchestration
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Set up pnpm from package.json
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Install orchestration dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Select a current validated branch revision
+        id: plan
+        env:
+          SOURCE_REF: ${{ inputs.source_ref }}
+        run: pnpm exec tsx scripts/environment-deployment.ts plan
+
+      - name: Check out exact deployment revision
+        if: steps.plan.outputs.deploy == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ steps.plan.outputs.sha }}
+          persist-credentials: false
+
+      - name: Build the environment website and API assets
+        if: steps.plan.outputs.deploy == 'true'
+        env:
+          VITE_WEBSITE_ORIGIN: ${{ steps.plan.outputs.website }}
+          VITE_API_ORIGIN: ${{ steps.plan.outputs.api }}
+          VITE_GITHUB_REPOSITORY: ${{ github.repository }}
+          VITE_GIT_COMMIT: ${{ steps.plan.outputs.sha }}
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @packetrove/web build
+          pnpm --filter @packetrove/worker assets:build
+
+      - name: Recheck the selected revision before deployment
+        if: steps.plan.outputs.deploy == 'true'
+        id: current
+        env:
+          SOURCE_REF: ${{ steps.plan.outputs.branch }}
+          EXPECTED_DEPLOYMENT_SHA: ${{ steps.plan.outputs.sha }}
+        run: pnpm exec tsx scripts/environment-deployment.ts plan
+
+      - name: Prepare the independent environment credential
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          PACKETROVE_AUTOMATION_TOKEN: ${{ secrets.NON_PRODUCTION_AUTOMATION_TOKEN }}
+        run: |
+          pnpm exec tsx --eval 'import { readSmokeAutomation } from "./scripts/mcp-smoke-transport.ts"; readSmokeAutomation(process.env);'
+          node --input-type=module <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          import { join } from 'node:path';
+          writeFileSync(join(process.env.RUNNER_TEMP, 'packetrove-environment-secrets.json'),
+            JSON.stringify({ PACKETROVE_AUTOMATION_TOKEN: process.env.PACKETROVE_AUTOMATION_TOKEN }), { mode: 0o600 });
+          NODE
+
+      - name: Record the exact deployment revision
+        if: steps.current.outputs.deploy == 'true'
+        id: record
+        env:
+          DEPLOYMENT_SHA: ${{ steps.plan.outputs.sha }}
+        run: pnpm exec tsx scripts/environment-deployment.ts record
+
+      - name: Deploy environment Workers
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DEPLOYMENT_SHA: ${{ steps.plan.outputs.sha }}
+        run: |
+          if [[ -z "$CLOUDFLARE_API_TOKEN" || -z "$CLOUDFLARE_ACCOUNT_ID" ]]; then
+            echo "::error::Configure Cloudflare deployment secrets before deploying an environment."
+            exit 1
+          fi
+          pnpm --filter @packetrove/worker run deploy --env "$DEPLOYMENT_ENVIRONMENT" \
+            --secrets-file "$RUNNER_TEMP/packetrove-environment-secrets.json" \
+            --tag "$DEPLOYMENT_SHA" --message "GitHub Actions run $GITHUB_RUN_ID"
+          pnpm --filter @packetrove/worker run deploy:website --env "$DEPLOYMENT_ENVIRONMENT" \
+            --tag "$DEPLOYMENT_SHA" --message "GitHub Actions run $GITHUB_RUN_ID"
+
+      - name: Wait for the environment website
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          VITE_GIT_COMMIT: ${{ steps.plan.outputs.sha }}
+          WEBSITE_ORIGIN: ${{ steps.plan.outputs.website }}
+        run: pnpm wait:deployment "$WEBSITE_ORIGIN"
+
+      - name: Verify the environment website, API, and MCP
+        if: steps.current.outputs.deploy == 'true'
+        env:
+          VITE_GIT_COMMIT: ${{ steps.plan.outputs.sha }}
+          WEBSITE_ORIGIN: ${{ steps.plan.outputs.website }}
+          API_ORIGIN: ${{ steps.plan.outputs.api }}
+          PACKETROVE_AUTOMATION_TOKEN: ${{ secrets.NON_PRODUCTION_AUTOMATION_TOKEN }}
+        run: |
+          for attempt in 1 2 3; do
+            if pnpm smoke "$WEBSITE_ORIGIN" "$API_ORIGIN"; then
+              echo "Deployed and verified $VITE_GIT_COMMIT at $WEBSITE_ORIGIN and $API_ORIGIN." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            if [[ "$attempt" -lt 3 ]]; then sleep 5; fi
+          done
+          exit 1
+
+      - name: Complete the deployment record
+        if: always() && steps.record.outputs.deployment_id != ''
+        env:
+          DEPLOYMENT_ID: ${{ steps.record.outputs.deployment_id }}
+          DEPLOYMENT_STATUS: ${{ job.status == 'success' && 'success' || 'failure' }}
+        run: pnpm exec tsx scripts/environment-deployment.ts record "$DEPLOYMENT_STATUS"
+
+      - name: Remove temporary secret material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/packetrove-environment-secrets.json"
