@@ -1,3 +1,4 @@
+import { certificateCopy } from '../certificate/ja';
 import type { TranslationResource } from '../translation-resource';
 
 export const ja = {
@@ -5,6 +6,7 @@ export const ja = {
     title: 'このページを日本語で表示しますか？',
     switch: '日本語に切り替える', dismiss: '今はしない',
   },
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "ページを読み込み中…", pageLoadFailure: "ページを読み込めませんでした。もう一度お試しください。", retryPage: "再試行",
     home: 'ホーム', homeLabel: 'Packetrove ホーム', navigation: 'メインナビゲーション',
@@ -75,7 +77,7 @@ export const ja = {
         },
         "remote": {
             "title": "リモートツールの入力と結果",
-            "body": "APIやリモートMCPによる計算は、指定されたIPアドレス、CIDR、範囲の端点をPacketroveに送信します。データベースや保存された計算履歴を使わず、メモリー内で処理して結果を返します。会話履歴やアカウントの認証情報は要求しません。呼び出し元のクライアントは結果を受け取り、自身のポリシーに従って保存する場合があります。"
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "公開IPの確認",
@@ -104,6 +106,7 @@ export const ja = {
     apiDocumentation: 'API ドキュメント', cliGuide: 'CLI ガイド（英語）', sendEmail: 'メールを送信',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "両端を含む開始・終了 IP を最小の正確な CIDR リストに変換します。ローカルで計算し、追加アドレスなしで全ブロックをコピーできます。",
     rangeLink: "IP 範囲の変換を開く",
     galleryTitle: "ツールを探す",
@@ -231,6 +234,7 @@ export const ja = {
     familyExplanation: '1 つの接続で使われるのは IPv4 または IPv6 のどちらかです。この確認で表示するのはその接続のアドレスで、両方のアドレスやローカルのプライベートアドレスは取得できません。ネットワークやプロキシの設定を変更したら、再取得してください。',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: 'エンドポイントの概要と例',
     rangeSummary: "同じアドレス種別の start と end を送信します。両端を含み、正規化した端点、最小の正確な CIDR リスト、CIDR 数、十進数文字列のアドレス数を返します。このリクエストは入力をサーバーに送信します。",
     rangeResponse: "この例は {{cidrs}} を返し、正確に {{addresses}} 個のアドレスを表します。",
@@ -247,6 +251,7 @@ export const ja = {
     subtractResponse: "この例は {{cidrs}} を返し、残りは {{remaining}} アドレスです。余分な範囲は追加しません。",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "IP 範囲変換の質問",
       "mcpTitle": "MCP で IP 範囲を変換",
@@ -415,6 +420,7 @@ export const ja = {
     tooManyOutputs: '結果全体が {{limit}} 件の CIDR を超えています。除外項目を減らすか、含める範囲を小さくしてください。結果の一部だけを返すことはありません。',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove サポート","description":"Packetrove のメンテナーへの連絡、安全な問題報告、API・MCP・CLI ガイドとプライバシー情報。"},
     terms: {"title":"Packetrove 利用規約","description":"Packetrove のホスト型サービスの利用条件、結果の制限、可用性、プライバシー、MIT ライセンスを説明します。"},
     privacy: {"title": "Packetrove プライバシーポリシー", "description": "Packetroveのローカル計算、リモート入力、接続アドレス、運用ログ、ホスティングデータの処理と、保持期間および利用者の選択について説明します。"},

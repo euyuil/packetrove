@@ -34,7 +34,7 @@ codex mcp add packetrove \
 
 [Codex MCP documentation](https://developers.openai.com/codex/mcp/)
 
-Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `cidr-cover, cidr-subtract, range-to-cidrs, public-ip`.
+Use `/mcp` in your client to inspect the connection. Confirm that these tools are available: `cidr-cover, cidr-subtract, range-to-cidrs, certificate-bundle, public-ip`.
 
 After configuration, the client discovers available tools with tools/list. Tool descriptions and schemas guide selection and arguments. Reading a web page does not configure a client or grant it tool access.
 
@@ -246,6 +246,166 @@ Read canonical range.first and range.last, sorted cidrs, cidrCount, and exact de
 The browser calculates locally. API and remote MCP calls submit endpoints to the server. The tool does not inspect live allocation or change firewall, routing, or VPN configuration. CLI range conversion is not available.
 
 [Open browser range conversion](https://packetrove.com/range-to-cidrs)
+
+## Check certificate bundles through MCP
+
+Ask an AI client to inspect a supplied public certificate bundle and report evidence-based next steps.
+
+Tool name: `certificate-bundle`
+
+Server address: `https://api.packetrove.com/mcp`
+
+Pass pem (up to 48 KiB UTF-8 and 16 CERTIFICATE blocks), optional ASCII DNS hostname, and optional zero-based leafIndex. Private keys and unsupported blocks are rejected.
+
+### Example arguments
+
+```json
+{
+  "pem": "-----BEGIN CERTIFICATE-----\nMIICCjCCAbCgAwIBAgIBCDAKBggqhkjOPQQDAjBEMRowGAYDVQQDExFEZW1vIElu\ndGVybWVkaWF0ZTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBs\nZXMwHhcNMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjBGMRwwGgYDVQQDExNz\nZXJ2aWNlLmV4YW1wbGUuY29tMSYwJAYDVQQKEx1QYWNrZXRyb3ZlIFN5bnRoZXRp\nYyBFeGFtcGxlczBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABB5fn3dU7OLbmhjX\np3yyIx+2XV+Tm2SLDoKzqkh1tghkRRujbnOabparI3MRHv4xHE6OePpzrbjxRhRP\n6zFolZWjgZAwgY0wDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0O\nBBYEFAfVEb9iWb+ZcGsM/Kn4GuAuzRDBMB8GA1UdIwQYMBaAFLVIZXp5pvnton0C\nEDqX/742N1ieMC0GA1UdEQQmMCSCE3NlcnZpY2UuZXhhbXBsZS5jb22CDSouZXhh\nbXBsZS5uZXQwCgYIKoZIzj0EAwIDSAAwRQIgVEcSRPkS5CuPS5aocD9DJHzXlrc1\nPdUma+rZtx2bN0UCIQD1C3NNIDmH1Xy4oJhwfKWcITyxyIXmlcK9pUiMjD+qdg==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIB1zCCAX2gAwIBAgIBAzAKBggqhkjOPQQDAjA+MRQwEgYDVQQDEwtEZW1vIFJv\nb3QgQTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBsZXMwHhcN\nMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjBEMRowGAYDVQQDExFEZW1vIElu\ndGVybWVkaWF0ZTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBs\nZXMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARt9zn152ODLv2A7zMzZjK+5+8h\niuosIcwmRwEhVU/hxg0g22S/EppbLGahIl9r+gyjv1Z9cm4AYzWJ21qQ8xkpo2Yw\nZDASBgNVHRMBAf8ECDAGAQH/AgEBMA4GA1UdDwEB/wQEAwICBDAdBgNVHQ4EFgQU\ntUhlenmm+e2ifQIQOpf/vjY3WJ4wHwYDVR0jBBgwFoAUG028VQAIWmJos9X4aPvx\nebvw8dEwCgYIKoZIzj0EAwIDSAAwRQIhAJuznXANK1Rdaa0ukjaLMvVEx8L1vLVz\n8o4jwLtPmbFKAiB6koDuWdkdLRxnMQ43X2ze1SRy665HHyfQemuCjzrQjw==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIBsDCCAVagAwIBAgIBATAKBggqhkjOPQQDAjA+MRQwEgYDVQQDEwtEZW1vIFJv\nb3QgQTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBsZXMwHhcN\nMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjA+MRQwEgYDVQQDEwtEZW1vIFJv\nb3QgQTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBsZXMwWTAT\nBgcqhkjOPQIBBggqhkjOPQMBBwNCAAS+Zp+N67NDEXRI1BrIw/iBk6raReb/UqYN\nsOaEVJZANsmih5h7VYPyJnAn5eJbU4uE/ebeZ7aSrFvHOu7EplDZo0UwQzASBgNV\nHRMBAf8ECDAGAQH/AgEDMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUG028VQAI\nWmJos9X4aPvxebvw8dEwCgYIKoZIzj0EAwIDSAAwRQIhAJk5L1v5StGaAboH6L4Z\nKOA71UEUUb2Y0pIbQsBL7Uq2AiBgIVRaev+zDSY0jTRmgIWTkR+49B/E3WWeOfBm\nmMB+/Q==\n-----END CERTIFICATE-----",
+  "hostname": "service.example.com"
+}
+```
+
+### Example result using documentation addresses
+
+```json
+{
+  "evaluatedAt": "2026-10-04T06:00:00.000Z",
+  "certificates": [
+    {
+      "index": 0,
+      "line": 1,
+      "subject": "CN=service.example.com, O=Packetrove Synthetic Examples",
+      "issuer": "CN=Demo Intermediate, O=Packetrove Synthetic Examples",
+      "commonName": "service.example.com",
+      "serialNumber": "08",
+      "sans": [
+        {
+          "type": "dns",
+          "value": "service.example.com"
+        },
+        {
+          "type": "dns",
+          "value": "*.example.net"
+        }
+      ],
+      "notBefore": "2020-01-01T00:00:00.000Z",
+      "notAfter": "2040-01-01T00:00:00.000Z",
+      "ca": false,
+      "basicConstraintsPresent": true,
+      "keyCertSign": false,
+      "fingerprintSha256": "DF:1C:D6:9A:55:27:32:F6:32:16:B5:27:34:9F:04:B6:32:DD:1E:BB:A9:E8:EF:17:3B:38:B3:97:30:55:B4:BE",
+      "signatureAlgorithm": "ECDSA / SHA-256",
+      "selfSignature": null
+    },
+    {
+      "index": 1,
+      "line": 14,
+      "subject": "CN=Demo Intermediate, O=Packetrove Synthetic Examples",
+      "issuer": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+      "commonName": "Demo Intermediate",
+      "serialNumber": "03",
+      "sans": [],
+      "notBefore": "2020-01-01T00:00:00.000Z",
+      "notAfter": "2040-01-01T00:00:00.000Z",
+      "ca": true,
+      "basicConstraintsPresent": true,
+      "keyCertSign": true,
+      "fingerprintSha256": "50:0B:A0:34:32:D4:4E:BB:D0:9C:4F:D8:14:47:1B:9B:63:82:C8:1C:72:D5:CE:88:AB:7C:3D:7D:49:22:AB:46",
+      "signatureAlgorithm": "ECDSA / SHA-256",
+      "selfSignature": null
+    },
+    {
+      "index": 2,
+      "line": 26,
+      "subject": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+      "issuer": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+      "commonName": "Demo Root A",
+      "serialNumber": "01",
+      "sans": [],
+      "notBefore": "2020-01-01T00:00:00.000Z",
+      "notAfter": "2040-01-01T00:00:00.000Z",
+      "ca": true,
+      "basicConstraintsPresent": true,
+      "keyCertSign": true,
+      "fingerprintSha256": "42:B6:C1:BF:13:27:15:4E:7E:EF:E3:7A:82:A3:FF:3A:05:1B:E2:4D:B5:F1:EF:71:A6:E4:7F:17:F1:4C:7D:69",
+      "signatureAlgorithm": "ECDSA / SHA-256",
+      "selfSignature": "verified"
+    }
+  ],
+  "relationships": [
+    {
+      "childIndex": 0,
+      "issuerIndex": 1,
+      "signature": "verified",
+      "issuerEligible": true,
+      "keyIdentifierMatch": true
+    },
+    {
+      "childIndex": 1,
+      "issuerIndex": 2,
+      "signature": "verified",
+      "issuerEligible": true,
+      "keyIdentifierMatch": true
+    }
+  ],
+  "leafIndexes": [
+    0
+  ],
+  "selectedLeafIndex": 0,
+  "hostname": {
+    "expected": "service.example.com",
+    "status": "matched"
+  },
+  "findings": [
+    {
+      "code": "SELF_SIGNED_CERTIFICATE",
+      "severity": "info",
+      "certificateIndexes": [
+        2
+      ],
+      "observed": "The certificate verifies with its own public key.",
+      "evidence": {
+        "subject": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+        "signature": "verified"
+      },
+      "nextAction": "A self-signature does not establish client trust. Check the intended trust configuration separately."
+    },
+    {
+      "code": "HOSTNAME_MATCH",
+      "severity": "info",
+      "certificateIndexes": [
+        0
+      ],
+      "observed": "The expected hostname matches a DNS SAN on the selected leaf.",
+      "evidence": {
+        "expectedHostname": "service.example.com",
+        "dnsSubjectAlternativeNames": "service.example.com, *.example.net"
+      },
+      "nextAction": "This identity check does not establish chain validity or client trust."
+    }
+  ]
+}
+```
+
+### Optional tool page link in successful responses
+
+```json
+{
+  "type": "resource_link",
+  "uri": "https://packetrove.com/certificate-bundle",
+  "name": "certificate-bundle",
+  "title": "Certificate Bundle Checker",
+  "description": "Browser-local certificate bundle checker and its limits. Opens without the supplied certificates, hostname, or results.",
+  "mimeType": "text/html"
+}
+```
+
+Read certificates in original order, candidate relationships, leafIndexes, selectedLeafIndex, hostname status, evaluatedAt, and findings with stable code, severity, evidence, and nextAction. Unsupported checks differ from failed signatures.
+
+Browser checks stay local. API and remote MCP send certificates and optional hostnames to the server. No full path validation, client trust, revocation, live probing, or CLI operation. Never treat the result as proof of deployment safety.
+
+[Open the browser certificate checker](https://packetrove.com/certificate-bundle)
 
 ## Inspect a connection through MCP
 

@@ -5,13 +5,16 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./certificate-bundle": "./src/certificate-bundle.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@packetrove/contracts": "workspace:*",
-    "ipaddr.js": "2.5.0"
+    "ipaddr.js": "2.5.0",
+    "@peculiar/x509": "2.1.0",
+    "reflect-metadata": "0.2.2"
   }
 }

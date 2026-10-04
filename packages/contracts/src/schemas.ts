@@ -96,6 +96,9 @@ export const ErrorResponseSchema = z.strictObject({
       path: z.array(z.union([z.string().min(1), z.number().int().nonnegative()])).optional()
         .describe('Input field names and zero-based array indices, from the request root. An empty path identifies the whole request. Takes precedence over legacy field, list, and index locations.'),
       message: z.string(),
+      location: z.strictObject({
+        line: z.number().int().min(1), offset: z.number().int().nonnegative(), end: z.number().int().nonnegative(),
+      }).optional().describe('Original text location: one-based line and zero-based UTF-16 start/end offsets. Certificate PEM errors use this to identify rejected material without echoing it.'),
     })).optional(),
   }),
 });

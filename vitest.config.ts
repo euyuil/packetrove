@@ -7,7 +7,6 @@ export default defineConfig({
       './apps/worker/vitest.config.ts',
       './apps/worker/vitest.website.config.ts',
       './apps/web/vitest.config.ts',
-      './apps/certificate-demo/vitest.config.ts',
     ],
   },
 });

@@ -5,6 +5,7 @@ export * from './schemas';
 export * from './tools';
 export * from './identity';
 export * from './input-issues';
+export * from './certificate-bundle';
 
 export const PACKETROVE_VERSION = manifest.version;
 export const MCP_PATH = '/mcp';

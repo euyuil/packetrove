@@ -1,7 +1,6 @@
-import 'reflect-metadata';
 import { Box, Text } from '@mantine/core';
-import { Name } from '@peculiar/x509';
-import type { BundleResult } from './checker';
+import { useTranslation } from 'react-i18next';
+import type { CertificateBundleResult } from '@packetrove/contracts';
 
 const nodeWidth = 220;
 
@@ -19,14 +18,11 @@ function labelLines(label: string) {
   return lines;
 }
 
-function commonName(subject: string) {
-  try { return new Name(subject).getField('CN').join(' / ') || '未提供 CN'; }
-  catch { return '未提供 CN'; }
-}
-
-export function RelationshipGraph({ result }: { result: BundleResult }) {
+export function CertificateRelationshipGraph({ result }: { result: CertificateBundleResult }) {
+  const { t } = useTranslation();
+  const commonName = (name: string | null) => name || t($ => $.certificate.noCommonName);
   const count = result.certificates.length;
-  const labels = result.certificates.map(certificate => labelLines(`#${certificate.index + 1} ${commonName(certificate.subject)}`));
+  const labels = result.certificates.map(certificate => labelLines(`#${certificate.index + 1} ${commonName(certificate.commonName)}`));
   const nodeHeight = Math.max(...labels.map(lines => lines.length * 20 + 34));
   const grid = count > 6;
   const radiusY = Math.max(110, (nodeHeight + 16) / (1 - Math.cos(2 * Math.PI / Math.max(2, count))));
@@ -41,7 +37,7 @@ export function RelationshipGraph({ result }: { result: BundleResult }) {
   const negative = 'var(--mantine-color-orange-8)';
   return <Box>
     <Box component="svg" viewBox={`0 0 640 ${height}`} w="100%" role="img"
-      aria-label="证书签发关系图。箭头从被签发证书指向候选签发者；原始输入位置见下方表格。">
+      aria-label={t($ => $.certificate.graphLabel)}>
       <defs>
         {[['verified', positive], ['other', negative]].map(([id, color]) =>
           <marker key={id} id={`arrow-${id}`} viewBox="0 0 10 10" refX={9} refY={5}
@@ -64,7 +60,7 @@ export function RelationshipGraph({ result }: { result: BundleResult }) {
           strokeDasharray={verified ? undefined : '6 5'} markerEnd={`url(#arrow-${verified ? 'verified' : 'other'})`} />;
       })}
       {nodes.map(({ certificate, lines, x, y }) => <g key={certificate.index}>
-        <title>#{certificate.index + 1} {commonName(certificate.subject)}</title>
+        <title>#{certificate.index + 1} {commonName(certificate.commonName)}</title>
         <rect x={x - nodeWidth / 2} y={y - nodeHeight / 2} width={nodeWidth} height={nodeHeight} rx={12}
           fill={certificate.ca ? 'var(--mantine-color-gray-1)' : 'var(--mantine-color-violet-0)'}
           stroke={result.selectedLeafIndex === certificate.index ? positive : 'var(--mantine-color-gray-5)'} strokeWidth={2} />
@@ -72,9 +68,9 @@ export function RelationshipGraph({ result }: { result: BundleResult }) {
           {lines.map((line, index) => <tspan key={index} x={x} y={y - nodeHeight / 2 + 22 + index * 20}>{line}</tspan>)}
         </text>
         <text x={x} y={y + nodeHeight / 2 - 10} textAnchor="middle" fontFamily="sans-serif" fontSize={12}
-          fill="var(--mantine-color-gray-7)">{certificate.ca ? 'CA 证书' : '非 CA 证书'}</text>
+          fill="var(--mantine-color-gray-7)">{t($ => certificate.ca ? $.certificate.ca : $.certificate.nonCa)}</text>
       </g>)}
     </Box>
-    <Text size="xs" c="dimmed">箭头：被签发证书 → 候选签发者。实线表示签名与本地签发约束通过，虚线表示未通过或未完成检查。自签名结果见证书详情。</Text>
+    <Text size="xs" c="dimmed">{t($ => $.certificate.graphHelp)}</Text>
   </Box>;
 }

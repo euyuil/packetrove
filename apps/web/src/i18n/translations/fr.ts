@@ -1,3 +1,4 @@
+import { certificateCopy } from '../certificate/fr';
 import type { TranslationResource } from '../translation-resource';
 
 export const fr = {
@@ -5,6 +6,7 @@ export const fr = {
     title: 'Voulez-vous lire cette page en français ?',
     switch: 'Passer au français', dismiss: 'Pas maintenant',
   },
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "Chargement de la page…", pageLoadFailure: "Cette page n’a pas pu être chargée. Veuillez réessayer.", retryPage: "Réessayer",
     home: 'Accueil', homeLabel: 'Accueil de Packetrove', navigation: 'Navigation principale',
@@ -75,7 +77,7 @@ export const fr = {
         },
         "remote": {
             "title": "Entrées et résultats des outils distants",
-            "body": "Les calculs via API et MCP distant envoient à Packetrove les adresses IP, CIDR ou bornes de plage fournies. Nous les traitons en mémoire pour renvoyer le résultat, sans base de données ni historique de calcul conservé. Nous ne demandons ni historique de conversation ni identifiants de compte. Le client appelant reçoit le résultat et peut le conserver selon ses propres politiques."
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "Vérifications de l’IP publique",
@@ -104,6 +106,7 @@ export const fr = {
     apiDocumentation: 'Documentation de l’API', cliGuide: 'Guide CLI (en anglais)', sendEmail: 'Envoyer un e-mail',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "Convertissez des bornes IP inclusives en une liste CIDR minimale exacte. Calculez localement et copiez tous les blocs sans ajouter d’adresses.",
     rangeLink: "Ouvrir le convertisseur de plages IP",
     galleryTitle: "Découvrez les outils",
@@ -216,6 +219,7 @@ export const fr = {
     familyExplanation: 'Une connexion utilise IPv4 ou IPv6. Cette vérification affiche cette adresse ; elle ne recherche ni les deux familles ni votre adresse locale privée. Actualisez après un changement de réseau ou de configuration du proxy.',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: 'Résumés des endpoints et exemples',
     rangeSummary: "Envoyez start et end de la même famille. Les deux bornes sont incluses. Renvoie les bornes canoniques, la liste CIDR minimale exacte, le nombre de CIDR et le nombre d’adresses en chaîne décimale. Cette requête envoie les entrées au serveur.",
     rangeResponse: "Cet exemple renvoie {{cidrs}}, représentant exactement {{addresses}} adresses.",
@@ -232,6 +236,7 @@ export const fr = {
     subtractResponse: "Cet exemple renvoie {{cidrs}}, avec {{remaining}} adresses restantes et aucune couverture supplémentaire.",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "Questions sur la conversion de plages IP",
       "mcpTitle": "Convertir des plages IP via MCP",
@@ -400,6 +405,7 @@ export const fr = {
     tooManyOutputs: 'Le résultat complet dépasse {{limit}} CIDR. Réduisez les exclusions ou les plages incluses. Aucun résultat partiel n’est renvoyé.',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove Assistance","description":"Contactez le responsable de Packetrove, signalez des problèmes sans divulguer de données privées et trouvez les guides API, MCP, CLI et de confidentialité."},
     terms: {"title":"Packetrove Conditions d’utilisation","description":"Lisez les conditions du service hébergé Packetrove : utilisation, limites des résultats, disponibilité, confidentialité et licence MIT."},
     privacy: {"title": "Politique de confidentialité de Packetrove", "description": "Découvrez le traitement des calculs locaux, entrées distantes, adresses de connexion, journaux opérationnels et données d’hébergement de Packetrove, ainsi que leur conservation et vos choix."},

@@ -1,6 +1,8 @@
+import { certificateCopy } from '../certificate/de';
 import type { TranslationResource } from '../translation-resource';
 
 export const de = {
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "Seite wird geladen…", pageLoadFailure: "Diese Seite konnte nicht geladen werden. Bitte versuche es erneut.", retryPage: "Erneut versuchen",
     home: 'Startseite', homeLabel: 'Packetrove-Startseite', navigation: 'Hauptnavigation',
@@ -75,7 +77,7 @@ export const de = {
         },
         "remote": {
             "title": "Eingaben und Ergebnisse entfernter Werkzeuge",
-            "body": "Berechnungen über die API und entferntes MCP senden die angegebenen IP-Adressen, CIDRs oder Bereichsgrenzen an Packetrove. Wir verarbeiten sie im Arbeitsspeicher und geben das Ergebnis zurück, ohne Datenbank oder gespeicherten Berechnungsverlauf. Wir verlangen weder Gesprächsverläufe noch Kontozugangsdaten. Der aufrufende Client erhält das Ergebnis und kann es nach seinen eigenen Richtlinien speichern."
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "Abfragen der öffentlichen IP",
@@ -104,6 +106,7 @@ export const de = {
     apiDocumentation: 'API-Dokumentation', cliGuide: 'CLI-Anleitung (Englisch)', sendEmail: 'E-Mail senden',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "Wandle inklusive Start- und Endadressen in die minimale exakte CIDR-Liste um. Berechne lokal und kopiere alle Blöcke ohne zusätzliche Adressen.",
     rangeLink: "IP-Bereichskonverter öffnen",
     galleryTitle: "Werkzeuge entdecken",
@@ -231,6 +234,7 @@ export const de = {
     familyExplanation: 'Eine Verbindung verwendet entweder IPv4 oder IPv6. Diese Abfrage zeigt diese Adresse; sie ermittelt weder beide Adressfamilien noch Ihre private lokale Adresse. Aktualisieren Sie die Abfrage nach einem Netzwerkwechsel oder einer Änderung der Proxy-Einstellungen.',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: 'Endpunktübersichten und Beispiele',
     rangeSummary: "Sende start und end derselben Adressfamilie. Beide Endpunkte sind enthalten. Zurückgegeben werden kanonische Endpunkte, die minimale exakte CIDR-Liste, CIDR-Anzahl und Adressanzahl als Dezimalzeichenfolge. Die Anfrage sendet Eingaben an den Server.",
     rangeResponse: "Dieses Beispiel liefert {{cidrs}} für exakt {{addresses}} Adressen.",
@@ -247,6 +251,7 @@ export const de = {
     subtractResponse: "Dieses Beispiel liefert {{cidrs}} mit {{remaining}} verbleibenden Adressen und ohne zusätzliche Abdeckung.",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "Fragen zur IP-Bereichsumwandlung",
       "mcpTitle": "IP-Bereiche über MCP umwandeln",
@@ -415,6 +420,7 @@ export const de = {
     tooManyOutputs: 'Das vollständige Ergebnis überschreitet {{limit}} CIDRs. Verwende weniger Ausschlüsse oder kleinere eingeschlossene Bereiche. Es wird kein Teilergebnis zurückgegeben.',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove Support","description":"Kontaktieren Sie den Packetrove-Projektbetreuer, melden Sie Probleme sicher und finden Sie API-, MCP-, CLI- und Datenschutzinformationen."},
     terms: {"title":"Packetrove Nutzungsbedingungen","description":"Lesen Sie die Bedingungen für den gehosteten Packetrove-Dienst: zulässige Nutzung, Ergebnisgrenzen, Verfügbarkeit, Datenschutz und MIT-Lizenz."},
     privacy: {"title": "Packetrove Datenschutzerklärung", "description": "Erfahre, wie Packetrove lokale Berechnungen, entfernte Eingaben, Verbindungsadressen, Betriebsprotokolle und Hostingdaten verarbeitet, einschließlich Aufbewahrung und Wahlmöglichkeiten."},

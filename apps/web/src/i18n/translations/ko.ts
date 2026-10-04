@@ -1,3 +1,4 @@
+import { certificateCopy } from '../certificate/ko';
 import type { TranslationResource } from '../translation-resource';
 
 export const ko = {
@@ -5,6 +6,7 @@ export const ko = {
     title: '이 페이지를 한국어로 보시겠어요?',
     switch: '한국어로 전환', dismiss: '나중에',
   },
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "페이지를 불러오는 중…", pageLoadFailure: "페이지를 불러오지 못했습니다. 다시 시도해 주세요.", retryPage: "다시 시도",
     home: '홈', homeLabel: 'Packetrove 홈', navigation: '주 탐색 메뉴',
@@ -75,7 +77,7 @@ export const ko = {
         },
         "remote": {
             "title": "원격 도구 입력과 결과",
-            "body": "API 및 원격 MCP 계산은 제공된 IP 주소, CIDR 또는 범위 끝점을 Packetrove로 보냅니다. 데이터베이스나 저장된 계산 기록 없이 메모리에서 처리한 뒤 결과를 반환합니다. 대화 기록이나 계정 인증 정보를 요청하지 않습니다. 호출 클라이언트는 결과를 받고 자체 방침에 따라 보관할 수 있습니다."
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "공인 IP 조회",
@@ -104,6 +106,7 @@ export const ko = {
     apiDocumentation: 'API 문서', cliGuide: 'CLI 안내 (영어)', sendEmail: '이메일 보내기',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "양 끝을 포함하는 시작 및 끝 IP를 최소의 정확한 CIDR 목록으로 변환하세요. 로컬에서 계산하고 추가 주소 없이 모든 블록을 복사합니다.",
     rangeLink: "IP 범위 변환 열기",
     galleryTitle: "도구 둘러보기",
@@ -215,6 +218,7 @@ export const ko = {
     familyExplanation: '한 연결은 IPv4 또는 IPv6를 사용합니다. 이 조회는 해당 연결의 주소를 표시하며 두 종류의 주소나 로컬 사설 주소를 모두 찾는 기능은 아닙니다. 네트워크나 프록시 설정을 바꾼 후에는 새로고침하세요.',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: '엔드포인트 개요 및 예제',
     rangeSummary: "같은 주소 체계의 start와 end를 제출합니다. 양 끝을 포함하며 정규화된 끝점, 최소의 정확한 CIDR 목록, CIDR 수, 십진 문자열 주소 수를 반환합니다. 이 요청은 입력을 서버로 보냅니다.",
     rangeResponse: "이 예제는 {{cidrs}}를 반환하며 정확히 {{addresses}}개 주소를 나타냅니다.",
@@ -231,6 +235,7 @@ export const ko = {
     subtractResponse: "이 예시는 {{cidrs}}를 반환하며 {{remaining}}개의 주소가 남습니다. 추가 범위는 포함하지 않습니다.",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "IP 범위 변환 질문",
       "mcpTitle": "MCP로 IP 범위 변환",
@@ -399,6 +404,7 @@ export const ko = {
     tooManyOutputs: '전체 결과가 {{limit}}개의 CIDR을 초과합니다. 제외 항목을 줄이거나 포함 범위를 좁히세요. 부분 결과는 반환하지 않습니다.',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove 지원","description":"Packetrove 관리자에게 연락하고, 문제를 안전하게 보고하며, API·MCP·CLI 가이드와 개인정보 정보를 확인하세요."},
     terms: {"title":"Packetrove 서비스 이용약관","description":"Packetrove 호스팅 서비스의 허용되는 이용, 결과 제한, 가용성, 개인정보 및 MIT 라이선스를 확인하세요."},
     privacy: {"title": "Packetrove 개인정보 처리방침", "description": "Packetrove의 로컬 계산, 원격 입력, 연결 주소, 운영 로그 및 호스팅 데이터 처리와 보관 기간 및 사용자 선택을 설명합니다."},

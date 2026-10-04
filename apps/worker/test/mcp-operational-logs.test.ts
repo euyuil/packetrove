@@ -3,7 +3,8 @@ import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.j
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { tools, toolCatalog } from '@packetrove/contracts';
+import { tools, toolCatalog, CertificateBundleResultSchema } from '@packetrove/contracts';
+import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { createApp } from '../src/app';
 import { createToolExecutor, toolHandlers } from '../src/tools';
 import { env } from 'cloudflare:workers';
@@ -72,7 +73,10 @@ describe.each(['current', 'legacy'] as const)('%s MCP execution events', runtime
       for (let attempt = 0; attempt < 2; attempt++) {
         const result = await client.callTool({ name: tool.id, arguments: tool.example.request });
         expect(result.isError).not.toBe(true);
-        expect(result.structuredContent).toEqual(tool.example.result);
+        const expected = tool.page === 'certificate'
+          ? await checkCertificateBundle(tool.example.request, new Date(CertificateBundleResultSchema.parse(result.structuredContent).evaluatedAt))
+          : tool.example.result;
+        expect(result.structuredContent).toEqual(expected);
       }
       expect(log.mock.calls).toEqual([
         [{ event: 'mcp_tool_execution', traffic_source: 'public_call', tool: tool.id, outcome: 'success' }],

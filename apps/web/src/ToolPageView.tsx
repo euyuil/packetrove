@@ -9,6 +9,7 @@ const toolViews = createResourceCache<ToolPage, ComponentType<ToolViewProps>>({
   subtract: () => import('./CidrSubtractTool').then(module => module.CidrSubtractPage),
   range: () => import('./RangeToCidrsTool').then(module => module.RangeToCidrsPage),
   ip: () => import('./PublicIpTool').then(module => module.PublicIpTool),
+  certificate: () => import('./CertificateBundleTool').then(module => module.CertificateBundlePage),
 });
 
 export const prepareToolPage = (page: ToolPage) => toolViews.load(page);

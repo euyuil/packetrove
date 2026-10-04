@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { webcrypto } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -8,8 +9,10 @@ import {
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
   PublicIpRequestSchema, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools,
   RangeToCidrsRequestSchema, RangeToCidrsResultSchema, PACKETROVE_IDENTITY, PACKETROVE_VERSION, toolCatalog,
+  CertificateBundleRequestSchema, CertificateBundleResultSchema,
 } from '@packetrove/contracts';
 import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
+import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { App } from './App';
 import { render } from './test-utils';
 import { websitePages } from './seo';
@@ -102,6 +105,12 @@ describe('MCP examples in production HTML', () => {
           expect(RangeToCidrsResultSchema.parse(result)).toEqual(rangeToCidrs(RangeToCidrsRequestSchema.parse(args)));
           expect(args).toEqual(toolCatalog.range.example.request);
           expect(result).toEqual(toolCatalog.range.example.result);
+        } else if (name === toolCatalog.certificate.mcp.name) {
+          vi.stubGlobal('crypto', webcrypto);
+          const observation = CertificateBundleResultSchema.parse(result);
+          expect(observation).toEqual(await checkCertificateBundle(CertificateBundleRequestSchema.parse(args), new Date(observation.evaluatedAt)));
+          expect(args).toEqual(toolCatalog.certificate.example.request);
+          expect(result).toEqual(toolCatalog.certificate.example.result);
         } else {
           expect(name).toBe(toolCatalog.ip.mcp.name);
           expect(PublicIpRequestSchema.parse(args)).toEqual({});

@@ -7,6 +7,7 @@ import {
 } from '@packetrove/contracts';
 import { createOpenApiDocument } from '@packetrove/contracts/openapi';
 import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
+import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { createApp } from '../src/app';
 import { rangeEndpointErrorCases } from './range-endpoint-error-cases';
 
@@ -38,7 +39,11 @@ describe('API in the Workers runtime', () => {
       ...(tool.api.method === 'post' ? { body: JSON.stringify(tool.example.request) } : {}),
     });
     expect(response.status).toBe(200);
-    expect(tool.outputSchema.parse(await response.json())).toEqual(tool.example.result);
+    const result = tool.outputSchema.parse(await response.json());
+    const expected = tool.page === 'certificate'
+      ? await checkCertificateBundle(tool.example.request, new Date((result as { evaluatedAt: string }).evaluatedAt))
+      : tool.example.result;
+    expect(result).toEqual(expected);
     expect(Object.keys(createOpenApiDocument().paths!)).toContain(tool.api.path);
   });
   it.each(CIDR_COVER_EXAMPLES)('serves $name', async ({ request, result }) => {

@@ -1,4 +1,6 @@
+import { certificateCopy } from '../certificate/en';
 export const en = {
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "Loading page…", pageLoadFailure: "This page could not be loaded. Please try again.", retryPage: "Retry",
     home: 'Home', homeLabel: 'Packetrove home', navigation: 'Main navigation',
@@ -73,7 +75,7 @@ export const en = {
         },
         "remote": {
             "title": "Remote tool inputs and results",
-            "body": "API and remote MCP calculations send the supplied IP addresses, CIDRs, or range endpoints to Packetrove. We process them in memory to return the result, without a database or retained calculation history. We do not request conversation history or account credentials. The calling client receives the result and may retain it under its own policies."
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "Public IP checks",
@@ -102,6 +104,7 @@ export const en = {
     apiDocumentation: 'API Documentation', cliGuide: 'CLI Guide', sendEmail: 'Send an email',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "Convert inclusive start and end IP addresses into the minimal exact CIDR list. Calculate locally and copy every block without adding addresses.",
     rangeLink: "Open IP range converter",
     galleryTitle: "Explore the tools",
@@ -213,6 +216,7 @@ export const en = {
     familyExplanation: 'A connection uses either IPv4 or IPv6. This check shows that address; it does not discover both families or your private local address. Refresh after changing networks or proxy settings.',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: 'Endpoint summaries and examples',
     rangeSummary: "Submit start and end IP addresses from one family. Both endpoints are inclusive. Return canonical endpoints, the minimal exact CIDR list, a CIDR count, and a decimal-string address count. This request sends inputs to the server.",
     rangeResponse: "This example returns {{cidrs}}, representing exactly {{addresses}} addresses.",
@@ -229,6 +233,7 @@ export const en = {
     subtractResponse: "This example returns {{cidrs}}, with {{remaining}} remaining addresses and no additional coverage.",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "Questions about IP range conversion",
       "mcpTitle": "Convert IP ranges through MCP",
@@ -397,6 +402,7 @@ export const en = {
     tooManyOutputs: 'The complete result exceeds {{limit}} CIDRs. Use fewer exclusions or smaller included ranges. No partial result is returned.',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove Support","description":"Contact the Packetrove maintainer, report problems safely, and find API, MCP, CLI, and privacy information."},
     terms: {"title":"Packetrove Terms of Service","description":"Read the terms for Packetrove's hosted service, including acceptable use, result limitations, availability, privacy, and the MIT License."},
     privacy: {"title": "Packetrove Privacy Policy", "description": "Read how Packetrove processes local calculations, remote tool inputs, connection addresses, operational logs, and hosting data, with retention and user choices."},

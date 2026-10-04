@@ -1,7 +1,9 @@
 import { X509Certificate as NodeCertificate } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { BundleInputError, checkBundle, matchesDnsName, MAX_CERTIFICATES, MAX_PEM_BYTES, normalizeHostname } from './checker';
-import { bundle, fixtures } from './examples';
+import { CertificateBundleInputError as BundleInputError, checkCertificateBundle as checkBundle, matchesDnsName, MAX_CERTIFICATES, MAX_PEM_BYTES, normalizeHostname } from './certificate-bundle';
+import { certificateFixtures as fixtures, CERTIFICATE_BUNDLE_EXAMPLES, CertificateBundleResultSchema } from '@packetrove/contracts';
+const bundle = (...names: Array<keyof typeof fixtures>) => names.map(name => fixtures[name]).join('\n');
 
 const clock = new Date('2026-10-04T06:00:00Z');
 const inspect = (pem: string, hostname?: string, leafIndex?: number) => checkBundle({
@@ -10,6 +12,9 @@ const inspect = (pem: string, hostname?: string, leafIndex?: number) => checkBun
 afterEach(() => vi.restoreAllMocks());
 
 describe('certificate bundle diagnostics', () => {
+  it.each(CERTIFICATE_BUNDLE_EXAMPLES)('reproduces the fixed-clock shared documentation result for $name', async example => {
+    expect(CertificateBundleResultSchema.parse(await checkBundle(example.request, new Date(example.result.evaluatedAt)))).toEqual(example.result);
+  });
   it('verifies links and fingerprints independently of the certificate parser', async () => {
     const result = await inspect(bundle('leaf', 'intermediate', 'rootA'), 'service.example.com');
     expect(result.evaluatedAt).toBe(clock.toISOString());
@@ -21,6 +26,27 @@ describe('certificate bundle diagnostics', () => {
     expect(new NodeCertificate(fixtures.leaf).verify(new NodeCertificate(fixtures.intermediate).publicKey)).toBe(true);
     expect(result.certificates[0]!.fingerprintSha256).toBe(new NodeCertificate(fixtures.leaf).fingerprint256);
     expect(result.findings.filter(finding => finding.severity === 'error')).toEqual([]);
+  });
+
+  it('verifies an RSA SHA-256 issuer and an EC leaf with independent Node verification', async () => {
+    const result = await inspect(bundle('rsaLeaf', 'rsaRoot'), 'rsa.example.com');
+    expect(result.relationships[0]).toMatchObject({ signature: 'verified', issuerEligible: true, keyIdentifierMatch: null });
+    expect(result.certificates[0]!.signatureAlgorithm).toBe('RSASSA-PKCS1-v1_5 / SHA-256');
+    expect(result.certificates[1]!.selfSignature).toBe('verified');
+    expect(result.hostname?.status).toBe('matched');
+    expect(new NodeCertificate(fixtures.rsaLeaf).verify(new NodeCertificate(fixtures.rsaRoot).publicKey)).toBe(true);
+  });
+
+  it('retains a missing Common Name while matching the DNS SAN', async () => {
+    const result = await inspect(bundle('noCommonName', 'intermediate'), 'service.example.com');
+    expect(result.certificates[0]!.commonName).toBeNull();
+    expect(result.hostname?.status).toBe('matched');
+  });
+
+  it('never initiates a lookup or upload while inspecting certificates', async () => {
+    const network = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('No network permitted'));
+    await inspect(bundle('leaf', 'intermediate'), 'service.example.com');
+    expect(network).not.toHaveBeenCalled();
   });
 
   it('preserves original positions in unordered bundles', async () => {
@@ -131,21 +157,21 @@ describe('strict input boundaries', () => {
     const type = 'PRIVATE KEY';
     const input = fixtures.leaf + `\n-----BEGIN ${type}-----\nDO-NOT-ECHO\n-----END ${type}-----`;
     try { await inspect(input); expect.fail('Expected input rejection'); } catch (error) {
-      expect(error).toMatchObject({ code: 'PRIVATE_KEY_REJECTED', location: { offset: fixtures.leaf.length + 1 } });
+      expect(error).toMatchObject({ reason: 'PRIVATE_KEY_REJECTED', location: { offset: fixtures.leaf.length + 1 } });
       expect(String(error)).not.toContain('DO-NOT-ECHO');
     }
   });
 
   it('rejects unsupported PEM types and nested or unmatched boundaries', async () => {
-    await expect(inspect('-----BEGIN CERTIFICATE REQUEST-----\nMAA=\n-----END CERTIFICATE REQUEST-----')).rejects.toMatchObject({ code: 'UNSUPPORTED_PEM_BLOCK' });
-    await expect(inspect('-----BEGIN CERTIFICATE-----\nMAA=')).rejects.toMatchObject({ code: 'INVALID_PEM' });
-    await expect(inspect('-----BEGIN CERTIFICATE-----\n' + fixtures.leaf)).rejects.toMatchObject({ code: 'INVALID_PEM' });
+    await expect(inspect('-----BEGIN CERTIFICATE REQUEST-----\nMAA=\n-----END CERTIFICATE REQUEST-----')).rejects.toMatchObject({ reason: 'UNSUPPORTED_PEM_BLOCK' });
+    await expect(inspect('-----BEGIN CERTIFICATE-----\nMAA=')).rejects.toMatchObject({ reason: 'INVALID_PEM' });
+    await expect(inspect('-----BEGIN CERTIFICATE-----\n' + fixtures.leaf)).rejects.toMatchObject({ reason: 'INVALID_PEM' });
   });
 
   it('rejects trailing DER bytes rather than accepting the first certificate', async () => {
     const der = new NodeCertificate(fixtures.leaf).raw;
     const encoded = Buffer.concat([der, Buffer.from([0])]).toString('base64');
-    await expect(inspect(`-----BEGIN CERTIFICATE-----\n${encoded}\n-----END CERTIFICATE-----`)).rejects.toMatchObject({ code: 'INVALID_CERTIFICATE' });
+    await expect(inspect(`-----BEGIN CERTIFICATE-----\n${encoded}\n-----END CERTIFICATE-----`)).rejects.toMatchObject({ reason: 'INVALID_CERTIFICATE' });
   });
 
   it('accepts CRLF and surrounding whitespace', async () => {
@@ -153,14 +179,46 @@ describe('strict input boundaries', () => {
     expect(result.certificates[0]!.line).toBe(2);
   });
 
+  it('accepts the exact UTF-8 byte boundary and rejects the next byte', async () => {
+    const exact = fixtures.leaf + ' '.repeat(MAX_PEM_BYTES - new TextEncoder().encode(fixtures.leaf).length);
+    expect((await inspect(exact)).certificates).toHaveLength(1);
+    await expect(inspect(exact + ' ')).rejects.toMatchObject({ code: 'INVALID_INPUT' });
+  });
+
+  it('sanitizes caller-controlled schema keys and preserves a general issue location', async () => {
+    try {
+      await checkBundle({ pem: fixtures.leaf, 'PRIVATE-UNKNOWN-FIELD': 'PRIVATE-PAYLOAD' });
+      expect.fail('Expected strict request rejection');
+    } catch (error) {
+      const failure = (error as BundleInputError).toResponse();
+      expect(failure.error.issues?.[0]?.path).toEqual([]);
+      expect(JSON.stringify(failure)).not.toContain('PRIVATE-');
+    }
+  });
+
+  it('rejects non-minimal DER length encodings around an otherwise valid certificate', async () => {
+    const der = new NodeCertificate(fixtures.leaf).raw;
+    expect(der[1]).toBe(0x82);
+    const encoded = Buffer.concat([Buffer.from([0x30, 0x83, 0]), der.subarray(2)]).toString('base64');
+    await expect(inspect(`-----BEGIN CERTIFICATE-----\n${encoded}\n-----END CERTIFICATE-----`)).rejects.toMatchObject({ reason: 'INVALID_CERTIFICATE' });
+  });
+
+  it('honors cancellation without exposing the caller-supplied abort reason', async () => {
+    const controller = new AbortController();
+    controller.abort('PRIVATE-CANCELLATION-REASON');
+    await expect(checkBundle({ pem: fixtures.leaf }, clock, controller.signal)).rejects.toMatchObject({ name: 'AbortError', message: 'Certificate check cancelled.' });
+  });
+
   it('enforces byte and certificate limits without silent truncation', async () => {
-    await expect(inspect('🔥'.repeat(MAX_PEM_BYTES / 4 + 1))).rejects.toMatchObject({ code: 'INPUT_TOO_LARGE' });
-    await expect(inspect(Array(MAX_CERTIFICATES + 1).fill(fixtures.rootA).join('\n'))).rejects.toMatchObject({ code: 'TOO_MANY_CERTIFICATES' });
+    await expect(inspect('🔥'.repeat(MAX_PEM_BYTES / 4 + 1))).rejects.toMatchObject({ reason: 'INPUT_TOO_LARGE' });
+    await expect(inspect(Array(MAX_CERTIFICATES + 1).fill(fixtures.rootA).join('\n'))).rejects.toMatchObject({ reason: 'TOO_MANY_CERTIFICATES' });
     expect((await inspect(Array(MAX_CERTIFICATES).fill(fixtures.rootA).join('\n'))).certificates).toHaveLength(MAX_CERTIFICATES);
   });
 
   it.each([-1, 20, 1, 0.5])('rejects an invalid or CA leaf selection at position %s', async leafIndex => {
-    await expect(inspect(bundle('leaf', 'intermediate'), 'service.example.com', leafIndex)).rejects.toMatchObject({ code: 'INVALID_LEAF_SELECTION' });
+    await expect(inspect(bundle('leaf', 'intermediate'), 'service.example.com', leafIndex)).rejects.toMatchObject({
+      code: 'INVALID_INPUT', issues: [{ path: ['leafIndex'] }],
+    });
   });
 
   it('reports a CA-only bundle without inventing a leaf', async () => {

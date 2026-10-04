@@ -32,7 +32,7 @@ async function root(name: string, pair: CryptoKeyPair) {
 async function issued(name: string, pair: CryptoKeyPair, issuer: X509Certificate, issuerKeys: CryptoKeyPair,
   options: { ca?: boolean; signingUsage?: boolean; notBefore?: Date; notAfter?: Date; sans?: string[] } = {}) {
   return X509CertificateGenerator.create({
-    subject: `CN=${name},O=Packetrove Synthetic Examples`, issuer: issuer.subject,
+    subject: name ? `CN=${name},O=Packetrove Synthetic Examples` : 'O=Packetrove Synthetic Examples', issuer: issuer.subject,
     publicKey: pair.publicKey, signingKey: issuerKeys.privateKey,
     serialNumber: (serial++).toString(16).padStart(2, '0'),
     notBefore: options.notBefore ?? start, notAfter: options.notAfter ?? end, signingAlgorithm,
@@ -62,8 +62,23 @@ const future = await issued('future.example.com', leafKeys, intermediate, interm
 const nonCaLeaf = await issued('service.example.com', leafKeys, nonCaIssuer, intermediateKeys, { sans: ['service.example.com'] });
 const restrictedLeaf = await issued('service.example.com', leafKeys, noSigningIssuer, intermediateKeys, { sans: ['service.example.com'] });
 const cnOnly = await issued('service.example.com', leafKeys, intermediate, intermediateKeys);
+const noCommonName = await issued('', leafKeys, intermediate, intermediateKeys, { sans: ['service.example.com'] });
+const rsaAlgorithm = { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' };
+const rsaKeys = await crypto.subtle.generateKey({ ...rsaAlgorithm, modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]) }, false, ['sign', 'verify']);
+const rsaRoot = await X509CertificateGenerator.createSelfSigned({
+  name: 'CN=Synthetic RSA Root,O=Packetrove Synthetic Examples', keys: rsaKeys,
+  serialNumber: (serial++).toString(16).padStart(2, '0'), notBefore: start, notAfter: end, signingAlgorithm: rsaAlgorithm,
+  extensions: [new BasicConstraintsExtension(true, 1, true), new KeyUsagesExtension(KeyUsageFlags.keyCertSign, true)],
+}, crypto);
+const rsaLeaf = await X509CertificateGenerator.create({
+  subject: 'CN=rsa.example.com,O=Packetrove Synthetic Examples', issuer: rsaRoot.subject,
+  publicKey: leafKeys.publicKey, signingKey: rsaKeys.privateKey,
+  serialNumber: (serial++).toString(16).padStart(2, '0'), notBefore: start, notAfter: end, signingAlgorithm: rsaAlgorithm,
+  extensions: [new BasicConstraintsExtension(false, undefined, true),
+    new SubjectAlternativeNameExtension([{ type: 'dns', value: 'rsa.example.com' }])],
+}, crypto);
 const certificates = { rootA, rootB, intermediate, crossSigned, wrongIntermediate, nonCaIssuer, noSigningIssuer,
-  leaf, leafTwo, expired, future, nonCaLeaf, restrictedLeaf, cnOnly };
+  leaf, leafTwo, expired, future, nonCaLeaf, restrictedLeaf, cnOnly, noCommonName, rsaRoot, rsaLeaf };
 const pem = Object.fromEntries(Object.entries(certificates).map(([name, certificate]) => [name, certificate.toString('pem')]));
-await writeFile(new URL('../src/fixtures.json', import.meta.url), JSON.stringify(pem, null, 2) + '\n');
-console.log('Generated 14 synthetic public certificates. No private keys were written.');
+await writeFile(new URL('../../contracts/src/certificate-fixtures.json', import.meta.url), JSON.stringify(pem, null, 2) + '\n');
+console.log('Generated 17 synthetic public certificates. No private keys were written.');

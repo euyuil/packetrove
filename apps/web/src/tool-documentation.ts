@@ -4,9 +4,11 @@ import { cidrDocumentation } from './tools/cidr-documentation';
 import { subtractDocumentation } from './tools/subtract-documentation';
 import { rangeDocumentation } from './tools/range-documentation';
 import { ipDocumentation } from './tools/ip-documentation';
+import { certificateDocumentation } from './tools/certificate-documentation';
 
 const toolDocumentation = {
   cidr: cidrDocumentation, subtract: subtractDocumentation, range: rangeDocumentation, ip: ipDocumentation,
+  certificate: certificateDocumentation,
 } satisfies Record<ToolPage, ToolDocumentation>;
 
 export function getToolDocumentation(tool: ToolPage): ToolDocumentation {

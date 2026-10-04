@@ -3,6 +3,8 @@
 The Packetrove CLI shares the Web API's result schemas. CIDR calculations run
 locally without a Worker, Cloudflare account, or network connection. The `public-ip`
 command queries the current connection through an IP lookup API.
+CIDR subtraction, IP range conversion, and certificate bundle checks are
+available through the website, Web API, and MCP, and have no CLI command.
 
 This source revision uses the flat commands `cidr-cover` and `public-ip`.
 Previously published versions keep their original commands, which may include

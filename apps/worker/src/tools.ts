@@ -1,6 +1,7 @@
 import type { toolCatalog, ToolPage } from '@packetrove/contracts';
 import type { z } from 'zod';
 import { rangeToCidrs, smallestCoveringCidr, subtractCidrs } from '@packetrove/core';
+import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { getPublicIp } from './ip';
 import { assertToolExecutionActive, type ToolExecutionContext } from './tool-context';
 
@@ -15,6 +16,7 @@ export const toolHandlers = Object.freeze({
   cidr: smallestCoveringCidr,
   subtract: subtractCidrs,
   range: rangeToCidrs,
+  certificate: (input, context) => checkCertificateBundle(input, new Date(), context.signal),
   ip: (_input, context) => getPublicIp(context.connection),
 } satisfies ToolHandlers);
 

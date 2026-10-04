@@ -1,6 +1,10 @@
 import type { z } from 'zod';
 import { PRIVACY_POLICY_URL, PUBLIC_WEBSITE_ORIGIN } from './identity';
 import {
+  CERTIFICATE_BUNDLE_EXAMPLES, CertificateBundleRequestSchema, CertificateBundleResultSchema,
+  MAX_PEM_BYTES, MAX_CERTIFICATES,
+} from './certificate-bundle';
+import {
   CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, PUBLIC_IP_EXAMPLES,
   CidrCoverRequestSchema, CidrCoverResultSchema, CidrSubtractRequestSchema, CidrSubtractResultSchema,
   PublicIpRequestSchema, PublicIpResultSchema,
@@ -125,6 +129,26 @@ export const toolCatalog = {
     mcp: {
       resultLinkDescription: 'Browser calculator for exact inclusive IP range conversion and its limits. Opens without your MCP inputs or result.',
       description: `Use to prepare an exact CIDR allowlist from one inclusive start/end IPv4 or IPv6 range. Pass start and end IP addresses of the same family, without CIDR prefixes, at most ${MAX_INPUT_LENGTH} characters each; end must be at or after start. Return canonical range.first and range.last, minimal sorted cidrs, cidrCount, and exact decimal-string addressCount, without adding addresses. Equal endpoints return one /32 or /128; complete address spaces return /0. Invalid inputs identify the start or end field; reversed endpoints are never swapped. Browser calculations stay local; remote MCP calls submit endpoints to this server. This does not inspect live address usage, modify firewall rules, or export vendor-specific ACLs.`,
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+  }),
+  certificate: defineTool({
+    id: 'certificate-bundle', page: 'certificate', title: 'Certificate Bundle Checker', execution: 'local',
+    legacyWebPaths: [], cli: false,
+    removedInterfaces: { apiPaths: [], mcpNames: [], cliCommands: [] },
+    schemaName: 'CertificateBundle', inputSchema: CertificateBundleRequestSchema, outputSchema: CertificateBundleResultSchema,
+    examples: CERTIFICATE_BUNDLE_EXAMPLES, example: CERTIFICATE_BUNDLE_EXAMPLES[0]!,
+    api: {
+      method: 'post', tag: 'Certificates', tagDescription: 'Diagnostics for supplied public certificate bundles.',
+      response: { description: 'Certificates in original order, independently checked candidate issuer links, leaf selection, and findings with evidence and next actions.',
+        headers: { 'Cache-Control': { description: 'Do not store certificate inputs or results.', value: 'no-store' } } },
+      errors: { 400: 'Invalid request, empty or malformed PEM/DER, rejected private-key or unsupported blocks, input limits, invalid hostname, or invalid leaf selection. PEM issues include original line and UTF-16 offsets without echoing input.' },
+      summary: 'Inspect a PEM certificate bundle and optional DNS hostname',
+      description: `Accept up to ${MAX_CERTIFICATES} CERTIFICATE blocks in at most ${MAX_PEM_BYTES} UTF-8 PEM bytes, with only whitespace between blocks. Private keys are rejected. Preserve original zero-based positions and verify candidate signatures separately from issuer CA and keyCertSign constraints. Distinguish failed, unsupported, and unavailable checks. An issuer absent from this input is informational; roots are commonly omitted. Multiple leaves require an explicit leafIndex for hostname checking. Check ASCII DNS SAN names, with a complete leftmost wildcard matching one label and no Common Name fallback. Evaluation uses the server clock; documentation examples use a fixed illustrative time. Remote calls transmit certificates and optional hostname to the server; inputs, results, and certificate details are excluded from application logs. No full RFC 5280 path validation, client trust, revocation checking, live probing, or proof of deployment safety. JSON transport bodies remain limited to ${MAX_REQUEST_BYTES} bytes.`,
+    },
+    mcp: {
+      resultLinkDescription: 'Browser-local certificate bundle checker and its limits. Opens without the supplied certificates, hostname, or results.',
+      description: `Use to inspect a supplied PEM certificate bundle before TLS configuration. Accept pem with 1–${MAX_CERTIFICATES} CERTIFICATE blocks and at most ${MAX_PEM_BYTES} UTF-8 bytes, optional ASCII DNS hostname, and optional zero-based leafIndex. Reject private keys and unsupported blocks without echoing them. Return original certificate positions, Subject, Issuer, Common Name, SANs, validity, CA and Key Usage flags, SHA-256 fingerprints, independently checked candidate links, explicit leaf ambiguity, and stable findings with severity, observed evidence, and nextAction. Verify signatures cryptographically; name matching alone is not verification. Missing supplied issuers are informational, and a failed candidate does not invalidate another viable path. Hostname checks use DNS SAN with one-label complete leftmost wildcards and no Common Name fallback. Results use this server's evaluation time and do not establish client trust, full RFC 5280 path validity, revocation status, or deployment safety. This remote call transmits certificates and hostname to the server; the website checks locally. Certificate input and details never enter application logs. Do not submit private keys.`,
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
     },
   }),

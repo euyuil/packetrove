@@ -4,66 +4,30 @@ import {
   KeyUsagesExtension, SubjectAlternativeNameExtension, SubjectKeyIdentifierExtension,
   X509Certificate,
 } from '@peculiar/x509';
+import {
+  CertificateBundleRequestSchema, MAX_PEM_BYTES, MAX_CERTIFICATES,
+  type CertificateBundleRequest as BundleRequest, type CertificateBundleResult as BundleResult,
+  type CertificateCheckStatus as CheckStatus, type CertificateFindingCode as FindingCode,
+  type CertificateFinding as Finding, type CertificateSummary,
+  type CertificateIssuerRelationship as IssuerRelationship,
+} from '@packetrove/contracts';
+import { ToolError, type InputIssueDetail } from './errors';
 
-export const MAX_PEM_BYTES = 48 * 1024;
-export const MAX_CERTIFICATES = 16;
-export type CheckStatus = 'verified' | 'failed' | 'unsupported' | 'unavailable';
-export type FindingCode =
-  | 'DUPLICATE_CERTIFICATE' | 'CERTIFICATE_EXPIRED' | 'CERTIFICATE_NOT_YET_VALID'
-  | 'SELF_SIGNED_CERTIFICATE' | 'SELF_SIGNATURE_FAILED' | 'SIGNATURE_UNSUPPORTED'
-  | 'SIGNATURE_CHECK_UNAVAILABLE' | 'ISSUER_NOT_IN_BUNDLE' | 'CANDIDATE_SIGNATURE_FAILED'
-  | 'ISSUER_NOT_CA' | 'ISSUER_KEY_USAGE_REJECTED' | 'ISSUER_KEY_ID_MISMATCH'
-  | 'MULTIPLE_ISSUERS' | 'LEAF_SELECTION_REQUIRED' | 'NO_LEAF_CERTIFICATE'
-  | 'HOSTNAME_MATCH' | 'HOSTNAME_MISMATCH';
-
-export type Finding = {
-  code: FindingCode;
-  severity: 'error' | 'warning' | 'info';
-  certificateIndexes: number[];
-  observed: string;
-  evidence: Record<string, string | number | boolean | null>;
-  nextAction: string;
-};
-export type CertificateSummary = {
-  index: number;
-  line: number;
-  subject: string;
-  issuer: string;
-  serialNumber: string;
-  sans: Array<{ type: string; value: string }>;
-  notBefore: string;
-  notAfter: string;
-  ca: boolean;
-  basicConstraintsPresent: boolean;
-  keyCertSign: boolean | null;
-  fingerprintSha256: string;
-  signatureAlgorithm: string;
-  selfSignature: CheckStatus | null;
-};
-export type IssuerRelationship = {
-  childIndex: number;
-  issuerIndex: number;
-  signature: CheckStatus;
-  issuerEligible: boolean;
-  keyIdentifierMatch: boolean | null;
-};
-export type BundleResult = {
-  evaluatedAt: string;
-  certificates: CertificateSummary[];
-  relationships: IssuerRelationship[];
-  leafIndexes: number[];
-  selectedLeafIndex: number | null;
-  hostname: { expected: string; status: 'matched' | 'mismatched' | 'ambiguous' | 'no-leaf' } | null;
-  findings: Finding[];
-};
-export type BundleRequest = { pem: string; hostname?: string; leafIndex?: number };
+export { MAX_PEM_BYTES, MAX_CERTIFICATES } from '@packetrove/contracts';
+export type CertificateBundleInputReason = 'EMPTY_INPUT' | 'INPUT_TOO_LARGE' | 'INVALID_PEM'
+  | 'PRIVATE_KEY_REJECTED' | 'UNSUPPORTED_PEM_BLOCK' | 'INVALID_CERTIFICATE'
+  | 'TOO_MANY_CERTIFICATES' | 'INVALID_HOSTNAME' | 'INVALID_LEAF_SELECTION'
+  | 'INVALID_INPUT' | 'INVALID_TIME' | 'CRYPTO_UNAVAILABLE';
+export type CertificateBundleIssueDetail = InputIssueDetail & { reason: CertificateBundleInputReason };
 
 /** Locations refer to the original input; messages never echo PEM content. */
-export class BundleInputError extends Error {
-  constructor(public readonly code: string, message: string,
+export class CertificateBundleInputError extends ToolError<CertificateBundleIssueDetail> {
+  constructor(public readonly reason: CertificateBundleInputReason, message: string,
     public readonly location?: { line: number; offset: number; end: number }) {
-    super(message);
-    this.name = 'BundleInputError';
+    const field = reason === 'INVALID_HOSTNAME' ? 'hostname' : reason === 'INVALID_LEAF_SELECTION' ? 'leafIndex' : 'pem';
+    super(reason === 'CRYPTO_UNAVAILABLE' || reason === 'INVALID_TIME' ? 'INTERNAL_ERROR' : 'INVALID_INPUT',
+      message, [{ field, path: [field], message, ...(location ? { location } : {}) }], [{ reason, field }]);
+    this.name = 'CertificateBundleInputError';
   }
 }
 
@@ -71,26 +35,48 @@ function location(pem: string, offset: number, end = offset + 1) {
   return { line: pem.slice(0, offset).split(/\r\n|\r|\n/).length, offset, end };
 }
 
-/** Reject trailing data and indefinite/non-minimal outer DER lengths. */
+/** Check definite, minimal DER lengths at every constructed level before parsing. */
 function assertDerEnvelope(bytes: Uint8Array) {
-  if (bytes[0] !== 0x30 || bytes.length < 2) throw new Error('Expected a DER sequence.');
-  let length = bytes[1]!;
-  let header = 2;
-  if (length >= 128) {
-    const count = length & 127;
-    if (!count || count > 4 || bytes.length < 2 + count || bytes[2] === 0) throw new Error('Invalid DER length.');
-    header += count;
-    length = 0;
-    for (let index = 2; index < header; index++) length = length * 256 + bytes[index]!;
-    if (length < 128) throw new Error('Non-minimal DER length.');
+  let nodes = 0;
+  function element(start: number, limit: number, depth: number): number {
+    if (++nodes > 4096 || depth > 32 || start + 2 > limit) throw new Error('Invalid DER structure.');
+    const tag = bytes[start]!;
+    let cursor = start + 1;
+    if ((tag & 31) === 31) {
+      if (bytes[cursor] === 0x80 || bytes[cursor] === undefined) throw new Error('Invalid DER tag.');
+      let tagNumber = 0;
+      let groups = 0;
+      for (;;) {
+        if (cursor >= limit || ++groups > 4) throw new Error('Invalid DER tag.');
+        const part = bytes[cursor++]!;
+        tagNumber = tagNumber * 128 + (part & 127);
+        if (!(part & 128)) break;
+      }
+      if (tagNumber < 31) throw new Error('Non-minimal DER tag.');
+    }
+    if (cursor >= limit) throw new Error('Missing DER length.');
+    let length = bytes[cursor++]!;
+    if (length >= 128) {
+      const count = length & 127;
+      if (!count || count > 4 || cursor + count > limit || bytes[cursor] === 0) throw new Error('Invalid DER length.');
+      length = 0;
+      for (let index = 0; index < count; index++) length = length * 256 + bytes[cursor++]!;
+      if (length < 128) throw new Error('Non-minimal DER length.');
+    }
+    const end = cursor + length;
+    if (end > limit || tag === 0) throw new Error('Incomplete DER or end-of-contents tag.');
+    if (tag & 32) {
+      while (cursor < end) cursor = element(cursor, end, depth + 1);
+    }
+    return end;
   }
-  if (header + length !== bytes.length) throw new Error('Incomplete DER or trailing data.');
+  if (bytes[0] !== 0x30 || element(0, bytes.length, 0) !== bytes.length) throw new Error('Expected one complete DER sequence.');
 }
 
 function parseBundle(pem: string) {
-  if (!pem.trim()) throw new BundleInputError('EMPTY_INPUT', 'Paste at least one PEM certificate.');
+  if (!pem.trim()) throw new CertificateBundleInputError('EMPTY_INPUT', 'Paste at least one PEM certificate.');
   if (new TextEncoder().encode(pem).length > MAX_PEM_BYTES) {
-    throw new BundleInputError('INPUT_TOO_LARGE', 'PEM input must not exceed 48 KiB.');
+    throw new CertificateBundleInputError('INPUT_TOO_LARGE', 'PEM input must not exceed 48 KiB.');
   }
   const certificates: Array<{ certificate: X509Certificate; line: number }> = [];
   let cursor = 0;
@@ -100,17 +86,17 @@ function parseBundle(pem: string) {
     if (cursor === pem.length) break;
     const start = cursor;
     const opening = /^-----BEGIN ([A-Z0-9 ]+)-----/.exec(pem.slice(cursor));
-    if (!opening) throw new BundleInputError('INVALID_PEM', 'Expected a PEM BEGIN boundary; only whitespace is allowed between blocks.', location(pem, start));
+    if (!opening) throw new CertificateBundleInputError('INVALID_PEM', 'Expected a PEM BEGIN boundary; only whitespace is allowed between blocks.', location(pem, start));
     const type = opening[1]!;
-    if (type.includes('PRIVATE KEY')) throw new BundleInputError('PRIVATE_KEY_REJECTED', 'Remove the private-key block. This checker accepts certificates only.', location(pem, start, start + opening[0].length));
-    if (type !== 'CERTIFICATE') throw new BundleInputError('UNSUPPORTED_PEM_BLOCK', 'Only CERTIFICATE blocks are supported.', location(pem, start, start + opening[0].length));
+    if (type.includes('PRIVATE KEY')) throw new CertificateBundleInputError('PRIVATE_KEY_REJECTED', 'Remove the private-key block. This checker accepts certificates only.', location(pem, start, start + opening[0].length));
+    if (type !== 'CERTIFICATE') throw new CertificateBundleInputError('UNSUPPORTED_PEM_BLOCK', 'Only CERTIFICATE blocks are supported.', location(pem, start, start + opening[0].length));
     cursor += opening[0].length;
     const ending = '-----END CERTIFICATE-----';
     const end = pem.indexOf(ending, cursor);
-    if (end === -1) throw new BundleInputError('INVALID_PEM', 'This certificate has no matching END boundary.', location(pem, start));
+    if (end === -1) throw new CertificateBundleInputError('INVALID_PEM', 'This certificate has no matching END boundary.', location(pem, start));
     const base64 = pem.slice(cursor, end).replace(/[\t\n\r ]/g, '');
     if (!base64 || !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(base64)) {
-      throw new BundleInputError('INVALID_PEM', 'The certificate body must contain valid padded Base64.', location(pem, cursor, end));
+      throw new CertificateBundleInputError('INVALID_PEM', 'The certificate body must contain valid padded Base64.', location(pem, cursor, end));
     }
     try {
       const binary = atob(base64);
@@ -124,13 +110,19 @@ function parseBundle(pem: string) {
       certificate.subject;
       certificate.issuer;
       certificate.extensions;
+      certificate.subjectName.getField('CN');
+      certificate.getExtension(BasicConstraintsExtension)?.ca;
+      certificate.getExtension(KeyUsagesExtension)?.usages;
+      certificate.getExtension(SubjectAlternativeNameExtension)?.names.items;
+      certificate.getExtension(AuthorityKeyIdentifierExtension)?.keyId;
+      certificate.getExtension(SubjectKeyIdentifierExtension)?.keyId;
       certificate.notBefore.toISOString();
       certificate.notAfter.toISOString();
       certificates.push({ certificate, line: location(pem, start).line });
     } catch {
-      throw new BundleInputError('INVALID_CERTIFICATE', 'This block is not a supported, well-formed DER X.509 certificate.', location(pem, start, end + ending.length));
+      throw new CertificateBundleInputError('INVALID_CERTIFICATE', 'This block is not a supported, well-formed DER X.509 certificate.', location(pem, start, end + ending.length));
     }
-    if (certificates.length > MAX_CERTIFICATES) throw new BundleInputError('TOO_MANY_CERTIFICATES', 'A bundle may contain at most 16 certificates; no certificates were checked.', location(pem, start));
+    if (certificates.length > MAX_CERTIFICATES) throw new CertificateBundleInputError('TOO_MANY_CERTIFICATES', 'A bundle may contain at most 16 certificates; no certificates were checked.', location(pem, start));
     cursor = end + ending.length;
   }
   return certificates;
@@ -145,8 +137,11 @@ function sameName(left: ArrayBuffer, right: ArrayBuffer) {
 
 function algorithmName(certificate: X509Certificate) {
   try {
-    const algorithm = certificate.signatureAlgorithm;
-    return algorithm.name + (algorithm.hash?.name ? ' / ' + algorithm.hash.name : '');
+    // Cloudflare declares Web Crypto without the DOM Algorithm interface used by x509.
+    const algorithm = certificate.signatureAlgorithm as typeof certificate.signatureAlgorithm & { name: string };
+    const hash = algorithm.hash;
+    const hashName = typeof hash === 'string' ? hash : hash?.name;
+    return algorithm.name + (hashName ? ' / ' + hashName : '');
   } catch {
     return 'Unsupported signature algorithm';
   }
@@ -156,8 +151,8 @@ async function verifySignature(child: X509Certificate, issuer: X509Certificate):
   try {
     // Import explicitly: the library otherwise collapses key-import errors into false.
     const algorithm = { ...issuer.publicKey.algorithm, ...child.signatureAlgorithm };
-    const key = await issuer.publicKey.export(algorithm, ['verify'], globalThis.crypto);
-    return await child.verify({ publicKey: key, signatureOnly: true }, globalThis.crypto) ? 'verified' : 'failed';
+    const key = await issuer.publicKey.export(algorithm, ['verify'], crypto);
+    return await child.verify({ publicKey: key, signatureOnly: true }, crypto) ? 'verified' : 'failed';
   } catch (error) {
     if (error instanceof Error && error.name === 'NotSupportedError') return 'unsupported';
     if (error instanceof Error && error.name === 'DataError') return 'failed';
@@ -166,12 +161,12 @@ async function verifySignature(child: X509Certificate, issuer: X509Certificate):
   }
 }
 
-/** The prototype accepts ASCII DNS names, including pre-converted IDNA A-labels. */
+/** ASCII DNS identifiers only, including pre-converted IDNA A-labels. */
 export function normalizeHostname(value: string) {
   const hostname = value.trim().toLowerCase().replace(/\.$/, '');
   if (!hostname || hostname.length > 253 || /^[\d.]+$/.test(hostname)
     || !hostname.split('.').every(label => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label))) {
-    throw new BundleInputError('INVALID_HOSTNAME', 'Use an ASCII DNS hostname without a URL, port, IP address, or wildcard. Convert internationalized names to punycode first.');
+    throw new CertificateBundleInputError('INVALID_HOSTNAME', 'Use an ASCII DNS hostname without a URL, port, IP address, or wildcard. Convert internationalized names to punycode first.');
   }
   return hostname;
 }
@@ -188,10 +183,24 @@ export function matchesDnsName(hostname: string, presented: string) {
   try { return normalizeHostname(name) === name && hostname === name; } catch { return false; }
 }
 
-export async function checkBundle(request: BundleRequest, evaluatedAt = new Date()): Promise<BundleResult> {
-  if (!Number.isFinite(evaluatedAt.getTime())) throw new BundleInputError('INVALID_TIME', 'The evaluation time must be a valid date.');
-  if (!globalThis.crypto?.subtle) throw new BundleInputError('CRYPTO_UNAVAILABLE', 'Web Crypto is unavailable. Open the demo on localhost or another secure context.');
+export async function checkCertificateBundle(value: unknown, evaluatedAt = new Date(), signal?: AbortSignal): Promise<BundleResult> {
+  const validation = CertificateBundleRequestSchema.safeParse(value);
+  if (!validation.success) {
+    // Never forward schema messages that might contain caller-controlled keys or values.
+    const issues = validation.error.issues.map(issue => {
+      const field = issue.path[0];
+      return { path: field === 'pem' || field === 'hostname' || field === 'leafIndex' ? [field] : [],
+        message: 'Use a PEM string, an optional ASCII DNS hostname, and an optional zero-based leaf index within the documented limits.' };
+    });
+    throw new ToolError<CertificateBundleIssueDetail>('INVALID_INPUT', 'Invalid certificate bundle request.', issues,
+      issues.map(() => ({ reason: 'INVALID_INPUT' })));
+  }
+  const request: BundleRequest = validation.data;
+  const active = () => { if (signal?.aborted) throw new DOMException('Certificate check cancelled.', 'AbortError'); };
+  active();
+  if (!Number.isFinite(evaluatedAt.getTime())) throw new CertificateBundleInputError('INVALID_TIME', 'The evaluation time must be a valid date.');
   const parsed = parseBundle(request.pem);
+  if (typeof crypto === 'undefined' || !crypto.subtle) throw new CertificateBundleInputError('CRYPTO_UNAVAILABLE', 'Web Crypto is unavailable. Use a supported browser in a secure context or another supported runtime.');
   const expected = request.hostname?.trim() ? normalizeHostname(request.hostname) : null;
   const findings: Finding[] = [];
   const relationships: IssuerRelationship[] = [];
@@ -203,12 +212,14 @@ export async function checkBundle(request: BundleRequest, evaluatedAt = new Date
   const firstByFingerprint = new Map<string, number>();
   const uniqueIndexes: number[] = [];
   for (const [index, { certificate, line }] of parsed.entries()) {
+    active();
     const constraints = certificate.getExtension(BasicConstraintsExtension);
     const usage = certificate.getExtension(KeyUsagesExtension);
-    const fingerprintSha256 = Array.from(new Uint8Array(await certificate.getThumbprint('SHA-256', globalThis.crypto)),
+    const fingerprintSha256 = Array.from(new Uint8Array(await certificate.getThumbprint('SHA-256', crypto)),
       value => value.toString(16).padStart(2, '0').toUpperCase()).join(':');
     const summary: CertificateSummary = {
       index, line, subject: certificate.subject, issuer: certificate.issuer,
+      commonName: certificate.subjectName.getField('CN').join(' / ') || null,
       serialNumber: certificate.serialNumber,
       sans: certificate.getExtension(SubjectAlternativeNameExtension)?.names.items.map(name => ({ type: name.type, value: name.value })) ?? [],
       notBefore: certificate.notBefore.toISOString(), notAfter: certificate.notAfter.toISOString(),
@@ -227,6 +238,7 @@ export async function checkBundle(request: BundleRequest, evaluatedAt = new Date
       'The evaluation time is before notBefore.', { evaluatedAt: evaluatedAt.toISOString(), notBefore: summary.notBefore }, 'Check the clock and certificate activation date.');
   }
   for (const childIndex of uniqueIndexes) {
+    active();
     const child = parsed[childIndex]!.certificate;
     const childSummary = certificates[childIndex]!;
     const selfIssued = sameName(child.subjectName.toArrayBuffer(), child.issuerName.toArrayBuffer());
@@ -241,6 +253,7 @@ export async function checkBundle(request: BundleRequest, evaluatedAt = new Date
     const candidates = uniqueIndexes.filter(index => index !== childIndex
       && sameName(child.issuerName.toArrayBuffer(), parsed[index]!.certificate.subjectName.toArrayBuffer()));
     for (const issuerIndex of candidates) {
+      active();
       const issuer = parsed[issuerIndex]!.certificate;
       const issuerSummary = certificates[issuerIndex]!;
       const signature = await verifySignature(child, issuer);
@@ -272,7 +285,7 @@ export async function checkBundle(request: BundleRequest, evaluatedAt = new Date
   let selectedLeafIndex: number | null = leafIndexes.length === 1 ? leafIndexes[0]! : null;
   if (request.leafIndex !== undefined) {
     if (!Number.isInteger(request.leafIndex) || request.leafIndex < 0 || request.leafIndex >= certificates.length || certificates[request.leafIndex]!.ca) {
-      throw new BundleInputError('INVALID_LEAF_SELECTION', 'Select an original input position containing a non-CA certificate.');
+      throw new CertificateBundleInputError('INVALID_LEAF_SELECTION', 'Select an original input position containing a non-CA certificate.');
     }
     selectedLeafIndex = request.leafIndex;
   }
@@ -293,5 +306,6 @@ export async function checkBundle(request: BundleRequest, evaluatedAt = new Date
         matched ? 'This identity check does not establish chain validity or client trust.' : 'Check the hostname or obtain a certificate with the required DNS SAN. Common Name is not used as a fallback.');
     }
   }
+  active();
   return { evaluatedAt: evaluatedAt.toISOString(), certificates, relationships, leafIndexes, selectedLeafIndex, hostname, findings };
 }
