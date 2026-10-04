@@ -1,13 +1,14 @@
 # Continuous integration and deployment
 
 The [development and release workflow](development-and-releases.md) describes
-the planned branches, merge policies, and three permanent environments. This
-guide documents the current automation until that workflow is implemented.
+the active branches, merge policies, and three permanent environments. This
+guide documents their validation and deployment automation.
 
 [`ci.yml`](../.github/workflows/ci.yml) defines Packetrove's GitHub Actions
 validation and production deployment workflow. It validates pull requests and
 updates for `main`, `develop`, and `release-*`, plus manual runs on those branches.
-During migration, changes still reach `main` through squash pull requests.
+Daily changes use squash PRs into `develop`; candidate fixes target `release-*`,
+and direct change PRs into `main` are reserved for declared hotfixes.
 Only current `main` revisions enter production deployment steps.
 
 [`deploy-environment.yml`](../.github/workflows/deploy-environment.yml) deploys

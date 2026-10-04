@@ -107,10 +107,10 @@ are excluded from canonical metadata and the sitemap. See
 [Cloudflare's redirect rules](https://developers.cloudflare.com/workers/static-assets/redirects/).
 See [Cloudflare's static HTML routing guide](https://developers.cloudflare.com/workers/static-assets/routing/static-site-generation/).
 
-The MCP handler allows local hostnames and `api.packetrove.com` for Host
-validation. Browser Origin validation additionally allows `packetrove.com`. If a
-custom domain changes, update the separate exact hostname allowlists in
-[`apps/worker/src/mcp.ts`](../apps/worker/src/mcp.ts) and rerun checks. Clients
+The MCP handler derives its exact Host allowlist from `PUBLIC_API_ORIGIN` plus
+local hostnames. Browser Origin validation also allows `PUBLIC_WEBSITE_ORIGIN`.
+When changing custom domains, update both Worker origin variables and the website
+build origins, then rerun checks. Clients
 without an Origin header are supported. Unrelated browser Origins are rejected.
 
 ## Privacy policy and operational errors

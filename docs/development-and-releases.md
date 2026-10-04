@@ -1,13 +1,12 @@
 # Development and release workflow
 
-**Status: migration in progress.** CI and the three permanent environments are
-available. The manual release coordinator is gated by
-`DEVELOPMENT_WORKFLOW_ENABLED`; branch protection and contributor cutover remain
-pending. Current repository rules continue to apply until activation.
+**Status: active.** Required PRs, CI, the manual release coordinator, and all
+three permanent environments are enabled. Human maintainers still choose merge
+methods according to the policy below; a sole automated merger is not required.
 
-Daily work will integrate on `develop`. A temporary release branch will freeze
+Daily work integrates on `develop`. A temporary release branch freezes
 each candidate for validation before promotion to `main`. Development, staging,
-and production will remain available between releases.
+and production remain available between releases.
 
 ## Branches and commits
 
@@ -150,34 +149,19 @@ publication with the same version. Tags and existing npm archives cannot be
 moved or replaced. The coordinator retries a failed CLI workflow once; further
 recovery uses the existing tag through **Publish CLI to npm**.
 
-## Implementation work
+## Repository enforcement
 
-CI validates `main`, `develop`, and `release-*`, while production deploys only
-from `main`. Development and staging have passed bootstrap live checks and
-automatic environment deployment is enabled. The final legacy candidate,
-`0.4.0`, is published; the old bot has not opened a successor. Complete the
-transition in this order:
+`DEVELOPMENT_WORKFLOW_ENABLED=true` enables release coordination and PR routing.
+`NON_PRODUCTION_DEPLOYMENTS_ENABLED=true` enables development and staging after
+successful branch CI. The old **Prepare Packetrove release** workflow is disabled;
+its final `0.4.0` release is published and has no successor candidate.
 
-1. Extend validation to pull requests targeting `develop` and `release-*`,
-   retaining `Validate project` and keeping PR validation separate from deployment.
-2. Add development and staging configurations for both Workers. Parameterize
-   website and API origins, MCP Host and Origin validation, and live checks.
-   Deploy validated `develop` revisions to development. Keep staging on the
-   selected candidate during acceptance and on the released revision afterward.
-   Verify each environment against its own domains before routing daily work to it.
-3. Install the manual release coordinator to separate candidate version preparation
-   from formal publication. Reuse the existing unified-version generators and
-   npm publication checks; replace the automatic `main` preparation trigger at
-   cutover so old and new automation cannot prepare competing releases.
-4. At the approved cutover, resolve outstanding legacy release-please PRs before
-   protecting `release-*`; their branch names also match that pattern. Enable
-   squash and merge commits, disable rebase merging, and apply protection and
-   required checks using the approved release route. Create `develop` from
-   validated `main`, switch ordinary development to it, and update the
-   transitional contributor rules.
-5. Exercise a complete release, concurrent development for the next version,
-   hotfix recovery, and a failed-step retry. Verify production publication,
-   staging's return to the released revision, and synchronization into `develop`.
+Active rulesets protect `main`, `develop`, and `release-*`. Each requires a PR,
+`Validate project` from GitHub Actions, and no force pushes. There are no bypass
+actors, including administrators or the release App. `main` and `develop` cannot
+be deleted; the coordinator deletes a completed release branch only after its
+changes are promoted, published, and synchronized. Repository and target-branch
+rules allow squash and merge commits and disable rebase merging.
 
 The routing check, enabled by `DEVELOPMENT_WORKFLOW_ENABLED=true`, rejects
 ordinary PRs into `main`; it permits release promotion or a declared hotfix.
@@ -198,6 +182,6 @@ chooses the method for each change type. Keep pull requests and required checks
 mandatory for that automation. This merge-entry restriction remains an
 implementation decision. See [GitHub's ruleset reference](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets).
 
-The current procedures remain documented in the
+Detailed procedures are documented in the
 [CI guide](continuous-integration.md), [deployment guide](deployment.md), and
 [publishing guide](cli-publishing.md).
