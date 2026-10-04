@@ -11,9 +11,11 @@ not triggered by merging a pull request or publishing the CLI.
 
 ## Release policy
 
-After the one-time setup below, maintainers merge ordinary feature pull
-requests as usual. The existing `CI and deployment` workflow validates and
-deploys the website, API, and MCP on `main`.
+The [development and release workflow](development-and-releases.md) is the
+primary operating procedure. After activation, daily work uses squash PRs into
+`develop`; candidate fixes use squash PRs into `release-<version>`. Production
+still deploys validated `main`, including emergency hotfix PRs. During migration,
+ordinary PRs continue targeting `main` until the contributor rules are switched.
 
 Packetrove uses one product version for the website, API, MCP, CLI, core, and
 contracts, including the MCP Registry manifest and the
@@ -22,27 +24,27 @@ contracts keep corresponding capabilities aligned. Release numbers identify a
 source snapshot; deployed services can
 contain newer unreleased changes, identified by their Git commit SHA.
 
-[`release.yml`](../.github/workflows/release.yml) runs after a successful
-current `main` validation, deployment, and production check. During migration,
-automatic preparation of the next release PR is paused. Successful automatic
-runs only finalize a merged release PR, so merging the pending legacy candidate
-does not create another candidate. A manual run with `prepare_pull_request=true`
-can explicitly prepare or update a legacy `chore: release <version>` PR containing
-the product changelog, all workspace version updates, and the plugin version update.
-This pull request also runs the required
-`Validate project` check and must be up to date with `main`. It is never
-automatically merged. Leave it open to accumulate changes without publishing
-npm.
+[`manual-release.yml`](../.github/workflows/manual-release.yml) coordinates
+protected PRs after `DEVELOPMENT_WORKFLOW_ENABLED=true`. **Prepare** selects a
+validated `develop` snapshot and an explicit next version. It prepares the
+unified versions and changelog through a squash PR into the candidate branch,
+then opens a promotion PR. Candidate preparation and staging deployment publish
+neither a tag nor npm.
 
-The owner's approval to squash-merge that release pull request authorizes its
-npm release. Complete the public-material and package review required by
-[AGENTS.md](../AGENTS.md) before approving it; there is no second publishing
-prompt after the release pull request is merged. After the merged revision passes CI, release-please creates
-the plain `<version>` tag, such as `0.1.1`, and a GitHub Release. The release event triggers
-[`publish-cli.yml`](../.github/workflows/publish-cli.yml), which validates, packs,
-publishes through npm trusted publishing, and verifies the exact npm version.
-Ordinary feature merges continue to deploy the services; they do not themselves
-publish npm.
+Complete the public-material and package review required by
+[AGENTS.md](../AGENTS.md) before publication. After staging acceptance, **Publish**
+with the exact candidate SHA authorizes promotion using a merge commit. The
+action waits for that merged `main` revision's production deployment and live
+checks, creates the immutable plain `<version>` tag and GitHub Release, and
+waits for [`publish-cli.yml`](../.github/workflows/publish-cli.yml) to verify the
+CLI. It then synchronizes `main` into `develop` through a normal merge PR and
+returns staging to validated `main` after deleting the completed candidate.
+
+The final legacy release, `0.4.0`, is published. Automatic candidate preparation
+in [`release.yml`](../.github/workflows/release.yml) is paused; disable that legacy
+workflow at cutover so it cannot compete with the new coordinator. Failed steps
+are recovered using the same candidate version or existing tag. Never advance
+the version to retry a failed upload or verification.
 
 ### Versions and release scope
 
@@ -62,10 +64,12 @@ Use Conventional Commit titles for squash-merged pull requests:
 | Documentation or chores | `docs: clarify installation`, `chore: update tooling` | No product release |
 
 For a stable version of 1.0.0 or later, breaking changes bump the major version.
-Use release-please's documented [Release-As override](https://github.com/googleapis/release-please#how-do-i-change-the-version-number)
-when deliberately graduating to 1.0.0. Routine releases require no manual
-version edits or workflow version input. Give dependency and packaging fixes
-a `fix` title; an ordinary `chore` title does not request a release.
+Choose the immediate next patch, minor, or major version explicitly in Prepare;
+choose a patch for `prepare-hotfix`. The table guides that choice and changelog
+generation. The coordinator supplies release-please's `releaseAs` override and
+rejects skipped stable version increments; do not edit version files individually.
+Give dependency and packaging fixes a `fix` title. Documentation and chores
+alone ordinarily do not warrant a product release.
 
 The release component uses the pinned `release-please` development dependency
 and the Node strategy with a small file filter in `scripts/release-please.ts`.
@@ -119,15 +123,17 @@ following as GitHub Actions **repository secrets**:
 
 Keep both values out of tracked files, repository variables, and logs. The
 workflow generates a short-lived token limited to the current repository and
-revokes it when the job ends. The token is passed only to release-please. The
-App does not bypass `main` protection or automatically merge pull requests.
+revokes it when the job ends. The token is passed to release-please and the
+release coordinator. The App creates and merges release PRs after checks when
+the operation is authorized; it has no branch-protection bypass. The workflow
+token reads validation and deployment records and can dispatch recovery workflows.
 
-GitHub's default workflow token does not trigger new workflow runs for the
-pull requests and releases it creates. The App allows release pull requests to
-run the required CI check and GitHub Releases to trigger npm publication. See
-the [release-please action documentation](https://github.com/googleapis/release-please-action#other-actions-on-release-please-prs).
-If the App secrets are absent, preparation records a setup message and skips;
-ordinary validation and service deployment still run.
+The App lets its PRs run CI automatically and its GitHub Releases trigger npm
+publication. GitHub's default workflow token suppresses most resulting workflow
+events; its PR events require approval and `workflow_dispatch` is an exception.
+See [GitHub's workflow triggering rules](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+Missing App secrets block release coordination; ordinary validation and service
+deployment still run.
 
 ## First release and baseline
 

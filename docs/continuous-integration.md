@@ -60,6 +60,11 @@ The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
 
 Pull request validation checks the prospective merge revision with its target branch.
+Runs are named `CI PR #<number>` so release automation can distinguish two PRs
+with the same source commit. When `DEVELOPMENT_WORKFLOW_ENABLED=true`, the
+destination check rejects ordinary changes into `main` and verifies unified
+versions on release promotion PRs. This check does not enforce the merge method
+selected by a human maintainer; follow the [merge policy](development-and-releases.md#branches-and-commits).
 There are no path filters, so documentation-only changes also run the required
 check. The job name `Validate project` is the required status check's context;
 keep the workflow and the `main` ruleset aligned if it is renamed. The ruleset

@@ -1,0 +1,88 @@
+name: Manual Packetrove release
+run-name: Packetrove release ${{ inputs.action || 'synchronize' }} ${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Prepare a candidate, publish an accepted revision, or recover synchronization
+        required: true
+        type: choice
+        options: [prepare, publish, prepare-hotfix, publish-hotfix, synchronize]
+      version:
+        description: Stable version; retain this version when retrying
+        required: false
+        type: string
+      source_sha:
+        description: Optional validated develop SHA for a new candidate; leave empty on retry
+        required: false
+        type: string
+      accepted_sha:
+        description: Exact staging candidate SHA for Publish, or main SHA for Publish hotfix
+        required: false
+        type: string
+  workflow_run:
+    workflows: [CI and deployment]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: write
+  deployments: read
+
+concurrency:
+  group: packetrove-release-lifecycle
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Coordinate protected release pull requests
+    if: >-
+      vars.DEVELOPMENT_WORKFLOW_ENABLED == 'true' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-26.04
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_ACTION: ${{ inputs.action || 'synchronize' }}
+      RELEASE_VERSION: ${{ inputs.version }}
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      ACCEPTED_SHA: ${{ inputs.accepted_sha }}
+    steps:
+      - name: Check out trusted release orchestration
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up pnpm from package.json
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+
+      - name: Install locked release tooling
+        run: pnpm install --frozen-lockfile
+
+      - name: Create repository release App token
+        id: app
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+
+      - name: Coordinate preparation, publication, and synchronization
+        env:
+          RELEASE_TOKEN: ${{ steps.app.outputs.token }}
+        run: pnpm exec tsx scripts/manual-release.ts
