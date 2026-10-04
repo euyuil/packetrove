@@ -127,10 +127,17 @@ dry runs for both Workers, and runs the tests. It publishes nothing. See
 
 ## Pull requests
 
-Branch from the latest `origin/main`. Use Conventional Commits and a Conventional
-Commit pull request title.
+The agreed [development and release policy](docs/development-and-releases.md#branches-and-commits)
+requires squash pull requests for daily development into `develop`, pre-release
+fixes into `release-*`, and hotfixes into `main`. Merges between those branches
+must preserve ancestry through a merge commit or a true fast-forward; squash
+and rebase are prohibited for these lifecycle operations. Direct pushes to all
+three branch patterns are prohibited. Release orchestration remains a proposal.
 
-All changes use a pull request targeting `main`, describing the change, checks,
-and limitations. [Continuous integration](docs/continuous-integration.md) requires
-`Validate project` to pass and the branch to be up to date. The maintainer
-authorizes squash merging; merged changes deploy automatically.
+**During migration**, branch from the latest `origin/main`. Use Conventional
+Commits and a Conventional Commit pull request title.
+
+Until activation, changes use a pull request targeting `main`, describing the
+change, checks, and limitations. [Continuous integration](docs/continuous-integration.md)
+requires `Validate project` to pass and the branch to be up to date. The
+maintainer authorizes squash merging; merged changes deploy automatically.

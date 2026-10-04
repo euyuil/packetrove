@@ -1,8 +1,9 @@
 # Development and release workflow
 
-**Status: planned, pending implementation.** The branch, merge, and environment
-policies are agreed; the two-stage release automation below is recommended.
-Current repository rules and automation continue to apply until activation.
+**Status: agreed target policy, pending implementation.** The branches, merge
+methods, and environments below are agreed. Release orchestration and strict
+merge-method enforcement remain proposals. Current repository rules and
+automation continue to apply during migration.
 
 Daily work will integrate on `develop`. A temporary release branch will freeze
 each candidate for validation before promotion to `main`. Development, staging,
@@ -14,26 +15,27 @@ Keep `main` and `develop`; create feature branches from the latest `develop`.
 Cut each temporary `release-<version>` branch from a validated `develop` commit
 and remove it only after its release is complete.
 
-Direct pushes to `main`, `develop`, and `release-*` are prohibited, including
-automation pushes. All subsequent updates must go through pull requests:
+Do not push directly to `main`, `develop`, or `release-*`. Ordinary development,
+release fixes, and hotfixes must use pull requests:
 
-| Change | Pull request destination | Required merge method |
+| Change | Destination branch | Required merge method |
 | --- | --- | --- |
 | Daily development | `develop` | Squash |
-| Version and changelog preparation; candidate fixes | `release-*` | Squash |
+| Pre-release fixes | `release-*` | Squash |
 | Emergency hotfix branched from `main` | `main` | Squash |
-| Release promotion from `release-*` | `main` | Merge commit |
-| Synchronization between `main`, `develop`, and an active `release-*` | The branch being synchronized | Merge commit |
+| Release promotion from `release-*` | `main` | Merge commit, or a true fast-forward when possible |
+| Synchronization between `main`, `develop`, and an active `release-*` | The branch being synchronized | Merge commit, or a true fast-forward when possible |
 
-Ordinary development pull requests must target `develop`. Only hotfixes and
-release promotion may target `main`. Never squash or rebase promotion or
-synchronization pull requests: merge commits preserve the shared ancestry.
-Propagate a merged hotfix from `main` to `develop` and any active release branch
-through synchronization pull requests, then repeat candidate validation.
+Ordinary development pull requests must target `develop`; direct change pull
+requests to `main` are reserved for hotfixes. Never squash or rebase merges
+between `main`, `develop`, and `release-*`: preserve their shared ancestry.
+Whether release promotion and synchronization also require pull requests is
+an open orchestration decision, distinct from these agreed merge methods.
 
-A true fast-forward would also preserve ancestry, but GitHub's standard pull
-request merge uses `--no-ff`. This workflow therefore uses merge commits for
-promotion and synchronization; it does not use direct pushes for fast-forwarding.
+A true fast-forward is permitted by the target policy. GitHub's standard pull
+request merge uses `--no-ff` and therefore creates a merge commit. A future
+fast-forward implementation must follow the approved release route and branch
+protections; the exception does not authorize direct pushes or bypasses.
 See [GitHub's merge methods](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/configuring-pull-request-merges/about-merge-methods-on-github).
 
 Each point below is a commit. Feature C belongs to the next release while
@@ -87,9 +89,11 @@ without a separate Advanced Certificate Manager subscription. See
 
 ## Recommended manual release
 
-Use pull requests for branch changes and a manually started GitHub Action to
-coordinate them. Two stages keep candidate preparation separate from the
-decision to publish:
+**Proposal, not yet selected.** Use pull requests for branch changes and a
+manually started GitHub Action to coordinate them. The requirement to use
+release and synchronization pull requests, two manual triggers, and automatic
+PR merging have not been agreed. In this proposed flow, two stages separate
+candidate preparation from the decision to publish:
 
 1. **Prepare:** The owner selects a validated `develop` SHA. The Action creates
    `release-<version>` at that commit, prepares the version and changelog on a
@@ -110,6 +114,11 @@ decision to publish:
    pull request to `develop` and merges it with a merge commit after checks.
    Remove the completed release branch after synchronization succeeds.
 
+The proposed recovery flow also synchronizes a merged hotfix from `main` into
+`develop` and any active release branch through ordinary merge pull requests,
+then repeats candidate validation. Acceptance tied to specific revisions and
+this hotfix synchronization procedure are proposed implementation details.
+
 Allow one active candidate at a time. Preparing or correcting a candidate does
 not publish a version. Keep a partially completed release pending and retry the
 same revision and artifacts; do not advance the version merely because a step
@@ -118,9 +127,34 @@ new version.
 
 ## Implementation work
 
-Activation requires checks and protection for all three branch patterns, the
-three environment configurations, and the two release stages. Enable squash and
-merge commits, disable rebase merging, and update contributor instructions.
+The current CI checks pull requests to `main` and deploys production from `main`.
+The Worker configurations contain production domains, and release-please both
+prepares versions and creates releases from `main`. Implement the transition
+in this order:
+
+1. Extend validation to pull requests targeting `develop` and `release-*`,
+   retaining `Validate project` and keeping PR validation separate from deployment.
+2. Add development and staging configurations for both Workers. Parameterize
+   website and API origins, MCP Host and Origin validation, and live checks.
+   Deploy validated `develop` revisions to development. Keep staging on the
+   selected candidate during acceptance and on the released revision afterward.
+   Verify each environment against its own domains before routing daily work to it.
+3. Select the release orchestration, then separate candidate version preparation
+   from formal publication. Reuse the existing unified-version generators and
+   npm publication checks; replace the automatic `main` preparation trigger at
+   cutover so old and new automation cannot prepare competing releases.
+4. At the approved cutover, resolve outstanding legacy release-please PRs before
+   protecting `release-*`; their branch names also match that pattern. Enable
+   squash and merge commits, disable rebase merging, and apply protection and
+   required checks using the approved release route. Create `develop` from
+   validated `main`, switch ordinary development to it, and update the
+   transitional contributor rules.
+5. Exercise a complete release, concurrent development for the next version,
+   hotfix recovery, and a failed-step retry. Verify production publication,
+   staging's return to the released revision, and synchronization into `develop`.
+
+Strict enforcement of merge methods can be a separate step after this flow is
+working. Selecting a sole automated merger is an additional owner decision.
 
 GitHub's native merge-method rules apply to target branches, so they cannot
 enforce this table by pull request type. A routing check can reject an invalid
