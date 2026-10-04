@@ -22,10 +22,6 @@ permissions:
   actions: read
   deployments: write
 
-concurrency:
-  group: environment-${{ github.event.workflow_run.head_branch == 'develop' && 'development' || inputs.environment || 'staging' }}
-  cancel-in-progress: false
-
 jobs:
   deploy:
     name: Deploy and verify environment
@@ -33,7 +29,11 @@ jobs:
       (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (vars.NON_PRODUCTION_DEPLOYMENTS_ENABLED == 'true' &&
       github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') &&
       github.event.workflow_run.head_repository.full_name == github.repository)
+    concurrency:
+      group: environment-${{ github.event.workflow_run.head_branch == 'develop' && 'development' || inputs.environment || 'staging' }}
+      cancel-in-progress: false
     runs-on: ubuntu-26.04
     timeout-minutes: 15
     environment: ${{ github.event.workflow_run.head_branch == 'develop' && 'development' || inputs.environment || 'staging' }}
