@@ -127,18 +127,23 @@ dry runs for both Workers, and runs the tests. It publishes nothing. See
 
 ## Pull requests
 
-The agreed [development and release policy](docs/development-and-releases.md#branches-and-commits)
-requires squash pull requests for daily development into `develop`, pre-release
-fixes into `release-*`, and hotfixes into `main`. Merges between those branches
-must preserve ancestry through a merge commit or a true fast-forward; squash
-and rebase are prohibited for these lifecycle operations. Direct pushes to all
-three branch patterns are prohibited. The manual release coordinator is installed
-behind an activation variable; branch protection and contributor cutover are pending.
+The [development and release policy](docs/development-and-releases.md#branches-and-commits)
+is active. Create a dedicated branch from the latest `origin/develop` for daily
+work, from the active release branch for candidate fixes, or from `origin/main`
+for emergency hotfixes. Choose the PR destination explicitly; GitHub's default
+branch remains `main`.
 
-**During migration**, branch from the latest `origin/main`. Use Conventional
-Commits and a Conventional Commit pull request title.
+Squash-merge daily work into `develop`, candidate fixes into `release-*`, and
+hotfixes into `main`. Label direct change PRs into `main` as `hotfix`; CI rejects
+other ordinary destinations. Use Conventional Commit titles and report checks
+and limitations in each PR. Every destination requires `Validate project` from
+GitHub Actions, and `main` also requires an up-to-date source branch. Direct
+pushes and force pushes to all three branch patterns are prohibited.
 
-Until activation, changes use a pull request targeting `main`, describing the
-change, checks, and limitations. [Continuous integration](docs/continuous-integration.md)
-requires `Validate project` to pass and the branch to be up to date. The
-maintainer authorizes squash merging; merged changes deploy automatically.
+Promotion and synchronization preserve ancestry through normal merge PRs; never
+squash or rebase them. A true fast-forward remains permitted through an approved
+route. Use **Manual Packetrove release** for candidate preparation, publication,
+and synchronization. GitHub's standard merge option creates a merge commit.
+Merges must be within the maintainer's authorization and satisfy required checks.
+Validated branch updates deploy the corresponding environment; PR checks do not
+deploy services.

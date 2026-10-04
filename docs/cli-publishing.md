@@ -12,10 +12,9 @@ not triggered by merging a pull request or publishing the CLI.
 ## Release policy
 
 The [development and release workflow](development-and-releases.md) is the
-primary operating procedure. After activation, daily work uses squash PRs into
+primary operating procedure. Daily work uses squash PRs into
 `develop`; candidate fixes use squash PRs into `release-<version>`. Production
-still deploys validated `main`, including emergency hotfix PRs. During migration,
-ordinary PRs continue targeting `main` until the contributor rules are switched.
+still deploys validated `main`, including emergency hotfix PRs.
 
 Packetrove uses one product version for the website, API, MCP, CLI, core, and
 contracts, including the MCP Registry manifest and the
@@ -41,8 +40,8 @@ CLI. It then synchronizes `main` into `develop` through a normal merge PR and
 returns staging to validated `main` after deleting the completed candidate.
 
 The final legacy release, `0.4.0`, is published. Automatic candidate preparation
-in [`release.yml`](../.github/workflows/release.yml) is paused; disable that legacy
-workflow at cutover so it cannot compete with the new coordinator. Failed steps
+in [`release.yml`](../.github/workflows/release.yml) was paused before that merge;
+the legacy workflow is now disabled so it cannot compete with the coordinator. Failed steps
 are recovered using the same candidate version or existing tag. Never advance
 the version to retry a failed upload or verification.
 

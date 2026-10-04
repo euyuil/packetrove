@@ -41,3 +41,15 @@ it('rejects an unexpected version or file before preparing a metadata PR', async
   await expect(buildCandidateUpdates({ buildPullRequests: async () => [{ ...candidate,
     updates: [{ path: '.github/workflows/ci.yml' }] as ReleasePullRequest['updates'] }] }, '0.5.0')).rejects.toThrow('only');
 });
+
+it('skips absent optional Node strategy files without allowing creation or unrelated updates', async () => {
+  const candidate = () => ({ version: Version.parse('0.5.0'), updates: [
+    { path: 'package.json', createIfMissing: false }, { path: 'package-lock.json', createIfMissing: false },
+  ] } as ReleasePullRequest);
+  const result = await buildCandidateUpdates({ buildPullRequests: async () => [candidate()] }, '0.5.0', () => false);
+  expect(result.updates.map(update => update.path)).toEqual(['package.json']);
+  await expect(buildCandidateUpdates({ buildPullRequests: async () => [candidate()] }, '0.5.0', () => true)).rejects.toThrow('only');
+  const creation = candidate();
+  creation.updates[1]!.createIfMissing = true;
+  await expect(buildCandidateUpdates({ buildPullRequests: async () => [creation] }, '0.5.0', () => false)).rejects.toThrow('only');
+});

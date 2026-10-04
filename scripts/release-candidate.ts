@@ -1,4 +1,4 @@
-import { appendFileSync } from 'node:fs';
+import { appendFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GitHub, Manifest, type ReleasePullRequest } from 'release-please';
@@ -9,17 +9,23 @@ import { registerPacketroveRelease } from './release-please';
 
 const releaseFiles = new Set<string>([...productManifests, 'CHANGELOG.md', '.release-please-manifest.json',
   'docs/api/openapi.json', 'docs/integrations/mcp.md', 'server.json']);
+const optionalNodeFiles = new Set(['package-lock.json', 'npm-shrinkwrap.json', 'samples/package.json', 'changelog.json']);
+class CandidatePreparationError extends Error {}
 
 export async function buildCandidateUpdates(manifest: Pick<Manifest, 'buildPullRequests'>,
-  version: string): Promise<ReleasePullRequest> {
+  version: string, fileExists: (path: string) => boolean = existsSync): Promise<ReleasePullRequest> {
   const candidates = await manifest.buildPullRequests();
   if (candidates.length !== 1 || candidates[0]?.version?.toString() !== version) {
-    throw new Error('Candidate preparation must produce exactly the requested unified version.');
+    throw new CandidatePreparationError('Candidate preparation must produce exactly the requested unified version.');
   }
   const candidate = candidates[0];
-  if (candidate.updates.some(update => !releaseFiles.has(update.path))) {
-    throw new Error('Candidate preparation may update only version metadata, generated guides, and the changelog.');
+  if (candidate.updates.some(update => !releaseFiles.has(update.path)
+    && !(optionalNodeFiles.has(update.path) && update.createIfMissing === false && !fileExists(update.path)))) {
+    throw new CandidatePreparationError('Candidate preparation may update only version metadata, generated guides, and the changelog.');
   }
+  // The upstream Node strategy proposes absent optional files. It would skip
+  // them later; remove them here without expanding the actual update allowlist.
+  candidate.updates = candidate.updates.filter(update => releaseFiles.has(update.path));
   return candidate;
 }
 
@@ -48,9 +54,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     appendFileSync(process.env.GITHUB_OUTPUT!, `preparation_pr=${pr.number}\n`);
     appendFileSync(process.env.GITHUB_STEP_SUMMARY!,
       `Prepared [PR #${pr.number}](https://github.com/${owner}/${repo}/pull/${pr.number}) for ${target}.\n`);
-  } catch {
+  } catch (error) {
     // Upstream errors may include authorization headers. Do not log them.
-    console.error('Candidate preparation failed. Check the release baseline, App permissions, and candidate configuration.');
+    console.error(error instanceof CandidatePreparationError ? error.message
+      : 'Candidate preparation failed. Check the release baseline, App permissions, and candidate configuration.');
     process.exitCode = 1;
   }
 }
