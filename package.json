@@ -12,6 +12,7 @@
     "prepare": "node scripts/install-hooks.mjs --auto",
     "dev:api": "pnpm --filter @packetrove/web build && pnpm --filter @packetrove/worker dev",
     "dev:web": "pnpm --filter @packetrove/web dev",
+    "dev:certificate-demo": "pnpm --filter @packetrove/certificate-demo dev",
     "cli": "node packages/cli/dist/cli.js",
     "spec:generate": "tsx scripts/openapi.ts",
     "spec:check": "tsx scripts/openapi.ts --check && redocly lint docs/api/openapi.json",
