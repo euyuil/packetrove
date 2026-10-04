@@ -1,9 +1,14 @@
 # Continuous integration and deployment
 
+The [development and release workflow](development-and-releases.md) describes
+the planned branches, merge policies, and three permanent environments. This
+guide documents the current automation until that workflow is implemented.
+
 [`ci.yml`](../.github/workflows/ci.yml) defines Packetrove's GitHub Actions
-validation and production deployment workflow. It runs on pull requests targeting
-`main`, updates to `main`, and manual runs on `main`. All changes reach `main`
-through a pull request using squash merging.
+validation and production deployment workflow. It validates pull requests and
+updates for `main`, `develop`, and `release-*`, plus manual runs on those branches.
+During migration, changes still reach `main` through squash pull requests.
+Only current `main` revisions enter production deployment steps.
 
 The `main` ruleset requires the `Validate project` check from GitHub Actions to
 pass before merging and requires the pull request branch to be up to date with
@@ -46,7 +51,7 @@ The workflow runs `pnpm check`, which includes:
 The same command is available locally. Installation, builds, and tests receive
 no Cloudflare account credentials.
 
-Pull request validation checks the prospective merge revision with `main`.
+Pull request validation checks the prospective merge revision with its target branch.
 There are no path filters, so documentation-only changes also run the required
 check. The job name `Validate project` is the required status check's context;
 keep the workflow and the `main` ruleset aligned if it is renamed. The ruleset
@@ -128,18 +133,19 @@ Pull request runs use a separate concurrency group for each pull request.
 New commits cancel an older run for that pull request so the latest revision
 receives the required check. They do not cancel a production run.
 
-Each job has a ten-minute timeout. A branch push alone does not run this workflow
-unless it updates `main`; opening, reopening, or updating a pull request targeting
-`main` triggers validation. Manual validation and deployment require `main`.
+Each job has a ten-minute timeout. Pushes, pull requests, and manual runs for
+`develop` and `release-*` perform validation without production deployment.
+Manual runs on unrelated branches skip the job. Production deployment requires `main`.
 
 ## Product releases and CLI publication
 
 After one-time setup, [`release.yml`](../.github/workflows/release.yml)
 runs after successful current `main` validation, deployment, and production
-checks. Release-please maintains one product release pull request with the next
-version, root changelog, all workspace versions, the OpenAI plugin version, and
-generated OpenAPI version. Website, API, MCP, CLI, core, contracts, and plugin
-changes contribute to that version.
+checks. During migration, automatic release PR preparation is paused. These runs
+only finalize an already merged release PR. Explicit manual selection of
+`prepare_pull_request=true` prepares or updates the legacy candidate with its
+version, changelog, workspace versions, plugin version, and generated metadata.
+Website, API, MCP, CLI, core, contracts, and plugin changes contribute to that version.
 The release tag and npm version use the same plain number, such as `0.1.1`.
 A repository-scoped GitHub App allows the
 release pull request to run the same required validation as other pull requests.
