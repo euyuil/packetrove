@@ -6,6 +6,11 @@ on:
     types: [completed]
     branches: [main]
   workflow_dispatch:
+    inputs:
+      prepare_pull_request:
+        description: Explicitly prepare or update the legacy release pull request
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -80,8 +85,9 @@ jobs:
           permission-issues: write
           permission-pull-requests: write
 
-      - name: Update release PR or release an owner-merged PR
+      - name: Release an owner-merged PR and optionally prepare a legacy PR
         if: steps.gate.outputs.ready == 'true'
         env:
           RELEASE_TOKEN: ${{ steps.app.outputs.token }}
+          RELEASE_PREPARE_PULL_REQUEST: ${{ github.event_name == 'workflow_dispatch' && inputs.prepare_pull_request }}
         run: pnpm exec tsx scripts/release-please.ts

@@ -23,9 +23,12 @@ source snapshot; deployed services can
 contain newer unreleased changes, identified by their Git commit SHA.
 
 [`release.yml`](../.github/workflows/release.yml) runs after a successful
-current `main` validation, deployment, and production check. Release-please
-maintains a separate `chore: release <version>` pull request containing the
-product changelog, all workspace version updates, and the plugin version update.
+current `main` validation, deployment, and production check. During migration,
+automatic preparation of the next release PR is paused. Successful automatic
+runs only finalize a merged release PR, so merging the pending legacy candidate
+does not create another candidate. A manual run with `prepare_pull_request=true`
+can explicitly prepare or update a legacy `chore: release <version>` PR containing
+the product changelog, all workspace version updates, and the plugin version update.
 This pull request also runs the required
 `Validate project` check and must be up to date with `main`. It is never
 automatically merged. Leave it open to accumulate changes without publishing
@@ -191,11 +194,11 @@ release policy above and still require publication verification.
 
 The initial `0.1.0` GitHub Release is release-please's baseline. Preparation
 skips until it exists, so installing this automation does not silently publish
-the first npm package. Once setup is complete, the next successful `main` run
-maintains the next release pull request. To prepare immediately, run:
+the first npm package. To explicitly prepare or update the legacy release PR
+during migration, run:
 
 ```sh
-gh workflow run release.yml --repo euyuil/packetrove --ref main
+gh workflow run release.yml --repo euyuil/packetrove --ref main -f prepare_pull_request=true
 ```
 
 After npm publication is verified, keep installation and availability wording
