@@ -32,10 +32,6 @@ permissions:
   actions: write
   deployments: read
 
-concurrency:
-  group: packetrove-release-lifecycle
-  cancel-in-progress: false
-
 jobs:
   release:
     name: Coordinate protected release pull requests
@@ -43,7 +39,11 @@ jobs:
       vars.DEVELOPMENT_WORKFLOW_ENABLED == 'true' &&
       ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
       (github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.event == 'push' || github.event.workflow_run.event == 'workflow_dispatch') &&
       github.event.workflow_run.head_repository.full_name == github.repository))
+    concurrency:
+      group: packetrove-release-lifecycle
+      cancel-in-progress: false
     runs-on: ubuntu-26.04
     timeout-minutes: 60
     env:
