@@ -1,8 +1,8 @@
 # Continuous integration and deployment
 
-The agreed [development and release workflow](development-and-releases.md)
-describes the planned branches and three permanent environments. This guide
-documents the current automation until that workflow is implemented.
+The [development and release workflow](development-and-releases.md) describes
+the planned branches, merge policies, and three permanent environments. This
+guide documents the current automation until that workflow is implemented.
 
 [`ci.yml`](../.github/workflows/ci.yml) defines Packetrove's GitHub Actions
 validation and production deployment workflow. It runs on pull requests targeting
