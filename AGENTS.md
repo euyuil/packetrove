@@ -185,7 +185,36 @@
   exclude them from canonical links and the sitemap. Remove a conflicting alias
   before introducing a locale prefix that would claim it.
 
+## Development and release merge policy
+
+The owner has agreed the following target policy. Branch protection, CI, and
+environment migration are pending; follow the transition workflow below until
+activation. See [development and releases](docs/development-and-releases.md)
+for the preserved commit diagram, environment mapping, proposals, and rollout.
+
+- Never push directly to `main`, `develop`, or `release-*`.
+- After activation, branch ordinary development from the latest `origin/develop`
+  and open pull requests targeting `develop`. Use squash merging only.
+- Branch pre-release fixes from the active release branch and open pull requests
+  targeting that `release-*` branch. Use squash merging only.
+- Direct change pull requests to `main` are reserved for hotfixes. Branch a
+  hotfix from the latest `origin/main` and use squash merging for its pull request.
+- For release promotion or synchronization between `main`, `develop`, and
+  `release-*`, never squash or rebase. Use a normal merge with a merge commit,
+  unless a true fast-forward is possible through the approved release route.
+- When these lifecycle operations use GitHub pull requests, use Merge pull
+  request, or pass `--merge` to the GitHub CLI. GitHub's standard PR merge creates
+  a merge commit; do not substitute rebase merging for a true fast-forward.
+- The lifecycle merge route and any restriction to a sole automated merger are
+  implementation decisions, not agreed requirements. Automation does not grant
+  permission to bypass branch protection or merge without owner authorization.
+
 ## Pull request workflow
+
+Use this current workflow for documentation and implementation pull requests
+until the development and release workflow is activated. During migration,
+`main` remains the integration branch and current GitHub settings permit only
+squash merging.
 
 - Make all repository changes on a dedicated branch based on the latest
   `origin/main`. Push that branch and open a pull request targeting `main`.
