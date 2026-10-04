@@ -8,7 +8,9 @@ import { CallToolResultSchema as LegacyCallToolResultSchema } from '@modelcontex
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
+  CertificateBundleResultSchema,
 } from '@packetrove/contracts';
+import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
 import { escapeHtml, robotsText, websitePages, websiteRedirects } from '../../web/src/seo';
@@ -64,6 +66,15 @@ function assertMcpSuccessContent(content: unknown, tool: (typeof catalogTools)[n
   assert(isDeepStrictEqual(content, [
     { type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink,
   ]), `MCP must retain exact JSON text and a generic tool page link: ${tool.id}`);
+}
+
+// Certificate validity depends on the runtime clock; documentation uses a fixed
+// clock. Reproduce the observation at its reported time, using public examples.
+async function expectedExample(tool: (typeof catalogTools)[number], example: { request: unknown; result: unknown }, result: unknown) {
+  if (tool.page !== 'certificate') return example.result;
+  const observation = CertificateBundleResultSchema.parse(result);
+  assert(Math.abs(Date.now() - Date.parse(observation.evaluatedAt)) < 60_000, 'Certificate evaluation must use the current runtime clock.');
+  return checkCertificateBundle(example.request, new Date(observation.evaluatedAt));
 }
 
 const website = await timedFetch(`${origin}/`);
@@ -315,7 +326,9 @@ for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
       body: JSON.stringify(example.request),
     });
     assert.equal(response.status, 200, `API calculation status: ${tool.id}`);
-    assert.deepEqual(tool.outputSchema.parse(await response.json()), example.result);
+    const result = tool.outputSchema.parse(await response.json());
+    assert.deepEqual(result, await expectedExample(tool, example, result));
+    if (tool.page === 'certificate') assert.equal(response.headers.get('cache-control'), 'no-store');
   }
   const invalid = await timedFetch(`${apiOrigin}${tool.api.path}`, {
     method: tool.api.method.toUpperCase(), headers: { 'content-type': 'application/json' },
@@ -347,8 +360,8 @@ try {
     for (const example of tool.examples) {
       const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
       assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
-      assert.deepEqual(response.structuredContent, example.result);
-      assertMcpSuccessContent(response.content, tool, example.result);
+      assert.deepEqual(response.structuredContent, await expectedExample(tool, example, response.structuredContent));
+      assertMcpSuccessContent(response.content, tool, response.structuredContent);
     }
     const invalid = await client.callTool({ name: tool.mcp.name, arguments: {} });
     assert.equal(invalid.content?.length, 1, `MCP failures must contain no optional tool page link: ${tool.id}`);
@@ -381,8 +394,8 @@ try {
     for (const example of tool.examples) {
       const response = await legacyClient.callTool({ name: tool.mcp.name, arguments: example.request });
       assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
-      assert.deepEqual(response.structuredContent, example.result);
-      assertMcpSuccessContent(response.content, tool, example.result);
+      assert.deepEqual(response.structuredContent, await expectedExample(tool, example, response.structuredContent));
+      assertMcpSuccessContent(response.content, tool, response.structuredContent);
     }
     const invalid = LegacyCallToolResultSchema.parse(await legacyClient.callTool({ name: tool.mcp.name, arguments: {} }));
     assert.equal(invalid.content?.length, 1, `MCP failures must contain no optional tool page link: ${tool.id}`);

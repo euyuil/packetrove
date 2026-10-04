@@ -6,9 +6,11 @@ import { CidrPreview } from './tools/CidrPreview';
 import { SubtractPreview } from './tools/SubtractPreview';
 import { RangePreview } from './tools/RangePreview';
 import { PublicIpPreview } from './tools/PublicIpPreview';
+import { CertificatePreview } from './tools/CertificatePreview';
 
 const previews = {
   cidr: CidrPreview, subtract: SubtractPreview, range: RangePreview, ip: PublicIpPreview,
+  certificate: CertificatePreview,
 } satisfies Record<ToolPage, ComponentType>;
 
 export function ToolPreview({ tool }: { tool: ToolPage }) {

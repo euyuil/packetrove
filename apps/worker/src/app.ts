@@ -27,7 +27,7 @@ export function createApp(executor: ToolExecutor = executeTool) {
   app.onError((error, context) => {
     if (error instanceof ToolError) {
       const status = error.code === 'CLIENT_IP_UNAVAILABLE' ? 503 : error.code === 'PAYLOAD_TOO_LARGE' ? 413
-        : error.code === 'UNSUPPORTED_MEDIA_TYPE' ? 415 : 400;
+        : error.code === 'UNSUPPORTED_MEDIA_TYPE' ? 415 : error.code === 'INTERNAL_ERROR' ? 500 : 400;
       return context.json(error.toResponse(), status);
     }
     if (!(error instanceof ToolExecutionCancelledError)) logUnexpectedRequestFailure();

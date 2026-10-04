@@ -7,12 +7,13 @@ import type { Transport as LegacyTransportContract } from '@modelcontextprotocol
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { smallestCoveringCidr } from '@packetrove/core';
+import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import {
   CIDR_COVER_EXAMPLES, CIDR_SUBTRACT_EXAMPLES, CIDR_SUBTRACT_TOOL_NAME, CidrSubtractResultSchema,
   CidrCoverResultSchema, ErrorResponseSchema, tools as catalogTools,
   MAX_REQUEST_BYTES, MCP_TOOL_NAME, PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_WEBSITE_ORIGIN,
   PUBLIC_IP_TOOL_NAME, PublicIpResultSchema,
-  RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema, toolCatalog,
+  RANGE_TO_CIDRS_EXAMPLES, RangeToCidrsResultSchema, toolCatalog, CertificateBundleResultSchema,
 } from '@packetrove/contracts';
 import { rangeEndpointErrorCases } from './range-endpoint-error-cases';
 
@@ -41,6 +42,13 @@ function expectSuccessContent(content: unknown, tool: (typeof catalogTools)[numb
   const originalResult = tool.execution === 'connection' ? PublicIpResultSchema.parse(result) : result;
   expect(content).toEqual([{ type: 'text', text: JSON.stringify(originalResult) }, tool.mcp.resultLink]);
   expect(LegacyResourceLinkSchema.parse((content as unknown[])[1])).toEqual(tool.mcp.resultLink);
+}
+
+async function expectedObservation(tool: (typeof catalogTools)[number], example: { request: unknown; result: unknown }, value: unknown) {
+  if (tool.page !== 'certificate') return example.result;
+  const observation = CertificateBundleResultSchema.parse(value);
+  expect(Math.abs(Date.now() - Date.parse(observation.evaluatedAt))).toBeLessThan(10_000);
+  return checkCertificateBundle(example.request, new Date(observation.evaluatedAt));
 }
 
 describe('stateless MCP in the Workers runtime', () => {
@@ -238,11 +246,12 @@ describe('stateless MCP in the Workers runtime', () => {
       expect((await client.listTools()).tools.some(entry => entry.name === tool.mcp.name)).toBe(true);
       const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
       expect(response.isError).not.toBe(true);
-      expect(response.structuredContent).toEqual(example.result);
-      expectSuccessContent(response.content, tool, example.result);
+      const expected = await expectedObservation(tool, example, response.structuredContent);
+      expect(response.structuredContent).toEqual(expected);
+      expectSuccessContent(response.content, tool, expected);
       const content = response.content?.[0];
       if (content?.type !== 'text') throw new Error('Missing result content');
-      expect(JSON.parse(content.text)).toEqual(example.result);
+      expect(JSON.parse(content.text)).toEqual(expected);
     } finally { await client.close(); }
   });
   it('preserves dotted-tail IPv6 values using the shared calculation', async () => {
@@ -298,12 +307,13 @@ describe('stateless MCP in the Workers runtime', () => {
         for (const example of tool.examples) {
           const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
           expect(response.isError).not.toBe(true);
-          expect(response.structuredContent).toEqual(example.result);
-          expectSuccessContent(response.content, tool, example.result);
+          const expected = await expectedObservation(tool, example, response.structuredContent);
+          expect(response.structuredContent).toEqual(expected);
+          expectSuccessContent(response.content, tool, expected);
           // A text-only consumer can ignore optional resource links and retain the complete answer.
           const text = LegacyCallToolResultSchema.parse(response).content.find(item => item.type === 'text');
           if (text?.type !== 'text') throw new Error('Missing JSON result');
-          expect(JSON.parse(text.text)).toEqual(example.result);
+          expect(JSON.parse(text.text)).toEqual(expected);
         }
       }
     } finally { await client.close(); }
@@ -324,8 +334,9 @@ describe('stateless MCP in the Workers runtime', () => {
       try {
         await client.listTools();
         const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
-        expect(response.structuredContent).toEqual(example.result);
-        expectSuccessContent(response.content, tool, example.result);
+        const expected = await expectedObservation(tool, example, response.structuredContent);
+        expect(response.structuredContent).toEqual(expected);
+        expectSuccessContent(response.content, tool, expected);
         const link = response.content?.find(item => item.type === 'resource_link');
         if (link?.type !== 'resource_link') throw new Error('Missing optional tool page link');
         const destination = new URL(link.uri);
@@ -343,7 +354,7 @@ describe('stateless MCP in the Workers runtime', () => {
         // The original text content remains a complete answer for clients ignoring links.
         const text = response.content?.find(item => item.type === 'text');
         if (text?.type !== 'text') throw new Error('Missing JSON result');
-        expect(JSON.parse(text.text)).toEqual(example.result);
+        expect(JSON.parse(text.text)).toEqual(expected);
       } finally { await client.close(); }
     }
     expect(new Set(results.map(result => JSON.stringify(result))).size).toBeGreaterThan(1);

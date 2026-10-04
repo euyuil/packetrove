@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PACKETROVE_IDENTITY, tools } from '../packages/contracts/src/index';
+import { checkCertificateBundle } from '../packages/core/src/certificate-bundle';
 import { websitePages, websiteRedirects } from '../apps/web/src/seo';
 import { waitForDeployment } from './deployment-readiness';
 
@@ -222,12 +223,13 @@ describe('readiness followed by the production smoke check across separate origi
       }
       const tool = tools.find(tool => tool.api.path === path && tool.api.method === 'post');
       if (tool) {
+        for (const [name, header] of Object.entries(tool.api.response.headers ?? {})) response.setHeader(name, header.value);
         let body = '';
         request.on('data', chunk => { body += chunk; });
-        request.on('end', () => {
+        request.on('end', async () => {
           const value: unknown = JSON.parse(body);
           const example = tool.examples.find(example => JSON.stringify(example.request) === JSON.stringify(value));
-          if (example) send(response, 'application/json', JSON.stringify(example.result));
+          if (example) send(response, 'application/json', JSON.stringify(tool.page === 'certificate' ? await checkCertificateBundle(example.request) : example.result));
           else send(response, 'application/json', JSON.stringify({ error: {
             code: tool.inputSchema.safeParse(value).success ? 'MIXED_ADDRESS_FAMILIES' : 'INVALID_INPUT',
             message: 'Invalid calculation input.',

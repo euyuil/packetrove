@@ -21,6 +21,10 @@
       "description": "IP address and CIDR calculations."
     },
     {
+      "name": "Certificates",
+      "description": "Diagnostics for supplied public certificate bundles."
+    },
+    {
       "name": "IP",
       "description": "Request-based IP address diagnostics."
     },
@@ -95,6 +99,30 @@
                     },
                     "message": {
                       "type": "string"
+                    },
+                    "location": {
+                      "type": "object",
+                      "properties": {
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "offset": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "end": {
+                          "type": "integer",
+                          "minimum": 0
+                        }
+                      },
+                      "required": [
+                        "line",
+                        "offset",
+                        "end"
+                      ],
+                      "additionalProperties": false,
+                      "description": "Original text location: one-based line and zero-based UTF-16 start/end offsets. Certificate PEM errors use this to identify rejected material without echoing it."
                     }
                   },
                   "required": [
@@ -396,6 +424,335 @@
         "required": [
           "start",
           "end"
+        ],
+        "additionalProperties": false
+      },
+      "CertificateBundleResult": {
+        "type": "object",
+        "properties": {
+          "evaluatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Evaluation time from this runtime clock, not a deployment observation."
+          },
+          "certificates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15,
+                  "description": "Zero-based original input position; duplicates retain their positions."
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "One-based input line of the BEGIN boundary."
+                },
+                "subject": {
+                  "type": "string"
+                },
+                "issuer": {
+                  "type": "string"
+                },
+                "commonName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "serialNumber": {
+                  "type": "string"
+                },
+                "sans": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type",
+                      "value"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "notBefore": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "notAfter": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "ca": {
+                  "type": "boolean"
+                },
+                "basicConstraintsPresent": {
+                  "type": "boolean"
+                },
+                "keyCertSign": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                },
+                "fingerprintSha256": {
+                  "type": "string",
+                  "pattern": "^(?:[0-9A-F]{2}:){31}[0-9A-F]{2}$"
+                },
+                "signatureAlgorithm": {
+                  "type": "string"
+                },
+                "selfSignature": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "enum": [
+                    "verified",
+                    "failed",
+                    "unsupported",
+                    "unavailable",
+                    null
+                  ]
+                }
+              },
+              "required": [
+                "index",
+                "line",
+                "subject",
+                "issuer",
+                "commonName",
+                "serialNumber",
+                "sans",
+                "notBefore",
+                "notAfter",
+                "ca",
+                "basicConstraintsPresent",
+                "keyCertSign",
+                "fingerprintSha256",
+                "signatureAlgorithm",
+                "selfSignature"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 16
+          },
+          "relationships": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "childIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "issuerIndex": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "signature": {
+                  "type": "string",
+                  "enum": [
+                    "verified",
+                    "failed",
+                    "unsupported",
+                    "unavailable"
+                  ]
+                },
+                "issuerEligible": {
+                  "type": "boolean",
+                  "description": "basicConstraints CA=true and, if present, Key Usage permits keyCertSign. Does not include validity, trust, or full path constraints."
+                },
+                "keyIdentifierMatch": {
+                  "type": [
+                    "boolean",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "childIndex",
+                "issuerIndex",
+                "signature",
+                "issuerEligible",
+                "keyIdentifierMatch"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 240
+          },
+          "leafIndexes": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 15
+            },
+            "maxItems": 16,
+            "description": "First occurrences of distinct non-CA certificates; these are possible leaves, not a verified deployment selection."
+          },
+          "selectedLeafIndex": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0,
+            "maximum": 15
+          },
+          "hostname": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "properties": {
+              "expected": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "matched",
+                  "mismatched",
+                  "ambiguous",
+                  "no-leaf"
+                ]
+              }
+            },
+            "required": [
+              "expected",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "findings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "DUPLICATE_CERTIFICATE",
+                    "CERTIFICATE_EXPIRED",
+                    "CERTIFICATE_NOT_YET_VALID",
+                    "SELF_SIGNED_CERTIFICATE",
+                    "SELF_SIGNATURE_FAILED",
+                    "SIGNATURE_UNSUPPORTED",
+                    "SIGNATURE_CHECK_UNAVAILABLE",
+                    "ISSUER_NOT_IN_BUNDLE",
+                    "CANDIDATE_SIGNATURE_FAILED",
+                    "ISSUER_NOT_CA",
+                    "ISSUER_KEY_USAGE_REJECTED",
+                    "ISSUER_KEY_ID_MISMATCH",
+                    "MULTIPLE_ISSUERS",
+                    "LEAF_SELECTION_REQUIRED",
+                    "NO_LEAF_CERTIFICATE",
+                    "HOSTNAME_MATCH",
+                    "HOSTNAME_MISMATCH"
+                  ]
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "error",
+                    "warning",
+                    "info"
+                  ]
+                },
+                "certificateIndexes": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 15
+                  },
+                  "maxItems": 16
+                },
+                "observed": {
+                  "type": "string"
+                },
+                "evidence": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "nextAction": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "severity",
+                "certificateIndexes",
+                "observed",
+                "evidence",
+                "nextAction"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "evaluatedAt",
+          "certificates",
+          "relationships",
+          "leafIndexes",
+          "selectedLeafIndex",
+          "hostname",
+          "findings"
+        ],
+        "additionalProperties": false,
+        "description": "Structural and cryptographic observations about the supplied bundle. Not full RFC 5280 path validation, client trust, revocation checking, or deployment safety. Candidate failures do not invalidate other paths."
+      },
+      "CertificateBundleRequest": {
+        "type": "object",
+        "properties": {
+          "pem": {
+            "type": "string",
+            "maxLength": 49152,
+            "description": "One or more PEM CERTIFICATE blocks, with only whitespace between blocks. At most 48 KiB of UTF-8 and 16 blocks. Private keys and other block types are rejected."
+          },
+          "hostname": {
+            "type": "string",
+            "maxLength": 255,
+            "description": "Optional ASCII DNS hostname, including pre-converted IDNA A-labels. No URL, port, IP address, or wildcard. Blank skips identity checking."
+          },
+          "leafIndex": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 15,
+            "description": "Zero-based original position of a non-CA certificate. Required to resolve multiple possible leaves for hostname checking."
+          }
+        },
+        "required": [
+          "pem"
         ],
         "additionalProperties": false
       },
@@ -849,6 +1206,331 @@
           },
           "400": {
             "description": "Invalid JSON, invalid endpoints, mixed address families, or reversed range. Issues identify the start or end field.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method is not supported for this endpoint.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Request body exceeds 64 KiB.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "Expected an application/json request body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected internal failure.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate-bundle": {
+      "post": {
+        "operationId": "certificate-bundle",
+        "tags": [
+          "Certificates"
+        ],
+        "summary": "Inspect a PEM certificate bundle and optional DNS hostname",
+        "description": "Accept up to 16 CERTIFICATE blocks in at most 49152 UTF-8 PEM bytes, with only whitespace between blocks. Private keys are rejected. Preserve original zero-based positions and verify candidate signatures separately from issuer CA and keyCertSign constraints. Distinguish failed, unsupported, and unavailable checks. An issuer absent from this input is informational; roots are commonly omitted. Multiple leaves require an explicit leafIndex for hostname checking. Check ASCII DNS SAN names, with a complete leftmost wildcard matching one label and no Common Name fallback. Evaluation uses the server clock; documentation examples use a fixed illustrative time. Remote calls transmit certificates and optional hostname to the server; inputs, results, and certificate details are excluded from application logs. No full RFC 5280 path validation, client trust, revocation checking, live probing, or proof of deployment safety. JSON transport bodies remain limited to 65536 bytes.",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "examples": {
+                "example1": {
+                  "summary": "Synthetic leaf, intermediate, and root",
+                  "value": {
+                    "pem": "-----BEGIN CERTIFICATE-----\nMIICCjCCAbCgAwIBAgIBCDAKBggqhkjOPQQDAjBEMRowGAYDVQQDExFEZW1vIElu\ndGVybWVkaWF0ZTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBs\nZXMwHhcNMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjBGMRwwGgYDVQQDExNz\nZXJ2aWNlLmV4YW1wbGUuY29tMSYwJAYDVQQKEx1QYWNrZXRyb3ZlIFN5bnRoZXRp\nYyBFeGFtcGxlczBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABB5fn3dU7OLbmhjX\np3yyIx+2XV+Tm2SLDoKzqkh1tghkRRujbnOabparI3MRHv4xHE6OePpzrbjxRhRP\n6zFolZWjgZAwgY0wDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0O\nBBYEFAfVEb9iWb+ZcGsM/Kn4GuAuzRDBMB8GA1UdIwQYMBaAFLVIZXp5pvnton0C\nEDqX/742N1ieMC0GA1UdEQQmMCSCE3NlcnZpY2UuZXhhbXBsZS5jb22CDSouZXhh\nbXBsZS5uZXQwCgYIKoZIzj0EAwIDSAAwRQIgVEcSRPkS5CuPS5aocD9DJHzXlrc1\nPdUma+rZtx2bN0UCIQD1C3NNIDmH1Xy4oJhwfKWcITyxyIXmlcK9pUiMjD+qdg==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIB1zCCAX2gAwIBAgIBAzAKBggqhkjOPQQDAjA+MRQwEgYDVQQDEwtEZW1vIFJv\nb3QgQTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBsZXMwHhcN\nMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjBEMRowGAYDVQQDExFEZW1vIElu\ndGVybWVkaWF0ZTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBs\nZXMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARt9zn152ODLv2A7zMzZjK+5+8h\niuosIcwmRwEhVU/hxg0g22S/EppbLGahIl9r+gyjv1Z9cm4AYzWJ21qQ8xkpo2Yw\nZDASBgNVHRMBAf8ECDAGAQH/AgEBMA4GA1UdDwEB/wQEAwICBDAdBgNVHQ4EFgQU\ntUhlenmm+e2ifQIQOpf/vjY3WJ4wHwYDVR0jBBgwFoAUG028VQAIWmJos9X4aPvx\nebvw8dEwCgYIKoZIzj0EAwIDSAAwRQIhAJuznXANK1Rdaa0ukjaLMvVEx8L1vLVz\n8o4jwLtPmbFKAiB6koDuWdkdLRxnMQ43X2ze1SRy665HHyfQemuCjzrQjw==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIBsDCCAVagAwIBAgIBATAKBggqhkjOPQQDAjA+MRQwEgYDVQQDEwtEZW1vIFJv\nb3QgQTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBsZXMwHhcN\nMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjA+MRQwEgYDVQQDEwtEZW1vIFJv\nb3QgQTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBsZXMwWTAT\nBgcqhkjOPQIBBggqhkjOPQMBBwNCAAS+Zp+N67NDEXRI1BrIw/iBk6raReb/UqYN\nsOaEVJZANsmih5h7VYPyJnAn5eJbU4uE/ebeZ7aSrFvHOu7EplDZo0UwQzASBgNV\nHRMBAf8ECDAGAQH/AgEDMA4GA1UdDwEB/wQEAwIBBjAdBgNVHQ4EFgQUG028VQAI\nWmJos9X4aPvxebvw8dEwCgYIKoZIzj0EAwIDSAAwRQIhAJk5L1v5StGaAboH6L4Z\nKOA71UEUUb2Y0pIbQsBL7Uq2AiBgIVRaev+zDSY0jTRmgIWTkR+49B/E3WWeOfBm\nmMB+/Q==\n-----END CERTIFICATE-----",
+                    "hostname": "service.example.com"
+                  }
+                },
+                "example2": {
+                  "summary": "Synthetic served bundle with omitted root",
+                  "value": {
+                    "pem": "-----BEGIN CERTIFICATE-----\nMIICCjCCAbCgAwIBAgIBCDAKBggqhkjOPQQDAjBEMRowGAYDVQQDExFEZW1vIElu\ndGVybWVkaWF0ZTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBs\nZXMwHhcNMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjBGMRwwGgYDVQQDExNz\nZXJ2aWNlLmV4YW1wbGUuY29tMSYwJAYDVQQKEx1QYWNrZXRyb3ZlIFN5bnRoZXRp\nYyBFeGFtcGxlczBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABB5fn3dU7OLbmhjX\np3yyIx+2XV+Tm2SLDoKzqkh1tghkRRujbnOabparI3MRHv4xHE6OePpzrbjxRhRP\n6zFolZWjgZAwgY0wDAYDVR0TAQH/BAIwADAOBgNVHQ8BAf8EBAMCB4AwHQYDVR0O\nBBYEFAfVEb9iWb+ZcGsM/Kn4GuAuzRDBMB8GA1UdIwQYMBaAFLVIZXp5pvnton0C\nEDqX/742N1ieMC0GA1UdEQQmMCSCE3NlcnZpY2UuZXhhbXBsZS5jb22CDSouZXhh\nbXBsZS5uZXQwCgYIKoZIzj0EAwIDSAAwRQIgVEcSRPkS5CuPS5aocD9DJHzXlrc1\nPdUma+rZtx2bN0UCIQD1C3NNIDmH1Xy4oJhwfKWcITyxyIXmlcK9pUiMjD+qdg==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIB1zCCAX2gAwIBAgIBAzAKBggqhkjOPQQDAjA+MRQwEgYDVQQDEwtEZW1vIFJv\nb3QgQTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBsZXMwHhcN\nMjAwMTAxMDAwMDAwWhcNNDAwMTAxMDAwMDAwWjBEMRowGAYDVQQDExFEZW1vIElu\ndGVybWVkaWF0ZTEmMCQGA1UEChMdUGFja2V0cm92ZSBTeW50aGV0aWMgRXhhbXBs\nZXMwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARt9zn152ODLv2A7zMzZjK+5+8h\niuosIcwmRwEhVU/hxg0g22S/EppbLGahIl9r+gyjv1Z9cm4AYzWJ21qQ8xkpo2Yw\nZDASBgNVHRMBAf8ECDAGAQH/AgEBMA4GA1UdDwEB/wQEAwICBDAdBgNVHQ4EFgQU\ntUhlenmm+e2ifQIQOpf/vjY3WJ4wHwYDVR0jBBgwFoAUG028VQAIWmJos9X4aPvx\nebvw8dEwCgYIKoZIzj0EAwIDSAAwRQIhAJuznXANK1Rdaa0ukjaLMvVEx8L1vLVz\n8o4jwLtPmbFKAiB6koDuWdkdLRxnMQ43X2ze1SRy665HHyfQemuCjzrQjw==\n-----END CERTIFICATE-----",
+                    "hostname": "service.example.com"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/CertificateBundleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Certificates in original order, independently checked candidate issuer links, leaf selection, and findings with evidence and next actions.",
+            "headers": {
+              "Cache-Control": {
+                "description": "Do not store certificate inputs or results.",
+                "schema": {
+                  "type": "string",
+                  "const": "no-store"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "examples": {
+                  "example1": {
+                    "summary": "Synthetic leaf, intermediate, and root",
+                    "value": {
+                      "evaluatedAt": "2026-10-04T06:00:00.000Z",
+                      "certificates": [
+                        {
+                          "index": 0,
+                          "line": 1,
+                          "subject": "CN=service.example.com, O=Packetrove Synthetic Examples",
+                          "issuer": "CN=Demo Intermediate, O=Packetrove Synthetic Examples",
+                          "commonName": "service.example.com",
+                          "serialNumber": "08",
+                          "sans": [
+                            {
+                              "type": "dns",
+                              "value": "service.example.com"
+                            },
+                            {
+                              "type": "dns",
+                              "value": "*.example.net"
+                            }
+                          ],
+                          "notBefore": "2020-01-01T00:00:00.000Z",
+                          "notAfter": "2040-01-01T00:00:00.000Z",
+                          "ca": false,
+                          "basicConstraintsPresent": true,
+                          "keyCertSign": false,
+                          "fingerprintSha256": "DF:1C:D6:9A:55:27:32:F6:32:16:B5:27:34:9F:04:B6:32:DD:1E:BB:A9:E8:EF:17:3B:38:B3:97:30:55:B4:BE",
+                          "signatureAlgorithm": "ECDSA / SHA-256",
+                          "selfSignature": null
+                        },
+                        {
+                          "index": 1,
+                          "line": 14,
+                          "subject": "CN=Demo Intermediate, O=Packetrove Synthetic Examples",
+                          "issuer": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+                          "commonName": "Demo Intermediate",
+                          "serialNumber": "03",
+                          "sans": [],
+                          "notBefore": "2020-01-01T00:00:00.000Z",
+                          "notAfter": "2040-01-01T00:00:00.000Z",
+                          "ca": true,
+                          "basicConstraintsPresent": true,
+                          "keyCertSign": true,
+                          "fingerprintSha256": "50:0B:A0:34:32:D4:4E:BB:D0:9C:4F:D8:14:47:1B:9B:63:82:C8:1C:72:D5:CE:88:AB:7C:3D:7D:49:22:AB:46",
+                          "signatureAlgorithm": "ECDSA / SHA-256",
+                          "selfSignature": null
+                        },
+                        {
+                          "index": 2,
+                          "line": 26,
+                          "subject": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+                          "issuer": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+                          "commonName": "Demo Root A",
+                          "serialNumber": "01",
+                          "sans": [],
+                          "notBefore": "2020-01-01T00:00:00.000Z",
+                          "notAfter": "2040-01-01T00:00:00.000Z",
+                          "ca": true,
+                          "basicConstraintsPresent": true,
+                          "keyCertSign": true,
+                          "fingerprintSha256": "42:B6:C1:BF:13:27:15:4E:7E:EF:E3:7A:82:A3:FF:3A:05:1B:E2:4D:B5:F1:EF:71:A6:E4:7F:17:F1:4C:7D:69",
+                          "signatureAlgorithm": "ECDSA / SHA-256",
+                          "selfSignature": "verified"
+                        }
+                      ],
+                      "relationships": [
+                        {
+                          "childIndex": 0,
+                          "issuerIndex": 1,
+                          "signature": "verified",
+                          "issuerEligible": true,
+                          "keyIdentifierMatch": true
+                        },
+                        {
+                          "childIndex": 1,
+                          "issuerIndex": 2,
+                          "signature": "verified",
+                          "issuerEligible": true,
+                          "keyIdentifierMatch": true
+                        }
+                      ],
+                      "leafIndexes": [
+                        0
+                      ],
+                      "selectedLeafIndex": 0,
+                      "hostname": {
+                        "expected": "service.example.com",
+                        "status": "matched"
+                      },
+                      "findings": [
+                        {
+                          "code": "SELF_SIGNED_CERTIFICATE",
+                          "severity": "info",
+                          "certificateIndexes": [
+                            2
+                          ],
+                          "observed": "The certificate verifies with its own public key.",
+                          "evidence": {
+                            "subject": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+                            "signature": "verified"
+                          },
+                          "nextAction": "A self-signature does not establish client trust. Check the intended trust configuration separately."
+                        },
+                        {
+                          "code": "HOSTNAME_MATCH",
+                          "severity": "info",
+                          "certificateIndexes": [
+                            0
+                          ],
+                          "observed": "The expected hostname matches a DNS SAN on the selected leaf.",
+                          "evidence": {
+                            "expectedHostname": "service.example.com",
+                            "dnsSubjectAlternativeNames": "service.example.com, *.example.net"
+                          },
+                          "nextAction": "This identity check does not establish chain validity or client trust."
+                        }
+                      ]
+                    }
+                  },
+                  "example2": {
+                    "summary": "Synthetic served bundle with omitted root",
+                    "value": {
+                      "evaluatedAt": "2026-10-04T06:00:00.000Z",
+                      "certificates": [
+                        {
+                          "index": 0,
+                          "line": 1,
+                          "subject": "CN=service.example.com, O=Packetrove Synthetic Examples",
+                          "issuer": "CN=Demo Intermediate, O=Packetrove Synthetic Examples",
+                          "commonName": "service.example.com",
+                          "serialNumber": "08",
+                          "sans": [
+                            {
+                              "type": "dns",
+                              "value": "service.example.com"
+                            },
+                            {
+                              "type": "dns",
+                              "value": "*.example.net"
+                            }
+                          ],
+                          "notBefore": "2020-01-01T00:00:00.000Z",
+                          "notAfter": "2040-01-01T00:00:00.000Z",
+                          "ca": false,
+                          "basicConstraintsPresent": true,
+                          "keyCertSign": false,
+                          "fingerprintSha256": "DF:1C:D6:9A:55:27:32:F6:32:16:B5:27:34:9F:04:B6:32:DD:1E:BB:A9:E8:EF:17:3B:38:B3:97:30:55:B4:BE",
+                          "signatureAlgorithm": "ECDSA / SHA-256",
+                          "selfSignature": null
+                        },
+                        {
+                          "index": 1,
+                          "line": 14,
+                          "subject": "CN=Demo Intermediate, O=Packetrove Synthetic Examples",
+                          "issuer": "CN=Demo Root A, O=Packetrove Synthetic Examples",
+                          "commonName": "Demo Intermediate",
+                          "serialNumber": "03",
+                          "sans": [],
+                          "notBefore": "2020-01-01T00:00:00.000Z",
+                          "notAfter": "2040-01-01T00:00:00.000Z",
+                          "ca": true,
+                          "basicConstraintsPresent": true,
+                          "keyCertSign": true,
+                          "fingerprintSha256": "50:0B:A0:34:32:D4:4E:BB:D0:9C:4F:D8:14:47:1B:9B:63:82:C8:1C:72:D5:CE:88:AB:7C:3D:7D:49:22:AB:46",
+                          "signatureAlgorithm": "ECDSA / SHA-256",
+                          "selfSignature": null
+                        }
+                      ],
+                      "relationships": [
+                        {
+                          "childIndex": 0,
+                          "issuerIndex": 1,
+                          "signature": "verified",
+                          "issuerEligible": true,
+                          "keyIdentifierMatch": true
+                        }
+                      ],
+                      "leafIndexes": [
+                        0
+                      ],
+                      "selectedLeafIndex": 0,
+                      "hostname": {
+                        "expected": "service.example.com",
+                        "status": "matched"
+                      },
+                      "findings": [
+                        {
+                          "code": "ISSUER_NOT_IN_BUNDLE",
+                          "severity": "info",
+                          "certificateIndexes": [
+                            1
+                          ],
+                          "observed": "No certificate with the encoded issuer name was found in this input.",
+                          "evidence": {
+                            "issuer": "CN=Demo Root A, O=Packetrove Synthetic Examples"
+                          },
+                          "nextAction": "If a server actually serves this bundle, check its full-chain configuration. Roots are normally omitted; this observation alone does not prove a broken chain."
+                        },
+                        {
+                          "code": "HOSTNAME_MATCH",
+                          "severity": "info",
+                          "certificateIndexes": [
+                            0
+                          ],
+                          "observed": "The expected hostname matches a DNS SAN on the selected leaf.",
+                          "evidence": {
+                            "expectedHostname": "service.example.com",
+                            "dnsSubjectAlternativeNames": "service.example.com, *.example.net"
+                          },
+                          "nextAction": "This identity check does not establish chain validity or client trust."
+                        }
+                      ]
+                    }
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateBundleResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, empty or malformed PEM/DER, rejected private-key or unsupported blocks, input limits, invalid hostname, or invalid leaf selection. PEM issues include original line and UTF-16 offsets without echoing input.",
             "content": {
               "application/json": {
                 "schema": {

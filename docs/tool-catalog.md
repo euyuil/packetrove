@@ -3,7 +3,8 @@
 Every Packetrove product tool has a website page, a Web API endpoint, and an
 MCP tool. All three use the same schemas, examples, calculation or lookup
 semantics, and structured errors. CLI coverage is documented
-separately; subtraction and IP range conversion are not currently CLI operations.
+separately; subtraction, IP range conversion, and certificate checks are not
+currently CLI operations.
 
 `packages/contracts/src/tools.ts` is the authoritative catalog. It records each
 tool's identifier, page key, canonical website path, API method and path,
@@ -28,7 +29,8 @@ Catalog definitions cannot override derived interface names.
 
 The `cli` declaration records implemented coverage. Enabled entries drive CLI
 discovery, usage, and an exhaustive handler map; disabled entries expose no
-command. Subtraction and IP range conversion remain unavailable in the CLI.
+command. Subtraction, IP range conversion, and certificate checks remain
+unavailable in the CLI.
 Naming changes do not expand the CLI's calculation scope.
 
 ## Migration to flat names
@@ -167,7 +169,9 @@ from that tool's catalog output schema and requires exhaustive coverage. Handler
 accept unknown input and return a synchronous result or a Promise of that result.
 `createToolExecutor` provides the awaited execution boundary used by both API and
 MCP; it does not replace each domain's existing input validation. The browser's
-local calculations and the CLI continue to use the synchronous core directly.
+local CIDR calculations and the CLI use the synchronous core directly. Certificate
+checks use the asynchronous `@packetrove/core/certificate-bundle` subpath in the
+browser and Worker, without loading the certificate runtime on other tool pages.
 Non-Error handler rejections become a fixed internal Error without converting
 their payload to text, so API and MCP preserve their structured error responses.
 
@@ -186,8 +190,10 @@ error hides arbitrary abort reasons; when a response remains possible, API uses
 the existing generic INTERNAL_ERROR with HTTP 500 and MCP uses the existing
 sanitized tool error. Expected cancellation is not logged. This does not
 interrupt already-running synchronous CPU work, impose a global timeout, or
-retry automatically. Production handlers keep their existing calculations and
-lookup semantics; no additional asynchronous product tool is introduced here.
+retry automatically. Certificate checks pass the signal and stop between
+parsing/crypto operations; an already-running Web Crypto operation completes
+before cancellation is observed. Their scope is maintained in the
+[certificate story](user-stories/008-certificate-bundle.md).
 
 Stateless legacy MCP creates a new server for each POST. The legacy SDK's
 separate cancellation notification cannot locate another POST's running call;

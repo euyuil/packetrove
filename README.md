@@ -8,14 +8,16 @@
 
 Packetrove helps developers and network administrators simplify firewall IP
 lists, subtract networks, convert IP ranges to CIDRs, and check a connection's
-public IP. Use the website for a quick calculation, the API or CLI for scripts,
+public IP, and inspect PEM certificate bundles. Use the website for a quick
+calculation, the API or CLI for scripts,
 or connect AI agents through Model Context Protocol (MCP).
 
 **[Website](https://packetrove.com) ·
 [CIDR calculator](https://packetrove.com/cidr-cover) ·
 [CIDR subtraction](https://packetrove.com/cidr-subtract) ·
 [IP range to CIDRs](https://packetrove.com/range-to-cidrs) ·
-[My Public IP](https://packetrove.com/public-ip)**
+[My Public IP](https://packetrove.com/public-ip) ·
+[Certificate Bundle Checker](https://packetrove.com/certificate-bundle)**
 
 ## What you can do
 
@@ -27,9 +29,11 @@ or connect AI agents through Model Context Protocol (MCP).
   copy the minimal CIDR list covering that range, with an exact address count.
 - **Check a connection's public IP.** See and copy the IPv4 or IPv6 address
   observed for the connection making the request.
+- **Inspect a PEM certificate bundle.** Review candidate issuer signatures,
+  validity, duplicates, and an optional DNS hostname, with evidence and next steps.
 
 The website supports ten languages. Hosted tools require no account or API key.
-All four tools are available through the website, Web API, and MCP. The CLI
+All five tools are available through the website, Web API, and MCP. The CLI
 provides covering-CIDR calculations and public IP lookup.
 
 Browse example results in the homepage gallery, then open a tool to enter your
@@ -67,8 +71,11 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
 
 ## Privacy and scope
 
-- Website CIDR calculations run locally in your browser; CLI calculations run
+- Website CIDR calculations and certificate checks run locally in your browser;
+  CLI calculations run
   offline. API and remote MCP calculations send inputs to the server.
+- Certificate checks accept public certificates only and reject private keys.
+  They do not validate full trust paths, revocation, or deployment safety.
 - Public IP checks make a network request and observe one address family per
   check. A VPN or proxy supplies its exit address; a hosted MCP client may
   observe a different connection from your computer's.
@@ -89,7 +96,8 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
 For input formats, limits, and detailed behavior, see the
 [covering-CIDR](docs/user-stories/001-smallest-covering-cidr.md),
 [CIDR subtraction](docs/user-stories/004-cidr-subtraction.md),
-[IP range conversion](docs/user-stories/006-ip-range-to-cidrs.md), and
+[IP range conversion](docs/user-stories/006-ip-range-to-cidrs.md),
+[certificate diagnostics](docs/user-stories/008-certificate-bundle.md), and
 [public IP](docs/user-stories/002-current-public-ip.md) guides.
 
 ## Development

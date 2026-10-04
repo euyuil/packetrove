@@ -1,3 +1,4 @@
+import { certificateCopy } from '../certificate/pt-BR';
 import type { TranslationResource } from '../translation-resource';
 
 export const ptBR = {
@@ -5,6 +6,7 @@ export const ptBR = {
     title: 'Quer ler esta página em português?',
     switch: 'Mudar para português', dismiss: 'Agora não',
   },
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "Carregando página…", pageLoadFailure: "Não foi possível carregar esta página. Tente novamente.", retryPage: "Tentar novamente",
     home: 'Início', homeLabel: 'Página inicial do Packetrove', navigation: 'Navegação principal',
@@ -75,7 +77,7 @@ export const ptBR = {
         },
         "remote": {
             "title": "Entradas e resultados de ferramentas remotas",
-            "body": "Os cálculos por API e MCP remoto enviam ao Packetrove os endereços IP, CIDRs ou limites de intervalo fornecidos. Nós os processamos em memória para retornar o resultado, sem banco de dados nem histórico de cálculos armazenado. Não solicitamos histórico de conversas nem credenciais de conta. O cliente recebe o resultado e pode mantê-lo conforme suas próprias políticas."
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "Consultas de IP público",
@@ -104,6 +106,7 @@ export const ptBR = {
     apiDocumentation: 'Documentação da API', cliGuide: 'Guia da CLI (em inglês)', sendEmail: 'Enviar um e-mail',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "Converta IPs inicial e final inclusivos na lista CIDR mínima exata. Calcule localmente e copie todos os blocos sem adicionar endereços.",
     rangeLink: "Abrir conversor de intervalos IP",
     galleryTitle: "Explore as ferramentas",
@@ -216,6 +219,7 @@ export const ptBR = {
     familyExplanation: 'Uma conexão usa IPv4 ou IPv6. Esta consulta mostra esse endereço; ela não identifica as duas famílias nem seu endereço local privado. Atualize após mudar de rede ou alterar a configuração do proxy.',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: 'Resumos dos endpoints e exemplos',
     rangeSummary: "Envie start e end da mesma família. Ambos os limites são inclusivos. Retorna limites canônicos, lista CIDR mínima exata, número de CIDRs e total de endereços como string decimal. A solicitação envia dados ao servidor.",
     rangeResponse: "Este exemplo retorna {{cidrs}}, representando exatamente {{addresses}} endereços.",
@@ -232,6 +236,7 @@ export const ptBR = {
     subtractResponse: "Este exemplo retorna {{cidrs}}, com {{remaining}} endereços restantes e sem cobertura adicional.",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "Perguntas sobre conversão de intervalos IP",
       "mcpTitle": "Converter intervalos IP via MCP",
@@ -400,6 +405,7 @@ export const ptBR = {
     tooManyOutputs: 'O resultado completo ultrapassa {{limit}} CIDRs. Use menos exclusões ou intervalos incluídos menores. Nenhum resultado parcial é retornado.',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove Suporte","description":"Entre em contato com o responsável pelo Packetrove, relate problemas com segurança e encontre informações de API, MCP, CLI e privacidade."},
     terms: {"title":"Packetrove Termos de serviço","description":"Leia os termos do serviço hospedado Packetrove: uso aceitável, limites dos resultados, disponibilidade, privacidade e licença MIT."},
     privacy: {"title": "Política de privacidade do Packetrove", "description": "Saiba como o Packetrove processa cálculos locais, entradas remotas, endereços de conexão, logs operacionais e dados de hospedagem, com retenção e opções do usuário."},

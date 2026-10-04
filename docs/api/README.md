@@ -11,7 +11,7 @@ language appear below the interactive reference in a section that is collapsed
 by default. Its contents remain in the initial HTML while collapsed.
 Test requests go directly to the configured API without cookies or
 a third-party proxy. Calculation inputs entered into the documentation's test
-client are sent to the API; the website's CIDR calculator continues to run
+client are sent to the API; the website's CIDR calculations and certificate checks run
 locally in the browser.
 The interactive reference loads only when the API documentation is opened.
 Scalar's AI features, telemetry, and external fonts are disabled.
@@ -29,6 +29,24 @@ shows an error message with a link back to the calculator. Site navigation and
 the calculator's input, result, or validation error remain in the current page
 session's memory. Revisiting a failed module may show the same message; the
 application does not retry its download or automatically reload the page.
+
+## Certificate bundle diagnostics
+
+`POST /v1/certificate-bundle` accepts a required `pem` string, an optional
+ASCII DNS `hostname`, and an optional zero-based `leafIndex`. Only certificate
+blocks and whitespace are accepted, within 48 KiB of UTF-8 input and 16
+certificates; the shared 64 KiB JSON-body limit also applies. Private keys and
+malformed blocks reject the complete request. Results include the runtime
+evaluation time, original certificate positions, candidate signature checks,
+issuer constraints, hostname outcomes, and findings with evidence and next steps.
+
+API/MCP requests send the supplied certificates and hostname to the server;
+use the website for browser-local inspection. Success and error responses use
+`Cache-Control: no-store`. Located input errors add original line and UTF-16
+offsets to the common issue contract. Full scope, interpretation, DNS rules,
+synthetic examples, and limitations are maintained in the
+[certificate user story](../user-stories/008-certificate-bundle.md).
+The generated specification contains complete working request/result examples.
 
 ## Smallest covering CIDR
 

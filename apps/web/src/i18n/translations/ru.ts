@@ -1,3 +1,4 @@
+import { certificateCopy } from '../certificate/ru';
 import type { TranslationResource } from '../translation-resource';
 
 export const ru = {
@@ -5,6 +6,7 @@ export const ru = {
     title: 'Хотите читать эту страницу на русском?',
     switch: 'Перейти на русский', dismiss: 'Не сейчас',
   },
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "Загрузка страницы…", pageLoadFailure: "Не удалось загрузить эту страницу. Попробуйте ещё раз.", retryPage: "Повторить",
     home: 'Главная', homeLabel: 'Главная страница Packetrove', navigation: 'Основная навигация',
@@ -75,7 +77,7 @@ export const ru = {
         },
         "remote": {
             "title": "Входные данные и результаты удалённых инструментов",
-            "body": "Вычисления через API и удалённый MCP отправляют в Packetrove указанные IP-адреса, CIDR или границы диапазона. Мы обрабатываем их в памяти и возвращаем результат, без базы данных и сохранённой истории вычислений. Мы не запрашиваем историю разговоров или учётные данные. Вызывающий клиент получает результат и может хранить его по собственным правилам."
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "Проверки публичного IP",
@@ -104,6 +106,7 @@ export const ru = {
     apiDocumentation: 'Документация API', cliGuide: 'Руководство CLI (на английском)', sendEmail: 'Отправить письмо',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "Преобразуйте включённые начальный и конечный IP в минимальный точный список CIDR. Рассчитайте локально и скопируйте все блоки без лишних адресов.",
     rangeLink: "Открыть преобразование диапазона IP",
     galleryTitle: "Обзор инструментов",
@@ -216,6 +219,7 @@ export const ru = {
     familyExplanation: 'Соединение использует IPv4 или IPv6. Эта проверка показывает адрес данного соединения, а не адреса обоих семейств или ваш локальный частный адрес. Обновите результат после смены сети или настроек прокси.',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: 'Обзор эндпоинтов и примеры',
     rangeSummary: "Передайте start и end одной семьи. Обе границы включены. Возвращаются канонические границы, минимальный точный список CIDR, число CIDR и число адресов десятичной строкой. Запрос отправляет данные на сервер.",
     rangeResponse: "В этом примере возвращается {{cidrs}}, точно представляющий {{addresses}} адресов.",
@@ -232,6 +236,7 @@ export const ru = {
     subtractResponse: "Этот пример возвращает {{cidrs}}: остаётся {{remaining}} адресов, дополнительного покрытия нет.",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "Вопросы о преобразовании диапазонов IP",
       "mcpTitle": "Преобразование диапазонов IP через MCP",
@@ -400,6 +405,7 @@ export const ru = {
     tooManyOutputs: 'Полный результат превышает {{limit}} CIDR. Уменьшите число исключений или включённые диапазоны. Частичный результат не возвращается.',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove Поддержка","description":"Свяжитесь с сопровождающим Packetrove, безопасно сообщайте о проблемах и найдите сведения об API, MCP, CLI и конфиденциальности."},
     terms: {"title":"Packetrove Условия использования","description":"Условия размещённого сервиса Packetrove: допустимое использование, ограничения результатов, доступность, конфиденциальность и лицензия MIT."},
     privacy: {"title": "Политика конфиденциальности Packetrove", "description": "Узнайте, как Packetrove обрабатывает локальные вычисления, удалённые данные, адреса соединений, рабочие журналы и данные хостинга, включая хранение и ваш выбор."},

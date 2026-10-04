@@ -1,6 +1,8 @@
+import { certificateCopy } from '../certificate/zh-Hans';
 import type { TranslationResource } from '../translation-resource';
 
 export const zhHans = {
+  certificate: certificateCopy.certificate,
   common: {
     pageLoading: "正在加载页面…", pageLoadFailure: "页面加载失败，请重试。", retryPage: "重试",
     home: '首页', homeLabel: 'Packetrove 首页', navigation: '主导航',
@@ -74,7 +76,7 @@ export const zhHans = {
         },
         "remote": {
             "title": "远程工具的输入与结果",
-            "body": "API 和远程 MCP 计算会将提供的 IP 地址、CIDR 或范围端点发送到 Packetrove。我们在内存中处理这些参数并返回结果，不使用数据库保存计算历史，也不请求会话历史或账户凭据。调用客户端会收到结果，并可能按其自身政策保留结果。"
+            "body": certificateCopy.remotePrivacy
         },
         "connection": {
             "title": "公网 IP 查询",
@@ -103,6 +105,7 @@ export const zhHans = {
     apiDocumentation: 'API 文档', cliGuide: '命令行指南（英文）', sendEmail: '发送邮件',
   },
   home: {
+    certificateDescription: certificateCopy.homepage.description, certificateLink: certificateCopy.homepage.link,
     rangeDescription: "将包含起止端点的 IP 范围转换为最少且精确的 CIDR 列表。在本地计算并复制全部网段，不增加额外地址。",
     rangeLink: "打开 IP 范围转换",
     galleryTitle: "工具预览",
@@ -214,6 +217,7 @@ export const zhHans = {
     familyExplanation: '一次连接使用 IPv4 或 IPv6 中的一种。本次查询显示该连接的地址，无法同时发现两种地址，也不会显示本地私有地址。切换网络或代理设置后，请刷新查询。',
   },
   api: {
+    certificateSummary: certificateCopy.apiSummary,
     examplesTitle: '接口概要与示例',
     rangeSummary: "提交属于同一地址族的 start 和 end IP 地址，范围包含两个端点。返回规范化端点、最少精确 CIDR 列表、CIDR 数量和十进制字符串地址数。请求会将输入发送到服务器。",
     rangeResponse: "此示例返回 {{cidrs}}，精确表示 {{addresses}} 个地址。",
@@ -230,6 +234,7 @@ export const zhHans = {
     subtractResponse: "此示例返回 {{cidrs}}，剩余 {{remaining}} 个地址，不增加额外覆盖。",
   },
   discovery: {
+    certificate: certificateCopy.discovery,
     range: {
       "title": "IP 范围转换常见问题",
       "mcpTitle": "通过 MCP 转换 IP 范围",
@@ -398,6 +403,7 @@ export const zhHans = {
     tooManyOutputs: '完整结果超过 {{limit}} 个 CIDR。请减少排除项或缩小包含范围，不会返回部分结果。',
   },
   meta: {
+    certificate: certificateCopy.meta,
     support: {"title":"Packetrove 支持","description":"联系 Packetrove 维护者，安全地反馈问题，并查看 API、MCP、CLI 和隐私说明。"},
     terms: {"title":"Packetrove 服务条款","description":"了解 Packetrove 托管服务的合理使用要求、结果限制、可用性、隐私和 MIT 许可。"},
     privacy: {"title": "Packetrove 隐私政策", "description": "了解 Packetrove 如何处理本地计算、远程工具输入、连接地址、运营日志和托管数据，以及保留期限和用户选择。"},

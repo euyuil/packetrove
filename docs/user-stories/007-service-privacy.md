@@ -21,6 +21,13 @@ system clipboard. Remote calls submit calculation arguments, not a requested
 conversation history or account credentials. Results go back to the client,
 whose storage and policies are separate from Packetrove.
 
+Certificate checks run in page memory on the website. API and remote MCP calls
+submit public certificates and any expected hostname to the server. The
+application does not store or log that material; certificate API success and
+error responses use `no-store`. Private-key blocks are rejected. Scope and
+acceptance evidence are maintained in the
+[certificate story](008-certificate-bundle.md).
+
 Public-IP lookup uses the calling connection, including a hosted AI client's
 possible exit address. Do not present that result as a user's device IP without
 establishing where the client runs. Application storage contains no lookup or

@@ -77,6 +77,14 @@ describe('website in the Workers runtime', () => {
       expect(html).toContain('2001:db8::10/125');
       expect(html).not.toContain('<textarea');
       expect(html.match(/<input[^>]+value=""/g)).toHaveLength(2);
+    } else if (page === 'certificate') {
+      expect(html).toContain(escapeHtml(text.certificate.local));
+      expect(html).toContain(escapeHtml(text.certificate.scope));
+      expect(html).toContain(escapeHtml(text.certificate.pending));
+      expect(html).toContain(escapeHtml(text.certificate.dnsRules));
+      expect(html.match(/<textarea\b/g)).toHaveLength(1);
+      expect(html).not.toMatch(/<textarea[^>]*>[^<]+<\/textarea>/);
+      expect(html).not.toContain('<svg role="img"');
     } else if (page === 'ip') {
       expect(html).toContain(text.ip.explanation);
       expect(html).toContain(text.ip.checking);
