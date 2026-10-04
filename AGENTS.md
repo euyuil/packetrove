@@ -241,7 +241,8 @@ squash merging.
   pass before merging, and the pull request must be up to date with `main`.
   Wait for the required check on the latest revision; an earlier successful run
   does not satisfy the requirement.
-- GitHub Actions validates pull requests targeting `main` with `pnpm check`.
+- GitHub Actions validates pull requests and updates for `main`, `develop`, and
+  `release-*` with `pnpm check`.
   Production deployment and live checks run only after `main` is updated or
   through a manual workflow run on `main`.
 - After each pull request or merge request is merged, assess whether the

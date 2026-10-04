@@ -6,7 +6,7 @@ import { createOpenApiDocument } from '../packages/contracts/src/openapi';
 import { productManifests } from './cli-release';
 import { createMcpGuideMarkdown } from './mcp-guide-markdown';
 import { createMcpRegistryJson } from './mcp-registry-manifest';
-import { isProductReleaseInput, registerPacketroveRelease } from './release-please';
+import { isProductReleaseInput, registerPacketroveRelease, runReleaseAutomation } from './release-please';
 
 const baselineSha = 'a'.repeat(40);
 const releaseSha = 'b'.repeat(40);
@@ -44,6 +44,38 @@ async function candidate(message: string, files: string[], version = '0.1.0') {
 beforeAll(() => {
   registerPacketroveRelease();
   setLogger(silentLogger);
+});
+
+describe('release preparation during migration', () => {
+  it('finalizes a merged release without preparing the next PR by default', async () => {
+    let finalized = false;
+    await runReleaseAutomation({
+      async createReleases() { finalized = true; return []; },
+      async createPullRequests() { throw new Error('Automatic candidate preparation is paused'); },
+    });
+    expect(finalized).toBe(true);
+  });
+  it('prepares a legacy candidate only after explicit selection and successful finalization', async () => {
+    let finalized = false;
+    let prepared = false;
+    await runReleaseAutomation({
+      async createReleases() { finalized = true; return []; },
+      async createPullRequests() {
+        expect(finalized).toBe(true);
+        prepared = true;
+        return [];
+      },
+    }, true);
+    expect(prepared).toBe(true);
+  });
+  it('does not prepare another candidate when finalization fails', async () => {
+    let prepared = false;
+    await expect(runReleaseAutomation({
+      async createReleases() { throw new Error('Publication failed'); },
+      async createPullRequests() { prepared = true; return []; },
+    }, true)).rejects.toThrow('Publication failed');
+    expect(prepared).toBe(false);
+  });
 });
 
 describe('release-please unified product', () => {

@@ -2,9 +2,9 @@ name: CI and deployment
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop, 'release-*']
   push:
-    branches: [main]
+    branches: [main, develop, 'release-*']
   workflow_dispatch:
 
 permissions:
@@ -17,7 +17,9 @@ concurrency:
 jobs:
   check:
     name: Validate project
-    if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    if: >-
+      github.event_name == 'pull_request' || github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop' || startsWith(github.ref, 'refs/heads/release-')
     runs-on: ubuntu-26.04
     timeout-minutes: 10
     env:

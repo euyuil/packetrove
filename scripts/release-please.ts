@@ -50,6 +50,14 @@ export function registerPacketroveRelease(): void {
   registerReleaseType('packetrove', options => new PacketroveRelease(options));
 }
 
+export async function runReleaseAutomation(
+  manifest: Pick<Manifest, 'createReleases' | 'createPullRequests'>,
+  preparePullRequest = false,
+): Promise<void> {
+  await manifest.createReleases();
+  if (preparePullRequest) await manifest.createPullRequests();
+}
+
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const [owner, repo] = (process.env.GITHUB_REPOSITORY ?? '').split('/');
@@ -58,11 +66,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     registerPacketroveRelease();
     const github = await GitHub.create({ owner, repo, token, defaultBranch: 'main' });
     const manifest = await Manifest.fromManifest(github, 'main', 'release-please-config.json', '.release-please-manifest.json');
-    await manifest.createReleases();
-    await manifest.createPullRequests();
+    await runReleaseAutomation(manifest, process.env.RELEASE_PREPARE_PULL_REQUEST === 'true');
   } catch {
     // Upstream API errors can contain request headers; keep token values out of public logs.
-    console.error('Packetrove release preparation failed. Check the App permissions, release baseline, and repository configuration.');
+    console.error('Packetrove release automation failed. Check the App permissions, release baseline, and repository configuration.');
     process.exitCode = 1;
   }
 }
