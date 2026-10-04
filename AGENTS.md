@@ -187,15 +187,14 @@
 
 ## Development and release merge policy
 
-The owner has agreed the following target policy. CI and all three environments
-are available; branch protection and contributor cutover are pending. Follow the
-transition workflow below until activation. See
+The development and release workflow is active. All three branch patterns have
+required pull requests and checks, and all three environments are available. See
 [development and releases](docs/development-and-releases.md) for the preserved
 commit diagram, environment mapping, manual release procedure, and rollout.
 
 - Never push directly to `main`, `develop`, or `release-*`.
-- After activation, branch ordinary development from the latest `origin/develop`
-  and open pull requests targeting `develop`. Use squash merging only.
+- Branch ordinary development from the latest `origin/develop` and open pull
+  requests targeting `develop`. Use squash merging only.
 - Branch pre-release fixes from the active release branch and open pull requests
   targeting that `release-*` branch. Use squash merging only.
 - Direct change pull requests to `main` are reserved for hotfixes. Branch a
@@ -213,36 +212,39 @@ commit diagram, environment mapping, manual release procedure, and rollout.
 
 ## Pull request workflow
 
-Use this current workflow for documentation and implementation pull requests
-until the development and release workflow is activated. During migration,
-`main` remains the integration branch and current GitHub settings permit only
-squash merging.
+Apply the merge policy above to every repository change, including documentation,
+small fixes, and automation. GitHub's default branch remains `main`; choose the
+pull request destination explicitly.
 
-- Make all repository changes on a dedicated branch based on the latest
-  `origin/main`. Push that branch and open a pull request targeting `main`.
-  This applies to documentation, small fixes, and automated changes as well.
-- Never push directly to `main`. Its active repository ruleset requires a pull
-  request, blocks force pushes and deletion, and has no bypass actors, including
-  repository administrators.
-- Do not bypass, weaken, or disable the protection rules unless the owner
-  explicitly authorizes that configuration change.
-- Run checks appropriate to the change before requesting a merge, and report
-  their results and any limitations in the pull request. Use a Conventional
-  Commit title so it can also serve as a squash merge commit title.
-- Merge a pull request only when the owner explicitly authorizes that pull
-  request and all applicable repository requirements are satisfied. Permission
-  to open or update a pull request is not permission to merge it.
-- Use squash merging for every pull request. Squash and merge is the only
-  permitted method in both the repository settings and the `main` ruleset;
-  regular merge commits and rebase merging are disabled. Squash merge commit
-  titles default to the pull request title.
-- For an authorized GitHub CLI merge, pass `--squash` explicitly. In GitHub's web
-  interface, use Squash and merge.
-- The ruleset requires zero approving reviews so a sole maintainer can merge
-  through a pull request. The `Validate project` check from GitHub Actions must
-  pass before merging, and the pull request must be up to date with `main`.
-  Wait for the required check on the latest revision; an earlier successful run
-  does not satisfy the requirement.
+- Make changes on a dedicated branch based on the latest intended destination:
+  `origin/develop` for daily work, the active `origin/release-*` for candidate
+  fixes, or `origin/main` for emergency hotfixes. Add the `hotfix` label to direct
+  change PRs into `main`; CI rejects other ordinary changes into `main`.
+- Never push directly to `main`, `develop`, or `release-*`. Their active rulesets
+  require pull requests and block force pushes, with no bypass actors, including
+  repository administrators. `main` and `develop` also prohibit deletion;
+  completed release branches can be deleted after publication and synchronization.
+- Do not bypass, weaken, or disable protection rules unless the owner explicitly
+  authorizes that configuration change.
+- Run checks appropriate to the change before merging and report results and
+  limitations in the PR. Use a Conventional Commit title, including for squash
+  merge commit titles and lifecycle merge commit titles.
+- Merge only within the owner's authorization and after all applicable repository
+  requirements are satisfied. Task-wide or workflow authorization applies to
+  the PRs within that scope; opening a PR alone is not permission to merge it.
+- Squash-merge daily development, candidate fixes, and hotfix PRs. Use a normal
+  merge commit for release promotion and synchronization; never squash or rebase
+  those operations. A true fast-forward remains permitted through an approved
+  route; GitHub's standard PR merge creates a merge commit.
+- Pass `--squash` for ordinary GitHub CLI merges and `--merge` for lifecycle
+  merges. Rebase merging is disabled. Native target-branch rules allow both
+  squash and merge, so human maintainers must choose the correct method.
+- The rulesets require zero approving reviews and require `Validate project`
+  from GitHub Actions on the latest PR revision. `main` also requires the source
+  to be up to date. `develop` and `release-*` do not require source ancestry of
+  their latest heads, so synchronization never pulls unreleased work into `main`.
+  The coordinator reruns completed lifecycle PR checks against the live merge
+  revision and refuses changes to the head or destination during validation.
 - GitHub Actions validates pull requests and updates for `main`, `develop`, and
   `release-*` with `pnpm check`.
   Production deployment and live checks run only after `main` is updated or
@@ -251,10 +253,11 @@ squash merging.
   corresponding feature is fully implemented. A merged request alone does not
   establish feature completion. Preserve feature branches while implementation
   is incomplete.
-- For a completed, merged feature, fetch the latest `origin/main` and synchronize
-  the local checkout. In a linked Git worktree, check out that revision with
+- For a completed, merged feature, fetch the latest `origin/main` and the PR
+  destination, then synchronize the local checkout to that destination. In a
+  linked Git worktree, check out that revision with
   `HEAD` detached and keep the worktree directory. In the primary clone, the
-  local `main` branch may be synchronized to `origin/main` and checked out;
+  corresponding local integration branch may be synchronized and checked out;
   detached HEAD is not required. This checkout state is the only difference
   between the two cleanup workflows. Preserve any uncommitted work in either
   case.
@@ -340,8 +343,9 @@ Git history, GitHub Actions logs, and uploaded artifacts as public material.
 Apply the checks relevant to the requested change. Read the corresponding user
 story, API contract, or integration guide when its behavior is affected.
 
-- Before editing, inspect the working tree, branch, and upstream main revision.
-  Synchronize with main while preserving existing local work.
+- Before editing, inspect the working tree, branch, upstream main, and intended
+  integration branch. Fetch their latest revisions and prepare the appropriate
+  destination-based checkout while preserving existing local work.
 - For calculation changes, verify full input-range coverage, the largest valid
   prefix length, canonical addresses, overlap handling, and exact IPv6 counts.
   Keep the explanation of additional allowlist or blocklist coverage accurate.

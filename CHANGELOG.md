@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/euyuil/packetrove/compare/0.4.0...0.5.0) (2026-10-04)
+
+
+### Features
+
+* **deploy:** add development and staging environments ([#146](https://github.com/euyuil/packetrove/issues/146)) ([b942695](https://github.com/euyuil/packetrove/commit/b942695b471976e361b7e2611cfef61cb8a783af))
+
 ## [0.4.0](https://github.com/euyuil/packetrove/compare/0.3.0...0.4.0) (2026-10-04)
 
 
