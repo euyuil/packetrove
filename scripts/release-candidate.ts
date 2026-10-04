@@ -6,6 +6,7 @@ import { Version } from 'release-please/build/src/version.js';
 import { productManifests, releaseVersion } from './cli-release';
 import { preparationBranch } from './release-policy';
 import { registerPacketroveRelease } from './release-please';
+import { getUnreleasedCommits, useReleaseCommitRange } from './release-history';
 
 const releaseFiles = new Set<string>([...productManifests, 'CHANGELOG.md', '.release-please-manifest.json',
   'docs/api/openapi.json', 'docs/integrations/mcp.md', 'server.json']);
@@ -40,6 +41,9 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     if (!owner || !repo || !token || !target || !baselineSha) throw new Error('Missing candidate configuration.');
     registerPacketroveRelease();
     const github = await GitHub.create({ owner, repo, token, defaultBranch: target });
+    const source = process.env.CANDIDATE_SOURCE_SHA;
+    if (!source) throw new CandidatePreparationError('A frozen candidate source SHA is required.');
+    useReleaseCommitRange(github, getUnreleasedCommits(baselineSha, source), baselineSha);
     const loaded = await Manifest.fromManifest(github, target);
     const manifest = new Manifest(github, target,
       { ...loaded.repositoryConfig, '.': { ...loaded.repositoryConfig['.']!, releaseAs: version } },
