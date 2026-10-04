@@ -3,6 +3,8 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { expect, it } from 'vitest';
+import { getUnreleasedCommits, useReleaseCommitRange } from './release-history';
+import type { GitHub } from 'release-please';
 
 it('keeps next-release work out of main and preserves a hotfix through conflict resolution and lifecycle merges', () => {
   const directory = mkdtempSync(join(tmpdir(), 'packetrove-history-'));
@@ -68,5 +70,24 @@ it('keeps next-release work out of main and preserves a hotfix through conflict 
     expect(isAncestor(hotfixVersion, synchronization)).toBe(true);
     expect(isAncestor(candidate, synchronization)).toBe(true);
     expect(readFileSync(join(directory, 'next.txt'), 'utf8')).toBe('feat: next release work');
+    const nextRelease = getUnreleasedCommits(promotion, synchronization, directory);
+    expect(nextRelease.map(commit => commit.sha)).toEqual([synchronization, next.integrationCommit]);
+    expect(nextRelease.find(commit => commit.sha === next.integrationCommit)?.files).toEqual(['next.txt']);
+    expect(nextRelease.some(commit => commit.sha === hotfixVersion)).toBe(false);
   } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+it('provides unreleased commits before the baseline while retaining native tag lookup', async () => {
+  const baseline = 'a'.repeat(40);
+  const next = { sha: 'b'.repeat(40), message: 'feat: next release work', files: ['packages/core/next.ts'] };
+  const native = { sha: baseline, message: 'Published release', files: [] };
+  const github: Pick<GitHub, 'mergeCommitIterator'> = { mergeCommitIterator: async function* () { yield native; } };
+  useReleaseCommitRange(github, [next], baseline);
+  const collect = async (backfillFiles: boolean) => {
+    const commits = [];
+    for await (const commit of github.mergeCommitIterator('develop', { backfillFiles })) commits.push(commit);
+    return commits;
+  };
+  expect(await collect(true)).toEqual([next, { sha: baseline, message: 'Published release baseline', files: [] }]);
+  expect(await collect(false)).toEqual([native]);
 });
