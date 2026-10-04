@@ -10,6 +10,14 @@ updates for `main`, `develop`, and `release-*`, plus manual runs on those branch
 During migration, changes still reach `main` through squash pull requests.
 Only current `main` revisions enter production deployment steps.
 
+[`deploy-environment.yml`](../.github/workflows/deploy-environment.yml) deploys
+current, validated revisions to development and staging. Manual runs support
+bootstrap and recovery; the repository variable
+`NON_PRODUCTION_DEPLOYMENTS_ENABLED=true` enables automatic deployment after
+branch CI. Each GitHub environment needs its own automation token. The
+[deployment guide](deployment.md#permanent-development-and-staging-environments)
+documents configuration, source selection, and independent live checks.
+
 The `main` ruleset requires the `Validate project` check from GitHub Actions to
 pass before merging and requires the pull request branch to be up to date with
 `main`. Pull requests run validation; successful current revisions on `main`

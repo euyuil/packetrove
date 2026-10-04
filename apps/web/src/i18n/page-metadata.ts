@@ -1,15 +1,20 @@
-import { PACKETROVE_IDENTITY, PUBLIC_WEBSITE_ORIGIN } from '@packetrove/contracts';
+import { PACKETROVE_IDENTITY, PUBLIC_WEBSITE_ORIGIN, publicOrigin } from '@packetrove/contracts';
 import { getLocaleTranslation } from './locale-resources';
 import type { TranslationResource } from './translation-resource';
 import { supportedLocales } from './locales';
 import { localizedPath, type Locale, type Page } from './routes';
 
-export const WEBSITE_ORIGIN = PUBLIC_WEBSITE_ORIGIN;
+export function getWebsiteOrigin(): string {
+  const environment = (import.meta as ImportMeta & { env?: { VITE_WEBSITE_ORIGIN?: string } }).env;
+  return publicOrigin(environment?.VITE_WEBSITE_ORIGIN
+    || (typeof process !== 'undefined' ? process.env.VITE_WEBSITE_ORIGIN : undefined)
+    || PUBLIC_WEBSITE_ORIGIN);
+}
 
 export function getPageMetadata(locale: Locale, page: Page, path: string,
-  translations: TranslationResource = getLocaleTranslation(locale)) {
+  translations: TranslationResource = getLocaleTranslation(locale), websiteOrigin = getWebsiteOrigin()) {
   const { title, description } = translations.meta[page];
-  const image = WEBSITE_ORIGIN + '/packetrove-social-preview-1280x640.png';
+  const image = websiteOrigin + '/packetrove-social-preview-1280x640.png';
   const meta: Array<{ attribute: 'name' | 'property'; key: string; content: string }> = [
     { attribute: 'name', key: 'description', content: description },
     { attribute: 'property', key: 'og:type', content: 'website' },
@@ -29,12 +34,12 @@ export function getPageMetadata(locale: Locale, page: Page, path: string,
   ];
   const links: Array<{ rel: 'canonical' | 'alternate'; href: string; hreflang?: string }> = [];
   if (page !== 'notFound') {
-    const url = WEBSITE_ORIGIN + localizedPath(path, locale);
+    const url = websiteOrigin + localizedPath(path, locale);
     meta.push({ attribute: 'property', key: 'og:url', content: url });
     links.push({ rel: 'canonical', href: url });
     for (const language of [...supportedLocales, 'x-default'] as const) {
       links.push({ rel: 'alternate', hreflang: language,
-        href: WEBSITE_ORIGIN + localizedPath(path, language === 'x-default' ? 'en' : language) });
+        href: websiteOrigin + localizedPath(path, language === 'x-default' ? 'en' : language) });
     }
   }
   return { lang: locale, title, meta, links };

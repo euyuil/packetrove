@@ -5,6 +5,10 @@
   "compatibility_date": "2026-08-04",
   "workers_dev": false,
   "preview_urls": false,
+  "vars": {
+    "PUBLIC_API_ORIGIN": "https://api.packetrove.com",
+    "PUBLIC_WEBSITE_ORIGIN": "https://packetrove.com"
+  },
   "observability": {
     "enabled": true,
     "redact_query_string": true,
@@ -26,5 +30,23 @@
     "html_handling": "none",
     "not_found_handling": "none",
     "run_worker_first": false
+  },
+  "env": {
+    "development": {
+      "name": "packetrove-api-development",
+      "routes": [{ "pattern": "api.dev.packetrove.com", "custom_domain": true }],
+      "vars": {
+        "PUBLIC_API_ORIGIN": "https://api.dev.packetrove.com",
+        "PUBLIC_WEBSITE_ORIGIN": "https://dev.packetrove.com"
+      }
+    },
+    "staging": {
+      "name": "packetrove-api-staging",
+      "routes": [{ "pattern": "api.staging.packetrove.com", "custom_domain": true }],
+      "vars": {
+        "PUBLIC_API_ORIGIN": "https://api.staging.packetrove.com",
+        "PUBLIC_WEBSITE_ORIGIN": "https://staging.packetrove.com"
+      }
+    }
   }
 }

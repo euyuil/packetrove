@@ -21,3 +21,19 @@ export const PACKETROVE_IDENTITY = {
     sizes: ['32x32'],
   }],
 };
+
+export function publicOrigin(value: string): string {
+  const url = new URL(value);
+  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password
+    || url.pathname !== '/' || url.search || url.hash) {
+    throw new Error('A public HTTP or HTTPS origin without credentials, a path, query, or fragment is required.');
+  }
+  return url.origin;
+}
+
+export function getServiceIdentity(websiteOrigin = PUBLIC_WEBSITE_ORIGIN) {
+  const origin = publicOrigin(websiteOrigin);
+  return { ...PACKETROVE_IDENTITY, websiteUrl: origin,
+    icons: PACKETROVE_IDENTITY.icons.map(icon => ({ ...icon, src: new URL(new URL(icon.src).pathname, origin).href })),
+  };
+}

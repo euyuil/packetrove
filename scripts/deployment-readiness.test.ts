@@ -178,6 +178,7 @@ describe('readiness followed by the production smoke check across separate origi
       response.writeHead(status, { 'content-type': type });
       response.end(body);
     };
+    let websiteOrigin = '';
     const server = createServer((request, response) => {
       const path = request.url!;
       requested.push(path);
@@ -194,10 +195,11 @@ describe('readiness followed by the production smoke check across separate origi
         return response.end();
       }
       const page = builtPages.get(path) ?? builtPages.get(path.replace(/\/$/, ''));
-      if (page) return send(response, 'text/html', page);
+      if (page) return send(response, 'text/html', page.replaceAll('https://packetrove.com', websiteOrigin));
       if (path === '/sitemap.xml' || path === '/robots.txt') return send(response,
         path.endsWith('.xml') ? 'application/xml' : 'text/plain',
-        readFileSync(new URL('../apps/web/dist' + path, import.meta.url), 'utf8'));
+        readFileSync(new URL('../apps/web/dist' + path, import.meta.url), 'utf8')
+          .replaceAll('https://packetrove.com', websiteOrigin));
       if (path === '/assets/main.js') return send(response, 'application/javascript', `const sourceCommit = "${commit}";`);
       if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
       send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
@@ -244,6 +246,7 @@ describe('readiness followed by the production smoke check across separate origi
       send(response, 'application/json', JSON.stringify({ error: { code: 'NOT_FOUND', message: 'Endpoint not found.' } }), 404);
     });
     const target = await listen(server);
+    websiteOrigin = target;
     const apiTarget = await listen(apiServer);
     try {
       await waitForDeployment(target, commit);

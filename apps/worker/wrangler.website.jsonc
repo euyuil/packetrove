@@ -12,5 +12,15 @@
     "directory": "../web/dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page"
+  },
+  "env": {
+    "development": {
+      "name": "packetrove-development",
+      "routes": [{ "pattern": "dev.packetrove.com", "custom_domain": true }]
+    },
+    "staging": {
+      "name": "packetrove-staging",
+      "routes": [{ "pattern": "staging.packetrove.com", "custom_domain": true }]
+    }
   }
 }

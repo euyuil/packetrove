@@ -1,15 +1,17 @@
 import { McpServer, type McpRequestContext, type CallToolResult, type ServerContext } from '@modelcontextprotocol/server';
 import { createMcpHandler } from 'agents/mcp/server';
 import type { z } from 'zod';
-import { MCP_PATH, PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_WEBSITE_ORIGIN, tools } from '@packetrove/contracts';
+import { MCP_PATH, PACKETROVE_VERSION, PUBLIC_API_ORIGIN, PUBLIC_WEBSITE_ORIGIN,
+  getServiceIdentity, getToolResultLink, publicOrigin, tools } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
 import { executeTool, type ToolExecutor } from './tools';
 import { createToolExecutionContext } from './tool-context';
 import { logMcpToolExecution, type McpToolExecutionOutcome } from './operational-logs';
 import { getMcpTrafficSource } from './automation-source';
 
-export function createMcpServer(context: McpRequestContext, executor: ToolExecutor = executeTool, automationToken?: string) {
-  const server = new McpServer({ ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION });
+export function createMcpServer(context: McpRequestContext, executor: ToolExecutor = executeTool,
+  automationToken?: string, websiteOrigin = PUBLIC_WEBSITE_ORIGIN) {
+  const server = new McpServer({ ...getServiceIdentity(websiteOrigin), version: PACKETROVE_VERSION });
   for (const tool of tools) {
     // Local cores validate the entire request and return shared, located errors.
     // Retain the catalog's discovery schema while letting malformed inputs reach that validation.
@@ -28,7 +30,7 @@ export function createMcpServer(context: McpRequestContext, executor: ToolExecut
         const executionContext = createToolExecutionContext(callRequest, callContext.mcpReq.signal);
         const result = await executor(tool.page, request, executionContext);
         return { structuredContent: result, content: [
-          { type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink,
+          { type: 'text', text: JSON.stringify(result) }, getToolResultLink(tool, websiteOrigin),
         ] };
       } catch (error) {
         const failure = error instanceof ToolError ? error
@@ -44,16 +46,13 @@ export function createMcpServer(context: McpRequestContext, executor: ToolExecut
   return server;
 }
 
-// Keep these exact hostnames aligned with the production domain.
-const allowedHostnames = [
-  'localhost', '127.0.0.1', '[::1]',
-  'api.packetrove.com',
-];
-
-export function createPacketroveMcpHandler(executor: ToolExecutor = executeTool, automationToken?: string) {
-  return createMcpHandler(context => createMcpServer(context, executor, automationToken), {
+export function createPacketroveMcpHandler(executor: ToolExecutor = executeTool, automationToken?: string,
+  apiOrigin = PUBLIC_API_ORIGIN, websiteOrigin = PUBLIC_WEBSITE_ORIGIN) {
+  const allowedHostnames = ['localhost', '127.0.0.1', '[::1]', new URL(publicOrigin(apiOrigin)).hostname];
+  const origin = publicOrigin(websiteOrigin);
+  return createMcpHandler(context => createMcpServer(context, executor, automationToken, origin), {
     route: MCP_PATH, responseMode: 'json',
     allowedHostnames,
-    allowedOriginHostnames: [...allowedHostnames, new URL(PUBLIC_WEBSITE_ORIGIN).hostname],
+    allowedOriginHostnames: [...allowedHostnames, new URL(origin).hostname],
   });
 }

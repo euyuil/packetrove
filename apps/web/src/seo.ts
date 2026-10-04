@@ -1,6 +1,6 @@
 import { supportedLocales } from './i18n/locales';
 import { legacyPagePaths, localizedPath, pagePaths } from './i18n/routes';
-import { getPageMetadata, WEBSITE_ORIGIN } from './i18n/page-metadata';
+import { getPageMetadata, getWebsiteOrigin } from './i18n/page-metadata';
 import { resources } from './i18n/resources';
 
 export const websitePages = supportedLocales.flatMap(locale =>
@@ -36,11 +36,13 @@ export function renderPageMetadata(pathname: string) {
   ].join('\n    ');
 }
 
-export function renderSitemap() {
+export function renderSitemap(websiteOrigin = getWebsiteOrigin()) {
   return '<?xml version="1.0" encoding="UTF-8"?>\n'
     + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    + websitePages.map(page => '  <url><loc>' + escapeHtml(WEBSITE_ORIGIN + page.pathname) + '</loc></url>').join('\n')
+    + websitePages.map(page => '  <url><loc>' + escapeHtml(websiteOrigin + page.pathname) + '</loc></url>').join('\n')
     + '\n</urlset>\n';
 }
 
-export const robotsText = 'User-agent: *\nAllow: /\n\nSitemap: ' + WEBSITE_ORIGIN + '/sitemap.xml\n';
+export function renderRobotsText(websiteOrigin = getWebsiteOrigin()) {
+  return 'User-agent: *\nAllow: /\n\nSitemap: ' + websiteOrigin + '/sitemap.xml\n';
+}

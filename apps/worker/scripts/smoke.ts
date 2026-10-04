@@ -7,13 +7,13 @@ import type { Transport as LegacyTransportContract } from '@modelcontextprotocol
 import { CallToolResultSchema as LegacyCallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
-  PACKETROVE_IDENTITY, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
+  getServiceIdentity, getToolResultLink, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
   CertificateBundleResultSchema,
 } from '@packetrove/contracts';
 import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
-import { getPageMetadata, WEBSITE_ORIGIN } from '../../web/src/i18n/page-metadata';
+import { getPageMetadata } from '../../web/src/i18n/page-metadata';
 import { resources } from '../../web/src/i18n/resources';
-import { escapeHtml, robotsText, websitePages, websiteRedirects } from '../../web/src/seo';
+import { escapeHtml, renderRobotsText, websitePages, websiteRedirects } from '../../web/src/seo';
 import { localizedPath, pagePaths } from '../../web/src/i18n/routes';
 import { createMcpSmokeFetch, readSmokeAutomation } from '../../../scripts/mcp-smoke-transport';
 
@@ -30,6 +30,7 @@ function parseOrigin(argument: string): string {
 }
 const origin = parseOrigin(originArguments[0]!);
 const apiOrigin = parseOrigin(originArguments[1]!);
+const serviceIdentity = getServiceIdentity(origin);
 assert.notEqual(origin, apiOrigin, 'Website and API must use separate origins.');
 const expectedCommit = process.env.VITE_GIT_COMMIT;
 if (expectedCommit) assert.match(expectedCommit, /^[0-9a-f]{40}$/i, 'Expected a full Git commit SHA.');
@@ -47,10 +48,11 @@ const mcpFetch: typeof fetch = async (input, init) => {
   return response;
 };
 
-for (const icon of PACKETROVE_IDENTITY.icons) {
+for (const icon of serviceIdentity.icons) {
   const url = new URL(icon.src);
-  assert.equal(url.protocol, 'https:', 'MCP icon must use HTTPS.');
-  assert.equal(url.origin, WEBSITE_ORIGIN, 'MCP icon must be project-owned.');
+  assert(url.protocol === 'https:' || (url.protocol === 'http:'
+    && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)), 'MCP icon must use HTTPS outside loopback tests.');
+  assert.equal(url.origin, origin, 'MCP icon must be project-owned.');
   const response = await timedFetch(new URL(url.pathname, origin));
   assert.equal(response.status, 200, 'MCP icon availability');
   assert.equal(response.headers.get('content-type')?.split(';')[0], icon.mimeType, 'MCP icon MIME type');
@@ -64,7 +66,7 @@ console.log('PASS project-owned MCP icon availability, MIME type, and image dime
 function assertMcpSuccessContent(content: unknown, tool: (typeof catalogTools)[number], result: unknown) {
   // Boolean checks avoid printing a real lookup address if a production assertion fails.
   assert(isDeepStrictEqual(content, [
-    { type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink,
+    { type: 'text', text: JSON.stringify(result) }, getToolResultLink(tool, origin),
   ]), `MCP must retain exact JSON text and a generic tool page link: ${tool.id}`);
 }
 
@@ -91,7 +93,7 @@ for (const page of websitePages) {
     // Match equivalent apostrophe entities in React text and generated metadata.
     const pageHtml = (await response.text()).replaceAll('&#x27;', '&#39;');
     assert(!/\{\{[^{}]*\}\}/.test(pageHtml), `Unresolved translation placeholder: ${path}`);
-    const metadata = getPageMetadata(page.locale, page.page, page.path, resources[page.locale].translation);
+    const metadata = getPageMetadata(page.locale, page.page, page.path, resources[page.locale].translation, origin);
     assert(pageHtml.includes('<html lang="' + metadata.lang + '"'), `Page language: ${path}`);
     assert(pageHtml.includes('<title>' + escapeHtml(metadata.title) + '</title>'), `Page title: ${path}`);
     for (const entry of metadata.meta) {
@@ -172,7 +174,7 @@ for (const page of websitePages) {
       const tool = definition.page;
       const example = definition.example;
       assert(pageHtml.includes('data-mcp-example="resource-link"')
-        && pageHtml.includes(escapeHtml(JSON.stringify(definition.mcp.resultLink, null, 2))),
+        && pageHtml.includes(escapeHtml(JSON.stringify(getToolResultLink(definition, origin), null, 2))),
         `MCP resource link example: ${path}`);
       assert(pageHtml.includes('data-mcp-tool="' + definition.mcp.name + '"'), `MCP tool name: ${path}`);
       assert(pageHtml.includes(escapeHtml(JSON.stringify(example.request, null, 2))), `MCP example arguments: ${path}`);
@@ -190,11 +192,11 @@ assert.match(sitemap.headers.get('content-type') ?? '', /xml/);
 const sitemapXml = await sitemap.text();
 assert(sitemapXml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'), 'Sitemap namespace');
 assert.deepEqual(Array.from(sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]),
-  websitePages.map(page => WEBSITE_ORIGIN + page.pathname), 'Sitemap canonical URLs');
+  websitePages.map(page => origin + page.pathname), 'Sitemap canonical URLs');
 const robots = await timedFetch(`${origin}/robots.txt`);
 assert.equal(robots.status, 200, 'Robots status');
 assert.match(robots.headers.get('content-type') ?? '', /text\/plain/);
-assert.equal(await robots.text(), robotsText, 'Robots policy and sitemap reference');
+assert.equal(await robots.text(), renderRobotsText(origin), 'Robots policy and sitemap reference');
 console.log(`PASS ${websitePages.length} prerendered localized pages, metadata, canonical and language links, sitemap, and robots policy`);
 for (const { from, to } of websiteRedirects) {
   const response = await timedFetch(`${origin}${from}?source=example`, { redirect: 'manual' });
@@ -347,7 +349,7 @@ const client = new Client({ name: 'packetrove-smoke', version: '0.1.0' }, {
 });
 try {
   await client.connect(new StreamableHTTPClientTransport(new URL(`${apiOrigin}/mcp`), { fetch: mcpFetch }));
-  assert.deepEqual(client.getServerVersion(), { ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION }, 'Modern MCP service identity');
+  assert.deepEqual(client.getServerVersion(), { ...serviceIdentity, version: PACKETROVE_VERSION }, 'Modern MCP service identity');
   const tools = (await client.listTools()).tools;
   assert.deepEqual(tools.map(tool => tool.name).sort(), catalogTools.map(tool => tool.mcp.name).sort(), 'MCP catalog coverage');
   for (const name of catalogTools.flatMap(tool => [...tool.removedInterfaces.mcpNames])) {
@@ -384,7 +386,7 @@ try {
   });
   // SDK 1.30 declares sessionId differently on its transport and interface.
   await legacyClient.connect(transport as LegacyTransportContract);
-  assert.deepEqual(legacyClient.getServerVersion(), { ...PACKETROVE_IDENTITY, version: PACKETROVE_VERSION }, 'Legacy MCP service identity');
+  assert.deepEqual(legacyClient.getServerVersion(), { ...serviceIdentity, version: PACKETROVE_VERSION }, 'Legacy MCP service identity');
   assert.deepEqual((await legacyClient.listTools()).tools.map(tool => tool.name).sort(),
     catalogTools.map(tool => tool.mcp.name).sort(), 'Legacy MCP catalog coverage');
   const result = await legacyClient.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
