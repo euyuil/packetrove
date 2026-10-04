@@ -85,6 +85,12 @@ A mixed commit that changes product inputs still
 contributes. Update the relevant package manifest when changing a dependency
 and regenerate the lockfile together.
 
+Candidate preparation collects commits reachable from its frozen source SHA
+but not from the latest formal release's SHA. This ancestry-based range includes
+next-release development created before the previous release tag and excludes
+already released work after lifecycle merges. Commit dates and the position of
+a tag in GitHub's linear history do not define release scope.
+
 Release-please updates the root and every workspace's `package.json`,
 `plugins/packetrove/plugin.json`, `.release-please-manifest.json`,
 `docs/api/openapi.json`, and `CHANGELOG.md`
