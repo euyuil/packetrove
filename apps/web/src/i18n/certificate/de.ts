@@ -7,7 +7,23 @@ export const certificateCopy = {
     "scope": "Prüft Format, Duplikate, Gültigkeit, mögliche Signaturen, CA- und keyCertSign-Bedingungen sowie optional einen DNS-Hostnamen. Keine vollständige RFC-5280-Pfad-, Vertrauens-, Sperr- oder Bereitstellungsprüfung.",
     "inputs": "Zertifikate eingeben",
     "samplesLabel": "Synthetische Zertifikatsbeispiele",
-    "loadSample": "Laden und prüfen",
+    "loadSample": "Beispiel ausprobieren",
+    "samplesHelp": "Wählen Sie ein öffentliches synthetisches Zertifikatspaket, um die Eingaben auszufüllen. Starten Sie danach die Prüfung mit „Zertifikatsbündel prüfen“.",
+    "closeExamples": "Beispiele schließen",
+    "evidenceTitle": "Nachweise",
+    "file": {
+      "status": "Dateiimport",
+      "choose": "PEM-Datei auswählen",
+      "help": "PEM-Text einfügen oder eine Zertifikatsdatei hierher ziehen. Dateien werden nur im Browser gelesen.",
+      "reading": "Datei wird gelesen…",
+      "imported": "Datei importiert. Inhalt prüfen und dann das Zertifikatsbündel prüfen.",
+      "errorTitle": "Datei konnte nicht importiert werden",
+      "errors": {
+        "FILE_COUNT": "Eine Datei mit dem Zertifikatsbündel auswählen.",
+        "FILE_ENCODING": "Eine UTF-8-Textdatei mit PEM-Zertifikaten verwenden.",
+        "FILE_READ_FAILED": "Datei konnte nicht gelesen werden. Erneut auswählen oder den Inhalt einfügen."
+      }
+    },
     "pem": "PEM-Zertifikate",
     "pemHelp": "Nur CERTIFICATE-Blöcke und Zwischenräume; höchstens {{maximum}} Zertifikate und {{kib}} KiB. Private Schlüssel werden abgelehnt.",
     "bytes": "{{current}} / {{maximum}} Bytes",
@@ -20,7 +36,7 @@ export const certificateCopy = {
     "verifiedLinks": "Verifizierte Signaturen",
     "findingCount": "Befunde",
     "evaluation": "Prüfzeit: {{time}} (Geräteuhr)",
-    "selectLeaf": "Endzertifikat für den Hostnamen",
+    "selectLeaf": "Zu prüfendes Endzertifikat",
     "selectPosition": "Ursprüngliche Position wählen",
     "hostnameTitle": "Hostname: {{hostname}}",
     "relationships": "Ausstellerbeziehungen",
@@ -34,7 +50,7 @@ export const certificateCopy = {
     "pending": "Zertifikate eingeben und prüfen. Änderungen löschen das vorherige Ergebnis.",
     "details": "Zertifikatsdetails · Eingabereihenfolge",
     "explanationTitle": "Prüfergebnisse verstehen",
-    "explanation": "Nummern bezeichnen ursprüngliche Positionen; JSON-Indizes beginnen bei null. Duplikate bleiben sichtbar. Namen werden konservativ anhand ihrer Kodierung verglichen. Fehlende Aussteller sind informativ; ein fehlgeschlagener Kandidat entwertet keine andere Beziehung. Entwürfe bleiben beim Werkzeug- oder Sprachwechsel im Seitenspeicher und werden beim Neuladen gelöscht.",
+    "explanation": "Nummern zeigen Originalpositionen; JSON-Indizes beginnen bei null. Duplikate bleiben sichtbar. Ausstellernamen werden konservativ anhand ihrer Kodierung verglichen. Ein fehlender Aussteller des ausgewählten Endzertifikats erzeugt eine Warnung; andere fehlende Aussteller sind Informationen. Ein gescheiterter Kandidat widerlegt keine anderen Verbindungen. Entwürfe bleiben beim Werkzeug- und Sprachwechsel im Seitenspeicher; Neuladen löscht sie.",
     "dnsRules": "DNS SAN ignoriert ASCII-Großschreibung und den abschließenden Punkt des Hostnamens. Ein vollständiger Platzhalter ganz links passt auf genau ein Label. URLs, IPs, Ports, Platzhalter-Eingaben und Unicode-Hostnamen werden abgelehnt; internationale Namen vorher in punycode umwandeln. Common Name dient nur zur Anzeige.",
     "examplesTitle": "Synthetische Beispiele",
     "exampleNote": "Öffentliche synthetische Zertifikate. Dokumentierte Prüfzeit: {{time}}. Ihre Prüfung nutzt die aktuelle Uhr des Laufzeitsystems.",
@@ -51,7 +67,7 @@ export const certificateCopy = {
     "originalPosition": "Ursprüngliche Position",
     "position": "Zertifikat #{{number}}, Beginn in Zeile {{line}}",
     "serial": "Seriennummer",
-    "selfSignature": "Selbstsignaturprüfung",
+    "selfSignature": "Prüfung mit dem eigenen öffentlichen Schlüssel",
     "json": "Strukturiertes JSON-Ergebnis",
     "inputLine": "Zeile {{line}}: {{message}}",
     "status": {
@@ -84,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "Doppeltes Zertifikat"
     },
     "errors": {
-      "EMPTY_INPUT": "Mindestens ein PEM-Zertifikat einfügen.",
+      "EMPTY_INPUT": "Mindestens ein PEM-Zertifikat eingeben oder importieren.",
       "INPUT_TOO_LARGE": "PEM überschreitet 48 KiB UTF-8.",
       "INVALID_PEM": "Ungültiges PEM. Nur CERTIFICATE-Blöcke, vollständiges Base64 und Zwischenräume sind erlaubt.",
       "PRIVATE_KEY_REJECTED": "Privater Schlüssel abgelehnt. Entfernen und nur Zertifikate eingeben.",
@@ -97,6 +113,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "Ungültige Anfrage. PEM, Hostnamen und Position des Endzertifikats prüfen.",
       "INVALID_TIME": "Ungültige Prüfzeit des Laufzeitsystems."
     },
+    "graphScrollHelp": "Auf schmalen Bildschirmen können Sie das Diagramm horizontal scrollen, um jedes Zertifikat zu lesen.",
     "evidence": {
       "fingerprintSha256": "SHA-256-Fingerabdruck",
       "evaluatedAt": "Prüfzeit",
@@ -113,7 +130,9 @@ export const certificateCopy = {
       "subjectKeyIdentifier": "Subject Key Identifier",
       "candidateCount": "Kandidaten",
       "expectedHostname": "Erwarteter Hostname",
-      "dnsSubjectAlternativeNames": "DNS SAN"
+      "dnsSubjectAlternativeNames": "DNS SAN",
+      "failedSignatureCount": "Fehlgeschlagene Signaturen",
+      "rejectedIssuerCount": "Ablehnungen durch CA / Key Usage"
     },
     "findings": {
       "DUPLICATE_CERTIFICATE": {
@@ -122,19 +141,19 @@ export const certificateCopy = {
       },
       "CERTIFICATE_EXPIRED": {
         "title": "Zertifikat zur Prüfzeit abgelaufen",
-        "action": "Zertifikat erneuern oder ersetzen und das tatsächlich ausgelieferte Zertifikat prüfen."
+        "action": "Wird dieses Zertifikat tatsächlich eingesetzt, erneuern oder ersetzen Sie es. Sein Ablauf macht nicht alle alternativen Pfade ungültig; Zeitregeln für Vertrauensanker hängen vom Client ab."
       },
       "CERTIFICATE_NOT_YET_VALID": {
         "title": "Zertifikat zur Prüfzeit noch nicht gültig",
-        "action": "Geräteuhr und Aktivierungsdatum prüfen."
+        "action": "Prüfen Sie die Bewertungszeit und das Aktivierungsdatum dieses Zertifikats. Andere Pfade können weiterhin gültig sein; Zeitregeln für Vertrauensanker hängen vom Client ab."
       },
       "SELF_SIGNED_CERTIFICATE": {
         "title": "Signatur mit eigenem öffentlichen Schlüssel verifiziert",
         "action": "Client-Vertrauen und tatsächliche Bereitstellung separat prüfen; dieser Befund beweist beides nicht."
       },
       "SELF_SIGNATURE_FAILED": {
-        "title": "Selbstsignatur eines selbst ausgestellten Zertifikats fehlgeschlagen",
-        "action": "Diese beiden Eingabepositionen prüfen. Andere Kandidaten werden unabhängig geprüft."
+        "title": "Prüfung mit dem eigenen öffentlichen Schlüssel fehlgeschlagen",
+        "action": "Prüfen Sie dieses Zertifikat und den vorgesehenen Aussteller mit einer anderen Implementierung. Gleiche Subject- und Issuer-Namen erfordern keine Selbstsignatur."
       },
       "SIGNATURE_UNSUPPORTED": {
         "title": "Signaturalgorithmus nicht unterstützt",
@@ -170,11 +189,11 @@ export const certificateCopy = {
       },
       "LEAF_SELECTION_REQUIRED": {
         "title": "Mehrere Endzertifikate erfordern Auswahl",
-        "action": "Das vorgesehene Nicht-CA-Endzertifikat bereitstellen oder ausdrücklich auswählen."
+        "action": "Wählen Sie das vorgesehene Nicht-CA-Endzertifikat, um Ausstellerkandidaten und den optionalen Hostnamen zu prüfen."
       },
       "NO_LEAF_CERTIFICATE": {
         "title": "Kein Nicht-CA-Endzertifikat vorhanden",
-        "action": "Das vorgesehene Nicht-CA-Endzertifikat bereitstellen oder ausdrücklich auswählen."
+        "action": "Geben Sie ein Nicht-CA-Endzertifikat an, wenn dessen Signatur oder Hostname geprüft werden soll."
       },
       "HOSTNAME_MATCH": {
         "title": "Hostname passt zum DNS SAN des Endzertifikats",
@@ -183,8 +202,21 @@ export const certificateCopy = {
       "HOSTNAME_MISMATCH": {
         "title": "Hostname passt zu keinem DNS SAN des Endzertifikats",
         "action": "Hostnamen prüfen oder ein Zertifikat mit dem nötigen DNS SAN beschaffen. Common Name wird nicht als Ersatz verwendet."
+      },
+      "SELF_ISSUED_CERTIFICATE": {
+        "title": "Subject und Issuer stimmen überein; ein anderes Zertifikat bestätigt die Signatur",
+        "action": "Prüfen Sie die bestätigten Ausstellerverbindungen. Dies kann ein normaler CA-Schlüsselwechsel sein; gleiche Namen erfordern keine Selbstsignatur und belegen kein Client-Vertrauen."
+      },
+      "LEAF_ISSUER_NOT_IN_BUNDLE": {
+        "title": "Der Aussteller des ausgewählten Endzertifikats fehlt in dieser Eingabe",
+        "action": "Ergänzen Sie den Aussteller, um die Signatur des ausgewählten Endzertifikats zu prüfen. Die Akzeptanz hängt auch von Zertifikaten und Vertrauenseinstellungen des Clients ab."
+      },
+      "LEAF_ISSUER_CANDIDATES_REJECTED": {
+        "title": "Alle bereitgestellten Ausstellerkandidaten des ausgewählten Endzertifikats wurden abgelehnt",
+        "action": "Ersetzen oder korrigieren Sie die Ausstellerzertifikate. Dieser Fehler betrifft die Kandidaten in dieser Eingabe, nicht jeden möglichen Vertrauenspfad eines Clients."
       }
-    }
+    },
+    "severityHelp": "Fehler betreffen die aufgeführten Zertifikate oder die bereitgestellten Ausstellerkandidaten des ausgewählten Endzertifikats. Warnungen erfordern Aufmerksamkeit oder kennzeichnen unvollständige Prüfungen; Informationen beschreiben Beobachtungen. Die Stufen belegen kein Client-Vertrauen."
   },
   "homepage": {
     "description": "PEM-Zertifikate lokal auf Signaturen, Ausstellerkandidaten und optional DNS-Identität prüfen.",

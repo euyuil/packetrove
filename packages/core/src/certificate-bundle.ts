@@ -233,10 +233,21 @@ export async function checkCertificateBundle(value: unknown, evaluatedAt = new D
       'These positions contain the same certificate.', { fingerprintSha256 }, 'Remove the duplicate if it is unintended.');
     else { firstByFingerprint.set(fingerprintSha256, index); uniqueIndexes.push(index); }
     if (evaluatedAt > certificate.notAfter) add('CERTIFICATE_EXPIRED', 'error', [index],
-      'The evaluation time is after notAfter.', { evaluatedAt: evaluatedAt.toISOString(), notAfter: summary.notAfter }, 'Renew or replace this certificate; check which certificate the deployment serves.');
+      'The evaluation time is after notAfter.', { evaluatedAt: evaluatedAt.toISOString(), notAfter: summary.notAfter }, 'If this certificate is used by the intended deployment, renew or replace it. Expiry of one supplied certificate does not invalidate every alternative path; trust-anchor time requirements depend on the client.');
     if (evaluatedAt < certificate.notBefore) add('CERTIFICATE_NOT_YET_VALID', 'error', [index],
-      'The evaluation time is before notBefore.', { evaluatedAt: evaluatedAt.toISOString(), notBefore: summary.notBefore }, 'Check the clock and certificate activation date.');
+      'The evaluation time is before notBefore.', { evaluatedAt: evaluatedAt.toISOString(), notBefore: summary.notBefore }, 'Check the clock and activation date for this certificate. This observation does not invalidate every alternative path; trust-anchor time requirements depend on the client.');
   }
+  const leafIndexes = uniqueIndexes.filter(index => !certificates[index]!.ca);
+  let selectedLeafIndex: number | null = leafIndexes.length === 1 ? leafIndexes[0]! : null;
+  if (request.leafIndex !== undefined) {
+    if (request.leafIndex >= certificates.length || certificates[request.leafIndex]!.ca) {
+      throw new CertificateBundleInputError('INVALID_LEAF_SELECTION', 'Select an original input position containing a non-CA certificate.');
+    }
+    selectedLeafIndex = request.leafIndex;
+  }
+  // Candidate links use first occurrences; an explicit duplicate selection retains its original position.
+  const selectedCanonicalLeaf = selectedLeafIndex === null ? null
+    : firstByFingerprint.get(certificates[selectedLeafIndex]!.fingerprintSha256)!;
   for (const childIndex of uniqueIndexes) {
     active();
     const child = parsed[childIndex]!.certificate;
@@ -244,11 +255,6 @@ export async function checkCertificateBundle(value: unknown, evaluatedAt = new D
     const selfIssued = sameName(child.subjectName.toArrayBuffer(), child.issuerName.toArrayBuffer());
     if (selfIssued) {
       childSummary.selfSignature = await verifySignature(child, child);
-      const status = childSummary.selfSignature;
-      if (status === 'verified') add('SELF_SIGNED_CERTIFICATE', 'info', [childIndex],
-        'The certificate verifies with its own public key.', { subject: child.subject, signature: status }, 'A self-signature does not establish client trust. Check the intended trust configuration separately.');
-      else add(status === 'failed' ? 'SELF_SIGNATURE_FAILED' : status === 'unsupported' ? 'SIGNATURE_UNSUPPORTED' : 'SIGNATURE_CHECK_UNAVAILABLE',
-        'warning', [childIndex], 'The self-issued certificate has no verified self-signature.', { signature: status, algorithm: childSummary.signatureAlgorithm }, 'Inspect the certificate and verify the algorithm with another implementation.');
     }
     const candidates = uniqueIndexes.filter(index => index !== childIndex
       && sameName(child.issuerName.toArrayBuffer(), parsed[index]!.certificate.subjectName.toArrayBuffer()));
@@ -272,26 +278,44 @@ export async function checkCertificateBundle(value: unknown, evaluatedAt = new D
       if (keyIdentifierMatch === false) add('ISSUER_KEY_ID_MISMATCH', 'warning', [childIndex, issuerIndex],
         'The authority and subject key identifiers differ.', { authorityKeyIdentifier: authorityId!, subjectKeyIdentifier: subjectId! }, 'Inspect the intended issuer and alternative candidates.');
     }
-    if (!candidates.length && !selfIssued) add('ISSUER_NOT_IN_BUNDLE', 'info', [childIndex],
-      'No certificate with the encoded issuer name was found in this input.', { issuer: child.issuer }, 'If a server actually serves this bundle, check its full-chain configuration. Roots are normally omitted; this observation alone does not prove a broken chain.');
+    if (!candidates.length && !selfIssued) {
+      if (childIndex === selectedCanonicalLeaf) add('LEAF_ISSUER_NOT_IN_BUNDLE', 'warning', [selectedLeafIndex!],
+        'The selected leaf has no supplied issuer with the same encoded name, so its signature cannot be verified in this input.', { issuer: child.issuer }, 'Supply the selected leaf\'s issuer to verify its signature. This input alone does not establish which certificates clients possess or whether they will reject the deployment.');
+      else add('ISSUER_NOT_IN_BUNDLE', 'info', [childIndex],
+        'No certificate with the encoded issuer name was found in this input.', { issuer: child.issuer }, 'If a server actually serves this bundle, check its full-chain configuration. Roots are normally omitted; this observation alone does not prove a broken chain.');
+    }
     const viable = relationships.filter(link => link.childIndex === childIndex && link.signature === 'verified'
       && link.issuerEligible && link.keyIdentifierMatch !== false);
+    if (selfIssued) {
+      const status = childSummary.selfSignature!;
+      if (status === 'verified') add('SELF_SIGNED_CERTIFICATE', 'info', [childIndex],
+        'The certificate verifies with its own public key.', { subject: child.subject, signature: status }, 'A self-signature does not establish client trust. Check the intended trust configuration separately.');
+      else if (viable.length) add('SELF_ISSUED_CERTIFICATE', 'info', [childIndex, ...viable.map(link => link.issuerIndex)],
+        'Subject and Issuer names match, and a different supplied certificate passes signature and local issuer checks.', { subject: child.subject, candidateCount: viable.length }, 'Inspect the verified issuer relationships. Matching Subject and Issuer names do not require a self-signature; this can occur during CA key rollover and does not establish client trust.');
+      else add(status === 'failed' ? 'SELF_SIGNATURE_FAILED' : status === 'unsupported' ? 'SIGNATURE_UNSUPPORTED' : 'SIGNATURE_CHECK_UNAVAILABLE',
+        'warning', [childIndex], 'Verification with the certificate\'s own public key did not complete successfully.', { signature: status, algorithm: childSummary.signatureAlgorithm }, 'Inspect this certificate and available issuer candidates. Matching Subject and Issuer names do not require a self-signature; verify the intended signer with another implementation.');
+    }
     if (viable.length > 1) add('MULTIPLE_ISSUERS', 'info', [childIndex, ...viable.map(link => link.issuerIndex)],
       'More than one supplied issuer passes the local link checks.', { candidateCount: viable.length }, 'Inspect the alternatives; this checker does not select an authoritative trust path.');
   }
   // Duplicate certificates retain their positions without creating extra leaves or links.
   for (const summary of certificates) summary.selfSignature = certificates[firstByFingerprint.get(summary.fingerprintSha256)!]!.selfSignature;
-  const leafIndexes = uniqueIndexes.filter(index => !certificates[index]!.ca);
-  let selectedLeafIndex: number | null = leafIndexes.length === 1 ? leafIndexes[0]! : null;
-  if (request.leafIndex !== undefined) {
-    if (!Number.isInteger(request.leafIndex) || request.leafIndex < 0 || request.leafIndex >= certificates.length || certificates[request.leafIndex]!.ca) {
-      throw new CertificateBundleInputError('INVALID_LEAF_SELECTION', 'Select an original input position containing a non-CA certificate.');
+  const selectedOwnSignature = selectedCanonicalLeaf === null ? null : certificates[selectedCanonicalLeaf]!.selfSignature;
+  if (selectedCanonicalLeaf !== null && (selectedOwnSignature === null || selectedOwnSignature === 'failed')) {
+    const candidates = relationships.filter(link => link.childIndex === selectedCanonicalLeaf);
+    // An unknown own-key or eligible candidate signature prevents a conclusive rejection.
+    if (candidates.length && candidates.every(link => link.signature === 'failed' || !link.issuerEligible)) {
+      add('LEAF_ISSUER_CANDIDATES_REJECTED', 'error', [selectedLeafIndex!, ...candidates.map(link => link.issuerIndex)],
+        'Every supplied issuer candidate for the selected leaf fails signature verification or local CA / Key Usage requirements.', {
+          candidateCount: candidates.length,
+          failedSignatureCount: candidates.filter(link => link.signature === 'failed').length,
+          rejectedIssuerCount: candidates.filter(link => !link.issuerEligible).length,
+        }, 'Replace or correct the supplied issuer certificates. This error describes the selected leaf\'s candidates in this input, not every possible client trust path.');
     }
-    selectedLeafIndex = request.leafIndex;
   }
-  if (leafIndexes.length > 1 && selectedLeafIndex === null) add('LEAF_SELECTION_REQUIRED', 'info', leafIndexes,
+  if (leafIndexes.length > 1 && selectedLeafIndex === null) add('LEAF_SELECTION_REQUIRED', expected ? 'warning' : 'info', leafIndexes,
     'More than one non-CA certificate is present.', { candidateCount: leafIndexes.length }, 'Select the intended leaf before checking a hostname.');
-  if (!leafIndexes.length) add('NO_LEAF_CERTIFICATE', 'info', uniqueIndexes,
+  if (!leafIndexes.length) add('NO_LEAF_CERTIFICATE', expected ? 'warning' : 'info', uniqueIndexes,
     'No non-CA certificate is present.', {}, 'Supply a leaf certificate if hostname checking is required.');
   let hostname: BundleResult['hostname'] = null;
   if (expected) {

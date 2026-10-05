@@ -7,7 +7,23 @@ export const certificateCopy = {
     "scope": "Checks parsing, duplicates, validity, candidate signatures, CA and keyCertSign constraints, and an optional DNS hostname. Does not validate full RFC 5280 paths, client trust, revocation, or deployment safety.",
     "inputs": "Certificate input",
     "samplesLabel": "Synthetic certificate examples",
-    "loadSample": "Load and check",
+    "loadSample": "Try an example",
+    "samplesHelp": "Choose a public synthetic bundle to fill the inputs. Then use Check certificate bundle to run the check.",
+    "closeExamples": "Close examples",
+    "evidenceTitle": "Evidence",
+    "file": {
+      "status": "File import",
+      "choose": "Choose PEM file",
+      "help": "Paste PEM text or drop one certificate file here. Files are read only in your browser.",
+      "reading": "Reading file…",
+      "imported": "File imported. Review the content, then check the bundle.",
+      "errorTitle": "Could not import the file",
+      "errors": {
+        "FILE_COUNT": "Choose one file containing the certificate bundle.",
+        "FILE_ENCODING": "Use a UTF-8 text file containing PEM certificates.",
+        "FILE_READ_FAILED": "The file could not be read. Choose it again or paste its contents."
+      }
+    },
     "pem": "PEM certificates",
     "pemHelp": "Only CERTIFICATE blocks and whitespace; up to {{maximum}} certificates and {{kib}} KiB. Private keys are rejected.",
     "bytes": "{{current}} / {{maximum}} bytes",
@@ -20,7 +36,7 @@ export const certificateCopy = {
     "verifiedLinks": "Verified signatures",
     "findingCount": "Findings",
     "evaluation": "Evaluation time: {{time}} (device clock)",
-    "selectLeaf": "Leaf for hostname checking",
+    "selectLeaf": "Leaf to inspect",
     "selectPosition": "Select an original position",
     "hostnameTitle": "Hostname: {{hostname}}",
     "relationships": "Issuer relationships",
@@ -34,7 +50,7 @@ export const certificateCopy = {
     "pending": "Enter certificates and run a check. Editing input clears the previous result.",
     "details": "Certificate details · Original order",
     "explanationTitle": "Understand these checks",
-    "explanation": "Numbers show original input positions; JSON indices start at zero. Duplicate positions remain visible. Candidate names use conservative encoded comparison. An absent issuer is informational, and a failed candidate does not invalidate other links. Drafts stay in page memory across tool and language navigation; reloading clears them.",
+    "explanation": "Numbers show original positions; JSON indices start at zero. Duplicates remain visible. Issuer names use conservative encoded comparison. A missing selected-leaf issuer is a warning; other missing issuers are informational. Candidate failures do not invalidate other links. Drafts stay in page memory across tool and language navigation; reloading clears them.",
     "dnsRules": "DNS SAN matching ignores ASCII case and a final hostname dot. A complete leftmost wildcard matches exactly one label. URLs, IP addresses, ports, wildcard inputs, and Unicode hostnames are rejected; convert internationalized names to punycode first. Common Name is displayed only, not used for identity checks.",
     "examplesTitle": "Synthetic examples",
     "exampleNote": "Public synthetic certificates. Documentation evaluation time: {{time}}. Your check uses the current runtime clock.",
@@ -51,7 +67,7 @@ export const certificateCopy = {
     "originalPosition": "Original position",
     "position": "Certificate #{{number}}, beginning on line {{line}}",
     "serial": "Serial number",
-    "selfSignature": "Self-signature check",
+    "selfSignature": "Verification with own public key",
     "json": "Structured result JSON",
     "inputLine": "Line {{line}}: {{message}}",
     "status": {
@@ -84,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "Duplicate certificate"
     },
     "errors": {
-      "EMPTY_INPUT": "Paste at least one PEM certificate.",
+      "EMPTY_INPUT": "Enter or import at least one PEM certificate.",
       "INPUT_TOO_LARGE": "PEM exceeds the 48 KiB UTF-8 limit.",
       "INVALID_PEM": "Malformed PEM. Only CERTIFICATE blocks, complete Base64, and whitespace between blocks are accepted.",
       "PRIVATE_KEY_REJECTED": "Private-key block rejected. Remove it; submit certificates only.",
@@ -97,6 +113,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "Invalid request. Review the PEM, hostname, and original leaf position.",
       "INVALID_TIME": "The runtime evaluation time is invalid."
     },
+    "graphScrollHelp": "On narrow screens, scroll the diagram horizontally to read every certificate.",
     "evidence": {
       "fingerprintSha256": "SHA-256 fingerprint",
       "evaluatedAt": "Evaluation time",
@@ -113,7 +130,9 @@ export const certificateCopy = {
       "subjectKeyIdentifier": "Subject Key Identifier",
       "candidateCount": "Candidates",
       "expectedHostname": "Expected hostname",
-      "dnsSubjectAlternativeNames": "DNS SAN"
+      "dnsSubjectAlternativeNames": "DNS SAN",
+      "failedSignatureCount": "Failed signatures",
+      "rejectedIssuerCount": "CA / Key Usage rejections"
     },
     "findings": {
       "DUPLICATE_CERTIFICATE": {
@@ -122,19 +141,19 @@ export const certificateCopy = {
       },
       "CERTIFICATE_EXPIRED": {
         "title": "Certificate expired at evaluation time",
-        "action": "Renew or replace the certificate and check which certificate is actually served."
+        "action": "If this certificate is used in the intended deployment, renew or replace it. Its expiry does not invalidate every alternative path; trust-anchor time rules depend on the client."
       },
       "CERTIFICATE_NOT_YET_VALID": {
         "title": "Certificate not yet valid at evaluation time",
-        "action": "Check the device clock and certificate activation date."
+        "action": "Check this certificate's evaluation time and activation date. This issue does not invalidate every alternative path; trust-anchor time rules depend on the client."
       },
       "SELF_SIGNED_CERTIFICATE": {
         "title": "Signature verifies with its own public key",
         "action": "Check client trust and the actual deployment separately; this observation does not prove either."
       },
       "SELF_SIGNATURE_FAILED": {
-        "title": "Self-issued certificate has a failed self-signature",
-        "action": "Inspect these two certificate positions. Other candidate links are checked independently."
+        "title": "Verification with own public key failed",
+        "action": "Check this certificate and the intended issuer with another implementation. Matching Subject and Issuer names do not require a self-signature."
       },
       "SIGNATURE_UNSUPPORTED": {
         "title": "Signature algorithm is unsupported here",
@@ -170,11 +189,11 @@ export const certificateCopy = {
       },
       "LEAF_SELECTION_REQUIRED": {
         "title": "Multiple possible leaves require a selection",
-        "action": "Supply or explicitly select the intended non-CA leaf before checking a hostname."
+        "action": "Select the intended non-CA leaf to inspect its issuer candidates and optional hostname."
       },
       "NO_LEAF_CERTIFICATE": {
         "title": "No non-CA leaf certificate supplied",
-        "action": "Supply or explicitly select the intended non-CA leaf before checking a hostname."
+        "action": "Supply a non-CA leaf if you need to inspect its signature or hostname."
       },
       "HOSTNAME_MATCH": {
         "title": "Expected hostname matches the selected leaf’s DNS SAN",
@@ -183,8 +202,21 @@ export const certificateCopy = {
       "HOSTNAME_MISMATCH": {
         "title": "Expected hostname matches no DNS SAN on the selected leaf",
         "action": "Check the hostname or obtain a certificate with the required DNS SAN. Common Name is not a fallback."
+      },
+      "SELF_ISSUED_CERTIFICATE": {
+        "title": "Subject and Issuer match; another certificate verifies the signature",
+        "action": "Inspect the verified issuer links. This can be normal CA key rollover; matching names do not require a self-signature or establish client trust."
+      },
+      "LEAF_ISSUER_NOT_IN_BUNDLE": {
+        "title": "Selected leaf issuer is absent from this input",
+        "action": "Supply its issuer to verify the selected leaf's signature. Client acceptance also depends on the certificates and trust settings available to the client."
+      },
+      "LEAF_ISSUER_CANDIDATES_REJECTED": {
+        "title": "All supplied issuer candidates for the selected leaf are rejected",
+        "action": "Replace or correct the supplied issuer certificates. This error concerns the selected leaf's candidates in this input, not every possible client trust path."
       }
-    }
+    },
+    "severityHelp": "Errors concern the listed certificates or the selected leaf's supplied candidates. Warnings need attention or mark incomplete checks; information records observations. Levels do not establish client trust."
   },
   "homepage": {
     "description": "Inspect a PEM certificate bundle locally, including signatures, issuer candidates, and optional DNS identity.",

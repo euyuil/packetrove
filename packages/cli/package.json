@@ -1,6 +1,6 @@
 {
   "name": "@packetrove/cli",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "license": "MIT",
   "type": "module",
   "description": "Packetrove network calculations and IP diagnostics for scripts and agents.",

@@ -7,7 +7,23 @@ export const certificateCopy = {
     "scope": "检查解析、重复、有效期、候选签名、CA 和 keyCertSign 约束及可选 DNS 主机名。不执行完整 RFC 5280 路径验证、客户端信任或吊销检查，不能证明部署安全。",
     "inputs": "输入证书包",
     "samplesLabel": "合成证书样例",
-    "loadSample": "加载并检查",
+    "loadSample": "试用示例",
+    "samplesHelp": "选择一个公开合成证书包填入输入。准备好后，点击“检查证书包”执行检查。",
+    "closeExamples": "关闭示例",
+    "evidenceTitle": "证据",
+    "file": {
+      "status": "文件导入",
+      "choose": "选择 PEM 文件",
+      "help": "可粘贴 PEM 文本，或将一个证书文件拖入这里。文件仅在浏览器内读取。",
+      "reading": "正在读取文件…",
+      "imported": "文件已导入。确认内容后，点击“检查证书包”。",
+      "errorTitle": "文件导入失败",
+      "errors": {
+        "FILE_COUNT": "请选择一个包含证书包的文件。",
+        "FILE_ENCODING": "请使用包含 PEM 证书的 UTF-8 文本文件。",
+        "FILE_READ_FAILED": "无法读取文件。请重新选择，或粘贴文件内容。"
+      }
+    },
     "pem": "PEM 证书",
     "pemHelp": "只接受 CERTIFICATE 块及块间空白；最多 {{maximum}} 张、{{kib}} KiB。私钥会被拒绝。",
     "bytes": "{{current}} / {{maximum}} 字节",
@@ -20,7 +36,7 @@ export const certificateCopy = {
     "verifiedLinks": "已验证签名",
     "findingCount": "诊断条目",
     "evaluation": "评估时间：{{time}}（设备时间）",
-    "selectLeaf": "选择用于主机名检查的叶证书",
+    "selectLeaf": "要检查的叶证书",
     "selectPosition": "请选择原始输入位置",
     "hostnameTitle": "主机名：{{hostname}}",
     "relationships": "签发关系",
@@ -34,7 +50,7 @@ export const certificateCopy = {
     "pending": "输入证书后执行检查。修改输入会清除旧结果。",
     "details": "证书详情 · 原始输入顺序",
     "explanationTitle": "理解检查结果",
-    "explanation": "编号对应原始输入位置，JSON 索引从零开始。重复位置仍然保留。候选名称使用保守的编码比较；未找到签发者属于信息提示，一条候选失败不会否定其他关系。切换工具或语言会保留页面内存中的草稿，刷新会清空。",
+    "explanation": "编号表示原始位置，JSON 索引从零开始；重复位置仍会显示。签发者名称按编码保守比较。所选叶证书缺少签发者时给出警告，其他签发者缺失作为信息。一条候选失败不会否定其他关系。工具和语言切换时草稿保留在页面内存中，刷新后清除。",
     "dnsRules": "DNS SAN 匹配忽略 ASCII 大小写和主机名末尾的点。完整的最左侧通配符只匹配一层名称。不接受 URL、IP、端口、带通配符的输入或 Unicode 主机名；国际化域名请先转为 punycode。Common Name 仅用于显示，不用于身份检查。",
     "examplesTitle": "合成证书示例",
     "exampleNote": "公开合成证书。文档评估时间：{{time}}。实际检查使用当前运行环境的时间。",
@@ -51,7 +67,7 @@ export const certificateCopy = {
     "originalPosition": "原始位置",
     "position": "第 {{number}} 张证书，从第 {{line}} 行开始",
     "serial": "序列号",
-    "selfSignature": "自签名检查",
+    "selfSignature": "使用证书自身公钥验签",
     "json": "结构化结果 JSON",
     "inputLine": "第 {{line}} 行：{{message}}",
     "status": {
@@ -84,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "重复证书"
     },
     "errors": {
-      "EMPTY_INPUT": "请粘贴至少一个 PEM 证书块。",
+      "EMPTY_INPUT": "请输入或导入至少一个 PEM 证书块。",
       "INPUT_TOO_LARGE": "PEM 超过 48 KiB UTF-8 限制。",
       "INVALID_PEM": "PEM 格式无效。只接受 CERTIFICATE 块、完整 Base64 和块间空白。",
       "PRIVATE_KEY_REJECTED": "私钥块被拒绝。请移除私钥，只提交证书。",
@@ -97,6 +113,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "请求无效。请检查 PEM、主机名和叶证书原始位置。",
       "INVALID_TIME": "运行环境的评估时间无效。"
     },
+    "graphScrollHelp": "窄屏下可在关系图内左右滚动，查看每张证书。",
     "evidence": {
       "fingerprintSha256": "SHA-256 指纹",
       "evaluatedAt": "评估时间",
@@ -113,7 +130,9 @@ export const certificateCopy = {
       "subjectKeyIdentifier": "Subject Key Identifier",
       "candidateCount": "候选数量",
       "expectedHostname": "预期主机名",
-      "dnsSubjectAlternativeNames": "DNS SAN"
+      "dnsSubjectAlternativeNames": "DNS SAN",
+      "failedSignatureCount": "签名失败数量",
+      "rejectedIssuerCount": "CA / Key Usage 不合格数量"
     },
     "findings": {
       "DUPLICATE_CERTIFICATE": {
@@ -122,19 +141,19 @@ export const certificateCopy = {
       },
       "CERTIFICATE_EXPIRED": {
         "title": "评估时证书已过期",
-        "action": "续期或替换证书，并核对实际提供的是哪张证书。"
+        "action": "若实际部署使用这张证书，请续期或替换。它的过期不代表所有替代路径失效；信任锚的时间要求取决于客户端。"
       },
       "CERTIFICATE_NOT_YET_VALID": {
         "title": "评估时证书尚未生效",
-        "action": "检查设备时间和证书启用日期。"
+        "action": "核对这张证书的评估时间和启用日期。这个问题不代表所有替代路径失效；信任锚的时间要求取决于客户端。"
       },
       "SELF_SIGNED_CERTIFICATE": {
         "title": "签名能用证书自己的公钥验证",
         "action": "另外检查客户端信任和实际部署；这项观察不能证明其中任何一项。"
       },
       "SELF_SIGNATURE_FAILED": {
-        "title": "名称自签发的证书自签名失败",
-        "action": "核对这两个原始位置的证书。其他候选关系会独立验证。"
+        "title": "使用证书自身公钥验签失败",
+        "action": "用其他实现核对这张证书和预期签发者。Subject 与 Issuer 名称相同不意味着必须自签名。"
       },
       "SIGNATURE_UNSUPPORTED": {
         "title": "当前环境不支持签名算法",
@@ -170,11 +189,11 @@ export const certificateCopy = {
       },
       "LEAF_SELECTION_REQUIRED": {
         "title": "有多个可能的叶证书，需要选择",
-        "action": "提供或明确选择目标非 CA 叶证书，再检查主机名。"
+        "action": "选择目标非 CA 叶证书，以检查其候选签发者和可选主机名。"
       },
       "NO_LEAF_CERTIFICATE": {
         "title": "输入未包含非 CA 叶证书",
-        "action": "提供或明确选择目标非 CA 叶证书，再检查主机名。"
+        "action": "若要检查叶证书的签名或主机名，请提供非 CA 叶证书。"
       },
       "HOSTNAME_MATCH": {
         "title": "主机名与所选叶证书的 DNS SAN 匹配",
@@ -183,8 +202,21 @@ export const certificateCopy = {
       "HOSTNAME_MISMATCH": {
         "title": "主机名与所选叶证书的 DNS SAN 不匹配",
         "action": "核对主机名，或申请包含所需 DNS SAN 的证书。Common Name 不作为回退。"
+      },
+      "SELF_ISSUED_CERTIFICATE": {
+        "title": "Subject 与 Issuer 相同，签名由另一张证书验证通过",
+        "action": "查看通过验证的签发关系。这可能是正常的 CA 密钥轮换；名称相同不要求自签名，也不能证明客户端信任。"
+      },
+      "LEAF_ISSUER_NOT_IN_BUNDLE": {
+        "title": "本次输入未提供所选叶证书的签发者",
+        "action": "补充签发者，以验证所选叶证书的签名。客户端是否接受，还取决于其已有证书和信任配置。"
+      },
+      "LEAF_ISSUER_CANDIDATES_REJECTED": {
+        "title": "所选叶证书在输入中的所有候选签发者均不合格",
+        "action": "替换或修正提供的签发者证书。这个错误针对本次输入中的所选叶证书候选，不代表所有可能的客户端信任路径都失败。"
       }
-    }
+    },
+    "severityHelp": "错误针对所列证书或所选叶证书在输入中的候选；警告表示需要处理或检查未完成；信息记录观察结果。诊断级别不能证明客户端信任。"
   },
   "homepage": {
     "description": "本地检查 PEM 证书包的签名、候选签发关系和可选 DNS 身份。",

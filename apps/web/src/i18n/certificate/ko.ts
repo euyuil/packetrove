@@ -7,7 +7,23 @@ export const certificateCopy = {
     "scope": "파싱, 중복, 유효 기간, 후보 서명, CA 및 keyCertSign 제약과 선택적 DNS 호스트 이름을 검사합니다. 전체 RFC 5280 경로, 클라이언트 신뢰, 폐기 여부나 배포 안전성은 검증하지 않습니다.",
     "inputs": "인증서 입력",
     "samplesLabel": "합성 인증서 예제",
-    "loadSample": "불러와 검사",
+    "loadSample": "예제 사용해 보기",
+    "samplesHelp": "공개 합성 인증서 번들을 선택해 입력란을 채우세요. 준비되면 인증서 묶음 검사 버튼으로 검사를 실행하세요.",
+    "closeExamples": "예제 닫기",
+    "evidenceTitle": "근거",
+    "file": {
+      "status": "파일 가져오기",
+      "choose": "PEM 파일 선택",
+      "help": "PEM 텍스트를 붙여 넣거나 인증서 파일 하나를 여기에 끌어 놓으세요. 파일은 브라우저에서만 읽습니다.",
+      "reading": "파일 읽는 중…",
+      "imported": "파일을 가져왔습니다. 내용을 확인한 다음 인증서 묶음을 검사하세요.",
+      "errorTitle": "파일을 가져올 수 없습니다",
+      "errors": {
+        "FILE_COUNT": "인증서 묶음이 포함된 파일 하나를 선택하세요.",
+        "FILE_ENCODING": "PEM 인증서가 포함된 UTF-8 텍스트 파일을 사용하세요.",
+        "FILE_READ_FAILED": "파일을 읽을 수 없습니다. 다시 선택하거나 내용을 붙여 넣으세요."
+      }
+    },
     "pem": "PEM 인증서",
     "pemHelp": "CERTIFICATE 블록과 공백만 허용합니다. 최대 {{maximum}}개, {{kib}} KiB. 개인 키는 거부합니다.",
     "bytes": "{{current}} / {{maximum}} 바이트",
@@ -20,7 +36,7 @@ export const certificateCopy = {
     "verifiedLinks": "검증된 서명",
     "findingCount": "진단",
     "evaluation": "평가 시각: {{time}}(기기 시계)",
-    "selectLeaf": "호스트 이름을 검사할 리프",
+    "selectLeaf": "검사할 말단 인증서",
     "selectPosition": "원래 입력 위치 선택",
     "hostnameTitle": "호스트 이름: {{hostname}}",
     "relationships": "발급 관계",
@@ -34,7 +50,7 @@ export const certificateCopy = {
     "pending": "인증서를 입력하고 검사하세요. 입력을 바꾸면 이전 결과가 지워집니다.",
     "details": "인증서 상세 · 원래 순서",
     "explanationTitle": "검사의 의미",
-    "explanation": "번호는 원래 입력 위치이며 JSON 인덱스는 0부터 시작합니다. 중복 위치도 유지합니다. 후보 이름은 보수적인 인코딩 비교를 사용합니다. 발급자 부재는 정보이며 한 후보 실패가 다른 관계를 무효화하지 않습니다. 도구나 언어 전환 시 초안은 페이지 메모리에 남으며 새로 고치면 지워집니다.",
+    "explanation": "번호는 원래 입력 위치이며 JSON 인덱스는 0부터 시작합니다. 중복 위치도 표시됩니다. 발급자 이름은 인코딩을 보수적으로 비교합니다. 선택한 말단 인증서의 발급자가 없으면 경고이며, 다른 발급자 누락은 정보입니다. 한 후보의 실패가 다른 관계를 무효화하지는 않습니다. 도구나 언어를 바꿔도 초안은 페이지 메모리에 남고 새로고침하면 지워집니다.",
     "dnsRules": "DNS SAN은 ASCII 대소문자와 호스트 이름 끝의 점을 무시합니다. 맨 왼쪽의 완전한 와일드카드는 한 레이블만 일치합니다. URL, IP, 포트, 와일드카드 입력과 Unicode 이름은 거부합니다. 국제화 이름은 먼저 punycode로 변환하세요. Common Name은 표시용입니다.",
     "examplesTitle": "합성 예제",
     "exampleNote": "공개 합성 인증서입니다. 문서 평가 시각: {{time}}. 실제 검사는 현재 실행 환경의 시계를 사용합니다.",
@@ -51,7 +67,7 @@ export const certificateCopy = {
     "originalPosition": "원래 위치",
     "position": "인증서 #{{number}}, 시작 줄 {{line}}",
     "serial": "일련번호",
-    "selfSignature": "자체 서명 검사",
+    "selfSignature": "인증서 자체 공개 키로 검증",
     "json": "구조화된 결과 JSON",
     "inputLine": "{{line}}번째 줄: {{message}}",
     "status": {
@@ -84,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "중복 인증서"
     },
     "errors": {
-      "EMPTY_INPUT": "PEM 인증서를 하나 이상 붙여 넣으세요.",
+      "EMPTY_INPUT": "PEM 인증서를 하나 이상 입력하거나 가져오세요.",
       "INPUT_TOO_LARGE": "PEM이 UTF-8 48 KiB 제한을 초과합니다.",
       "INVALID_PEM": "잘못된 PEM입니다. CERTIFICATE 블록, 완전한 Base64와 블록 사이 공백만 허용합니다.",
       "PRIVATE_KEY_REJECTED": "개인 키 블록을 거부했습니다. 제거하고 인증서만 입력하세요.",
@@ -97,6 +113,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "잘못된 요청입니다. PEM, 호스트 이름과 리프 위치를 확인하세요.",
       "INVALID_TIME": "실행 환경의 평가 시각이 잘못되었습니다."
     },
+    "graphScrollHelp": "좁은 화면에서는 관계도 안에서 좌우로 스크롤하여 각 인증서를 확인하세요.",
     "evidence": {
       "fingerprintSha256": "SHA-256 지문",
       "evaluatedAt": "평가 시각",
@@ -113,7 +130,9 @@ export const certificateCopy = {
       "subjectKeyIdentifier": "Subject Key Identifier",
       "candidateCount": "후보 수",
       "expectedHostname": "예상 호스트 이름",
-      "dnsSubjectAlternativeNames": "DNS SAN"
+      "dnsSubjectAlternativeNames": "DNS SAN",
+      "failedSignatureCount": "서명 실패 수",
+      "rejectedIssuerCount": "CA / Key Usage 거부 수"
     },
     "findings": {
       "DUPLICATE_CERTIFICATE": {
@@ -122,19 +141,19 @@ export const certificateCopy = {
       },
       "CERTIFICATE_EXPIRED": {
         "title": "평가 시 인증서가 만료됨",
-        "action": "인증서를 갱신하거나 교체하고 실제 제공되는 인증서를 확인하세요."
+        "action": "실제 배포에서 이 인증서를 사용한다면 갱신하거나 교체하세요. 이 인증서의 만료가 모든 대체 경로를 무효화하지는 않으며, 신뢰 앵커의 시간 요구 사항은 클라이언트에 따라 다릅니다."
       },
       "CERTIFICATE_NOT_YET_VALID": {
         "title": "평가 시 아직 유효하지 않음",
-        "action": "기기 시계와 인증서 활성화 날짜를 확인하세요."
+        "action": "이 인증서의 평가 시각과 활성화 날짜를 확인하세요. 다른 경로는 유효할 수 있으며, 신뢰 앵커의 시간 요구 사항은 클라이언트에 따라 다릅니다."
       },
       "SELF_SIGNED_CERTIFICATE": {
         "title": "자신의 공개 키로 서명 검증됨",
         "action": "클라이언트 신뢰와 실제 배포를 별도로 확인하세요. 이 관찰로 둘 다 증명할 수 없습니다."
       },
       "SELF_SIGNATURE_FAILED": {
-        "title": "자체 발급 인증서의 자체 서명 실패",
-        "action": "이 두 원래 위치의 인증서를 확인하세요. 다른 후보는 독립적으로 검사합니다."
+        "title": "인증서 자체 공개 키로 검증 실패",
+        "action": "다른 구현으로 이 인증서와 의도한 발급자를 확인하세요. Subject와 Issuer 이름이 같아도 자체 서명이 필수인 것은 아닙니다."
       },
       "SIGNATURE_UNSUPPORTED": {
         "title": "이 환경에서 서명 알고리즘 미지원",
@@ -170,11 +189,11 @@ export const certificateCopy = {
       },
       "LEAF_SELECTION_REQUIRED": {
         "title": "가능한 리프가 여러 개이므로 선택 필요",
-        "action": "대상 비 CA 리프를 제공하거나 명시적으로 선택한 뒤 호스트 이름을 검사하세요."
+        "action": "대상 비 CA 말단 인증서를 선택해 발급자 후보와 선택적 호스트 이름을 검사하세요."
       },
       "NO_LEAF_CERTIFICATE": {
         "title": "비 CA 리프가 제공되지 않음",
-        "action": "대상 비 CA 리프를 제공하거나 명시적으로 선택한 뒤 호스트 이름을 검사하세요."
+        "action": "서명이나 호스트 이름을 검사하려면 비 CA 말단 인증서를 제공하세요."
       },
       "HOSTNAME_MATCH": {
         "title": "호스트 이름이 선택한 리프의 DNS SAN과 일치",
@@ -183,8 +202,21 @@ export const certificateCopy = {
       "HOSTNAME_MISMATCH": {
         "title": "호스트 이름이 선택한 리프의 DNS SAN과 불일치",
         "action": "호스트 이름을 확인하거나 필요한 DNS SAN이 있는 인증서를 발급받으세요. Common Name으로 대체하지 않습니다."
+      },
+      "SELF_ISSUED_CERTIFICATE": {
+        "title": "Subject와 Issuer가 같으며 다른 인증서로 서명이 검증됨",
+        "action": "검증된 발급자 관계를 확인하세요. 정상적인 CA 키 교체에서도 발생할 수 있습니다. 이름이 같아도 자체 서명은 필수가 아니며 클라이언트 신뢰를 입증하지 않습니다."
+      },
+      "LEAF_ISSUER_NOT_IN_BUNDLE": {
+        "title": "선택한 말단 인증서의 발급자가 입력에 없음",
+        "action": "발급자를 추가하여 선택한 말단 인증서의 서명을 검증하세요. 클라이언트의 수락 여부는 보유 인증서와 신뢰 설정에도 달려 있습니다."
+      },
+      "LEAF_ISSUER_CANDIDATES_REJECTED": {
+        "title": "선택한 말단 인증서에 대해 입력된 모든 발급자 후보가 거부됨",
+        "action": "발급자 인증서를 교체하거나 수정하세요. 이 오류는 이번 입력의 후보에 관한 것이며 가능한 모든 클라이언트 신뢰 경로가 실패함을 의미하지 않습니다."
       }
-    }
+    },
+    "severityHelp": "오류는 표시된 인증서 또는 선택한 말단 인증서에 대해 입력된 발급자 후보에 관한 것입니다. 경고는 조치가 필요하거나 검사가 완료되지 않았음을 나타내며, 정보는 관찰 결과를 설명합니다. 진단 수준은 클라이언트 신뢰를 입증하지 않습니다."
   },
   "homepage": {
     "description": "PEM 인증서 서명, 발급자 후보와 선택적 DNS 신원을 로컬에서 검사합니다.",

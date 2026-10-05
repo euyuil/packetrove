@@ -15,6 +15,7 @@ export function CertificateFindings({ result }: { result: CertificateBundleResul
   const severityOrder = ['error', 'warning', 'info'];
   const findings = [...result.findings].sort((a, b) => severityOrder.indexOf(a.severity) - severityOrder.indexOf(b.severity));
   return <Stack gap="sm">
+    <Text size="sm" c="dimmed" maw="75ch">{t($ => $.certificate.severityHelp)}</Text>
     {findings.map((finding, index) => <Card key={`${finding.code}-${index}`} withBorder padding="md">
       <Stack gap="xs">
         <Group gap="xs">
@@ -22,16 +23,23 @@ export function CertificateFindings({ result }: { result: CertificateBundleResul
           <Text size="sm" fw={600}>{t($ => $.certificate.findings[finding.code].title)}</Text>
           <Text size="xs" c="dimmed">{finding.certificateIndexes.map(index => `#${index + 1}`).join(', ')}</Text>
         </Group>
-        <Code fz="xs" w="fit-content">{finding.code}</Code>
-        <Stack gap={4}>
-          {Object.entries(finding.evidence).map(([key, value]) => <Text key={key} size="xs" style={{ overflowWrap: 'anywhere' }}>
-            <Text span fw={600}>{t($ => $.certificate.evidence[key as keyof typeof $.certificate.evidence])}: </Text>
-            {typeof value === 'boolean' ? t($ => value ? $.certificate.yes : $.certificate.no)
-              : value === null || value === '(none)' ? t($ => $.certificate.notProvided)
-                : typeof value === 'string' && value in statusColor ? t($ => $.certificate.status[value as CertificateCheckStatus]) : String(value)}
-          </Text>)}
-        </Stack>
-        <Text size="sm"><Text span fw={600}>{t($ => $.certificate.nextAction)}: </Text>{t($ => $.certificate.findings[finding.code].action)}</Text>
+        <Text size="sm" maw="75ch"><Text span fw={600}>{t($ => $.certificate.nextAction)}: </Text>{t($ => $.certificate.findings[finding.code].action)}</Text>
+        <Accordion variant="contained" radius="sm">
+          <Accordion.Item value="evidence">
+            <Accordion.Control py="xs" aria-label={`${t($ => $.certificate.evidenceTitle)}: ${t($ => $.certificate.findings[finding.code].title)}`}>
+              <Text size="sm">{t($ => $.certificate.evidenceTitle)}</Text>
+            </Accordion.Control>
+            <Accordion.Panel><Stack gap="xs">
+              <Code fz="xs" w="fit-content" style={{ overflowWrap: 'anywhere' }}>{finding.code}</Code>
+              {Object.entries(finding.evidence).map(([key, value]) => <Text key={key} size="xs" style={{ overflowWrap: 'anywhere' }}>
+                <Text span fw={600}>{t($ => $.certificate.evidence[key as keyof typeof $.certificate.evidence])}: </Text>
+                {typeof value === 'boolean' ? t($ => value ? $.certificate.yes : $.certificate.no)
+                  : value === null || value === '(none)' ? t($ => $.certificate.notProvided)
+                    : typeof value === 'string' && value in statusColor ? t($ => $.certificate.status[value as CertificateCheckStatus]) : String(value)}
+              </Text>)}
+            </Stack></Accordion.Panel>
+          </Accordion.Item>
+        </Accordion>
       </Stack>
     </Card>)}
     {!findings.length && <Text c="dimmed" size="sm">{t($ => $.certificate.noFindings)}</Text>}
@@ -44,7 +52,7 @@ export function CertificateDetails({ result }: { result: CertificateBundleResult
   const date = (value: string) => new Date(value).toLocaleString(locale);
   const absent = t($ => $.certificate.notProvided);
   return <Stack gap="md">
-    <Accordion variant="separated" multiple defaultValue={['0']}>
+    <Accordion variant="separated" multiple>
       {result.certificates.map(certificate => <Accordion.Item key={certificate.index} value={String(certificate.index)}>
         <Accordion.Control>
           <Group gap="xs" wrap="wrap">

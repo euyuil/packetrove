@@ -74,6 +74,32 @@ describe('certificate API and MCP share browser-local diagnostics', () => {
   });
 
   it.each([
+    { names: ['leaf', 'wrongIntermediate', 'rootA'], hostname: 'service.example.com', code: 'LEAF_ISSUER_CANDIDATES_REJECTED', severity: 'error', leafIndex: 0 },
+    { names: ['restrictedLeaf', 'noSigningIssuer', 'rootA'], hostname: 'service.example.com', code: 'LEAF_ISSUER_CANDIDATES_REJECTED', severity: 'error', leafIndex: 0 },
+    { names: ['rollover', 'rolloverRoot'], code: 'SELF_ISSUED_CERTIFICATE', severity: 'info' },
+    { names: ['mixedRollover', 'mixedRolloverRoot'], code: 'SELF_ISSUED_CERTIFICATE', severity: 'info' },
+    { names: ['keyIdMismatch', 'rolloverRoot'], code: 'ISSUER_KEY_ID_MISMATCH', severity: 'warning' },
+    { names: ['rootA'], hostname: 'service.example.com', code: 'NO_LEAF_CERTIFICATE', severity: 'warning' },
+    { names: ['leaf', 'leafTwo', 'intermediate'], hostname: 'service.example.com', code: 'LEAF_SELECTION_REQUIRED', severity: 'warning' },
+  ] as const)('returns the same contextual severity through API and MCP (%#)', async scenario => {
+    const request = { pem: scenario.names.map(name => certificateFixtures[name]).join('\n'),
+      ...('hostname' in scenario ? { hostname: scenario.hostname } : {}), ...('leafIndex' in scenario ? { leafIndex: scenario.leafIndex } : {}) };
+    const started = Date.now();
+    const response = await post(request);
+    expect(response.status).toBe(200);
+    const api = await verifyObservation(await response.json(), request, started);
+    expect(api.findings.find(finding => finding.code === scenario.code)?.severity).toBe(scenario.severity);
+    const client = await connect('current');
+    try {
+      const response = await client.callTool({ name: tool.mcp.name, arguments: request });
+      expect(response.isError).not.toBe(true);
+      const result = await verifyObservation(response.structuredContent, request, started);
+      expect(result.findings.find(finding => finding.code === scenario.code)?.severity).toBe(scenario.severity);
+      expect(response.content).toEqual([{ type: 'text', text: JSON.stringify(result) }, tool.mcp.resultLink]);
+    } finally { await client.close(); }
+  });
+
+  it.each([
     { pem: '' },
     { pem: certificateFixtures.leaf + '\n-----BEGIN PRIVATE KEY-----\nPRIVATE-PAYLOAD\n-----END PRIVATE KEY-----' },
     { pem: certificateFixtures.leaf + '\nINVALID-TAIL' },

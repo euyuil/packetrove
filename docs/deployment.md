@@ -488,6 +488,24 @@ configurations do not activate a paid subscription. See the
 [development and release policy](development-and-releases.md) for branch routing
 and candidate lifecycle rules.
 
+### Recover a non-production deployment
+
+If the branch head is unchanged, rerun the failed deployment job after resolving
+the reported error. Recovery retains that source revision and the environment's
+own automation credential. If the branch has advanced, start **Deploy development
+or staging** on `main` with the desired environment; it selects and validates the
+current deployment source again.
+
+Check the workflow summary and the GitHub environment's deployment record for
+the source SHA and successful live checks. A failed smoke check leaves the
+deployment unsuccessful even when the Workers were uploaded. Wait for a complete
+successful attempt before accepting staging for publication.
+
+During an active release, staging always selects its candidate branch. The
+optional `source_ref` must name that branch and cannot force staging to `main`
+or `develop`. Development deployments continue independently, and neither a
+development update nor a production update replaces the active candidate.
+
 ## Browser state and self-hosting
 
 The production website calls `https://api.packetrove.com/v1/public-ip` directly with

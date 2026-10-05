@@ -7,7 +7,23 @@ export const certificateCopy = {
     "scope": "Verifica formato, duplicati, validità, firme candidate, CA, keyCertSign e un nome DNS facoltativo. Non convalida percorsi RFC 5280 completi, fiducia del client, revoca o sicurezza del rilascio.",
     "inputs": "Certificati da controllare",
     "samplesLabel": "Esempi di certificati sintetici",
-    "loadSample": "Carica e controlla",
+    "loadSample": "Prova un esempio",
+    "samplesHelp": "Scegli un insieme di certificati sintetici pubblici per compilare i campi. Poi avvia il controllo con il relativo pulsante.",
+    "closeExamples": "Chiudi esempi",
+    "evidenceTitle": "Evidenze",
+    "file": {
+      "status": "Importazione del file",
+      "choose": "Scegli file PEM",
+      "help": "Incolla il testo PEM o trascina qui un file di certificati. I file vengono letti solo nel browser.",
+      "reading": "Lettura del file…",
+      "imported": "File importato. Controlla il contenuto, poi verifica il pacchetto.",
+      "errorTitle": "Impossibile importare il file",
+      "errors": {
+        "FILE_COUNT": "Scegli un file contenente il pacchetto di certificati.",
+        "FILE_ENCODING": "Usa un file di testo UTF-8 contenente certificati PEM.",
+        "FILE_READ_FAILED": "Impossibile leggere il file. Sceglilo di nuovo o incolla il contenuto."
+      }
+    },
     "pem": "Certificati PEM",
     "pemHelp": "Solo blocchi CERTIFICATE e spazi; massimo {{maximum}} certificati e {{kib}} KiB. Chiavi private rifiutate.",
     "bytes": "{{current}} / {{maximum}} byte",
@@ -20,7 +36,7 @@ export const certificateCopy = {
     "verifiedLinks": "Firme verificate",
     "findingCount": "Riscontri",
     "evaluation": "Ora di valutazione: {{time}} (orologio del dispositivo)",
-    "selectLeaf": "Certificato finale per il nome host",
+    "selectLeaf": "Certificato finale da esaminare",
     "selectPosition": "Seleziona la posizione originale",
     "hostnameTitle": "Nome host: {{hostname}}",
     "relationships": "Relazioni di emissione",
@@ -34,7 +50,7 @@ export const certificateCopy = {
     "pending": "Inserisci i certificati e avvia il controllo. Le modifiche cancellano il risultato precedente.",
     "details": "Dettagli · Ordine originale",
     "explanationTitle": "Comprendere i controlli",
-    "explanation": "I numeri indicano le posizioni originali; gli indici JSON partono da zero. I duplicati restano visibili. I nomi candidati sono confrontati prudentemente per codifica. Un emittente assente è informativo e un candidato non valido non annulla gli altri. Le bozze rimangono in memoria cambiando strumento o lingua; ricaricare le cancella.",
+    "explanation": "I numeri indicano le posizioni originali; gli indici JSON partono da zero. I duplicati restano visibili. I nomi degli emittenti vengono confrontati in modo conservativo in base alla codifica. L'assenza dell'emittente del certificato finale selezionato genera un avviso; altre assenze sono informative. Il fallimento di un candidato non invalida altri collegamenti. Le bozze restano in memoria cambiando strumento o lingua; il ricaricamento le elimina.",
     "dnsRules": "DNS SAN ignora maiuscole ASCII e punto finale del nome. Un carattere jolly completo nella prima etichetta corrisponde a una sola etichetta. URL, IP, porte, jolly inseriti e nomi Unicode sono rifiutati; converti i nomi internazionali in punycode. Common Name è solo visualizzato.",
     "examplesTitle": "Esempi sintetici",
     "exampleNote": "Certificati pubblici sintetici. Ora documentata: {{time}}. Il controllo usa l’orologio attuale dell’ambiente.",
@@ -51,7 +67,7 @@ export const certificateCopy = {
     "originalPosition": "Posizione originale",
     "position": "Certificato #{{number}}, inizio alla riga {{line}}",
     "serial": "Numero di serie",
-    "selfSignature": "Controllo dell’autofirma",
+    "selfSignature": "Verifica con la propria chiave pubblica",
     "json": "Risultato JSON strutturato",
     "inputLine": "Riga {{line}}: {{message}}",
     "status": {
@@ -84,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "Certificato duplicato"
     },
     "errors": {
-      "EMPTY_INPUT": "Incolla almeno un certificato PEM.",
+      "EMPTY_INPUT": "Inserisci o importa almeno un certificato PEM.",
       "INPUT_TOO_LARGE": "PEM supera il limite UTF-8 di 48 KiB.",
       "INVALID_PEM": "PEM non valido. Sono ammessi solo CERTIFICATE, Base64 completo e spazi tra blocchi.",
       "PRIVATE_KEY_REJECTED": "Chiave privata rifiutata. Rimuovila e inserisci solo certificati.",
@@ -97,6 +113,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "Richiesta non valida. Controlla PEM, nome host e posizione finale.",
       "INVALID_TIME": "Ora di valutazione dell’ambiente non valida."
     },
+    "graphScrollHelp": "Su schermi stretti, scorri il diagramma in orizzontale per leggere ogni certificato.",
     "evidence": {
       "fingerprintSha256": "Impronta SHA-256",
       "evaluatedAt": "Ora di valutazione",
@@ -113,7 +130,9 @@ export const certificateCopy = {
       "subjectKeyIdentifier": "Subject Key Identifier",
       "candidateCount": "Candidati",
       "expectedHostname": "Nome host atteso",
-      "dnsSubjectAlternativeNames": "DNS SAN"
+      "dnsSubjectAlternativeNames": "DNS SAN",
+      "failedSignatureCount": "Firme non riuscite",
+      "rejectedIssuerCount": "Rifiuti CA / Key Usage"
     },
     "findings": {
       "DUPLICATE_CERTIFICATE": {
@@ -122,19 +141,19 @@ export const certificateCopy = {
       },
       "CERTIFICATE_EXPIRED": {
         "title": "Certificato scaduto alla valutazione",
-        "action": "Rinnova o sostituisci il certificato e verifica quello realmente servito."
+        "action": "Se questo certificato è usato nella distribuzione prevista, rinnovalo o sostituiscilo. La sua scadenza non invalida tutti i percorsi alternativi; le regole temporali per le ancore di fiducia dipendono dal client."
       },
       "CERTIFICATE_NOT_YET_VALID": {
         "title": "Certificato non ancora valido",
-        "action": "Controlla l’orologio e la data di attivazione."
+        "action": "Controlla l'ora di valutazione e la data di attivazione di questo certificato. Altri percorsi possono restare validi; le regole temporali per le ancore di fiducia dipendono dal client."
       },
       "SELF_SIGNED_CERTIFICATE": {
         "title": "Firma verificata con la propria chiave pubblica",
         "action": "Controlla separatamente fiducia del client e rilascio reale; il riscontro non prova nessuno dei due."
       },
       "SELF_SIGNATURE_FAILED": {
-        "title": "Autofirma fallita nel certificato autoemesso",
-        "action": "Esamina queste due posizioni originali. Gli altri candidati sono verificati indipendentemente."
+        "title": "Verifica con la propria chiave pubblica non riuscita",
+        "action": "Verifica questo certificato e l'emittente previsto con un'altra implementazione. Nomi Subject e Issuer uguali non richiedono una firma autonoma."
       },
       "SIGNATURE_UNSUPPORTED": {
         "title": "Algoritmo di firma non supportato",
@@ -170,11 +189,11 @@ export const certificateCopy = {
       },
       "LEAF_SELECTION_REQUIRED": {
         "title": "Più certificati finali richiedono una scelta",
-        "action": "Fornisci o seleziona esplicitamente il certificato finale non CA prima del controllo del nome."
+        "action": "Seleziona il certificato finale non-CA previsto per esaminare gli emittenti candidati e il nome host facoltativo."
       },
       "NO_LEAF_CERTIFICATE": {
         "title": "Certificato finale non CA assente",
-        "action": "Fornisci o seleziona esplicitamente il certificato finale non CA prima del controllo del nome."
+        "action": "Fornisci un certificato finale non-CA se devi esaminarne la firma o il nome host."
       },
       "HOSTNAME_MATCH": {
         "title": "Nome corrispondente al DNS SAN selezionato",
@@ -183,8 +202,21 @@ export const certificateCopy = {
       "HOSTNAME_MISMATCH": {
         "title": "Nome non corrispondente a nessun DNS SAN selezionato",
         "action": "Controlla il nome o ottieni un certificato con il DNS SAN richiesto. Common Name non è un’alternativa."
+      },
+      "SELF_ISSUED_CERTIFICATE": {
+        "title": "Subject e Issuer coincidono; un altro certificato verifica la firma",
+        "action": "Esamina i collegamenti di emittente verificati. Può essere una normale rotazione della chiave CA; nomi uguali non richiedono una firma autonoma né dimostrano la fiducia del client."
+      },
+      "LEAF_ISSUER_NOT_IN_BUNDLE": {
+        "title": "L'emittente del certificato finale selezionato manca in questo input",
+        "action": "Fornisci l'emittente per verificare la firma del certificato finale selezionato. L'accettazione dipende anche dai certificati e dalle impostazioni di fiducia del client."
+      },
+      "LEAF_ISSUER_CANDIDATES_REJECTED": {
+        "title": "Tutti gli emittenti candidati forniti per il certificato finale selezionato sono rifiutati",
+        "action": "Sostituisci o correggi i certificati degli emittenti. Questo errore riguarda i candidati di questo input, non tutti i possibili percorsi di fiducia del client."
       }
-    }
+    },
+    "severityHelp": "Gli errori riguardano i certificati indicati o gli emittenti candidati forniti per il certificato finale selezionato. Gli avvisi richiedono attenzione o segnalano controlli incompleti; le informazioni descrivono osservazioni. I livelli non dimostrano la fiducia del client."
   },
   "homepage": {
     "description": "Controlla localmente firme PEM, emittenti candidati e identità DNS facoltativa.",

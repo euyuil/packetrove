@@ -3,7 +3,7 @@ import { createServer, type Server } from 'node:http';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PACKETROVE_IDENTITY, tools } from '../packages/contracts/src/index';
+import { CERTIFICATE_BUNDLE_DIAGNOSTIC_SAMPLES, PACKETROVE_IDENTITY, tools } from '../packages/contracts/src/index';
 import { checkCertificateBundle } from '../packages/core/src/certificate-bundle';
 import { websitePages, websiteRedirects } from '../apps/web/src/seo';
 import { waitForDeployment } from './deployment-readiness';
@@ -230,7 +230,9 @@ describe('readiness followed by the production smoke check across separate origi
         request.on('data', chunk => { body += chunk; });
         request.on('end', async () => {
           const value: unknown = JSON.parse(body);
-          const example = tool.examples.find(example => JSON.stringify(example.request) === JSON.stringify(value));
+          const examples = [...tool.examples, ...(tool.page === 'certificate'
+            ? CERTIFICATE_BUNDLE_DIAGNOSTIC_SAMPLES.map(sample => ({ ...sample, result: null })) : [])];
+          const example = examples.find(example => JSON.stringify(example.request) === JSON.stringify(value));
           if (example) send(response, 'application/json', JSON.stringify(tool.page === 'certificate' ? await checkCertificateBundle(example.request) : example.result));
           else send(response, 'application/json', JSON.stringify({ error: {
             code: tool.inputSchema.safeParse(value).success ? 'MIXED_ADDRESS_FAMILIES' : 'INVALID_INPUT',
