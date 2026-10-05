@@ -31,7 +31,11 @@ acceptance evidence are maintained in the
 Public-IP lookup uses the calling connection, including a hosted AI client's
 possible exit address. Do not present that result as a user's device IP without
 establishing where the client runs. Application storage contains no lookup or
-calculation history.
+calculation history. Optional user-authorized feedback is a separate private
+store, described in the [feedback story](009-agent-feedback.md). The localized
+policy discloses report retention, separate keyed IP markers for quotas,
+hourly cleanup, backup retention, and deletion by receipt through support email.
+Do not extend the in-memory product-processing claim to submitted reports.
 
 Application unexpected-error events include only the fixed event name
 `request_failure` and `error_code: INTERNAL_ERROR`. Logging must not replace a
@@ -56,6 +60,9 @@ rejections before the callback do not count. Local calculator inputs still
 reach shared-core validation and therefore count as errors when invalid.
 Cancellation after callback entry can also count as an error with
 `INTERNAL_ERROR` under the existing response contract.
+Optional support writes preserve known acceptance after commit and report
+uncertain delivery separately. Their logs use controlled feedback error codes
+without report bodies, receipts, or quota markers.
 
 Success describes the callback outcome before SDK output validation and
 response delivery. This is a count of recorded executions, not unique people,
@@ -106,6 +113,8 @@ Support instructions request reproducible synthetic examples, interface and clie
 details, expected and actual behavior, and controlled error codes; they warn
 against sending credentials, real public-IP results, or private network data.
 There is no contact form, automatic email send, or additional telemetry. Support
+may also use the optional private MCP channel when enabled and authorized.
+Reading support, policy, or MCP pages never sends a report. Support
 is provided as time permits, without a promised response time.
 
 The localized `/terms` page covers the hosted website, Web API, and remote MCP

@@ -169,6 +169,30 @@ project material. It does not deploy services, attach assets to product releases
 or upload, submit, or publish to OpenAI. Pull requests run the offline package
 checks through normal CI; they do not generate downloadable plugin artifacts.
 
+## Optional feedback and hosted-tool review
+
+The optional MCP support operation `submit-feedback` is disabled by default.
+Its schema, privacy boundary, consent instruction, write annotations, and
+non-idempotent delivery behavior are documented in the
+[feedback story](../user-stories/009-agent-feedback.md) and
+[MCP guide](mcp.md#optional-agent-feedback). It adds no product entry point.
+
+Before exposing this operation to a published OpenAI plugin, review the deployed
+tool definition through OpenAI's hosted-tool scan/review process; publishing a
+new ZIP alone does not approve a changed remote tool. The source package is
+still an unpublished draft, and this implementation does not claim directory
+approval. Preserve compatibility for existing calculations and lookups.
+
+In the intended client, verify that a user-supplied/approved report can be sent
+on request, newly composed content is shown for authorization, and unrelated
+conversations or ordinary errors produce no feedback call. Use only synthetic
+examples. Verify that sensitive raw context is not attached and that timeouts,
+cancellation, and uncertain delivery do not trigger an automatic resend.
+Server-side SDK tests cannot establish model consent behavior. Perform writing
+acceptance and private cleanup using the
+[deployment procedure](../deployment.md#optional-agent-feedback); keep private
+report/store/log evidence out of the public plugin artifact.
+
 ## Maintainer connection smoke checks
 
 For the public service, run the existing production smoke command:

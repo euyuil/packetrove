@@ -118,6 +118,13 @@
   tool in the same delivery. A tool is incomplete until all three interfaces
   share the same calculation or lookup implementation, contracts, examples,
   and error semantics. CLI coverage must describe its actual scope.
+- Classify optional support operations separately in the same catalog.
+  `operationCatalog` owns all operation identities; `tools` and `toolCatalog`
+  project product entries, while `mcpOperations` also includes support entries.
+  Support operations do not acquire browser pages, API endpoints, or CLI commands.
+  Keep optional agent feedback disabled by default and follow its
+  [deployment setup](docs/deployment.md#optional-agent-feedback). Private generated
+  configuration stays in ignored `.wrangler/`; builds and tests need no credentials.
 - Maintain `packages/contracts/src/tools.ts` as the single source of truth for
   tool identities, website paths, API methods and paths, MCP names and metadata,
   CLI availability, legacy website redirects, schemas, and example references.

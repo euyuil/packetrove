@@ -212,10 +212,15 @@ the permissions required by both Workers and their custom domains:
 | `Zone Read` | `packetrove.com` only | Zone / Read |
 
 The script permission is account-wide in this configuration. The token does not
-need permissions for KV, R2, Pages, databases, hosted builds, containers, or
+need permissions for KV, R2, Pages, databases in the default configuration, hosted builds, containers, or
 observability. Both Workers use custom domains in the same zone, rather than zone
 routes that require `Workers Routes Write`. The same secrets cover both deployments; an
 interactive `cf` or Wrangler login is not needed by GitHub Actions.
+
+Optional private feedback uses a separately provisioned D1 binding and independent
+environment configuration. Review D1 permissions only when enabling that feature;
+keep provisioning and migration output private. See the
+[feedback deployment procedure](deployment.md#optional-agent-feedback).
 
 Store both values directly in GitHub Secrets. Keeping the account identifier in
 a secret also masks it in workflow logs. The token is exposed only to the

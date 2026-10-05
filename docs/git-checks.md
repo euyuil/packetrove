@@ -34,6 +34,11 @@ Dependency installation runs only the reviewed scripts listed under
 selects a local adapter for the installed Vue version. This dependency policy
 does not change the Git-hook setup or scanning requirements below.
 
+Optional feedback adds no credential requirement for installation or checks.
+Its private generated Wrangler configuration belongs in ignored `.wrangler/`,
+not staged files or uploaded build artifacts. See
+[feedback setup](deployment.md#optional-agent-feedback) for deployment configuration.
+
 Setup writes `core.hooksPath = .githooks` to this repository's Git configuration.
 It does not change global Git settings or automatically replace existing custom
 hooks. Repeated installs are safe. Custom hooks or an unsuccessful automatic

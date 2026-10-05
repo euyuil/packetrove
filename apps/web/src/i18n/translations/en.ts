@@ -1,6 +1,8 @@
 import { certificateCopy } from '../certificate/en';
+import { feedbackCopy } from '../feedback/en';
 export const en = {
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: 'Development environment' },
@@ -65,7 +67,7 @@ export const en = {
   },
   privacy: {
     "title": "Privacy Policy",
-    "updated": "Last updated: October 4, 2026.",
+    "updated": "Last updated: October 5, 2026.",
     "introduction": "This policy covers the Packetrove website, Web API, CLI, and remote MCP service, including AI plugin use. Packetrove is maintained by Liu Yue. No account or API key is required.",
     "cloudflarePolicy": "Cloudflare Privacy Policy",
     "sections": {
@@ -76,6 +78,10 @@ export const en = {
         "local": {
             "title": "Local calculations and browser storage",
             "body": "Browser calculations and offline CLI calculations keep inputs and results on your device. Calculator drafts stay in page memory. The website stores only a handled-language-suggestion flag in sessionStorage for the current tab; it does not store addresses or results there. Copying a result puts it on your system clipboard."
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "Remote tool inputs and results",
@@ -390,7 +396,7 @@ export const en = {
     errorsTitle: "Read results and handle errors",
     results: "Read <code>structuredContent</code>, or the JSON in the text content block. Keep address counts as decimal strings or arbitrary-precision integers; converting large IPv6 counts to floating-point numbers loses precision.",
     resourceLinkLabel: "Optional tool page link in successful responses",
-    resultLinks: "Successful responses keep the result in <code>structuredContent</code> and the first JSON text block, then add an optional <code>resource_link</code> to the English tool page. Links contain no inputs or results and do not restore your calculation. Clients choose whether to display, ignore, or open links; automatic rendering or citation is not guaranteed. Opening the public-IP page checks a new browser connection, which may differ from the MCP caller connection. Errors contain no tool page link.",
+    resultLinks: "Successful calculation and lookup responses keep the result in <code>structuredContent</code> and the first JSON text block, then add an optional <code>resource_link</code> to the English tool page. Links contain no inputs or results and do not restore your calculation. Clients choose whether to display, ignore, or open links; automatic rendering or citation is not guaranteed. Opening the public-IP page checks a new browser connection, which may differ from the MCP caller connection. Errors contain no tool page link.",
     errors: "If <code>isError</code> is true, read the error JSON before retrying. Correct <code>INVALID_INPUT</code> and <code>MIXED_ADDRESS_FAMILIES</code> using the user’s information. <code>CLIENT_IP_UNAVAILABLE</code> means trusted connection metadata is missing; do not invent an address.",
     technicalGuide: "Read the technical MCP guide in the repository (English)"
   },

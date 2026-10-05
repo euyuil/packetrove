@@ -1,8 +1,10 @@
 import { certificateCopy } from '../certificate/zh-Hans';
+import { feedbackCopy } from '../feedback/zh-Hans';
 import type { TranslationResource } from '../translation-resource';
 
 export const zhHans = {
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: '开发环境' },
@@ -66,7 +68,7 @@ export const zhHans = {
   },
   privacy: {
     "title": "隐私政策",
-    "updated": "最后更新：2026 年 10 月 4 日。",
+    "updated": "最后更新：2026 年 10 月 5 日。",
     "introduction": "本政策涵盖 Packetrove 网站、Web API、CLI 和远程 MCP 服务，包括通过 AI 插件使用这些服务。Packetrove 由 Liu Yue 维护，无需账户或 API 密钥。",
     "cloudflarePolicy": "Cloudflare 隐私政策",
     "sections": {
@@ -77,6 +79,10 @@ export const zhHans = {
         "local": {
             "title": "本地计算与浏览器存储",
             "body": "浏览器计算和离线 CLI 计算的输入与结果保留在你的设备上，计算草稿仅保留在页面内存中。网站只在当前标签页的 sessionStorage 中保存一个已处理语言提示的标记，不在其中保存地址或结果。复制结果会将其放入系统剪贴板。"
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "远程工具的输入与结果",
@@ -391,7 +397,7 @@ export const zhHans = {
     errorsTitle: "读取结果与处理错误",
     results: "读取 <code>structuredContent</code>，或解析文本内容块中的 JSON。地址计数应保留为十进制字符串或任意精度整数；将很大的 IPv6 计数转换为浮点数会丢失精度。",
     resourceLinkLabel: "成功响应中的可选工具页面链接",
-    resultLinks: "成功响应会保留 <code>structuredContent</code> 和第一个 JSON 文本内容块中的结果，再附上一个指向英文工具页面的可选 <code>resource_link</code>。链接不含输入或结果，也不会恢复你的计算。是否显示、忽略或打开链接由客户端决定，不保证自动展示或引用。打开公网 IP 页面会检查浏览器的新连接，可能与 MCP 调用者的连接不同。错误响应不附工具页面链接。",
+    resultLinks: "计算和查询的成功响应会保留 <code>structuredContent</code> 和第一个 JSON 文本内容块中的结果，再附上一个指向英文工具页面的可选 <code>resource_link</code>。链接不含输入或结果，也不会恢复你的计算。是否显示、忽略或打开链接由客户端决定，不保证自动展示或引用。打开公网 IP 页面会检查浏览器的新连接，可能与 MCP 调用者的连接不同。错误响应不附工具页面链接。",
     errors: "<code>isError</code> 为 true 时，先读取错误 JSON，再决定是否重试。根据用户提供的信息修正 <code>INVALID_INPUT</code> 和 <code>MIXED_ADDRESS_FAMILIES</code>。<code>CLIENT_IP_UNAVAILABLE</code> 表示缺少可信的连接信息，请勿推测地址。",
     technicalGuide: "阅读仓库中的 MCP 技术指南（英文）"
   },

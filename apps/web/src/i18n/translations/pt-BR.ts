@@ -1,4 +1,5 @@
 import { certificateCopy } from '../certificate/pt-BR';
+import { feedbackCopy } from '../feedback/pt-BR';
 import type { TranslationResource } from '../translation-resource';
 
 export const ptBR = {
@@ -7,6 +8,7 @@ export const ptBR = {
     switch: 'Mudar para português', dismiss: 'Agora não',
   },
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: 'Ambiente de desenvolvimento' },
@@ -67,7 +69,7 @@ export const ptBR = {
   },
   privacy: {
     "title": "Política de privacidade",
-    "updated": "Última atualização: 4 de outubro de 2026.",
+    "updated": "Última atualização: 5 de outubro de 2026.",
     "introduction": "Esta política abrange o site, a Web API, a CLI e o serviço MCP remoto do Packetrove, incluindo o uso por plugins de IA. O Packetrove é mantido por Liu Yue. Não é necessário ter conta nem chave de API.",
     "cloudflarePolicy": "Política de privacidade da Cloudflare",
     "sections": {
@@ -78,6 +80,10 @@ export const ptBR = {
         "local": {
             "title": "Cálculos locais e armazenamento do navegador",
             "body": "Os cálculos no navegador e os cálculos offline da CLI mantêm entradas e resultados no seu dispositivo. Os rascunhos ficam na memória da página. O site guarda no sessionStorage apenas um indicador de sugestão de idioma já tratada na aba atual, sem endereços ou resultados. Copiar um resultado o coloca na área de transferência do sistema."
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "Entradas e resultados de ferramentas remotas",
@@ -393,7 +399,7 @@ export const ptBR = {
     errorsTitle: "Ler resultados e tratar erros",
     results: "Leia <code>structuredContent</code> ou o JSON do bloco de texto. Mantenha as contagens como strings decimais ou inteiros de precisão arbitrária; converter grandes contagens IPv6 em números de ponto flutuante perde precisão.",
     resourceLinkLabel: "Link opcional da ferramenta nas respostas bem-sucedidas",
-    resultLinks: "As respostas bem-sucedidas mantêm o resultado em <code>structuredContent</code> e no primeiro bloco de texto JSON, e acrescentam um <code>resource_link</code> opcional para a página da ferramenta em inglês. Os links não contêm entradas nem resultados e não restauram o cálculo. Cada cliente decide se exibe, ignora ou abre os links; a exibição ou citação automática não é garantida. Abrir a página de IP público verifica uma nova conexão do navegador, que pode ser diferente da conexão do cliente MCP. Os erros não incluem links da ferramenta.",
+    resultLinks: "As respostas bem-sucedidas de cálculos e consultas mantêm o resultado em <code>structuredContent</code> e no primeiro bloco de texto JSON, e acrescentam um <code>resource_link</code> opcional para a página da ferramenta em inglês. Os links não contêm entradas nem resultados e não restauram o cálculo. Cada cliente decide se exibe, ignora ou abre os links; a exibição ou citação automática não é garantida. Abrir a página de IP público verifica uma nova conexão do navegador, que pode ser diferente da conexão do cliente MCP. Os erros não incluem links da ferramenta.",
     errors: "Se <code>isError</code> for true, leia o JSON do erro antes de tentar novamente. Corrija <code>INVALID_INPUT</code> e <code>MIXED_ADDRESS_FAMILIES</code> com as informações do usuário. <code>CLIENT_IP_UNAVAILABLE</code> indica que faltam metadados confiáveis da conexão; não invente um endereço.",
     technicalGuide: "Ler o guia técnico MCP do repositório (em inglês)"
   },

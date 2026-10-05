@@ -8,7 +8,8 @@
     "assets:build": "tsx ../../scripts/api-assets.ts",
     "dev": "pnpm assets:build && wrangler dev --local",
     "build": "pnpm assets:build && wrangler deploy --dry-run --outdir dist/api && wrangler deploy --config wrangler.website.jsonc --dry-run --outdir dist/website",
-    "deploy": "pnpm assets:build && wrangler deploy",
+    "deploy": "pnpm assets:build && tsx scripts/feedback-config.ts deploy",
+    "feedback:config": "tsx scripts/feedback-config.ts config",
     "deploy:website": "wrangler deploy --config wrangler.website.jsonc",
     "smoke": "tsx scripts/smoke.ts",
     "typecheck": "tsc --noEmit"

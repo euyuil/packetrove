@@ -1,4 +1,5 @@
 import { certificateCopy } from '../certificate/fr';
+import { feedbackCopy } from '../feedback/fr';
 import type { TranslationResource } from '../translation-resource';
 
 export const fr = {
@@ -7,6 +8,7 @@ export const fr = {
     switch: 'Passer au français', dismiss: 'Pas maintenant',
   },
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: 'Environnement de développement' },
@@ -67,7 +69,7 @@ export const fr = {
   },
   privacy: {
     "title": "Politique de confidentialité",
-    "updated": "Dernière mise à jour : 4 octobre 2026.",
+    "updated": "Dernière mise à jour : 5 octobre 2026.",
     "introduction": "Cette politique couvre le site web, la Web API, la CLI et le service MCP distant de Packetrove, y compris leur utilisation via des plugins d’IA. Packetrove est maintenu par Liu Yue. Aucun compte ni clé d’API n’est nécessaire.",
     "cloudflarePolicy": "Politique de confidentialité de Cloudflare",
     "sections": {
@@ -78,6 +80,10 @@ export const fr = {
         "local": {
             "title": "Calculs locaux et stockage du navigateur",
             "body": "Les calculs du navigateur et les calculs hors ligne de la CLI conservent les entrées et résultats sur votre appareil. Les brouillons restent dans la mémoire de la page. Le site stocke uniquement dans sessionStorage un indicateur de suggestion de langue déjà traitée pour l’onglet courant, sans adresses ni résultats. Copier un résultat le place dans le presse-papiers du système."
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "Entrées et résultats des outils distants",
@@ -393,7 +399,7 @@ export const fr = {
     errorsTitle: "Lire les résultats et traiter les erreurs",
     results: "Lisez <code>structuredContent</code> ou le JSON du bloc de texte. Conservez les nombres d’adresses sous forme de chaînes décimales ou d’entiers de précision arbitraire ; convertir de grands comptes IPv6 en nombres à virgule flottante perd de la précision.",
     resourceLinkLabel: "Lien facultatif vers l’outil dans les réponses réussies",
-    resultLinks: "Les réponses réussies conservent le résultat dans <code>structuredContent</code> et dans le premier bloc de texte JSON, puis ajoutent un <code>resource_link</code> facultatif vers la page anglaise de l’outil. Les liens ne contiennent ni entrées ni résultats et ne restaurent pas le calcul. Chaque client décide d’afficher, d’ignorer ou d’ouvrir les liens ; leur affichage ou citation automatique n’est pas garanti. Ouvrir la page d’IP publique vérifie une nouvelle connexion du navigateur, qui peut différer de celle du client MCP. Les erreurs ne comportent pas de lien vers l’outil.",
+    resultLinks: "Les réponses réussies des calculs et recherches conservent le résultat dans <code>structuredContent</code> et dans le premier bloc de texte JSON, puis ajoutent un <code>resource_link</code> facultatif vers la page anglaise de l’outil. Les liens ne contiennent ni entrées ni résultats et ne restaurent pas le calcul. Chaque client décide d’afficher, d’ignorer ou d’ouvrir les liens ; leur affichage ou citation automatique n’est pas garanti. Ouvrir la page d’IP publique vérifie une nouvelle connexion du navigateur, qui peut différer de celle du client MCP. Les erreurs ne comportent pas de lien vers l’outil.",
     errors: "Si <code>isError</code> vaut true, lisez le JSON d’erreur avant de réessayer. Corrigez <code>INVALID_INPUT</code> et <code>MIXED_ADDRESS_FAMILIES</code> à partir des informations de l’utilisateur. <code>CLIENT_IP_UNAVAILABLE</code> indique l’absence de métadonnées de connexion fiables ; n’inventez pas d’adresse.",
     technicalGuide: "Lire le guide technique MCP du dépôt (en anglais)"
   },

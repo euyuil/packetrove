@@ -227,7 +227,7 @@ export const certificateCopy = {
     "title": "Certificate Bundle Checker — Packetrove",
     "description": "Inspect PEM certificates locally. Verify candidate signatures, validity, issuer constraints, and DNS SAN identity with actionable findings; no uploads or full trust validation."
   },
-  "remotePrivacy": "API and remote MCP calls send supplied IP addresses, CIDRs, range endpoints, or PEM certificates and optional hostnames to Packetrove. We process them in memory without a database or retained result history. Certificate payloads and sensitive certificate details are excluded from application logs and error telemetry. Do not submit private keys or other secrets. The calling client receives results and may retain them under its own policies.",
+  "remotePrivacy": "API and remote MCP calls send supplied IP addresses, CIDRs, range endpoints, or PEM certificates and optional hostnames to Packetrove. We process these calculation and lookup inputs in memory without a database or retained result history. Certificate payloads and sensitive certificate details are excluded from application logs and error telemetry. Do not submit private keys or other secrets. The calling client receives results and may retain them under its own policies.",
   "discovery": {
     "title": "Questions about certificate bundles",
     "mcpTitle": "Check certificate bundles through MCP",

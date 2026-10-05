@@ -1,4 +1,5 @@
 import { certificateCopy } from '../certificate/es';
+import { feedbackCopy } from '../feedback/es';
 import type { TranslationResource } from '../translation-resource';
 
 export const es = {
@@ -7,6 +8,7 @@ export const es = {
     switch: 'Cambiar a español', dismiss: 'Ahora no',
   },
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: 'Entorno de desarrollo' },
@@ -67,7 +69,7 @@ export const es = {
   },
   privacy: {
     "title": "Política de privacidad",
-    "updated": "Última actualización: 4 de octubre de 2026.",
+    "updated": "Última actualización: 5 de octubre de 2026.",
     "introduction": "Esta política cubre el sitio web, la Web API, la CLI y el servicio MCP remoto de Packetrove, incluido su uso mediante plugins de IA. Liu Yue mantiene Packetrove. No se necesita una cuenta ni una clave de API.",
     "cloudflarePolicy": "Política de privacidad de Cloudflare",
     "sections": {
@@ -78,6 +80,10 @@ export const es = {
         "local": {
             "title": "Cálculos locales y almacenamiento del navegador",
             "body": "Los cálculos del navegador y de la CLI sin conexión mantienen las entradas y los resultados en tu dispositivo. Los borradores permanecen en la memoria de la página. El sitio solo guarda en sessionStorage una marca que indica que se ha atendido la sugerencia de idioma en la pestaña actual; no guarda direcciones ni resultados allí. Copiar un resultado lo coloca en el portapapeles del sistema."
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "Entradas y resultados de herramientas remotas",
@@ -409,7 +415,7 @@ export const es = {
     errorsTitle: "Leer resultados y gestionar errores",
     results: "Lee <code>structuredContent</code> o el JSON del bloque de texto. Conserva los recuentos como cadenas decimales o enteros de precisión arbitraria; convertir grandes recuentos IPv6 a números de coma flotante pierde precisión.",
     resourceLinkLabel: "Enlace opcional a la herramienta en respuestas correctas",
-    resultLinks: "Las respuestas correctas conservan el resultado en <code>structuredContent</code> y en el primer bloque de texto JSON, y añaden un <code>resource_link</code> opcional a la página de la herramienta en inglés. Los enlaces no contienen entradas ni resultados y no restauran el cálculo. Cada cliente decide si muestra, ignora o abre los enlaces; no se garantiza su presentación o cita automática. Abrir la página de IP pública comprueba una nueva conexión del navegador, que puede diferir de la conexión del cliente MCP. Los errores no incluyen enlaces a la herramienta.",
+    resultLinks: "Las respuestas correctas de cálculos y consultas conservan el resultado en <code>structuredContent</code> y en el primer bloque de texto JSON, y añaden un <code>resource_link</code> opcional a la página de la herramienta en inglés. Los enlaces no contienen entradas ni resultados y no restauran el cálculo. Cada cliente decide si muestra, ignora o abre los enlaces; no se garantiza su presentación o cita automática. Abrir la página de IP pública comprueba una nueva conexión del navegador, que puede diferir de la conexión del cliente MCP. Los errores no incluyen enlaces a la herramienta.",
     errors: "Si <code>isError</code> es true, lee el error JSON antes de reintentar. Corrige <code>INVALID_INPUT</code> y <code>MIXED_ADDRESS_FAMILIES</code> con la información del usuario. <code>CLIENT_IP_UNAVAILABLE</code> indica que faltan metadatos fiables de conexión; no inventes una dirección.",
     technicalGuide: "Leer la guía técnica MCP del repositorio (inglés)"
   },

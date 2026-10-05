@@ -1,8 +1,10 @@
 import { certificateCopy } from '../certificate/de';
+import { feedbackCopy } from '../feedback/de';
 import type { TranslationResource } from '../translation-resource';
 
 export const de = {
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: 'Entwicklungsumgebung' },
@@ -67,7 +69,7 @@ export const de = {
   },
   privacy: {
     "title": "Datenschutzerklärung",
-    "updated": "Zuletzt aktualisiert: 4. Oktober 2026.",
+    "updated": "Zuletzt aktualisiert: 5. Oktober 2026.",
     "introduction": "Diese Erklärung gilt für die Website, Web API, CLI und den entfernten MCP-Dienst von Packetrove, einschließlich der Nutzung über KI-Plugins. Packetrove wird von Liu Yue betreut. Ein Konto oder API-Schlüssel ist nicht erforderlich.",
     "cloudflarePolicy": "Datenschutzerklärung von Cloudflare",
     "sections": {
@@ -78,6 +80,10 @@ export const de = {
         "local": {
             "title": "Lokale Berechnungen und Browserspeicher",
             "body": "Browserberechnungen und Offline-Berechnungen mit der CLI behalten Eingaben und Ergebnisse auf deinem Gerät. Berechnungsentwürfe bleiben im Seitenspeicher. Die Website speichert in sessionStorage nur eine Markierung für einen bereits behandelten Sprachvorschlag im aktuellen Tab, keine Adressen oder Ergebnisse. Beim Kopieren wird das Ergebnis in der Systemzwischenablage abgelegt."
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "Eingaben und Ergebnisse entfernter Werkzeuge",
@@ -408,7 +414,7 @@ export const de = {
     errorsTitle: "Ergebnisse lesen und Fehler behandeln",
     results: "Lesen Sie <code>structuredContent</code> oder das JSON im Textblock. Behalten Sie Adressanzahlen als Dezimalzeichenfolgen oder Ganzzahlen beliebiger Genauigkeit; große IPv6-Anzahlen verlieren bei der Umwandlung in Gleitkommazahlen Genauigkeit.",
     resourceLinkLabel: "Optionaler Werkzeugseiten-Link in erfolgreichen Antworten",
-    resultLinks: "Erfolgreiche Antworten behalten das Ergebnis in <code>structuredContent</code> und im ersten JSON-Textblock und ergänzen einen optionalen <code>resource_link</code> zur englischen Werkzeugseite. Links enthalten keine Eingaben oder Ergebnisse und stellen die Berechnung nicht wieder her. Clients entscheiden, ob sie Links anzeigen, ignorieren oder öffnen; automatische Darstellung oder Quellenangaben sind nicht garantiert. Die Public-IP-Seite prüft eine neue Browserverbindung, die von der MCP-Clientverbindung abweichen kann. Fehler enthalten keinen Werkzeugseiten-Link.",
+    resultLinks: "Erfolgreiche Berechnungs- und Abfrageantworten behalten das Ergebnis in <code>structuredContent</code> und im ersten JSON-Textblock und ergänzen einen optionalen <code>resource_link</code> zur englischen Werkzeugseite. Links enthalten keine Eingaben oder Ergebnisse und stellen die Berechnung nicht wieder her. Clients entscheiden, ob sie Links anzeigen, ignorieren oder öffnen; automatische Darstellung oder Quellenangaben sind nicht garantiert. Die Public-IP-Seite prüft eine neue Browserverbindung, die von der MCP-Clientverbindung abweichen kann. Fehler enthalten keinen Werkzeugseiten-Link.",
     errors: "Wenn <code>isError</code> true ist, lesen Sie vor einem erneuten Versuch das Fehler-JSON. Korrigieren Sie <code>INVALID_INPUT</code> und <code>MIXED_ADDRESS_FAMILIES</code> anhand der Angaben des Nutzers. <code>CLIENT_IP_UNAVAILABLE</code> bedeutet, dass vertrauenswürdige Verbindungsmetadaten fehlen; erfinden Sie keine Adresse.",
     technicalGuide: "Die technische MCP-Anleitung im Repository lesen (Englisch)"
   },

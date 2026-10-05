@@ -227,7 +227,7 @@ export const certificateCopy = {
     "title": "证书包检查 — Packetrove",
     "description": "本地检查 PEM 证书的候选签名、有效期、签发约束和 DNS SAN，并查看可执行的建议。不上传，不进行完整信任验证。"
   },
-  "remotePrivacy": "API 和远程 MCP 调用会将 IP 地址、CIDR、范围端点或 PEM 证书及可选主机名发送给 Packetrove。我们在内存中处理，不使用数据库，也不保留结果历史。应用日志和错误遥测不包含证书负载及敏感证书详情。请勿提交私钥或其他秘密。调用客户端收到结果后，可能按其自身政策保留。",
+  "remotePrivacy": "API 和远程 MCP 调用会将 IP 地址、CIDR、范围端点或 PEM 证书及可选主机名发送给 Packetrove。这些计算和查询输入在内存中处理，不使用数据库，也不保留结果历史。应用日志和错误遥测不包含证书负载及敏感证书详情。请勿提交私钥或其他秘密。调用客户端收到结果后，可能按其自身政策保留。",
   "discovery": {
     "title": "证书包常见问题",
     "mcpTitle": "通过 MCP 检查证书包",

@@ -9,9 +9,10 @@ import { executeTool, type ToolExecutor } from './tools';
 import { createToolExecutionContext, ToolExecutionCancelledError } from './tool-context';
 import { logUnexpectedRequestFailure } from './operational-logs';
 import type { AutomationBindings } from './automation-source';
+import { createFeedbackExecutor, type FeedbackBindings } from './feedback';
 
 export function createApp(executor: ToolExecutor = executeTool) {
-  const app = new Hono<{ Bindings: Cloudflare.Env & AutomationBindings }>();
+  const app = new Hono<{ Bindings: Cloudflare.Env & AutomationBindings & FeedbackBindings }>();
   app.use('*', async (context, next) => {
     await next();
     const policy = getNonProductionCrawlerPolicy(context.env?.PUBLIC_API_ORIGIN);
@@ -67,7 +68,8 @@ export function createApp(executor: ToolExecutor = executeTool) {
   });
   app.all('/mcp', async context => {
     const mcpHandler = createPacketroveMcpHandler(executor, context.env?.PACKETROVE_AUTOMATION_TOKEN,
-      context.env?.PUBLIC_API_ORIGIN, context.env?.PUBLIC_WEBSITE_ORIGIN);
+      context.env?.PUBLIC_API_ORIGIN, context.env?.PUBLIC_WEBSITE_ORIGIN,
+      context.env?.PACKETROVE_FEEDBACK_ENABLED === 'true' ? createFeedbackExecutor(context.env) : undefined);
     if (context.req.method === 'POST') {
       const parsedBody = await readJsonBody(context.req.raw);
       return mcpHandler.fetch(context.req.raw, { parsedBody });
