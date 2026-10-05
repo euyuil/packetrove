@@ -1,10 +1,16 @@
 import { afterEach, expect, it, vi } from 'vitest';
 import * as metadata from './i18n/page-metadata';
-import { renderPageMetadata, renderSitemap, websitePages, websiteRedirects } from './seo';
+import { renderPageMetadata, renderRobotsText, renderSitemap, websitePages, websiteRedirects } from './seo';
 import { tools } from '@packetrove/contracts';
 import { supportedLocales } from './i18n/locales';
 
 afterEach(() => { vi.restoreAllMocks(); });
+
+it('retains production crawling and the sitemap reference', () => {
+  expect(renderRobotsText('https://packetrove.com'))
+    .toBe('User-agent: *\nAllow: /\n\nSitemap: https://packetrove.com/sitemap.xml\n');
+  expect(renderSitemap('https://packetrove.com')).toContain('<loc>https://packetrove.com/</loc>');
+});
 
 it('preserves translated punctuation as text without letting it create HTML elements or attributes', () => {
   const text = `CIDR & "IP" 中文 '</title><script>example</script>`;

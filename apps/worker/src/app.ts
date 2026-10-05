@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { accepts } from 'hono/accepts';
 import { cors } from 'hono/cors';
-import { tools, type ErrorResponse } from '@packetrove/contracts';
+import { getNonProductionCrawlerPolicy, tools, type ErrorResponse } from '@packetrove/contracts';
 import { ToolError } from '@packetrove/core';
 import { readJsonBody } from './body';
 import { createPacketroveMcpHandler } from './mcp';
@@ -12,6 +12,11 @@ import type { AutomationBindings } from './automation-source';
 
 export function createApp(executor: ToolExecutor = executeTool) {
   const app = new Hono<{ Bindings: Cloudflare.Env & AutomationBindings }>();
+  app.use('*', async (context, next) => {
+    await next();
+    const policy = getNonProductionCrawlerPolicy(context.env?.PUBLIC_API_ORIGIN);
+    if (policy) context.header('X-Robots-Tag', policy.robotsTag);
+  });
   for (const path of ['/v1/*', '/health', '/openapi.json']) {
     app.use(path, cors({ origin: '*', allowMethods: ['GET', 'POST', 'OPTIONS'] }));
   }
@@ -50,6 +55,10 @@ export function createApp(executor: ToolExecutor = executeTool) {
     });
   }
   app.get('/health', context => context.json({ status: 'ok' }));
+  app.get('/robots.txt', context => {
+    const policy = getNonProductionCrawlerPolicy(context.env?.PUBLIC_API_ORIGIN);
+    return policy ? context.text(policy.robotsText) : context.notFound();
+  });
   // Asset-first routing serves normal requests without invoking this handler.
   app.get('/openapi.json', context => context.env.OPENAPI_ASSETS.fetch(context.req.raw));
   app.use('/mcp', async (context, next) => {
