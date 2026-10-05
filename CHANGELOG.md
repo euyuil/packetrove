@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.6.0](https://github.com/euyuil/packetrove/compare/0.5.0...0.6.0) (2026-10-05)
+
+
+### Features
+
+* **web:** identify non-production environments ([#165](https://github.com/euyuil/packetrove/issues/165)) ([ea34857](https://github.com/euyuil/packetrove/commit/ea348570dbd3b9b37ede2846d138badbfa478a38))
+* **web:** import PEM certificate files locally ([#159](https://github.com/euyuil/packetrove/issues/159)) ([1317db6](https://github.com/euyuil/packetrove/commit/1317db6155ba8942435b7328cd5968ff1dd45345))
+
+
+### Bug Fixes
+
+* **certificate:** refine finding severity ([#161](https://github.com/euyuil/packetrove/issues/161)) ([469e715](https://github.com/euyuil/packetrove/commit/469e71515eca6ddcefa799871e9eba36735b6d2d))
+* **ci:** avoid crawler policy synchronization conflict ([#164](https://github.com/euyuil/packetrove/issues/164)) ([94316a4](https://github.com/euyuil/packetrove/commit/94316a43b01f5bf8c039b975143aeee97daa08b0))
+* discourage crawling non-production environments ([#162](https://github.com/euyuil/packetrove/issues/162)) ([4b59783](https://github.com/euyuil/packetrove/commit/4b59783f69236318aa62c2a6c9d61d96d3e0150c))
+* **web:** redesign certificate checker workflow and report ([#157](https://github.com/euyuil/packetrove/issues/157)) ([fbcd7f2](https://github.com/euyuil/packetrove/commit/fbcd7f281cdd01397796b5b1b0d8110e6d9511ce))
+* **web:** unify localized page title branding ([#158](https://github.com/euyuil/packetrove/issues/158)) ([2c17e1e](https://github.com/euyuil/packetrove/commit/2c17e1e7cad0428a3a0349f0a4387d924da9b423))
+
 ## [0.5.0](https://github.com/euyuil/packetrove/compare/0.4.0...0.5.0) (2026-10-04)
 
 
