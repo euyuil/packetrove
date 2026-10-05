@@ -8,7 +8,7 @@ import { CallToolResultSchema as LegacyCallToolResultSchema } from '@modelcontex
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   getServiceIdentity, getToolResultLink, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
-  CertificateBundleResultSchema,
+  CertificateBundleResultSchema, CERTIFICATE_BUNDLE_DIAGNOSTIC_SAMPLES,
 } from '@packetrove/contracts';
 import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { getPageMetadata } from '../../web/src/i18n/page-metadata';
@@ -77,6 +77,12 @@ async function expectedExample(tool: (typeof catalogTools)[number], example: { r
   const observation = CertificateBundleResultSchema.parse(result);
   assert(Math.abs(Date.now() - Date.parse(observation.evaluatedAt)) < 60_000, 'Certificate evaluation must use the current runtime clock.');
   return checkCertificateBundle(example.request, new Date(observation.evaluatedAt));
+}
+
+function calculationExamples(tool: (typeof catalogTools)[number]) {
+  return tool.page === 'certificate'
+    ? [...tool.examples, ...CERTIFICATE_BUNDLE_DIAGNOSTIC_SAMPLES.map(sample => ({ ...sample, result: null }))]
+    : tool.examples;
 }
 
 const website = await timedFetch(`${origin}/`);
@@ -322,7 +328,7 @@ assert.equal(invalid.status, 400);
 assert.equal((await invalid.json() as { error: { code: string } }).error.code, 'MIXED_ADDRESS_FAMILIES');
 const invalidCalculationErrors = new Map<string, unknown>();
 for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
-  for (const example of tool.examples) {
+  for (const example of calculationExamples(tool)) {
     const response = await timedFetch(`${apiOrigin}${tool.api.path}`, {
       method: tool.api.method.toUpperCase(), headers: { 'content-type': 'application/json' },
       body: JSON.stringify(example.request),
@@ -359,7 +365,7 @@ try {
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
   for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
-    for (const example of tool.examples) {
+    for (const example of calculationExamples(tool)) {
       const response = await client.callTool({ name: tool.mcp.name, arguments: example.request });
       assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
       assert.deepEqual(response.structuredContent, await expectedExample(tool, example, response.structuredContent));
@@ -393,7 +399,7 @@ try {
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);
   for (const tool of catalogTools.filter(tool => tool.execution === 'local')) {
-    for (const example of tool.examples) {
+    for (const example of calculationExamples(tool)) {
       const response = await legacyClient.callTool({ name: tool.mcp.name, arguments: example.request });
       assert.notEqual(response.isError, true, `MCP calculation failed: ${tool.id}`);
       assert.deepEqual(response.structuredContent, await expectedExample(tool, example, response.structuredContent));

@@ -246,10 +246,51 @@ describe('the integrated certificate checker', () => {
     enter([certificateFixtures.leaf, certificateFixtures.leafTwo, certificateFixtures.intermediate].join('\n'), 'service.example.com');
     await completed();
     expect(screen.getByText('Select the intended leaf before checking this hostname.')).toBeDefined();
-    fireEvent.click(screen.getByRole('combobox', { name: 'Leaf for hostname checking' }));
+    fireEvent.click(screen.getByRole('combobox', { name: 'Leaf to inspect' }));
     fireEvent.click(screen.getByRole('option', { name: /#1 CN=service.example.com/ }));
     await waitFor(() => expect(screen.getByText(/DNS SAN matches/)).toBeDefined());
     expect(screen.getByRole('table').textContent).toContain('#2 → #3');
+  });
+
+  it('warns that the selected leaf signature cannot be verified when its issuer is absent', async () => {
+    render(<App />);
+    enter(CERTIFICATE_BUNDLE_SAMPLES.find(sample => sample.name === 'missingIntermediate')!.request.pem, 'service.example.com');
+    await completed();
+    const report = within(screen.getByRole('region', { name: 'Check results' }));
+    expect(report.getByText('Selected leaf issuer is absent from this input')).toBeDefined();
+    expect(report.getByText('Warning')).toBeDefined();
+    expect(report.queryByText('Error')).toBeNull();
+    expect(report.getByText(/Levels do not establish client trust/)).toBeDefined();
+    expect(report.getByText(/DNS SAN matches/)).toBeDefined();
+  });
+
+  it('shows a scoped selected-leaf error and evidence while retaining the candidate warning', async () => {
+    render(<App />);
+    enter([certificateFixtures.leaf, certificateFixtures.wrongIntermediate, certificateFixtures.rootA].join('\n'), 'service.example.com');
+    await completed();
+    const report = within(screen.getByRole('region', { name: 'Check results' }));
+    expect(report.getByText('All supplied issuer candidates for the selected leaf are rejected')).toBeDefined();
+    expect(report.getByText('Error')).toBeDefined();
+    expect(report.getByText('Candidate issuer signature failed')).toBeDefined();
+    expect(report.getAllByText('Warning')).toHaveLength(2);
+    expect(report.getByText(/not every possible client trust path/)).toBeDefined();
+    fireEvent.click(report.getByRole('button', { name: 'Evidence: All supplied issuer candidates for the selected leaf are rejected' }));
+    expect(report.getByText('Failed signatures:')).toBeDefined();
+    expect(report.getByText('CA / Key Usage rejections:')).toBeDefined();
+  });
+
+  it('explains a verified key-rollover issuer separately from the raw own-key test', async () => {
+    render(<App />);
+    enter([certificateFixtures.rollover, certificateFixtures.rolloverRoot].join('\n'));
+    await completed();
+    const report = within(screen.getByRole('region', { name: 'Check results' }));
+    expect(report.getByText('Subject and Issuer match; another certificate verifies the signature')).toBeDefined();
+    expect(report.queryByText('Verification with own public key failed')).toBeNull();
+    const details = within(screen.getByRole('region', { name: 'Certificate details · Original order' }));
+    fireEvent.click(details.getByRole('button', { name: /#1 CA certificate/ }));
+    const certificate = within(await details.findByRole('region', { name: /#1 CA certificate/ }));
+    expect(certificate.getByText('Verification with own public key')).toBeDefined();
+    expect(certificate.getByText('Failed')).toBeDefined();
   });
 
   it('keeps input and completed results across tool and language navigation, then starts blank in a new app', async () => {

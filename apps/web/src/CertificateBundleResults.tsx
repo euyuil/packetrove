@@ -15,6 +15,7 @@ export function CertificateFindings({ result }: { result: CertificateBundleResul
   const severityOrder = ['error', 'warning', 'info'];
   const findings = [...result.findings].sort((a, b) => severityOrder.indexOf(a.severity) - severityOrder.indexOf(b.severity));
   return <Stack gap="sm">
+    <Text size="sm" c="dimmed" maw="75ch">{t($ => $.certificate.severityHelp)}</Text>
     {findings.map((finding, index) => <Card key={`${finding.code}-${index}`} withBorder padding="md">
       <Stack gap="xs">
         <Group gap="xs">

@@ -132,9 +132,14 @@ and interrupted checks remain incomplete rather than being labelled failures.
 Identical fingerprints identify duplicates while preserving every original
 position. Duplicate copies do not introduce artificial issuer or leaf choices.
 Cross-signed alternatives and multiple eligible issuers remain visible without
-an arbitrary path selection. Self-issued names and verified self-signatures are
-separate observations. An absent issuer is informational: roots are normally
-omitted, and the supplied bundle alone does not establish what clients possess.
+an arbitrary path selection. Equal Subject and Issuer names do not require a
+self-signature. When another supplied certificate passes signature and local
+issuer checks, a failed or incomplete own-key test produces
+`SELF_ISSUED_CERTIFICATE` information. This includes CA key rollover with the
+same or a different public-key algorithm. The raw `selfSignature` result still
+records the own-key test. When there is no such verified issuer,
+`SELF_SIGNATURE_FAILED` remains a warning;
+unsupported and unavailable own-key tests retain their separate warning codes.
 
 Validity uses the runtime clock, with inclusive `notBefore` / `notAfter`
 boundaries, independently of signature checks. Each finding has a stable
@@ -143,12 +148,53 @@ structured `evidence`, and a bounded `nextAction`. The website localizes titles
 and next steps from the same finding codes and displays their evidence. It does
 not present a single global safe/trusted status.
 
+The three severity levels have the same meanings in the website, Web API, and
+MCP. Errors identify confirmed issues with the listed certificates or the
+selected leaf's supplied issuer candidates. Warnings identify candidate issues
+or incomplete requested checks. Information records structural or successful
+observations. The website explains these meanings beside the findings.
+Expired and not-yet-valid certificates remain errors at their original positions;
+one expired alternative does not invalidate every other path. Trust-anchor
+time requirements depend on the client. RFC 5280 excludes the trust anchor from
+the prospective path, while OpenSSL additionally checks root validity.
+See [RFC 5280 section 6.1](https://www.rfc-editor.org/rfc/rfc5280.html#section-6.1)
+and [OpenSSL verification rules](https://docs.openssl.org/3.5/man1/openssl-verification-options/#certification-path-validation).
+
+The selected leaf is evaluated separately from other supplied certificates:
+
+- With no same-name issuer candidate, `LEAF_ISSUER_NOT_IN_BUNDLE` is a warning
+  because its signature cannot be verified in this input. An absent issuer for
+  another certificate remains `ISSUER_NOT_IN_BUNDLE` information. A missing
+  issuer alone does not establish client rejection, identify a missing root,
+  or account for certificates that clients already possess.
+- With at least one candidate and every candidate rejected by a failed signature
+  or the CA / Key Usage requirements, `LEAF_ISSUER_CANDIDATES_REJECTED` is an
+  error. It lists the selected original leaf position, candidate positions, and
+  counts for candidates, failed signatures, and rejected issuer constraints.
+  These latter counts can overlap. Individual candidate warnings remain visible.
+- A viable alternative prevents this error. An eligible candidate with an
+  unsupported or unavailable signature also prevents it. Key-identifier
+  mismatch alone does not produce it. A selected self-signed leaf with a verified
+  own-key signature does not require an external candidate to pass. An unsupported
+  or unavailable own-key test also prevents the error, because a possible
+  self-signature remains unknown. A failed own-key test does not prevent it.
+  Candidate counts refer only to the supplied issuer relationships.
+- No selected leaf means no selected-leaf error. An explicit duplicate selection
+  uses the first occurrence's candidate links, but the selected-leaf finding
+  retains the user's selected original position.
+
+These observations cover only the supplied candidates. They do not select a
+trust path or determine client acceptance.
+
 ## Optional DNS identity check
 
 Only the chosen non-CA leaf's DNS SANs participate. One unique non-CA certificate
 is selected automatically. With multiple leaves, the website offers an explicit
 selection and the API/MCP accept `leafIndex`; a hostname remains `ambiguous`
-until selected. A CA-only bundle has `no-leaf`. Selection must identify a
+until selected. A CA-only bundle has `no-leaf`. `LEAF_SELECTION_REQUIRED` and
+`NO_LEAF_CERTIFICATE` are warnings when a hostname was requested, and information
+when no hostname was requested. Leaf selection also controls issuer diagnostics,
+even without a hostname. Selection must identify a
 non-CA certificate in the original input. An explicit duplicate selection retains
 its requested original position; automatically discovered leaves use first copies.
 
@@ -177,6 +223,11 @@ Public synthetic certificates live in
 to a fixture or tracked file. Normal, omitted-root, missing-intermediate,
 expired, future, hostname-mismatch, multiple-leaf, cross-signing/unordered,
 failed same-name candidate, and duplicate samples drive the website and tests.
+Additional public fixtures cover self-issued CA key rollover with the same or
+different public-key algorithms, a verified signature with mismatched key
+identifiers, and a self-signed non-CA leaf.
+`CERTIFICATE_BUNDLE_DIAGNOSTIC_SAMPLES` supplies additional public inputs to
+deployment checks without expanding the optional website example picker.
 RSA SHA-256 and ECDSA P-256 SHA-256 signatures are exercised in Node, Workers,
 and browser validation; this is not an exhaustive algorithm compatibility matrix.
 Documentation observations use `2026-10-04T06:00:00.000Z`; real requests cannot
@@ -201,6 +252,10 @@ generator process memory.
   fingerprints with Node's certificate implementation. They cover original
   order, duplicate and alternative paths, issuer eligibility, absent issuers,
   validity boundaries, hostname selection, DNS matching, and incomplete checks.
+  Severity cases include blocked hostname checks, absent selected-leaf issuers,
+  all rejected candidates, viable and unknown alternatives, key-identifier-only
+  mismatch, verified and incomplete self-signatures, key and algorithm rollover,
+  and duplicate selections.
 - Strict contracts and input tests cover exact byte/count limits, malformed
   PEM/DER, private keys after valid blocks, error locations, unknown keys,
   caller-controlled abort reasons, and no partial output or network requests.

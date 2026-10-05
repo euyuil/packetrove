@@ -36,7 +36,7 @@ export const certificateCopy = {
     "verifiedLinks": "Assinaturas verificadas",
     "findingCount": "Constatações",
     "evaluation": "Hora da avaliação: {{time}} (relógio do dispositivo)",
-    "selectLeaf": "Certificado final para o nome de host",
+    "selectLeaf": "Certificado final a verificar",
     "selectPosition": "Selecione uma posição original",
     "hostnameTitle": "Nome de host: {{hostname}}",
     "relationships": "Relações de emissão",
@@ -50,7 +50,7 @@ export const certificateCopy = {
     "pending": "Insira certificados e verifique. Alterar a entrada limpa o resultado anterior.",
     "details": "Detalhes · Ordem original",
     "explanationTitle": "Entenda as verificações",
-    "explanation": "Números indicam posições originais; índices JSON começam em zero. Duplicatas continuam visíveis. Nomes candidatos usam comparação conservadora da codificação. Emissor ausente é informativo; um candidato que falha não invalida outras relações. Rascunhos ficam na memória ao trocar ferramenta ou idioma; recarregar os apaga.",
+    "explanation": "Os números indicam posições originais; os índices JSON começam em zero. As duplicatas continuam visíveis. Os nomes dos emissores são comparados de forma conservadora pela codificação. A ausência do emissor do certificado final selecionado gera um aviso; outras ausências são informativas. A falha de um candidato não invalida outros vínculos. Os rascunhos ficam na memória ao trocar de ferramenta ou idioma; recarregar os apaga.",
     "dnsRules": "DNS SAN ignora maiúsculas ASCII e ponto final do nome. Um curinga completo no rótulo mais à esquerda corresponde a um único rótulo. URL, IP, portas, curingas de entrada e nomes Unicode são rejeitados; converta nomes internacionais para punycode. Common Name serve apenas para exibição.",
     "examplesTitle": "Exemplos sintéticos",
     "exampleNote": "Certificados públicos sintéticos. Hora documental: {{time}}. Sua verificação usa o relógio atual do ambiente.",
@@ -67,7 +67,7 @@ export const certificateCopy = {
     "originalPosition": "Posição original",
     "position": "Certificado #{{number}}, início na linha {{line}}",
     "serial": "Número de série",
-    "selfSignature": "Verificação de autoassinatura",
+    "selfSignature": "Verificação com a própria chave pública",
     "json": "Resultado JSON estruturado",
     "inputLine": "Linha {{line}}: {{message}}",
     "status": {
@@ -130,7 +130,9 @@ export const certificateCopy = {
       "subjectKeyIdentifier": "Subject Key Identifier",
       "candidateCount": "Candidatos",
       "expectedHostname": "Nome esperado",
-      "dnsSubjectAlternativeNames": "DNS SAN"
+      "dnsSubjectAlternativeNames": "DNS SAN",
+      "failedSignatureCount": "Assinaturas com falha",
+      "rejectedIssuerCount": "Rejeições de CA / Key Usage"
     },
     "findings": {
       "DUPLICATE_CERTIFICATE": {
@@ -139,19 +141,19 @@ export const certificateCopy = {
       },
       "CERTIFICATE_EXPIRED": {
         "title": "Certificado expirado na avaliação",
-        "action": "Renove ou substitua o certificado e confira qual é realmente servido."
+        "action": "Se este certificado for usado na implantação prevista, renove-o ou substitua-o. Sua expiração não invalida todos os caminhos alternativos; as regras temporais das âncoras de confiança dependem do cliente."
       },
       "CERTIFICATE_NOT_YET_VALID": {
         "title": "Certificado ainda não válido",
-        "action": "Confira o relógio do dispositivo e a data de ativação."
+        "action": "Confira o horário de avaliação e a data de ativação deste certificado. Outros caminhos podem continuar válidos; as regras temporais das âncoras de confiança dependem do cliente."
       },
       "SELF_SIGNED_CERTIFICATE": {
         "title": "Assinatura verificada com a própria chave pública",
         "action": "Verifique confiança do cliente e implantação real separadamente; essa observação não comprova nenhuma."
       },
       "SELF_SIGNATURE_FAILED": {
-        "title": "Autoassinatura falhou no certificado autoemitido",
-        "action": "Inspecione estas duas posições originais. Outros candidatos são verificados de forma independente."
+        "title": "Falha na verificação com a própria chave pública",
+        "action": "Verifique este certificado e o emissor previsto com outra implementação. Nomes Subject e Issuer iguais não exigem uma autoassinatura."
       },
       "SIGNATURE_UNSUPPORTED": {
         "title": "Algoritmo de assinatura não compatível",
@@ -187,11 +189,11 @@ export const certificateCopy = {
       },
       "LEAF_SELECTION_REQUIRED": {
         "title": "Vários certificados finais exigem seleção",
-        "action": "Forneça ou selecione explicitamente o certificado final não CA antes de verificar o nome."
+        "action": "Selecione o certificado final não CA previsto para verificar os emissores candidatos e o nome de host opcional."
       },
       "NO_LEAF_CERTIFICATE": {
         "title": "Nenhum certificado final não CA fornecido",
-        "action": "Forneça ou selecione explicitamente o certificado final não CA antes de verificar o nome."
+        "action": "Forneça um certificado final não CA se precisar verificar sua assinatura ou nome de host."
       },
       "HOSTNAME_MATCH": {
         "title": "Nome corresponde ao DNS SAN selecionado",
@@ -200,8 +202,21 @@ export const certificateCopy = {
       "HOSTNAME_MISMATCH": {
         "title": "Nome não corresponde a nenhum DNS SAN selecionado",
         "action": "Confira o nome ou obtenha certificado com o DNS SAN necessário. Common Name não é alternativa."
+      },
+      "SELF_ISSUED_CERTIFICATE": {
+        "title": "Subject e Issuer coincidem; outro certificado verifica a assinatura",
+        "action": "Confira os vínculos de emissor verificados. Pode ser uma rotação normal de chave de CA; nomes iguais não exigem autoassinatura nem comprovam a confiança do cliente."
+      },
+      "LEAF_ISSUER_NOT_IN_BUNDLE": {
+        "title": "O emissor do certificado final selecionado está ausente desta entrada",
+        "action": "Forneça o emissor para verificar a assinatura do certificado final selecionado. A aceitação também depende dos certificados e das configurações de confiança do cliente."
+      },
+      "LEAF_ISSUER_CANDIDATES_REJECTED": {
+        "title": "Todos os emissores candidatos fornecidos para o certificado final selecionado foram rejeitados",
+        "action": "Substitua ou corrija os certificados dos emissores. Este erro se refere aos candidatos desta entrada, não a todos os possíveis caminhos de confiança do cliente."
       }
-    }
+    },
+    "severityHelp": "Os erros se referem aos certificados indicados ou aos emissores candidatos fornecidos para o certificado final selecionado. Os avisos exigem atenção ou indicam verificações incompletas; as informações descrevem observações. Os níveis não comprovam a confiança do cliente."
   },
   "homepage": {
     "description": "Verifique localmente assinaturas PEM, emissores candidatos e identidade DNS opcional.",
