@@ -5,10 +5,11 @@ import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.j
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResultSchema as LegacyCallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import { getNonProductionCrawlerPolicy } from '@packetrove/contracts';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   getServiceIdentity, getToolResultLink, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
-  CertificateBundleResultSchema, getNonProductionCrawlerPolicy,
+  CertificateBundleResultSchema,
 } from '@packetrove/contracts';
 import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { getPageMetadata } from '../../web/src/i18n/page-metadata';
