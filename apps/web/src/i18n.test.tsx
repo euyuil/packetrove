@@ -260,7 +260,7 @@ describe('web internationalization', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'API 文档' })).toBeDefined();
     expect(screen.getByText('交互式接口文档与规范使用英文。')).toBeDefined();
     expect(await screen.findByText('English API reference')).toBeDefined();
-    expect(document.title).toBe('Packetrove API 文档');
+    expect(document.title).toBe('API 文档 — Packetrove');
   });
 
   it('uses plural forms without rounding large address counts', () => {

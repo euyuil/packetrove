@@ -133,7 +133,7 @@ describe('API documentation failure isolation', () => {
     act(() => { window.history.forward(); });
     await waitFor(() => expect(window.location.pathname).toBe('/docs/api'));
     expect(await screen.findByRole('heading', { name: 'API documentation is unavailable' })).toBeDefined();
-    expect(document.title).toBe('Packetrove API Documentation');
+    expect(document.title).toBe('API Documentation — Packetrove');
     returnToCalculator();
     expect(screen.getAllByText('203.0.113.1/32')).toHaveLength(2);
     expect(calculation).toHaveBeenCalledTimes(1);

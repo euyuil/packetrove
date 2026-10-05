@@ -106,7 +106,7 @@ describe('language links after reference navigation', () => {
     });
     await act(async () => { pending.reject(new Error('Unavailable')); });
     expect(window.location.pathname + window.location.search + window.location.hash).toBe('/docs/api' + laterSuffix);
-    expect(document.title).toBe('Packetrove API Documentation');
+    expect(document.title).toBe('API Documentation — Packetrove');
   });
 
   it('keeps a newer reference suffix written while a history destination is pending on failure', async () => {
