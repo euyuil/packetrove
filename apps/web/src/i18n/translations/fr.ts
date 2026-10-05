@@ -8,6 +8,10 @@ export const fr = {
   },
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: 'Environnement de développement' },
+      staging: { label: 'STAGING', description: 'Environnement de préproduction' },
+    },
     pageLoading: "Chargement de la page…", pageLoadFailure: "Cette page n’a pas pu être chargée. Veuillez réessayer.", retryPage: "Réessayer",
     home: 'Accueil', homeLabel: 'Accueil de Packetrove', navigation: 'Navigation principale',
     language: 'Langue', tools: 'OUTILS POUR ADRESSES IP', copied: 'Copié', dismissCopy: 'Fermer l’erreur de copie',

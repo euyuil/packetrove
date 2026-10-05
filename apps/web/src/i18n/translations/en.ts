@@ -2,6 +2,10 @@ import { certificateCopy } from '../certificate/en';
 export const en = {
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: 'Development environment' },
+      staging: { label: 'STAGING', description: 'Staging environment' },
+    },
     pageLoading: "Loading page…", pageLoadFailure: "This page could not be loaded. Please try again.", retryPage: "Retry",
     home: 'Home', homeLabel: 'Packetrove home', navigation: 'Main navigation',
     language: 'Language', tools: 'IP ADDRESS TOOLS', copied: 'Copied', dismissCopy: 'Dismiss copy error',

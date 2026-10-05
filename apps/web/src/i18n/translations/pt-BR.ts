@@ -8,6 +8,10 @@ export const ptBR = {
   },
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: 'Ambiente de desenvolvimento' },
+      staging: { label: 'STAGING', description: 'Ambiente de pré-produção' },
+    },
     pageLoading: "Carregando página…", pageLoadFailure: "Não foi possível carregar esta página. Tente novamente.", retryPage: "Tentar novamente",
     home: 'Início', homeLabel: 'Página inicial do Packetrove', navigation: 'Navegação principal',
     language: 'Idioma', tools: 'FERRAMENTAS DE ENDEREÇOS IP', copied: 'Copiado', dismissCopy: 'Fechar o erro de cópia',

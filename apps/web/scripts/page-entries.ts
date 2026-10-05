@@ -1,8 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { normalizePath, type Plugin } from 'vite';
-import { renderPageMetadata, websitePages } from '../src/seo';
+import { escapeHtml, renderPageMetadata, websitePages } from '../src/seo';
 import { resolveRoute } from '../src/i18n/routes';
+import { getPageMetadata } from '../src/i18n/page-metadata';
+import { resources } from '../src/i18n/resources';
 
 type WebsitePage = (typeof websitePages)[number];
 
@@ -41,6 +43,11 @@ export function pageEntriesPlugin(root: string): Plugin {
       if (!page) return null;
       this.addWatchFile(templatePath);
       return readEntry(page);
+    },
+    transformIndexHtml(html, context) {
+      if (normalizePath(context.filename) !== normalizePath(resolve(root, '404.html'))) return html;
+      const metadata = getPageMetadata('en', 'notFound', '/404.html', resources.en.translation);
+      return html.replace(/<title>[^<]*<\/title>/, () => '<title>' + escapeHtml(metadata.title) + '</title>');
     },
     configureServer(server) {
       server.middlewares.use(async (request, response, next) => {

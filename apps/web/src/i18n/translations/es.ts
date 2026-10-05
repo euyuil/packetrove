@@ -8,6 +8,10 @@ export const es = {
   },
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: 'Entorno de desarrollo' },
+      staging: { label: 'STAGING', description: 'Entorno de preproducción' },
+    },
     pageLoading: "Cargando página…", pageLoadFailure: "No se pudo cargar esta página. Inténtalo de nuevo.", retryPage: "Reintentar",
     home: 'Inicio', homeLabel: 'Inicio de Packetrove', navigation: 'Navegación principal',
     language: 'Idioma', tools: 'HERRAMIENTAS DE DIRECCIONES IP', copied: 'Copiado', dismissCopy: 'Cerrar el error de copia',

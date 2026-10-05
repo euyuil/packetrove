@@ -4,6 +4,10 @@ import type { TranslationResource } from '../translation-resource';
 export const de = {
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: 'Entwicklungsumgebung' },
+      staging: { label: 'STAGING', description: 'Staging-Umgebung' },
+    },
     pageLoading: "Seite wird geladen…", pageLoadFailure: "Diese Seite konnte nicht geladen werden. Bitte versuche es erneut.", retryPage: "Erneut versuchen",
     home: 'Startseite', homeLabel: 'Packetrove-Startseite', navigation: 'Hauptnavigation',
     language: 'Sprache', tools: 'WERKZEUGE FÜR IP-ADRESSEN', copied: 'Kopiert', dismissCopy: 'Kopierfehler schließen',
