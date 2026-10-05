@@ -11,6 +11,19 @@ export const certificateCopy = {
     "samplesHelp": "공개 합성 인증서 번들을 선택해 입력란을 채우세요. 준비되면 인증서 묶음 검사 버튼으로 검사를 실행하세요.",
     "closeExamples": "예제 닫기",
     "evidenceTitle": "근거",
+    "file": {
+      "status": "파일 가져오기",
+      "choose": "PEM 파일 선택",
+      "help": "PEM 텍스트를 붙여 넣거나 인증서 파일 하나를 여기에 끌어 놓으세요. 파일은 브라우저에서만 읽습니다.",
+      "reading": "파일 읽는 중…",
+      "imported": "파일을 가져왔습니다. 내용을 확인한 다음 인증서 묶음을 검사하세요.",
+      "errorTitle": "파일을 가져올 수 없습니다",
+      "errors": {
+        "FILE_COUNT": "인증서 묶음이 포함된 파일 하나를 선택하세요.",
+        "FILE_ENCODING": "PEM 인증서가 포함된 UTF-8 텍스트 파일을 사용하세요.",
+        "FILE_READ_FAILED": "파일을 읽을 수 없습니다. 다시 선택하거나 내용을 붙여 넣으세요."
+      }
+    },
     "pem": "PEM 인증서",
     "pemHelp": "CERTIFICATE 블록과 공백만 허용합니다. 최대 {{maximum}}개, {{kib}} KiB. 개인 키는 거부합니다.",
     "bytes": "{{current}} / {{maximum}} 바이트",
@@ -87,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "중복 인증서"
     },
     "errors": {
-      "EMPTY_INPUT": "PEM 인증서를 하나 이상 붙여 넣으세요.",
+      "EMPTY_INPUT": "PEM 인증서를 하나 이상 입력하거나 가져오세요.",
       "INPUT_TOO_LARGE": "PEM이 UTF-8 48 KiB 제한을 초과합니다.",
       "INVALID_PEM": "잘못된 PEM입니다. CERTIFICATE 블록, 완전한 Base64와 블록 사이 공백만 허용합니다.",
       "PRIVATE_KEY_REJECTED": "개인 키 블록을 거부했습니다. 제거하고 인증서만 입력하세요.",

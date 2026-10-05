@@ -11,6 +11,19 @@ export const certificateCopy = {
     "samplesHelp": "Wählen Sie ein öffentliches synthetisches Zertifikatspaket, um die Eingaben auszufüllen. Starten Sie danach die Prüfung mit „Zertifikatsbündel prüfen“.",
     "closeExamples": "Beispiele schließen",
     "evidenceTitle": "Nachweise",
+    "file": {
+      "status": "Dateiimport",
+      "choose": "PEM-Datei auswählen",
+      "help": "PEM-Text einfügen oder eine Zertifikatsdatei hierher ziehen. Dateien werden nur im Browser gelesen.",
+      "reading": "Datei wird gelesen…",
+      "imported": "Datei importiert. Inhalt prüfen und dann das Zertifikatsbündel prüfen.",
+      "errorTitle": "Datei konnte nicht importiert werden",
+      "errors": {
+        "FILE_COUNT": "Eine Datei mit dem Zertifikatsbündel auswählen.",
+        "FILE_ENCODING": "Eine UTF-8-Textdatei mit PEM-Zertifikaten verwenden.",
+        "FILE_READ_FAILED": "Datei konnte nicht gelesen werden. Erneut auswählen oder den Inhalt einfügen."
+      }
+    },
     "pem": "PEM-Zertifikate",
     "pemHelp": "Nur CERTIFICATE-Blöcke und Zwischenräume; höchstens {{maximum}} Zertifikate und {{kib}} KiB. Private Schlüssel werden abgelehnt.",
     "bytes": "{{current}} / {{maximum}} Bytes",
@@ -87,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "Doppeltes Zertifikat"
     },
     "errors": {
-      "EMPTY_INPUT": "Mindestens ein PEM-Zertifikat einfügen.",
+      "EMPTY_INPUT": "Mindestens ein PEM-Zertifikat eingeben oder importieren.",
       "INPUT_TOO_LARGE": "PEM überschreitet 48 KiB UTF-8.",
       "INVALID_PEM": "Ungültiges PEM. Nur CERTIFICATE-Blöcke, vollständiges Base64 und Zwischenräume sind erlaubt.",
       "PRIVATE_KEY_REJECTED": "Privater Schlüssel abgelehnt. Entfernen und nur Zertifikate eingeben.",

@@ -1,6 +1,6 @@
-import { useState, type FormEvent, type MouseEventHandler } from 'react';
+import { useEffect, useRef, useState, type FormEvent, type MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Box, Button, Code, Group, Modal, Select, SimpleGrid, Stack, Table, Text, Textarea, TextInput, Title, VisuallyHidden } from '@mantine/core';
+import { Alert, Box, Button, Code, FileButton, Group, Modal, Select, SimpleGrid, Stack, Table, Text, Textarea, TextInput, Title, VisuallyHidden } from '@mantine/core';
 import { CERTIFICATE_BUNDLE_SAMPLES, MAX_CERTIFICATES, MAX_PEM_BYTES, toolCatalog, inputIssuePath } from '@packetrove/contracts';
 import { CertificateBundleInputError } from '@packetrove/core/certificate-bundle';
 import { ToolPageHeader } from './ToolPageHeader';
@@ -34,14 +34,21 @@ export function CertificateBundleTool({ draft, onDraftChange, onNavigate }: {
   const locale = resolveLocale(i18n.resolvedLanguage);
   const feedback = useCalculationFeedback();
   const [examplesOpen, setExamplesOpen] = useState(false);
-  const { checking, replaceInput, inspect } = useCertificateBundleCheck(draft, onDraftChange, feedback.complete);
+  const [dragging, setDragging] = useState(false);
+  const resetFileInput = useRef<() => void>(null);
+  const { checking, fileImport, importFiles, replaceInput, inspect } = useCertificateBundleCheck(draft, onDraftChange, feedback.complete);
+  const reading = fileImport.status === 'reading';
+  const importError = fileImport.status === 'failed' ? fileImport.error : null;
+  useEffect(() => { if (fileImport.status === 'failed') feedback.errorSummary.current?.focus(); }, [fileImport, feedback.errorSummary]);
   const { request, result, error } = draft;
   const bytes = new TextEncoder().encode(request.pem).length;
   const count = (value: number) => new Intl.NumberFormat(locale).format(value);
-  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); void inspect(request); }
+  function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!reading) void inspect(request); }
   const reason = error instanceof CertificateBundleInputError ? error.reason : 'INVALID_INPUT';
   const errorTitle = error?.code === 'INTERNAL_ERROR' ? t($ => $.certificate.errors.CRYPTO_UNAVAILABLE)
     : t($ => $.certificate.errors[reason]);
+  const importMessage = importError === 'INPUT_TOO_LARGE' ? t($ => $.certificate.errors.INPUT_TOO_LARGE)
+    : importError ? t($ => $.certificate.file.errors[importError]) : '';
   const issues = error?.issues?.map(issue => {
     const path = inputIssuePath(issue);
     const field = path?.length === 1 ? path[0] : null;
@@ -57,24 +64,54 @@ export function CertificateBundleTool({ draft, onDraftChange, onNavigate }: {
     <ToolPanel headingId="certificate-input-heading" title={t($ => $.certificate.inputs)}>
       <Text size="sm" c="dimmed">{t($ => $.certificate.pending)}</Text>
       <form onSubmit={submit}><Stack gap="md">
-        {error && <ToolErrorSummary ref={feedback.errorSummary} id="certificate-errors" title={errorTitle} issues={issues} />}
-        <Textarea id="certificate-pem" label={t($ => $.certificate.pem)}
-          description={t($ => $.certificate.pemHelp, { maximum: MAX_CERTIFICATES, kib: MAX_PEM_BYTES / 1024 })}
-          value={request.pem} onChange={event => replaceInput({ pem: event.currentTarget.value, hostname: request.hostname ?? '' })}
-          minRows={8} maxRows={14} autosize spellCheck={false} autoComplete="off" autoCorrect="off" autoCapitalize="off"
-          classNames={{ input: 'network-value' }} error={Boolean(error?.issues?.some(issue => inputIssuePath(issue)?.[0] === 'pem'))}
-          attributes={{ input: { 'aria-describedby': 'certificate-pem-help' + (error ? ' certificate-errors' : '') } }}
-          descriptionProps={{ id: 'certificate-pem-help' }} />
-        <Text size="xs" c={bytes > MAX_PEM_BYTES ? 'red' : 'dimmed'}>{t($ => $.certificate.bytes, { current: count(bytes), maximum: count(MAX_PEM_BYTES) })}</Text>
+        {(importError || error) && <ToolErrorSummary ref={feedback.errorSummary} id="certificate-errors"
+          title={importError ? t($ => $.certificate.file.errorTitle) : errorTitle}
+          issues={importError ? [{ message: importMessage, inputId: 'certificate-file-button' }] : issues} />}
+        <Box onDragOver={event => {
+          if (Array.from(event.dataTransfer.types).includes('Files')) {
+            event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setDragging(true);
+          }
+        }} onDragLeave={() => setDragging(false)} onDrop={event => {
+          setDragging(false);
+          if (!event.dataTransfer.files.length && !Array.from(event.dataTransfer.types).includes('Files')) return;
+          event.preventDefault(); importFiles(Array.from(event.dataTransfer.files));
+        }}>
+          <Textarea id="certificate-pem" label={t($ => $.certificate.pem)}
+            description={t($ => $.certificate.pemHelp, { maximum: MAX_CERTIFICATES, kib: MAX_PEM_BYTES / 1024 })}
+            value={request.pem} onChange={event => replaceInput({ pem: event.currentTarget.value, hostname: request.hostname ?? '' })}
+            minRows={8} maxRows={14} autosize spellCheck={false} autoComplete="off" autoCorrect="off" autoCapitalize="off"
+            classNames={{ input: 'network-value' }} error={Boolean(error?.issues?.some(issue => inputIssuePath(issue)?.[0] === 'pem'))}
+            styles={{ input: { borderColor: dragging ? 'var(--mantine-primary-color-filled)' : undefined } }}
+            attributes={{ input: { 'aria-describedby': 'certificate-pem-help certificate-file-help' + (error || importError ? ' certificate-errors' : '') } }}
+            descriptionProps={{ id: 'certificate-pem-help' }} />
+          <Group justify="space-between" align="flex-start" mt="xs">
+            <Stack gap={4} style={{ flex: '1 1 20rem' }}>
+              <Text size="xs" c={bytes > MAX_PEM_BYTES ? 'red' : 'dimmed'}>{t($ => $.certificate.bytes, { current: count(bytes), maximum: count(MAX_PEM_BYTES) })}</Text>
+              <Text id="certificate-file-help" size="xs" c="dimmed">{t($ => $.certificate.file.help)}</Text>
+            </Stack>
+            <FileButton accept=".pem,.crt,.cer,text/plain" resetRef={resetFileInput} disabled={reading}
+              inputProps={{ 'aria-label': t($ => $.certificate.file.choose) }} onChange={file => {
+                if (file) importFiles([file]);
+                resetFileInput.current?.();
+              }}>
+              {props => <Button {...props} id="certificate-file-button" type="button" variant="default" loading={reading}>
+                {t($ => $.certificate.file.choose)}
+              </Button>}
+            </FileButton>
+          </Group>
+          <Text size="sm" c="dimmed" role="status" aria-label={t($ => $.certificate.file.status)} aria-live="polite" aria-atomic="true">
+            {reading ? t($ => $.certificate.file.reading) : fileImport.status === 'imported' ? t($ => $.certificate.file.imported) : ''}
+          </Text>
+        </Box>
         <TextInput id="certificate-hostname" label={t($ => $.certificate.hostname)} description={t($ => $.certificate.hostnameHelp)}
           placeholder="service.example.com" value={request.hostname ?? ''} maw={560} w="100%" autoComplete="off" autoCapitalize="off" spellCheck={false}
           error={Boolean(error?.issues?.some(issue => inputIssuePath(issue)?.[0] === 'hostname'))}
           onChange={event => replaceInput({ ...request, hostname: event.currentTarget.value })} />
         <Group justify="space-between">
-          <Button type="submit" loading={checking} w={{ base: '100%', sm: 'auto' }}>{t($ => $.certificate.check)}</Button>
+          <Button type="submit" loading={checking} disabled={reading} w={{ base: '100%', sm: 'auto' }}>{t($ => $.certificate.check)}</Button>
           <Group gap="xs">
             <Button type="button" variant="default" onClick={() => replaceInput({ pem: '', hostname: '' })}
-              disabled={!request.pem && !request.hostname && !result && !error}>{t($ => $.cidr.clear)}</Button>
+              disabled={!request.pem && !request.hostname && !result && !error && fileImport.status === 'idle'}>{t($ => $.cidr.clear)}</Button>
             <Button type="button" variant="default" onClick={() => setExamplesOpen(true)}>{t($ => $.certificate.loadSample)}</Button>
           </Group>
         </Group>

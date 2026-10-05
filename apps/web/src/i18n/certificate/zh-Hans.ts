@@ -11,6 +11,19 @@ export const certificateCopy = {
     "samplesHelp": "选择一个公开合成证书包填入输入。准备好后，点击“检查证书包”执行检查。",
     "closeExamples": "关闭示例",
     "evidenceTitle": "证据",
+    "file": {
+      "status": "文件导入",
+      "choose": "选择 PEM 文件",
+      "help": "可粘贴 PEM 文本，或将一个证书文件拖入这里。文件仅在浏览器内读取。",
+      "reading": "正在读取文件…",
+      "imported": "文件已导入。确认内容后，点击“检查证书包”。",
+      "errorTitle": "文件导入失败",
+      "errors": {
+        "FILE_COUNT": "请选择一个包含证书包的文件。",
+        "FILE_ENCODING": "请使用包含 PEM 证书的 UTF-8 文本文件。",
+        "FILE_READ_FAILED": "无法读取文件。请重新选择，或粘贴文件内容。"
+      }
+    },
     "pem": "PEM 证书",
     "pemHelp": "只接受 CERTIFICATE 块及块间空白；最多 {{maximum}} 张、{{kib}} KiB。私钥会被拒绝。",
     "bytes": "{{current}} / {{maximum}} 字节",
@@ -87,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "重复证书"
     },
     "errors": {
-      "EMPTY_INPUT": "请粘贴至少一个 PEM 证书块。",
+      "EMPTY_INPUT": "请输入或导入至少一个 PEM 证书块。",
       "INPUT_TOO_LARGE": "PEM 超过 48 KiB UTF-8 限制。",
       "INVALID_PEM": "PEM 格式无效。只接受 CERTIFICATE 块、完整 Base64 和块间空白。",
       "PRIVATE_KEY_REJECTED": "私钥块被拒绝。请移除私钥，只提交证书。",

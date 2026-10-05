@@ -2,7 +2,7 @@ import { webcrypto } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { certificateFixtures, CERTIFICATE_BUNDLE_SAMPLES } from '@packetrove/contracts';
+import { certificateFixtures, CERTIFICATE_BUNDLE_SAMPLES, MAX_PEM_BYTES } from '@packetrove/contracts';
 import * as core from '@packetrove/core/certificate-bundle';
 import { App } from './App';
 import { render } from './test-utils';
@@ -58,6 +58,98 @@ describe('the integrated certificate checker', () => {
     expect(window.location.pathname + window.location.search + window.location.hash).toBe('/certificate-bundle');
     fireEvent.change(pemInput(), { target: { value: certificateFixtures.leaf } });
     expect(screen.queryByRole('img', { name: /Certificate issuer graph/ })).toBeNull();
+  });
+
+  it.each(['pem', 'crt', 'cer'])('imports a .%s PEM file locally without checking and allows selecting it again', async extension => {
+    const user = userEvent.setup();
+    const checker = vi.spyOn(core, 'checkCertificateBundle');
+    const network = vi.fn(); vi.stubGlobal('fetch', network);
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    const log = vi.spyOn(console, 'log');
+    render(<App />);
+    fireEvent.change(screen.getByLabelText('Expected hostname (optional)'), { target: { value: 'service.example.com' } });
+    const chooser = screen.getByLabelText('Choose PEM file', { selector: 'input' }) as HTMLInputElement;
+    const file = new File([CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem], `bundle.${extension}`, { type: 'application/octet-stream' });
+    await user.upload(chooser, file);
+    await waitFor(() => expect(pemInput().value).toBe(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem));
+    expect(screen.getByRole('status', { name: 'File import' }).textContent).toContain('File imported.');
+    expect((screen.getByLabelText('Expected hostname (optional)') as HTMLInputElement).value).toBe('service.example.com');
+    expect(chooser.value).toBe('');
+    expect(checker).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Check certificate bundle' }));
+    await completed();
+    expect(checker).toHaveBeenCalledOnce();
+    expect(screen.getByRole('img', { name: /Certificate issuer graph/ })).toBeDefined();
+    await user.upload(chooser, file);
+    await waitFor(() => expect(screen.queryByRole('img', { name: /Certificate issuer graph/ })).toBeNull());
+    expect(pemInput().value).toBe(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem);
+    expect(checker).toHaveBeenCalledOnce();
+    expect(network).not.toHaveBeenCalled();
+    expect(storage).not.toHaveBeenCalled();
+    expect(log).not.toHaveBeenCalled();
+    expect(window.location.pathname + window.location.search + window.location.hash).toBe('/certificate-bundle');
+  });
+
+  it('imports dropped UTF-8 PEM with a byte-order mark at the exact file limit and rejects private keys through the shared checker', async () => {
+    const checker = vi.spyOn(core, 'checkCertificateBundle');
+    render(<App />);
+    const pem = '\uFEFF' + certificateFixtures.leaf.replaceAll('\n', '\r\n');
+    const padding = ' '.repeat(MAX_PEM_BYTES - new TextEncoder().encode(pem).length);
+    const file = new File([pem, padding], 'certificate.txt', { type: 'text/plain' });
+    expect(file.size).toBe(MAX_PEM_BYTES);
+    fireEvent.dragOver(pemInput(), { dataTransfer: { types: ['Files'], dropEffect: 'none' } });
+    fireEvent.drop(pemInput(), { dataTransfer: { files: [file] } });
+    await waitFor(() => expect(pemInput().value).toBe(pem.slice(1).replaceAll('\r\n', '\n') + padding));
+    expect(checker).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Check certificate bundle' }));
+    await completed();
+    expect((checker.mock.calls[0]![0] as { pem: string }).pem).toBe(pemInput().value);
+    const privatePem = certificateFixtures.leaf + '\n-----BEGIN PRIVATE KEY-----\nPRIVATE-PAYLOAD\n-----END PRIVATE KEY-----';
+    fireEvent.drop(pemInput(), { dataTransfer: { files: [new File([privatePem], 'bundle.pem')] } });
+    await waitFor(() => expect(pemInput().value).toBe(privatePem));
+    expect(checker).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Check certificate bundle' }));
+    const alert = await within(screen.getByRole('region', { name: 'Certificate input' })).findByRole('alert');
+    expect(alert.textContent).toContain('Private-key block rejected.');
+    expect(alert.textContent).not.toContain('PRIVATE-PAYLOAD');
+  });
+
+  it('preserves a completed report when dropped files are multiple, oversized, or invalid UTF-8', async () => {
+    const read = vi.spyOn(FileReader.prototype, 'readAsArrayBuffer');
+    render(<App />);
+    enter(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem, 'service.example.com');
+    await completed();
+    const graph = screen.getByRole('img', { name: /Certificate issuer graph/ });
+    const input = within(screen.getByRole('region', { name: 'Certificate input' }));
+    const file = new File([certificateFixtures.leaf], 'leaf.pem');
+    fireEvent.drop(pemInput(), { dataTransfer: { files: [file, file] } });
+    expect(input.getByRole('alert').textContent).toContain('Choose one file');
+    expect(read).not.toHaveBeenCalled();
+    const oversized = new File(['x'.repeat(MAX_PEM_BYTES + 1)], 'oversized.pem');
+    fireEvent.drop(pemInput(), { dataTransfer: { files: [oversized] } });
+    expect(input.getByRole('alert').textContent).toContain('48 KiB');
+    expect(read).not.toHaveBeenCalled();
+    const invalid = new File([new Uint8Array([0xff, 0xfe, 0x00, 0x80])], 'invalid.pem');
+    fireEvent.drop(pemInput(), { dataTransfer: { files: [invalid] } });
+    await waitFor(() => expect(input.getByRole('alert').textContent).toContain('UTF-8 text file'));
+    expect(document.activeElement).toBe(input.getByRole('alert'));
+    expect(screen.getByRole('img', { name: /Certificate issuer graph/ })).toBe(graph);
+    expect(pemInput().value).toBe(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem);
+    fireEvent.change(pemInput(), { target: { value: certificateFixtures.leaf } });
+    expect(input.queryByRole('alert')).toBeNull();
+  });
+
+  it('reports a file read failure without echoing it or replacing the current input', async () => {
+    vi.spyOn(FileReader.prototype, 'readAsArrayBuffer').mockImplementation(function () {
+      throw new Error('PRIVATE-FILE-READ-DETAIL');
+    });
+    render(<App />);
+    fireEvent.change(pemInput(), { target: { value: certificateFixtures.leaf } });
+    fireEvent.drop(pemInput(), { dataTransfer: { files: [new File(['other input'], 'bundle.pem')] } });
+    const alert = within(screen.getByRole('region', { name: 'Certificate input' })).getByRole('alert');
+    expect(alert.textContent).toContain('The file could not be read.');
+    expect(alert.textContent).not.toContain('PRIVATE-FILE-READ-DETAIL');
+    expect(pemInput().value).toBe(certificateFixtures.leaf);
   });
 
   it('keeps all ten examples behind a secondary action and fills inputs without checking', async () => {
@@ -119,7 +211,7 @@ describe('the integrated certificate checker', () => {
     expect(input.compareDocumentPosition(report) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(report.compareDocumentPosition(relationships) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(within(report).getAllByText('Next action:').length).toBeGreaterThan(0);
-    expect(within(report).queryByText('HOSTNAME_MATCH')).toBeNull();
+    expect(within(report).getByRole('button', { name: /Evidence: Expected hostname matches/ }).getAttribute('aria-expanded')).toBe('false');
     fireEvent.click(within(report).getByRole('button', { name: /Evidence: Expected hostname matches/ }));
     expect(within(report).getByText('HOSTNAME_MATCH')).toBeDefined();
     const details = screen.getByRole('region', { name: 'Certificate details · Original order' });

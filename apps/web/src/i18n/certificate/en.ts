@@ -11,6 +11,19 @@ export const certificateCopy = {
     "samplesHelp": "Choose a public synthetic bundle to fill the inputs. Then use Check certificate bundle to run the check.",
     "closeExamples": "Close examples",
     "evidenceTitle": "Evidence",
+    "file": {
+      "status": "File import",
+      "choose": "Choose PEM file",
+      "help": "Paste PEM text or drop one certificate file here. Files are read only in your browser.",
+      "reading": "Reading file…",
+      "imported": "File imported. Review the content, then check the bundle.",
+      "errorTitle": "Could not import the file",
+      "errors": {
+        "FILE_COUNT": "Choose one file containing the certificate bundle.",
+        "FILE_ENCODING": "Use a UTF-8 text file containing PEM certificates.",
+        "FILE_READ_FAILED": "The file could not be read. Choose it again or paste its contents."
+      }
+    },
     "pem": "PEM certificates",
     "pemHelp": "Only CERTIFICATE blocks and whitespace; up to {{maximum}} certificates and {{kib}} KiB. Private keys are rejected.",
     "bytes": "{{current}} / {{maximum}} bytes",
@@ -87,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "Duplicate certificate"
     },
     "errors": {
-      "EMPTY_INPUT": "Paste at least one PEM certificate.",
+      "EMPTY_INPUT": "Enter or import at least one PEM certificate.",
       "INPUT_TOO_LARGE": "PEM exceeds the 48 KiB UTF-8 limit.",
       "INVALID_PEM": "Malformed PEM. Only CERTIFICATE blocks, complete Base64, and whitespace between blocks are accepted.",
       "PRIVATE_KEY_REJECTED": "Private-key block rejected. Remove it; submit certificates only.",

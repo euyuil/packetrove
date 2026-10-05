@@ -11,6 +11,19 @@ export const certificateCopy = {
     "samplesHelp": "公開された合成証明書バンドルを選んで入力欄に読み込みます。その後「証明書バンドルを検査」で検査してください。",
     "closeExamples": "例を閉じる",
     "evidenceTitle": "根拠",
+    "file": {
+      "status": "ファイルの読み込み",
+      "choose": "PEM ファイルを選択",
+      "help": "PEM テキストを貼り付けるか、証明書ファイルを1つここにドロップしてください。ファイルはブラウザー内でのみ読み取ります。",
+      "reading": "ファイルを読み取り中…",
+      "imported": "ファイルを読み込みました。内容を確認してから証明書バンドルを検査してください。",
+      "errorTitle": "ファイルを読み込めませんでした",
+      "errors": {
+        "FILE_COUNT": "証明書バンドルを含むファイルを1つ選択してください。",
+        "FILE_ENCODING": "PEM 証明書を含む UTF-8 テキストファイルを使用してください。",
+        "FILE_READ_FAILED": "ファイルを読み取れませんでした。再度選択するか、内容を貼り付けてください。"
+      }
+    },
     "pem": "PEM 証明書",
     "pemHelp": "CERTIFICATE ブロックと空白のみ。最大 {{maximum}} 枚、{{kib}} KiB。秘密鍵は拒否します。",
     "bytes": "{{current}} / {{maximum}} バイト",
@@ -87,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "重複証明書"
     },
     "errors": {
-      "EMPTY_INPUT": "PEM 証明書を少なくとも 1 枚貼り付けてください。",
+      "EMPTY_INPUT": "PEM 証明書を1つ以上入力または読み込んでください。",
       "INPUT_TOO_LARGE": "PEM が UTF-8 48 KiB 制限を超えます。",
       "INVALID_PEM": "PEM が不正です。CERTIFICATE ブロック、完全な Base64 と間の空白のみ対応します。",
       "PRIVATE_KEY_REJECTED": "秘密鍵を拒否しました。削除して証明書のみ入力してください。",

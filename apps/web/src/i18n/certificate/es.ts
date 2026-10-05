@@ -11,6 +11,19 @@ export const certificateCopy = {
     "samplesHelp": "Elige un conjunto de certificados sintéticos públicos para rellenar los campos. Después, usa el botón de comprobación para ejecutarla.",
     "closeExamples": "Cerrar ejemplos",
     "evidenceTitle": "Evidencia",
+    "file": {
+      "status": "Importación de archivo",
+      "choose": "Elegir archivo PEM",
+      "help": "Pega texto PEM o arrastra aquí un archivo de certificados. Los archivos se leen solo en tu navegador.",
+      "reading": "Leyendo archivo…",
+      "imported": "Archivo importado. Revisa el contenido y comprueba el paquete.",
+      "errorTitle": "No se pudo importar el archivo",
+      "errors": {
+        "FILE_COUNT": "Elige un archivo que contenga el paquete de certificados.",
+        "FILE_ENCODING": "Usa un archivo de texto UTF-8 con certificados PEM.",
+        "FILE_READ_FAILED": "No se pudo leer el archivo. Elígelo de nuevo o pega su contenido."
+      }
+    },
     "pem": "Certificados PEM",
     "pemHelp": "Solo bloques CERTIFICATE y espacios; hasta {{maximum}} certificados y {{kib}} KiB. Se rechazan claves privadas.",
     "bytes": "{{current}} / {{maximum}} bytes",
@@ -87,7 +100,7 @@ export const certificateCopy = {
       "duplicate": "Certificado duplicado"
     },
     "errors": {
-      "EMPTY_INPUT": "Pega al menos un certificado PEM.",
+      "EMPTY_INPUT": "Introduce o importa al menos un certificado PEM.",
       "INPUT_TOO_LARGE": "PEM supera 48 KiB UTF-8.",
       "INVALID_PEM": "PEM incorrecto. Solo se admiten CERTIFICATE, Base64 completo y espacios entre bloques.",
       "PRIVATE_KEY_REJECTED": "Clave privada rechazada. Elimínala e introduce solo certificados.",
