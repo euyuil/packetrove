@@ -8,6 +8,10 @@ export const ko = {
   },
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: '개발 환경' },
+      staging: { label: 'STAGING', description: '스테이징 환경' },
+    },
     pageLoading: "페이지를 불러오는 중…", pageLoadFailure: "페이지를 불러오지 못했습니다. 다시 시도해 주세요.", retryPage: "다시 시도",
     home: '홈', homeLabel: 'Packetrove 홈', navigation: '주 탐색 메뉴',
     language: '언어', tools: 'IP 주소 도구', copied: '복사됨', dismissCopy: '복사 오류 닫기',

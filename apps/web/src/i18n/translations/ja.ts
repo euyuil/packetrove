@@ -8,6 +8,10 @@ export const ja = {
   },
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: '開発環境' },
+      staging: { label: 'STAGING', description: 'ステージング環境' },
+    },
     pageLoading: "ページを読み込み中…", pageLoadFailure: "ページを読み込めませんでした。もう一度お試しください。", retryPage: "再試行",
     home: 'ホーム', homeLabel: 'Packetrove ホーム', navigation: 'メインナビゲーション',
     language: '言語', tools: 'IP アドレスツール', copied: 'コピー済み', dismissCopy: 'コピーエラーを閉じる',

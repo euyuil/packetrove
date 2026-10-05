@@ -202,7 +202,7 @@ describe('readiness followed by the production smoke check across separate origi
           .replaceAll('https://packetrove.com', websiteOrigin));
       if (path === '/assets/main.js') return send(response, 'application/javascript', `const sourceCommit = "${commit}";`);
       if (path === '/assets/main.css') return send(response, 'text/css', 'body { margin: 0; }');
-      send(response, 'text/html', '<h1>Page not found</h1><a href="/">Return to home</a>', 404);
+      send(response, 'text/html', readFileSync(new URL('../apps/web/dist/404.html', import.meta.url), 'utf8'), 404);
     });
     const apiServer = createServer((request, response) => {
       const path = request.url!;

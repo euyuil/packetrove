@@ -415,6 +415,12 @@ environments. Each has a separate website Worker and API/MCP Worker:
 | Development | `https://dev.packetrove.com` | `https://api.dev.packetrove.com` |
 | Staging | `https://staging.packetrove.com` | `https://api.staging.packetrove.com` |
 
+After this revision is deployed, the website header identifies development with
+a purple `DEV` badge and staging with an amber `STAGING` badge. Their page titles
+start with `[DEV] ` or `[STAGING] `. Both use the existing `VITE_WEBSITE_ORIGIN`
+build setting, including prerendered HTML; changing only the request hostname
+does not relabel a build. Production and other configured hosts have no marker.
+
 ### Crawler policy
 
 After this revision is deployed, development and staging serve

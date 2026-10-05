@@ -13,6 +13,7 @@ import {
 } from '@packetrove/contracts';
 import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { getPageMetadata } from '../../web/src/i18n/page-metadata';
+import { getWebsiteEnvironment } from '../../web/src/website-environment';
 import { resources } from '../../web/src/i18n/resources';
 import { escapeHtml, renderRobotsText, websitePages, websiteRedirects } from '../../web/src/seo';
 import { localizedPath, pagePaths } from '../../web/src/i18n/routes';
@@ -30,6 +31,7 @@ function parseOrigin(argument: string): string {
   return target.origin;
 }
 const origin = parseOrigin(originArguments[0]!);
+const websiteEnvironment = getWebsiteEnvironment(origin);
 const apiOrigin = parseOrigin(originArguments[1]!);
 const serviceIdentity = getServiceIdentity(origin);
 assert.notEqual(origin, apiOrigin, 'Website and API must use separate origins.');
@@ -118,6 +120,16 @@ for (const page of websitePages) {
     assert.equal(Array.from(pageHtml.matchAll(/<h1\b/g)).length, 1, `Single page heading: ${path}`);
     assert(new RegExp('<h1[^>]*>' + escapeHtml(heading) + '</h1>').test(pageHtml), `Prerendered heading: ${path}`);
     assert(pageHtml.includes('data-prerendered-path="' + page.pathname + '"'), `Prerendered page: ${path}`);
+    const header = /<header\b[^>]*>([\s\S]*?)<\/header>/.exec(pageHtml)?.[1] ?? '';
+    assert.equal(Array.from(header.matchAll(/\bdata-environment="/g)).length,
+      websiteEnvironment ? 1 : 0, `Environment badge count: ${path}`);
+    if (websiteEnvironment) {
+      const copy = text.common.environment[websiteEnvironment.name];
+      assert(header.includes('data-environment="' + websiteEnvironment.name + '"'), `Environment badge: ${path}`);
+      assert(header.includes('aria-label="' + escapeHtml(copy.label + ': ' + copy.description) + '"'),
+        `Localized environment description: ${path}`);
+      assert(new RegExp('<span[^>]*>' + copy.label + '</span>').test(header), `Visible environment label: ${path}`);
+    }
     const navigation = /<nav\b[^>]*>([\s\S]*?)<\/nav>/.exec(pageHtml)?.[1] ?? '';
     assert(navigation.includes('href="' + localizedPath(pagePaths.home, page.locale) + '"'), `Shared Home navigation: ${path}`);
     for (const tool of catalogTools) {
@@ -236,6 +248,8 @@ assert.match(missingPage.headers.get('content-type') ?? '', /text\/html/);
 const missingHtml = await missingPage.text();
 assert.match(missingHtml, /<h1>Page not found<\/h1>/);
 assert.match(missingHtml, /<a href="\/">Return to home<\/a>/);
+const missingMetadata = getPageMetadata('en', 'notFound', '/missing-page', resources.en.translation, origin);
+assert(missingHtml.includes('<title>' + escapeHtml(missingMetadata.title) + '</title>'), 'Missing page environment title');
 const missingAsset = await timedFetch(`${origin}/assets/missing.js`);
 assert.equal(missingAsset.status, 404, 'Missing asset status');
 for (const path of ['/api/v1/ip', '/api/v1/public-ip', '/api/openapi.json', '/mcp', '/health', '/openapi.json',

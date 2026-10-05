@@ -3,6 +3,7 @@ import { getLocaleTranslation } from './locale-resources';
 import type { TranslationResource } from './translation-resource';
 import { supportedLocales } from './locales';
 import { localizedPath, type Locale, type Page } from './routes';
+import { getWebsiteEnvironment } from '../website-environment';
 
 export function getWebsiteOrigin(): string {
   const environment = (import.meta as ImportMeta & { env?: { VITE_WEBSITE_ORIGIN?: string } }).env;
@@ -13,7 +14,10 @@ export function getWebsiteOrigin(): string {
 
 export function getPageMetadata(locale: Locale, page: Page, path: string,
   translations: TranslationResource = getLocaleTranslation(locale), websiteOrigin = getWebsiteOrigin()) {
-  const { title, description } = translations.meta[page];
+  const { description } = translations.meta[page];
+  const environment = getWebsiteEnvironment(websiteOrigin);
+  const title = (environment ? '[' + translations.common.environment[environment.name].label + '] ' : '')
+    + translations.meta[page].title;
   const image = websiteOrigin + '/packetrove-social-preview-1280x640.png';
   const meta: Array<{ attribute: 'name' | 'property'; key: string; content: string }> = [
     { attribute: 'name', key: 'description', content: description },
