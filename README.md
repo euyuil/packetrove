@@ -29,8 +29,9 @@ or connect AI agents through Model Context Protocol (MCP).
   copy the minimal CIDR list covering that range, with an exact address count.
 - **Check a connection's public IP.** See and copy the IPv4 or IPv6 address
   observed for the connection making the request.
-- **Inspect a PEM certificate bundle.** Review candidate issuer signatures,
-  validity, duplicates, and an optional DNS hostname, with evidence and next steps.
+- **Inspect a PEM certificate bundle.** Paste text or import a file in the browser.
+  Review candidate issuer signatures, validity, duplicates, and an optional DNS
+  hostname, with evidence and next steps.
 
 The website supports ten languages. Hosted tools require no account or API key.
 All five tools are available through the website, Web API, and MCP. The CLI

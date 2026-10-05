@@ -30,6 +30,26 @@ language navigation; reload starts fresh. Editing inputs clears previous
 results, and edits, newer checks, and navigation cancel outstanding work.
 No certificate or issuer lookup is made to display examples or run a check.
 
+Users can paste PEM text, choose a local file, or drop one file into the PEM
+input area. File selection and drag-and-drop read bytes in the browser, without
+an upload or API call. The picker suggests `.pem`, `.crt`, `.cer`, and plain-text
+files; the actual content must satisfy the same PEM certificate rules as pasted
+text. One UTF-8 text file can contain the entire bundle. File import checks the
+48 KiB byte limit before reading and rejects invalid UTF-8 without replacing
+the current input or completed report. Read failures and multiple-file drops
+also preserve the current draft and display localized, non-echoing errors.
+Binary DER and PKCS#12 are outside this input format.
+
+A successful import replaces the PEM text, preserves the optional hostname,
+clears stale results and errors, and leaves the content editable. A UTF-8
+byte-order mark is removed, and line endings are normalized to the textarea's
+LF representation so located errors continue to select the correct text. It
+does not run a check. The same primary action validates the imported content, including
+rejecting private keys and other PEM blocks. Editing, clearing, loading an
+example, choosing another file, checking, or leaving the tool cancels pending
+reads so they cannot overwrite newer work. File selection resets after every
+choice, allowing the same file to be imported again.
+
 API and remote MCP calls send certificates and any expected hostname to the
 server. This boundary is disclosed on the tool, API/MCP guides, and Privacy
 Policy. The application does not persist these values or include them in logs.
@@ -42,9 +62,10 @@ results, or exception payloads. Hosting-provider processing is described in the
 
 The page follows the task sequence in one column: supply a bundle, explicitly
 check it, and read a full-width report below the input. The PEM field is the
-first input control, followed by the byte count and optional hostname. Brief
-workflow guidance stays with the input, including how edits clear old results. The
-input area has a bounded height so long PEM bundles do not dominate the page.
+first input control, followed by the byte count, file import action, and optional
+hostname. Brief workflow guidance stays with the input, including how edits clear
+old results. The input area has a bounded height so long PEM bundles do not
+dominate the page.
 The single primary action is **Check certificate bundle**. **Clear** and
 **Try an example** are secondary actions with visible button borders.
 
@@ -186,8 +207,11 @@ generator process memory.
 - Workers tests compare all ten scenarios with the browser's shared checker at
   the reported runtime time, through API and current/legacy MCP clients. They
   verify discovery, structured errors, no-store responses, and safe logging.
-- Website tests cover blank startup, optional example loading without automatic
-  checks, preservation when browsing examples, the report's reading order and
+- Website tests cover local file selection and drops without uploads or automatic
+  checks, repeat selection, the exact file byte limit, UTF-8/BOM/line endings,
+  read failures, preserved drafts, canceled obsolete reads, blank startup,
+  optional example loading without automatic checks, preservation when browsing
+  examples, the report's reading order and
   progressive evidence/details disclosure, local crypto, graph CN labels and numbered
   table rows, selected input errors, explicit leaf choice, navigation and locale
   retention, reload clearing, and cancellation of obsolete checks.
