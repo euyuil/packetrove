@@ -117,6 +117,20 @@ their existing contracts. Further locales are future work.
 
 ## Shared page presentation
 
+Development and staging show a persistent environment badge beside the Packetrove
+name in the shared header: purple `DEV` or amber `STAGING`. Keep its text visible
+on narrow screens and provide a localized full environment name for assistive
+technology and hover help. The badge is informational and separate from the home
+link. Allow the language selector to wrap below the brand and badge when needed.
+Use the configured `VITE_WEBSITE_ORIGIN` so prerendering and hydration agree;
+production, local default builds, and other hosts have no badge.
+
+Prefix development and staging browser titles with `[DEV] ` or `[STAGING] ` in
+static HTML, social metadata, and client navigation, preserving the localized
+page title. The independent English static 404 fallback also has this title
+prefix; its shared header appears when the application loads. Production titles
+keep their existing wording. Environment identification makes no network requests.
+
 On narrow screens, replace the wrapped navigation button rows with a menu
 showing the current page and complete localized destination names. Its entries
 include only Home and browser tools from the shared tool catalog, with integration

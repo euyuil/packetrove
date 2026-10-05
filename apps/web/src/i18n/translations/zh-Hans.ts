@@ -4,6 +4,10 @@ import type { TranslationResource } from '../translation-resource';
 export const zhHans = {
   certificate: certificateCopy.certificate,
   common: {
+    environment: {
+      development: { label: 'DEV', description: '开发环境' },
+      staging: { label: 'STAGING', description: '预发布环境' },
+    },
     pageLoading: "正在加载页面…", pageLoadFailure: "页面加载失败，请重试。", retryPage: "重试",
     home: '首页', homeLabel: 'Packetrove 首页', navigation: '主导航',
     language: '语言', tools: 'IP 地址工具', copied: '已复制', dismissCopy: '关闭复制错误提示',

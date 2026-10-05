@@ -15,6 +15,7 @@ import { getPreparedPage, isRoutePrepared, prepareRoute } from './page-resources
 import { installLocale } from './i18n/locale-resources';
 import { subscribeHistoryWrites } from './history-writes';
 import { PageLoadingIndicator } from './PageLoadingIndicator';
+import { EnvironmentBadge } from './EnvironmentBadge';
 
 export function App({ initialPathname = window.location.pathname }: { initialPathname?: string } = {}) {
   const { t, i18n } = useTranslation();
@@ -134,12 +135,15 @@ export function App({ initialPathname = window.location.pathname }: { initialPat
     <Container size={apiPage ? '100%' : 'lg'} px={{ base: 'md', sm: 'xl' }} py={{ base: 'md', sm: 'xl' }}>
     <Stack gap="lg">
       <Group component="header" justify="space-between">
-        <Anchor href={href('/')} onClick={navigate} aria-label={t($ => $.common.homeLabel)} underline="never" c="var(--mantine-color-text)">
-          <Group gap="sm">
-            <img src={packetroveLogo} width="40" height="40" alt="" />
-            <Text component="span" size="xl" fw={700}>Packetrove</Text>
-          </Group>
-        </Anchor>
+        <Group gap="xs" wrap="nowrap">
+          <Anchor href={href('/')} onClick={navigate} aria-label={t($ => $.common.homeLabel)} underline="never" c="var(--mantine-color-text)">
+            <Group gap="sm" wrap="nowrap">
+              <img src={packetroveLogo} width="40" height="40" alt="" />
+              <Text component="span" size="xl" fw={700}>Packetrove</Text>
+            </Group>
+          </Anchor>
+          <EnvironmentBadge />
+        </Group>
         <LanguageSelector locale={locale} path={path} urlSuffix={urlSuffix}
           onOpen={() => setUrlSuffix(window.location.search + window.location.hash)} onNavigate={navigate} />
       </Group>
