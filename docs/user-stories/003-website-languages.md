@@ -99,8 +99,11 @@ network results and share a link in my preferred language.
 - Prerender every registered page in every supported locale at build time,
   including headings, explanations, links, and examples. Hydrate the same React components in the
   browser without losing page state during navigation or language changes.
-- Generate `sitemap.xml` from the canonical page list and reference it in
-  `robots.txt`. Do not include aliases, missing pages, or API origins.
+- Generate the production `sitemap.xml` from the canonical page list and reference
+  it in `robots.txt`. Do not include aliases, missing pages, or API origins.
+  Development and staging publish a disallow-all `robots.txt`, omit the sitemap,
+  and attach `X-Robots-Tag: noindex` to static assets. Their canonical and language
+  links continue to use the corresponding environment's origin.
 - Keep API endpoint summaries and curl examples in the prerendered HTML. Load
   the interactive reference only on the client, before those summaries and
   examples. Group them in a localized Mantine accordion that is collapsed by

@@ -31,6 +31,14 @@ export function publicOrigin(value: string): string {
   return url.origin;
 }
 
+// Dynamic responses must use the configured service origin, not request headers.
+export function getNonProductionCrawlerPolicy(origin?: string) {
+  if (!origin || !/^(?:api\.)?(?:dev|staging)\.packetrove\.com$/.test(new URL(publicOrigin(origin)).hostname)) {
+    return undefined;
+  }
+  return { robotsText: 'User-agent: *\nDisallow: /\n', robotsTag: 'noindex' } as const;
+}
+
 export function getServiceIdentity(websiteOrigin = PUBLIC_WEBSITE_ORIGIN) {
   const origin = publicOrigin(websiteOrigin);
   return { ...PACKETROVE_IDENTITY, websiteUrl: origin,

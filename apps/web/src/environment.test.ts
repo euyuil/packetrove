@@ -16,8 +16,8 @@ it.each(['dev', 'staging'])('keeps %s page metadata, API requests, and MCP examp
   const metadata = getPageMetadata('zh-Hans', 'cidr', '/cidr-cover');
   expect(metadata.links.every(link => new URL(link.href).origin === website)).toBe(true);
   expect(renderPageMetadata('/cidr-cover')).toContain(`href="${website}/cidr-cover"`);
-  expect(renderSitemap()).toContain(`<loc>${website}/cidr-cover</loc>`);
-  expect(renderRobotsText()).toContain(`Sitemap: ${website}/sitemap.xml`);
+  expect(renderSitemap()).toBeUndefined();
+  expect(renderRobotsText()).toBe('User-agent: *\nDisallow: /\n');
   expect(getApiUrl('/v1/public-ip')).toBe(`${api}/v1/public-ip`);
   const guide = getMcpGuide('en', getApiUrl('/mcp'));
   expect(guide.identity.metadata.websiteUrl).toBe(website);

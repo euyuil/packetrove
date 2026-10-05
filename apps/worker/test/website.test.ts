@@ -7,6 +7,29 @@ import { supportedLocales } from '../../web/src/i18n/locales';
 import { tools as catalogTools, isToolPage, toolCatalog } from '@packetrove/contracts';
 
 describe('website in the Workers runtime', () => {
+  it.each([
+    ['https://packetrove.com', null],
+    ['https://dev.packetrove.com', 'noindex'],
+    ['https://staging.packetrove.com', 'noindex'],
+  ] as const)('applies static indexing headers for %s, including localized pages and missing assets', async (origin, tag) => {
+    for (const [path, status] of [
+      ['/', 200], [localizedPath(pagePaths.cidr, 'zh-Hans'), 200], ['/favicon.ico', 200], ['/robots.txt', 200],
+      ['/missing-page', 404], ['/assets/missing.js', 404], ['/_headers', 404],
+    ] as const) {
+      const response = await exports.default.fetch(origin + path);
+      expect(response.status, path).toBe(status);
+      expect(response.headers.get('x-robots-tag'), path).toBe(tag);
+      await response.body?.cancel();
+    }
+    const page = await exports.default.fetch(origin + '/');
+    const script = (await page.text()).match(/src="(\/assets\/[^\"]+\.js)"/)?.[1];
+    expect(script).toBeDefined();
+    const asset = await exports.default.fetch(origin + script);
+    expect(asset.status).toBe(200);
+    expect(asset.headers.get('x-robots-tag')).toBe(tag);
+    await asset.body?.cancel();
+  });
+
   it.each(websitePages)('serves localized content and metadata at $pathname without running JavaScript', async ({ locale, page, pathname }) => {
     const response = await exports.default.fetch('http://localhost' + pathname);
     expect(response.status).toBe(200);

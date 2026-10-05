@@ -1,3 +1,4 @@
+import { getNonProductionCrawlerPolicy } from '@packetrove/contracts';
 import { supportedLocales } from './i18n/locales';
 import { legacyPagePaths, localizedPath, pagePaths } from './i18n/routes';
 import { getPageMetadata, getWebsiteOrigin } from './i18n/page-metadata';
@@ -37,6 +38,7 @@ export function renderPageMetadata(pathname: string) {
 }
 
 export function renderSitemap(websiteOrigin = getWebsiteOrigin()) {
+  if (getNonProductionCrawlerPolicy(websiteOrigin)) return undefined;
   return '<?xml version="1.0" encoding="UTF-8"?>\n'
     + '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + websitePages.map(page => '  <url><loc>' + escapeHtml(websiteOrigin + page.pathname) + '</loc></url>').join('\n')
@@ -44,5 +46,7 @@ export function renderSitemap(websiteOrigin = getWebsiteOrigin()) {
 }
 
 export function renderRobotsText(websiteOrigin = getWebsiteOrigin()) {
+  const policy = getNonProductionCrawlerPolicy(websiteOrigin);
+  if (policy) return policy.robotsText;
   return 'User-agent: *\nAllow: /\n\nSitemap: ' + websiteOrigin + '/sitemap.xml\n';
 }

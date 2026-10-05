@@ -5,6 +5,7 @@ import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.j
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResultSchema as LegacyCallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
+import { getNonProductionCrawlerPolicy } from '@packetrove/contracts';
 import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   getServiceIdentity, getToolResultLink, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
@@ -38,7 +39,14 @@ const automation = readSmokeAutomation(process.env);
 
 const timedFetch: typeof fetch = async (input, init) => {
   const request = new Request(input, init);
-  return fetch(request, { signal: AbortSignal.any([request.signal, AbortSignal.timeout(15_000)]) });
+  const response = await fetch(request, { signal: AbortSignal.any([request.signal, AbortSignal.timeout(15_000)]) });
+  // Static redirect rules run before _headers; check the destination after redirects.
+  if (response.status < 300 || response.status >= 400) {
+    assert.equal(response.headers.get('x-robots-tag'),
+      getNonProductionCrawlerPolicy(new URL(request.url).origin)?.robotsTag ?? null,
+      'Environment indexing policy: ' + new URL(request.url).pathname);
+  }
+  return response;
 };
 const scopedMcpFetch = createMcpSmokeFetch(new URL(`${apiOrigin}/mcp`), automation, timedFetch);
 const mcpFetch: typeof fetch = async (input, init) => {
@@ -193,16 +201,28 @@ for (const page of websitePages) {
   }
 }
 const sitemap = await timedFetch(`${origin}/sitemap.xml`);
-assert.equal(sitemap.status, 200, 'Sitemap status');
-assert.match(sitemap.headers.get('content-type') ?? '', /xml/);
-const sitemapXml = await sitemap.text();
-assert(sitemapXml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'), 'Sitemap namespace');
-assert.deepEqual(Array.from(sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]),
-  websitePages.map(page => origin + page.pathname), 'Sitemap canonical URLs');
+if (getNonProductionCrawlerPolicy(origin)) {
+  assert.equal(sitemap.status, 404, 'Non-production websites must not publish a sitemap');
+  await sitemap.body?.cancel();
+} else {
+  assert.equal(sitemap.status, 200, 'Sitemap status');
+  assert.match(sitemap.headers.get('content-type') ?? '', /xml/);
+  const sitemapXml = await sitemap.text();
+  assert(sitemapXml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'), 'Sitemap namespace');
+  assert.deepEqual(Array.from(sitemapXml.matchAll(/<loc>([^<]+)<\/loc>/g), match => match[1]),
+    websitePages.map(page => origin + page.pathname), 'Sitemap canonical URLs');
+}
 const robots = await timedFetch(`${origin}/robots.txt`);
 assert.equal(robots.status, 200, 'Robots status');
 assert.match(robots.headers.get('content-type') ?? '', /text\/plain/);
 assert.equal(await robots.text(), renderRobotsText(origin), 'Robots policy and sitemap reference');
+const apiCrawlerPolicy = getNonProductionCrawlerPolicy(apiOrigin);
+if (apiCrawlerPolicy) {
+  const apiRobots = await timedFetch(`${apiOrigin}/robots.txt`);
+  assert.equal(apiRobots.status, 200, 'API robots status');
+  assert.match(apiRobots.headers.get('content-type') ?? '', /text\/plain/);
+  assert.equal(await apiRobots.text(), apiCrawlerPolicy.robotsText, 'Non-production API robots policy');
+}
 console.log(`PASS ${websitePages.length} prerendered localized pages, metadata, canonical and language links, sitemap, and robots policy`);
 for (const { from, to } of websiteRedirects) {
   const response = await timedFetch(`${origin}${from}?source=example`, { redirect: 'manual' });
