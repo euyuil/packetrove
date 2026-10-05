@@ -4,7 +4,7 @@ import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { ToolError } from '@packetrove/core';
 
 export type CertificateBundleDraft = {
-  request: CertificateBundleRequest; sampleName: string;
+  request: CertificateBundleRequest;
   result: CertificateBundleResult | null; error: ToolError | null;
 };
 
@@ -17,12 +17,12 @@ export function useCertificateBundleCheck(draft: CertificateBundleDraft,
   const [checking, setChecking] = useState(false);
   useEffect(() => () => { revision.current++; controller.current?.abort(); }, []);
 
-  const replaceInput = useCallback((request: CertificateBundleRequest, sampleName = draft.sampleName) => {
+  const replaceInput = useCallback((request: CertificateBundleRequest) => {
     revision.current++;
     controller.current?.abort();
     setChecking(false);
-    change({ request, sampleName, result: null, error: null });
-  }, [change, draft.sampleName]);
+    change({ request, result: null, error: null });
+  }, [change]);
   const inspect = async (request: CertificateBundleRequest) => {
     const current = ++revision.current;
     controller.current?.abort();

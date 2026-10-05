@@ -1,6 +1,7 @@
 import { webcrypto } from 'node:crypto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { certificateFixtures, CERTIFICATE_BUNDLE_SAMPLES } from '@packetrove/contracts';
 import * as core from '@packetrove/core/certificate-bundle';
 import { App } from './App';
@@ -57,6 +58,83 @@ describe('the integrated certificate checker', () => {
     expect(window.location.pathname + window.location.search + window.location.hash).toBe('/certificate-bundle');
     fireEvent.change(pemInput(), { target: { value: certificateFixtures.leaf } });
     expect(screen.queryByRole('img', { name: /Certificate issuer graph/ })).toBeNull();
+  });
+
+  it('keeps all ten examples behind a secondary action and fills inputs without checking', async () => {
+    const user = userEvent.setup();
+    const checker = vi.spyOn(core, 'checkCertificateBundle');
+    const network = vi.fn(); vi.stubGlobal('fetch', network);
+    const storage = vi.spyOn(Storage.prototype, 'setItem');
+    render(<App />);
+    expect(screen.queryByRole('region', { name: 'Check results' })).toBeNull();
+    const input = screen.getByRole('region', { name: 'Certificate input' });
+    expect(input.querySelector('textarea, input, button')).toBe(pemInput());
+    const opener = screen.getByRole('button', { name: 'Try an example' });
+    await user.click(opener);
+    const dialog = screen.getByRole('dialog', { name: 'Synthetic certificate examples' });
+    const choices = within(dialog).getByRole('group', { name: 'Synthetic certificate examples' });
+    expect(within(choices).getAllByRole('button')).toHaveLength(CERTIFICATE_BUNDLE_SAMPLES.length);
+    await user.click(within(dialog).getByRole('button', { name: 'Normal bundle' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(pemInput().value).toBe(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem);
+    expect((screen.getByLabelText('Expected hostname (optional)') as HTMLInputElement).value).toBe('service.example.com');
+    await waitFor(() => expect(document.activeElement === opener).toBe(true));
+    expect(screen.queryByRole('region', { name: 'Check results' })).toBeNull();
+    expect(checker).not.toHaveBeenCalled();
+    expect(network).not.toHaveBeenCalled();
+    expect(storage).not.toHaveBeenCalled();
+    await user.click(screen.getByRole('button', { name: 'Check certificate bundle' }));
+    await completed();
+    expect(checker).toHaveBeenCalledOnce();
+  });
+
+  it('preserves a completed check when browsing examples and clears it only when loading a new bundle', async () => {
+    const user = userEvent.setup();
+    const checker = vi.spyOn(core, 'checkCertificateBundle');
+    render(<App />);
+    enter(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem, 'service.example.com');
+    await completed();
+    const graph = screen.getByRole('img', { name: /Certificate issuer graph/ });
+    await user.click(screen.getByRole('button', { name: 'Try an example' }));
+    expect(graph.isConnected).toBe(true);
+    expect(pemInput().value).toBe(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem);
+    await user.click(screen.getByRole('button', { name: 'Close examples' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByRole('img', { name: /Certificate issuer graph/ })).toBe(graph);
+    await user.click(screen.getByRole('button', { name: 'Try an example' }));
+    await user.click(screen.getByRole('button', { name: 'Expired certificate' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(pemInput().value).toBe(CERTIFICATE_BUNDLE_SAMPLES.find(sample => sample.name === 'expired')!.request.pem);
+    expect(screen.queryByRole('region', { name: 'Check results' })).toBeNull();
+    expect(checker).toHaveBeenCalledOnce();
+  });
+
+  it('puts findings before relationships and reveals evidence and certificate details on request', async () => {
+    render(<App />);
+    enter(CERTIFICATE_BUNDLE_SAMPLES[0]!.request.pem, 'service.example.com');
+    await completed();
+    const input = screen.getByRole('region', { name: 'Certificate input' });
+    const report = screen.getByRole('region', { name: 'Check results' });
+    const relationships = screen.getByRole('region', { name: 'Issuer relationships' });
+    expect(input.compareDocumentPosition(report) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(report.compareDocumentPosition(relationships) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(report).getAllByText('Next action:').length).toBeGreaterThan(0);
+    expect(within(report).queryByText('HOSTNAME_MATCH')).toBeNull();
+    fireEvent.click(within(report).getByRole('button', { name: /Evidence: Expected hostname matches/ }));
+    expect(within(report).getByText('HOSTNAME_MATCH')).toBeDefined();
+    const details = screen.getByRole('region', { name: 'Certificate details · Original order' });
+    const certificate = within(details).getByRole('button', { name: /#1 Non-CA certificate/ });
+    expect(certificate.getAttribute('aria-expanded')).toBe('false');
+    expect(within(details).getAllByRole('button').every(button => button.getAttribute('aria-expanded') === 'false')).toBe(true);
+    expect(within(details).queryByRole('textbox', { name: 'Structured result JSON' })).toBeNull();
+    fireEvent.click(certificate);
+    const certificateContent = await within(details).findByRole('region', { name: /#1 Non-CA certificate/ });
+    expect(within(certificateContent).getByText('SHA-256 fingerprint')).toBeDefined();
+    fireEvent.click(within(details).getByRole('button', { name: 'Structured result JSON' }));
+    const jsonInput = await within(details).findByRole('textbox', { name: 'Structured result JSON' });
+    const json = JSON.parse((jsonInput as HTMLTextAreaElement).value);
+    expect(json.certificates).toHaveLength(3);
+    expect(json.findings.some((finding: { code: string }) => finding.code === 'HOSTNAME_MATCH')).toBe(true);
   });
 
   it('focuses an original input location when a private-key block follows valid certificates', async () => {
