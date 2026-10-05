@@ -48,6 +48,21 @@
   error locations accurate. If values can contain separators, use an unambiguous
   parser appropriate to that format.
 
+## Website page titles
+
+- Use the same title structure in every supported locale: the homepage uses
+  `Packetrove — {localized tagline}`, and every other page uses
+  `{localized page title} — Packetrove`. This includes tool pages, integration
+  guides, service pages, and not-found pages.
+- Separate the two parts with an em dash and one space on each side (` — `).
+  Include the Packetrove brand exactly once.
+- Localize the page name and tagline with natural wording and capitalization
+  for each locale. Treat the trailing brand as a separate site identity rather
+  than embedding it in a translated possessive phrase.
+- Store the complete titles in the metadata translation resources. Use the same
+  title in static HTML, browser navigation, Open Graph, and Twitter metadata.
+  Keep page headings and navigation labels in their existing text roles.
+
 ## Website navigation and documentation entry points
 
 - Reserve the shared primary navigation for Home and product tools that users

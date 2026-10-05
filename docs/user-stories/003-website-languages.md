@@ -86,6 +86,8 @@ network results and share a link in my preferred language.
   entries. Use self-referencing canonical URLs and reciprocal links for all
   registered locales, plus `x-default` pointing to English. Update metadata during in-page
   navigation.
+  Follow the [website page title policy](../../AGENTS.md#website-page-titles)
+  for browser and social titles in every locale.
   The homepage title presents Packetrove as network tools for humans and agents,
   using the localized project tagline. Homepage, API, and MCP descriptions
   explain the product purpose, intended audience, and interface workflows.
