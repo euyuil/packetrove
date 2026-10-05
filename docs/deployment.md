@@ -415,6 +415,33 @@ environments. Each has a separate website Worker and API/MCP Worker:
 | Development | `https://dev.packetrove.com` | `https://api.dev.packetrove.com` |
 | Staging | `https://staging.packetrove.com` | `https://api.staging.packetrove.com` |
 
+### Crawler policy
+
+After this revision is deployed, development and staging serve
+`User-agent: *` with `Disallow: /` at `/robots.txt` on both the website and API
+origins. Their website builds omit `sitemap.xml` and its robots reference.
+Production retains its website sitemap and allow-all robots policy.
+
+Host-specific Static Assets `_headers` rules attach `X-Robots-Tag: noindex` to
+development and staging website assets and the API's static OpenAPI document.
+The API also attaches this header to dynamic responses, including API and MCP
+errors, using its configured `PUBLIC_API_ORIGIN`. Request-supplied host or Origin
+headers cannot change that policy. Static redirect rules run before `_headers`;
+their destination responses carry the indexing header. Keep asset-first routing
+so ordinary asset requests continue to use the static serving path. See
+[Cloudflare's headers documentation](https://developers.cloudflare.com/workers/static-assets/headers/).
+
+These are crawler requests, not access controls. Robots rules apply separately
+to each origin, and AI clients visiting at a user's request may not follow them.
+Also, a crawler blocked by `robots.txt` cannot read the `noindex` response header;
+already indexed URLs need a separate removal process or a period of allowed
+crawling with `noindex`. See [Google's indexing guidance](https://developers.google.com/search/docs/crawling-indexing/block-indexing)
+and [OpenAI's crawler documentation](https://developers.openai.com/api/docs/bots).
+Environment smoke checks verify both robots responses, the sitemap's absence,
+and indexing headers on website assets, API responses, and MCP responses.
+
+### Environment deployments
+
 The **Deploy development or staging** workflow deploys only current revisions
 with successful branch CI. Development selects `develop`; before that branch
 exists, a manual run can bootstrap it from validated `main`. Staging selects the

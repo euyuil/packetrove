@@ -41,11 +41,14 @@ try {
   } finally {
     globalThis.fetch = originalFetch;
   }
-  await writeFile(join(root, 'dist/sitemap.xml'), renderSitemap());
+  const sitemap = renderSitemap();
+  if (sitemap) await writeFile(join(root, 'dist/sitemap.xml'), sitemap);
+  else await rm(join(root, 'dist/sitemap.xml'), { force: true });
   await writeFile(join(root, 'dist/robots.txt'), renderRobotsText());
   await writeFile(join(root, 'dist/_redirects'), websiteRedirects
     .map(({ from, to }) => from + ' ' + to + ' 301').join('\n') + '\n');
-  console.log('Prerendered ' + websitePages.length + ' localized pages and generated sitemap.xml, robots.txt, and _redirects.');
+  console.log('Prerendered ' + websitePages.length + ' localized pages and generated '
+    + (sitemap ? 'sitemap.xml, ' : '') + 'robots.txt and _redirects.');
 } finally {
   await rm(renderDirectory, { recursive: true, force: true });
 }

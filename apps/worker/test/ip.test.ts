@@ -1,5 +1,5 @@
 import { exports } from 'cloudflare:workers';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { ErrorResponseSchema, PUBLIC_IP_PATH, PublicIpResultSchema } from '@packetrove/contracts';
 
 function lookup(headers: Record<string, string> = {}, method = 'GET') {
@@ -7,6 +7,13 @@ function lookup(headers: Record<string, string> = {}, method = 'GET') {
 }
 
 describe('current public IP in the Workers runtime', () => {
+  beforeAll(async () => {
+    // Load the Worker before timing individual connection observations.
+    const response = await exports.default.fetch('http://localhost/health');
+    expect(response.status).toBe(200);
+    await response.body?.cancel();
+  });
+
   it.each([
     { ip: '203.0.113.1', family: 'ipv4' },
     { ip: '2001:db8::1', family: 'ipv6' },

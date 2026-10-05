@@ -1,3 +1,9 @@
 /openapi.json
   Access-Control-Allow-Origin: *
   X-Content-Type-Options: nosniff
+
+https://api.dev.packetrove.com/*
+  X-Robots-Tag: noindex
+
+https://api.staging.packetrove.com/*
+  X-Robots-Tag: noindex
