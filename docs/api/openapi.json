@@ -523,7 +523,8 @@
                     "unsupported",
                     "unavailable",
                     null
-                  ]
+                  ],
+                  "description": "Verification with this certificate's own public key when Subject and Issuer names match. Failed or incomplete verification does not exclude a valid self-issued key-rollover certificate signed by a different key."
                 }
               },
               "required": [
@@ -649,11 +650,14 @@
                     "CERTIFICATE_EXPIRED",
                     "CERTIFICATE_NOT_YET_VALID",
                     "SELF_SIGNED_CERTIFICATE",
+                    "SELF_ISSUED_CERTIFICATE",
                     "SELF_SIGNATURE_FAILED",
                     "SIGNATURE_UNSUPPORTED",
                     "SIGNATURE_CHECK_UNAVAILABLE",
                     "ISSUER_NOT_IN_BUNDLE",
+                    "LEAF_ISSUER_NOT_IN_BUNDLE",
                     "CANDIDATE_SIGNATURE_FAILED",
+                    "LEAF_ISSUER_CANDIDATES_REJECTED",
                     "ISSUER_NOT_CA",
                     "ISSUER_KEY_USAGE_REJECTED",
                     "ISSUER_KEY_ID_MISMATCH",
@@ -670,7 +674,8 @@
                     "error",
                     "warning",
                     "info"
-                  ]
+                  ],
+                  "description": "Error: a confirmed issue with identified certificates or all supplied issuer candidates for the selected leaf. Warning: a candidate issue or an incomplete requested check. Info: a structural or successful observation. No severity establishes client trust or invalidates every possible path."
                 },
                 "certificateIndexes": {
                   "type": "array",
@@ -1264,7 +1269,7 @@
           "Certificates"
         ],
         "summary": "Inspect a PEM certificate bundle and optional DNS hostname",
-        "description": "Accept up to 16 CERTIFICATE blocks in at most 49152 UTF-8 PEM bytes, with only whitespace between blocks. Private keys are rejected. Preserve original zero-based positions and verify candidate signatures separately from issuer CA and keyCertSign constraints. Distinguish failed, unsupported, and unavailable checks. An issuer absent from this input is informational; roots are commonly omitted. Multiple leaves require an explicit leafIndex for hostname checking. Check ASCII DNS SAN names, with a complete leftmost wildcard matching one label and no Common Name fallback. Evaluation uses the server clock; documentation examples use a fixed illustrative time. Remote calls transmit certificates and optional hostname to the server; inputs, results, and certificate details are excluded from application logs. No full RFC 5280 path validation, client trust, revocation checking, live probing, or proof of deployment safety. JSON transport bodies remain limited to 65536 bytes.",
+        "description": "Accept up to 16 CERTIFICATE blocks in at most 49152 UTF-8 PEM bytes, with only whitespace between blocks. Private keys are rejected. Preserve original zero-based positions and verify candidate signatures separately from issuer CA and keyCertSign constraints. Distinguish failed, unsupported, and unavailable checks. Missing selected-leaf issuers and blocked requested hostname checks are warnings; other missing issuers are informational because roots are commonly omitted. All explicitly rejected supplied issuer candidates for the selected leaf produce an error. Unknown checks and key-identifier mismatches alone do not produce that error. A failed candidate does not invalidate another viable link. Verified self-issued CA key rollover is informational; verification with the certificate's own public key remains separate. Multiple leaves require an explicit leafIndex for hostname checking. Check ASCII DNS SAN names, with a complete leftmost wildcard matching one label and no Common Name fallback. Evaluation uses the server clock; documentation examples use a fixed illustrative time. Remote calls transmit certificates and optional hostname to the server; inputs, results, and certificate details are excluded from application logs. No full RFC 5280 path validation, client trust, revocation checking, live probing, or proof of deployment safety. JSON transport bodies remain limited to 65536 bytes.",
         "security": [],
         "requestBody": {
           "required": true,

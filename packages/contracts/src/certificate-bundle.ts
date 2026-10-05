@@ -14,8 +14,9 @@ export const CertificateBundleRequestSchema = z.strictObject({
 export const CertificateCheckStatusSchema = z.enum(['verified', 'failed', 'unsupported', 'unavailable']);
 export const CertificateFindingCodeSchema = z.enum([
   'DUPLICATE_CERTIFICATE', 'CERTIFICATE_EXPIRED', 'CERTIFICATE_NOT_YET_VALID',
-  'SELF_SIGNED_CERTIFICATE', 'SELF_SIGNATURE_FAILED', 'SIGNATURE_UNSUPPORTED',
-  'SIGNATURE_CHECK_UNAVAILABLE', 'ISSUER_NOT_IN_BUNDLE', 'CANDIDATE_SIGNATURE_FAILED',
+  'SELF_SIGNED_CERTIFICATE', 'SELF_ISSUED_CERTIFICATE', 'SELF_SIGNATURE_FAILED', 'SIGNATURE_UNSUPPORTED',
+  'SIGNATURE_CHECK_UNAVAILABLE', 'ISSUER_NOT_IN_BUNDLE', 'LEAF_ISSUER_NOT_IN_BUNDLE',
+  'CANDIDATE_SIGNATURE_FAILED', 'LEAF_ISSUER_CANDIDATES_REJECTED',
   'ISSUER_NOT_CA', 'ISSUER_KEY_USAGE_REJECTED', 'ISSUER_KEY_ID_MISMATCH',
   'MULTIPLE_ISSUERS', 'LEAF_SELECTION_REQUIRED', 'NO_LEAF_CERTIFICATE',
   'HOSTNAME_MATCH', 'HOSTNAME_MISMATCH',
@@ -31,7 +32,8 @@ export const CertificateBundleResultSchema = z.strictObject({
     notBefore: z.iso.datetime(), notAfter: z.iso.datetime(), ca: z.boolean(),
     basicConstraintsPresent: z.boolean(), keyCertSign: z.boolean().nullable(),
     fingerprintSha256: z.string().regex(/^(?:[0-9A-F]{2}:){31}[0-9A-F]{2}$/),
-    signatureAlgorithm: z.string(), selfSignature: CertificateCheckStatusSchema.nullable(),
+    signatureAlgorithm: z.string(), selfSignature: CertificateCheckStatusSchema.nullable()
+      .describe('Verification with this certificate\'s own public key when Subject and Issuer names match. Failed or incomplete verification does not exclude a valid self-issued key-rollover certificate signed by a different key.'),
   })).min(1).max(MAX_CERTIFICATES),
   relationships: z.array(z.strictObject({
     childIndex: position, issuerIndex: position, signature: CertificateCheckStatusSchema,
@@ -42,7 +44,8 @@ export const CertificateBundleResultSchema = z.strictObject({
   selectedLeafIndex: position.nullable(),
   hostname: z.strictObject({ expected: z.string(), status: z.enum(['matched', 'mismatched', 'ambiguous', 'no-leaf']) }).nullable(),
   findings: z.array(z.strictObject({
-    code: CertificateFindingCodeSchema, severity: z.enum(['error', 'warning', 'info']),
+    code: CertificateFindingCodeSchema, severity: z.enum(['error', 'warning', 'info'])
+      .describe('Error: a confirmed issue with identified certificates or all supplied issuer candidates for the selected leaf. Warning: a candidate issue or an incomplete requested check. Info: a structural or successful observation. No severity establishes client trust or invalidates every possible path.'),
     certificateIndexes: z.array(position).max(MAX_CERTIFICATES), observed: z.string(),
     evidence: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])), nextAction: z.string(),
   })),
@@ -69,6 +72,16 @@ export const CERTIFICATE_BUNDLE_SAMPLES = [
   { name: 'crossSigning', request: { pem: bundle('rootB', 'crossSigned', 'leaf', 'rootA', 'intermediate'), hostname: 'service.example.com' } },
   { name: 'invalidCandidate', request: { pem: bundle('leaf', 'wrongIntermediate', 'intermediate', 'rootA'), hostname: 'service.example.com' } },
   { name: 'duplicate', request: { pem: bundle('leaf', 'intermediate', 'leaf'), hostname: 'service.example.com' } },
+] as const satisfies ReadonlyArray<{ name: string; request: CertificateBundleRequest }>;
+
+/** Public diagnostic inputs for runtime and deployment checks; no frozen time-dependent results. */
+export const CERTIFICATE_BUNDLE_DIAGNOSTIC_SAMPLES = [
+  ...CERTIFICATE_BUNDLE_SAMPLES.filter(sample => sample.name === 'missingIntermediate' || sample.name === 'multipleLeaves'),
+  { name: 'rejectedLeafIssuers', request: { pem: bundle('leaf', 'wrongIntermediate', 'rootA'), hostname: 'service.example.com' } },
+  { name: 'caKeyRollover', request: { pem: bundle('rollover', 'rolloverRoot') } },
+  { name: 'caAlgorithmRollover', request: { pem: bundle('mixedRollover', 'mixedRolloverRoot') } },
+  { name: 'caOnlyHostname', request: { pem: bundle('rootA'), hostname: 'service.example.com' } },
+  { name: 'keyIdentifierMismatch', request: { pem: bundle('keyIdMismatch', 'rolloverRoot') } },
 ] as const satisfies ReadonlyArray<{ name: string; request: CertificateBundleRequest }>;
 
 /** Frozen documentation observations; the runtime always evaluates its current clock. */

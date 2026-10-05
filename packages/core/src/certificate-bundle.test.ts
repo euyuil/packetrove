@@ -67,7 +67,17 @@ describe('certificate bundle diagnostics', () => {
     const result = await inspect(bundle('leaf', 'rootA', 'rootB'));
     expect(result.relationships).toEqual([]);
     expect(result.findings.some(finding => finding.code === 'CANDIDATE_SIGNATURE_FAILED')).toBe(false);
-    expect(result.findings.find(finding => finding.code === 'ISSUER_NOT_IN_BUNDLE')?.certificateIndexes).toEqual([0]);
+    expect(result.findings.find(finding => finding.code === 'LEAF_ISSUER_NOT_IN_BUNDLE')).toMatchObject({ severity: 'warning', certificateIndexes: [0] });
+    expect(result.findings.some(finding => finding.severity === 'error')).toBe(false);
+  });
+
+  it('keeps unselected leaves informational and follows the chosen original duplicate position', async () => {
+    const pem = bundle('leaf', 'leafTwo', 'leaf');
+    expect((await inspect(pem)).findings.filter(finding => finding.code === 'ISSUER_NOT_IN_BUNDLE')).toHaveLength(2);
+    const result = await inspect(pem, undefined, 2);
+    expect(result.selectedLeafIndex).toBe(2);
+    expect(result.findings.find(finding => finding.code === 'LEAF_ISSUER_NOT_IN_BUNDLE')).toMatchObject({ severity: 'warning', certificateIndexes: [2] });
+    expect(result.findings.find(finding => finding.code === 'ISSUER_NOT_IN_BUNDLE')?.certificateIndexes).toEqual([1]);
   });
 
   it('keeps a viable issuer link when a same-name candidate has the wrong key', async () => {
@@ -89,6 +99,124 @@ describe('certificate bundle diagnostics', () => {
     }
   });
 
+  it.each([
+    { names: ['leaf', 'wrongIntermediate', 'rootA'], failedSignatureCount: 1, rejectedIssuerCount: 0 },
+    { names: ['nonCaLeaf', 'nonCaIssuer', 'rootA'], failedSignatureCount: 0, rejectedIssuerCount: 1 },
+    { names: ['restrictedLeaf', 'noSigningIssuer', 'rootA'], failedSignatureCount: 0, rejectedIssuerCount: 1 },
+  ] as const)('reports rejection of all supplied selected-leaf candidates with counts (%#)', async ({ names, failedSignatureCount, rejectedIssuerCount }) => {
+    const result = await inspect(bundle(...names), 'service.example.com', 0);
+    expect(result.hostname?.status).toBe('matched');
+    expect(result.findings.find(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toMatchObject({
+      severity: 'error', certificateIndexes: [0, 1], evidence: { candidateCount: 1, failedSignatureCount, rejectedIssuerCount },
+    });
+    expect(result.findings.filter(finding => finding.certificateIndexes.length === 2 && finding.code !== 'LEAF_ISSUER_CANDIDATES_REJECTED')
+      .every(finding => finding.severity === 'warning')).toBe(true);
+    expect(CertificateBundleResultSchema.parse(result)).toEqual(result);
+  });
+
+  it('evaluates candidate rejections only for the selected leaf and retains duplicate selections', async () => {
+    const pem = bundle('leaf', 'wrongIntermediate', 'leafTwo', 'intermediate', 'restrictedLeaf', 'noSigningIssuer', 'rootA', 'restrictedLeaf');
+    const unselected = await inspect(pem, 'service.example.com');
+    expect(unselected.findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
+    expect((await inspect(pem, 'service.example.com', 0)).findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
+    const rejected = await inspect(pem, 'service.example.com', 7);
+    expect(rejected.findings.find(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toMatchObject({
+      severity: 'error', certificateIndexes: [7, 5],
+    });
+  });
+
+  it('keeps an unknown alternative from turning a failed candidate into a confirmed rejection', async () => {
+    const importKey = crypto.subtle.importKey.bind(crypto.subtle);
+    vi.spyOn(crypto.subtle, 'importKey').mockImplementationOnce(importKey)
+      .mockRejectedValueOnce(new DOMException('Unsupported algorithm', 'NotSupportedError'));
+    const result = await inspect(bundle('leaf', 'wrongIntermediate', 'intermediate'));
+    expect(result.relationships.map(link => link.signature)).toEqual(['failed', 'unsupported']);
+    expect(result.findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
+  });
+
+  it('does not require a self-signature on a valid self-issued key-rollover certificate', async () => {
+    const result = await inspect(bundle('rollover', 'rolloverRoot'));
+    expect(new NodeCertificate(fixtures.rollover).verify(new NodeCertificate(fixtures.rolloverRoot).publicKey)).toBe(true);
+    expect(new NodeCertificate(fixtures.rollover).verify(new NodeCertificate(fixtures.rollover).publicKey)).toBe(false);
+    expect(result.certificates[0]!.selfSignature).toBe('failed');
+    expect(result.relationships.find(link => link.childIndex === 0)).toMatchObject({ signature: 'verified', issuerEligible: true, keyIdentifierMatch: true });
+    expect(result.findings.find(finding => finding.code === 'SELF_ISSUED_CERTIFICATE')).toMatchObject({ severity: 'info', certificateIndexes: [0, 1] });
+    expect(result.findings.some(finding => finding.code === 'SELF_SIGNATURE_FAILED' && finding.certificateIndexes[0] === 0)).toBe(false);
+    expect((await inspect(fixtures.rollover)).findings.find(finding => finding.code === 'SELF_SIGNATURE_FAILED')).toMatchObject({ severity: 'warning', certificateIndexes: [0] });
+    expect(CertificateBundleResultSchema.parse(result)).toEqual(result);
+  });
+
+  it('reports a verified key rollover across public-key algorithms as information', async () => {
+    const result = await inspect(bundle('mixedRollover', 'mixedRolloverRoot'));
+    const certificate = new NodeCertificate(fixtures.mixedRollover);
+    expect(certificate.publicKey.asymmetricKeyType).toBe('rsa');
+    expect(new NodeCertificate(fixtures.mixedRolloverRoot).publicKey.asymmetricKeyType).toBe('ec');
+    expect(certificate.verify(new NodeCertificate(fixtures.mixedRolloverRoot).publicKey)).toBe(true);
+    expect(certificate.verify(certificate.publicKey)).toBe(false);
+    expect(['failed', 'unsupported', 'unavailable']).toContain(result.certificates[0]!.selfSignature);
+    expect(result.relationships.find(link => link.childIndex === 0)).toMatchObject({ signature: 'verified', issuerEligible: true, keyIdentifierMatch: true });
+    expect(result.findings.find(finding => finding.code === 'SELF_ISSUED_CERTIFICATE')).toMatchObject({ severity: 'info', certificateIndexes: [0, 1] });
+    expect(result.findings.some(finding => finding.certificateIndexes.length === 1 && finding.certificateIndexes[0] === 0
+      && ['SELF_SIGNATURE_FAILED', 'SIGNATURE_UNSUPPORTED', 'SIGNATURE_CHECK_UNAVAILABLE'].includes(finding.code))).toBe(false);
+    expect(CertificateBundleResultSchema.parse(result)).toEqual(result);
+  });
+
+  it.each([
+    { name: 'NotSupportedError', status: 'unsupported' },
+    { name: 'OperationError', status: 'unavailable' },
+  ] as const)('retains an incomplete own-key result when another supplied issuer verifies ($status)', async ({ name, status }) => {
+    vi.spyOn(crypto.subtle, 'importKey').mockRejectedValueOnce(new DOMException('Own-key test interrupted', name));
+    const result = await inspect(bundle('rollover', 'rolloverRoot'));
+    expect(result.certificates[0]!.selfSignature).toBe(status);
+    expect(result.relationships.find(link => link.childIndex === 0)!.signature).toBe('verified');
+    expect(result.findings.find(finding => finding.code === 'SELF_ISSUED_CERTIFICATE')).toMatchObject({ severity: 'info', certificateIndexes: [0, 1] });
+    expect(result.findings.some(finding => finding.certificateIndexes.length === 1 && finding.certificateIndexes[0] === 0
+      && ['SIGNATURE_UNSUPPORTED', 'SIGNATURE_CHECK_UNAVAILABLE'].includes(finding.code))).toBe(false);
+  });
+
+  it('does not treat a key-identifier mismatch alone as confirmed selected-leaf rejection', async () => {
+    const result = await inspect(bundle('keyIdMismatch', 'rolloverRoot'), 'service.example.com');
+    expect(new NodeCertificate(fixtures.keyIdMismatch).verify(new NodeCertificate(fixtures.rolloverRoot).publicKey)).toBe(true);
+    expect(result.relationships[0]).toMatchObject({ signature: 'verified', issuerEligible: true, keyIdentifierMatch: false });
+    expect(result.findings.find(finding => finding.code === 'ISSUER_KEY_ID_MISMATCH')?.severity).toBe('warning');
+    expect(result.findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
+  });
+
+  it('retains a verified self-signature on a selected leaf despite a failed same-name candidate', async () => {
+    const result = await inspect(bundle('selfSignedLeaf', 'rolloverRoot'), 'service.example.com');
+    expect(result.certificates[0]!.selfSignature).toBe('verified');
+    expect(result.relationships[0]!.signature).toBe('failed');
+    expect(result.findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
+    expect(result.hostname?.status).toBe('matched');
+  });
+
+  it.each([
+    { name: 'NotSupportedError', status: 'unsupported', code: 'SIGNATURE_UNSUPPORTED' },
+    { name: 'OperationError', status: 'unavailable', code: 'SIGNATURE_CHECK_UNAVAILABLE' },
+  ] as const)('does not reject all leaf alternatives when the own-key test is $status', async ({ name, status, code }) => {
+    vi.spyOn(crypto.subtle, 'importKey').mockRejectedValueOnce(new DOMException('Own-key test interrupted', name));
+    const result = await inspect(bundle('selfSignedLeaf', 'rolloverRoot'), 'service.example.com');
+    expect(result.certificates[0]!.selfSignature).toBe(status);
+    expect(result.relationships.find(link => link.childIndex === 0)!.signature).toBe('failed');
+    expect(result.findings.find(finding => finding.code === code && finding.certificateIndexes.length === 1))
+      .toMatchObject({ severity: 'warning', certificateIndexes: [0], evidence: { signature: status } });
+    expect(result.findings.find(finding => finding.code === 'CANDIDATE_SIGNATURE_FAILED'))
+      .toMatchObject({ severity: 'warning', certificateIndexes: [0, 1] });
+    expect(result.findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
+    expect(result.hostname?.status).toBe('matched');
+  });
+
+  it('reports all rejected leaf candidates when the own-key test also fails', async () => {
+    vi.spyOn(crypto.subtle, 'importKey').mockRejectedValueOnce(new DOMException('Own-key import rejected', 'DataError'));
+    const result = await inspect(bundle('selfSignedLeaf', 'rolloverRoot'), 'service.example.com');
+    expect(result.certificates[0]!.selfSignature).toBe('failed');
+    expect(result.findings.find(finding => finding.code === 'SELF_SIGNATURE_FAILED'))
+      .toMatchObject({ severity: 'warning', certificateIndexes: [0] });
+    expect(result.findings.find(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toMatchObject({
+      severity: 'error', certificateIndexes: [0, 1], evidence: { candidateCount: 1, failedSignatureCount: 1, rejectedIssuerCount: 0 },
+    });
+  });
+
   it('retains both cross-signed issuer alternatives without choosing a trust path', async () => {
     const result = await inspect(bundle('rootB', 'crossSigned', 'leaf', 'rootA', 'intermediate'));
     expect(result.relationships.filter(link => link.childIndex === 2).map(link => link.issuerIndex)).toEqual([1, 4]);
@@ -101,6 +229,8 @@ describe('certificate bundle diagnostics', () => {
     expect(ambiguous.hostname?.status).toBe('ambiguous');
     expect(ambiguous.selectedLeafIndex).toBeNull();
     expect(ambiguous.findings.some(finding => finding.code === 'HOSTNAME_MATCH')).toBe(false);
+    expect(ambiguous.findings.find(finding => finding.code === 'LEAF_SELECTION_REQUIRED')?.severity).toBe('warning');
+    expect((await inspect(pem)).findings.find(finding => finding.code === 'LEAF_SELECTION_REQUIRED')?.severity).toBe('info');
     expect((await inspect(pem, 'service.example.com', 0)).hostname?.status).toBe('matched');
     expect((await inspect(pem, 'service.example.com', 1)).hostname?.status).toBe('mismatched');
   });
@@ -137,6 +267,7 @@ describe('certificate bundle diagnostics', () => {
     expect(result.relationships[0]!.signature).toBe('unsupported');
     expect(result.findings.some(finding => finding.code === 'SIGNATURE_UNSUPPORTED')).toBe(true);
     expect(result.findings.some(finding => finding.code === 'CANDIDATE_SIGNATURE_FAILED')).toBe(false);
+    expect(result.findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
   });
 
   it('reports unexpected verification failures as incomplete checks', async () => {
@@ -144,6 +275,7 @@ describe('certificate bundle diagnostics', () => {
     const result = await inspect(bundle('leaf', 'intermediate'));
     expect(result.relationships[0]!.signature).toBe('unavailable');
     expect(result.findings.some(finding => finding.code === 'SIGNATURE_CHECK_UNAVAILABLE')).toBe(true);
+    expect(result.findings.some(finding => finding.code === 'LEAF_ISSUER_CANDIDATES_REJECTED')).toBe(false);
   });
 });
 
@@ -222,7 +354,10 @@ describe('strict input boundaries', () => {
   });
 
   it('reports a CA-only bundle without inventing a leaf', async () => {
-    expect((await inspect(fixtures.rootA, 'service.example.com')).hostname?.status).toBe('no-leaf');
+    const result = await inspect(fixtures.rootA, 'service.example.com');
+    expect(result.hostname?.status).toBe('no-leaf');
+    expect(result.findings.find(finding => finding.code === 'NO_LEAF_CERTIFICATE')?.severity).toBe('warning');
+    expect((await inspect(fixtures.rootA)).findings.find(finding => finding.code === 'NO_LEAF_CERTIFICATE')?.severity).toBe('info');
   });
 });
 

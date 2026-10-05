@@ -36,7 +36,7 @@ export const certificateCopy = {
     "verifiedLinks": "検証済み署名",
     "findingCount": "検出事項",
     "evaluation": "評価時刻: {{time}}（端末の時計）",
-    "selectLeaf": "ホスト名検査のリーフ",
+    "selectLeaf": "検査するリーフ証明書",
     "selectPosition": "元の入力位置を選択",
     "hostnameTitle": "ホスト名: {{hostname}}",
     "relationships": "発行者の関係",
@@ -50,7 +50,7 @@ export const certificateCopy = {
     "pending": "証明書を入力して検査します。入力変更で前の結果を消去します。",
     "details": "証明書の詳細 · 元の順序",
     "explanationTitle": "検査の意味",
-    "explanation": "番号は元の入力位置で、JSON のインデックスは 0 始まりです。重複位置も残します。候補名は保守的な符号化比較を使います。発行者不在は情報で、候補の失敗は他の関係を否定しません。ツールや言語の切替時はメモリー内の下書きを保持し、再読み込みで消去します。",
+    "explanation": "番号は入力の元の位置を示し、JSON のインデックスは 0 から始まります。重複した位置も表示されます。発行者名はエンコードを保守的に比較します。選択したリーフ証明書の発行者がない場合は警告、その他の発行者の不足は情報です。ある候補の失敗は他の関係を否定しません。ツールや言語を切り替えても下書きはページのメモリに残り、再読み込みで消去されます。",
     "dnsRules": "DNS SAN は ASCII 大文字小文字とホスト名末尾のドットを無視します。左端の完全なワイルドカードは 1 ラベルのみ一致します。URL、IP、ポート、ワイルドカード入力と Unicode 名は拒否します。国際化名は punycode に変換してください。Common Name は表示専用です。",
     "examplesTitle": "合成証明書の例",
     "exampleNote": "公開の合成証明書。文書の評価時刻: {{time}}。実際の検査は現在の実行環境の時計を使います。",
@@ -67,7 +67,7 @@ export const certificateCopy = {
     "originalPosition": "元の位置",
     "position": "証明書 #{{number}}、開始行 {{line}}",
     "serial": "シリアル番号",
-    "selfSignature": "自己署名の検査",
+    "selfSignature": "証明書自身の公開鍵による検証",
     "json": "構造化結果 JSON",
     "inputLine": "行 {{line}}: {{message}}",
     "status": {
@@ -130,7 +130,9 @@ export const certificateCopy = {
       "subjectKeyIdentifier": "Subject Key Identifier",
       "candidateCount": "候補数",
       "expectedHostname": "想定ホスト名",
-      "dnsSubjectAlternativeNames": "DNS SAN"
+      "dnsSubjectAlternativeNames": "DNS SAN",
+      "failedSignatureCount": "署名失敗の数",
+      "rejectedIssuerCount": "CA / Key Usage による拒否の数"
     },
     "findings": {
       "DUPLICATE_CERTIFICATE": {
@@ -139,19 +141,19 @@ export const certificateCopy = {
       },
       "CERTIFICATE_EXPIRED": {
         "title": "評価時に有効期限切れ",
-        "action": "証明書を更新または交換し、実際に提供する証明書を確認してください。"
+        "action": "実際の構成でこの証明書を使用する場合は更新または交換してください。この証明書の期限切れはすべての代替パスの無効を意味せず、トラストアンカーの時間要件はクライアントによって異なります。"
       },
       "CERTIFICATE_NOT_YET_VALID": {
         "title": "評価時にまだ有効でない",
-        "action": "端末の時計と証明書の利用開始日を確認してください。"
+        "action": "この証明書の評価時刻と有効開始日を確認してください。他のパスが有効な場合もあり、トラストアンカーの時間要件はクライアントによって異なります。"
       },
       "SELF_SIGNED_CERTIFICATE": {
         "title": "自身の公開鍵で署名検証成功",
         "action": "クライアントの信頼と実際の配備を別途確認してください。この観察はどちらも証明しません。"
       },
       "SELF_SIGNATURE_FAILED": {
-        "title": "自己発行証明書の自己署名が失敗",
-        "action": "この 2 つの元の位置の証明書を確認してください。他の候補は独立に検査します。"
+        "title": "証明書自身の公開鍵による検証に失敗",
+        "action": "別の実装でこの証明書と想定する発行者を確認してください。Subject と Issuer の名前が同じでも、自己署名が必要とは限りません。"
       },
       "SIGNATURE_UNSUPPORTED": {
         "title": "署名アルゴリズム未対応",
@@ -187,11 +189,11 @@ export const certificateCopy = {
       },
       "LEAF_SELECTION_REQUIRED": {
         "title": "複数のリーフ候補から選択が必要",
-        "action": "対象の非 CA リーフを提供または明示的に選択してからホスト名を検査してください。"
+        "action": "対象の非 CA リーフ証明書を選び、発行者候補と任意のホスト名を検査してください。"
       },
       "NO_LEAF_CERTIFICATE": {
         "title": "非 CA リーフがない",
-        "action": "対象の非 CA リーフを提供または明示的に選択してからホスト名を検査してください。"
+        "action": "署名またはホスト名を検査する場合は、非 CA リーフ証明書を入力してください。"
       },
       "HOSTNAME_MATCH": {
         "title": "ホスト名がリーフの DNS SAN と一致",
@@ -200,8 +202,21 @@ export const certificateCopy = {
       "HOSTNAME_MISMATCH": {
         "title": "ホスト名がリーフの DNS SAN と不一致",
         "action": "ホスト名を確認するか、必要な DNS SAN を持つ証明書を取得してください。Common Name は代用しません。"
+      },
+      "SELF_ISSUED_CERTIFICATE": {
+        "title": "Subject と Issuer は同じですが、別の証明書で署名を検証できました",
+        "action": "検証済みの発行者関係を確認してください。正常な CA 鍵の更新でもこの状態になります。名前が同じでも自己署名は必須ではなく、クライアントの信頼も証明しません。"
+      },
+      "LEAF_ISSUER_NOT_IN_BUNDLE": {
+        "title": "選択したリーフ証明書の発行者が入力にありません",
+        "action": "発行者を追加して、選択したリーフ証明書の署名を検証してください。クライアントが受け入れるかどうかは、保有する証明書と信頼設定にも依存します。"
+      },
+      "LEAF_ISSUER_CANDIDATES_REJECTED": {
+        "title": "選択したリーフ証明書の入力内の発行者候補はすべて不適格です",
+        "action": "入力した発行者証明書を交換または修正してください。このエラーは今回の入力の候補に関するもので、すべてのクライアントの信頼パスが失敗することを意味しません。"
       }
-    }
+    },
+    "severityHelp": "エラーは、表示された証明書または選択したリーフ証明書の入力内の発行者候補に関するものです。警告は対処が必要な事項や未完了の検査、情報は観察結果を示します。診断レベルはクライアントの信頼を証明しません。"
   },
   "homepage": {
     "description": "PEM 証明書の署名、発行者候補と任意の DNS 識別をローカル検査します。",
