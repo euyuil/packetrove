@@ -7,7 +7,10 @@ export const certificateCopy = {
     "scope": "파싱, 중복, 유효 기간, 후보 서명, CA 및 keyCertSign 제약과 선택적 DNS 호스트 이름을 검사합니다. 전체 RFC 5280 경로, 클라이언트 신뢰, 폐기 여부나 배포 안전성은 검증하지 않습니다.",
     "inputs": "인증서 입력",
     "samplesLabel": "합성 인증서 예제",
-    "loadSample": "불러와 검사",
+    "loadSample": "예제 사용해 보기",
+    "samplesHelp": "공개 합성 인증서 번들을 선택해 입력란을 채우세요. 준비되면 인증서 묶음 검사 버튼으로 검사를 실행하세요.",
+    "closeExamples": "예제 닫기",
+    "evidenceTitle": "근거",
     "pem": "PEM 인증서",
     "pemHelp": "CERTIFICATE 블록과 공백만 허용합니다. 최대 {{maximum}}개, {{kib}} KiB. 개인 키는 거부합니다.",
     "bytes": "{{current}} / {{maximum}} 바이트",
@@ -97,6 +100,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "잘못된 요청입니다. PEM, 호스트 이름과 리프 위치를 확인하세요.",
       "INVALID_TIME": "실행 환경의 평가 시각이 잘못되었습니다."
     },
+    "graphScrollHelp": "좁은 화면에서는 관계도 안에서 좌우로 스크롤하여 각 인증서를 확인하세요.",
     "evidence": {
       "fingerprintSha256": "SHA-256 지문",
       "evaluatedAt": "평가 시각",

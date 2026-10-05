@@ -7,7 +7,10 @@ export const certificateCopy = {
     "scope": "Prüft Format, Duplikate, Gültigkeit, mögliche Signaturen, CA- und keyCertSign-Bedingungen sowie optional einen DNS-Hostnamen. Keine vollständige RFC-5280-Pfad-, Vertrauens-, Sperr- oder Bereitstellungsprüfung.",
     "inputs": "Zertifikate eingeben",
     "samplesLabel": "Synthetische Zertifikatsbeispiele",
-    "loadSample": "Laden und prüfen",
+    "loadSample": "Beispiel ausprobieren",
+    "samplesHelp": "Wählen Sie ein öffentliches synthetisches Zertifikatspaket, um die Eingaben auszufüllen. Starten Sie danach die Prüfung mit „Zertifikatsbündel prüfen“.",
+    "closeExamples": "Beispiele schließen",
+    "evidenceTitle": "Nachweise",
     "pem": "PEM-Zertifikate",
     "pemHelp": "Nur CERTIFICATE-Blöcke und Zwischenräume; höchstens {{maximum}} Zertifikate und {{kib}} KiB. Private Schlüssel werden abgelehnt.",
     "bytes": "{{current}} / {{maximum}} Bytes",
@@ -97,6 +100,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "Ungültige Anfrage. PEM, Hostnamen und Position des Endzertifikats prüfen.",
       "INVALID_TIME": "Ungültige Prüfzeit des Laufzeitsystems."
     },
+    "graphScrollHelp": "Auf schmalen Bildschirmen können Sie das Diagramm horizontal scrollen, um jedes Zertifikat zu lesen.",
     "evidence": {
       "fingerprintSha256": "SHA-256-Fingerabdruck",
       "evaluatedAt": "Prüfzeit",
