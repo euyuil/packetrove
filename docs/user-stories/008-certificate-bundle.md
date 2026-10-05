@@ -38,6 +38,46 @@ Operational logs contain controlled status metadata rather than request text,
 results, or exception payloads. Hosting-provider processing is described in the
 [service privacy story](007-service-privacy.md).
 
+## Website workflow and report layout
+
+The page follows the task sequence in one column: supply a bundle, explicitly
+check it, and read a full-width report below the input. The PEM field is the
+first input control, followed by the byte count and optional hostname. Brief
+workflow guidance stays with the input, including how edits clear old results. The
+input area has a bounded height so long PEM bundles do not dominate the page.
+The single primary action is **Check certificate bundle**. **Clear** and
+**Try an example** are secondary actions with visible button borders.
+
+All ten public synthetic scenarios remain available in a dialog opened by
+**Try an example** at the bottom of the input area. Opening or dismissing this
+dialog preserves the current input and completed report. Choosing a scenario
+fills the PEM and hostname, clears stale results and errors, cancels an
+outstanding check, and closes the dialog. It never starts a check; users can
+review or edit the example before using the primary action. The dialog has a
+localized close control and returns keyboard focus to its opener.
+
+A report appears only during or after a check. Its summary, evaluation time,
+required leaf selection, hostname outcome, findings, and next actions come
+first. Findings retain visible severity and original certificate positions;
+their machine-readable codes and supporting evidence expand on request.
+The relationship graph and numbered candidate table follow in their own
+full-width section. The graph has a bounded display width rather than growing
+with the entire desktop page. On narrow screens, a keyboard-focusable horizontal
+scroll region preserves readable diagram labels without widening the page;
+the diagram starts centered and includes localized scrolling guidance.
+Individual certificate details and structured
+JSON start collapsed. Editing inputs removes the old report. A stable live
+status announces progress and completion, and existing error-focus and
+off-screen-result feedback remain in use.
+
+This design applies the [GOV.UK primary and secondary button guidance](https://design-system.service.gov.uk/components/button/)
+and [Nielsen Norman Group's progressive disclosure guidance](https://www.nngroup.com/articles/progressive-disclosure/):
+keep the primary task obvious and expose secondary material on request.
+Following the [GOV.UK details guidance](https://design-system.service.gov.uk/components/details/),
+findings and next actions stay visible rather than being hidden with their
+supporting evidence. The input-above-report layout is a choice for this tool's
+unequal input and output lengths, not a requirement imposed on other tools.
+
 ## Observations and interpretation
 
 Results include `evaluatedAt`, certificate summaries in original order, candidate
@@ -146,7 +186,9 @@ generator process memory.
 - Workers tests compare all ten scenarios with the browser's shared checker at
   the reported runtime time, through API and current/legacy MCP clients. They
   verify discovery, structured errors, no-store responses, and safe logging.
-- Website tests cover blank startup, local crypto, graph CN labels and numbered
+- Website tests cover blank startup, optional example loading without automatic
+  checks, preservation when browsing examples, the report's reading order and
+  progressive evidence/details disclosure, local crypto, graph CN labels and numbered
   table rows, selected input errors, explicit leaf choice, navigation and locale
   retention, reload clearing, and cancellation of obsolete checks.
 - Catalog checks, ten-locale validation/prerendering, deferred bundle checks,

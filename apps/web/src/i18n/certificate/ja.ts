@@ -7,7 +7,10 @@ export const certificateCopy = {
     "scope": "解析、重複、有効期間、候補の署名、CA と keyCertSign 制約、任意の DNS ホスト名を検査します。完全な RFC 5280 パス、クライアントの信頼、失効や配備の安全性は検証しません。",
     "inputs": "証明書の入力",
     "samplesLabel": "合成証明書の例",
-    "loadSample": "読み込んで検査",
+    "loadSample": "例を試す",
+    "samplesHelp": "公開された合成証明書バンドルを選んで入力欄に読み込みます。その後「証明書バンドルを検査」で検査してください。",
+    "closeExamples": "例を閉じる",
+    "evidenceTitle": "根拠",
     "pem": "PEM 証明書",
     "pemHelp": "CERTIFICATE ブロックと空白のみ。最大 {{maximum}} 枚、{{kib}} KiB。秘密鍵は拒否します。",
     "bytes": "{{current}} / {{maximum}} バイト",
@@ -97,6 +100,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "不正な要求です。PEM、ホスト名とリーフ位置を確認してください。",
       "INVALID_TIME": "実行環境の評価時刻が不正です。"
     },
+    "graphScrollHelp": "画面が狭い場合は、図を左右にスクロールして各証明書を確認してください。",
     "evidence": {
       "fingerprintSha256": "SHA-256 指紋",
       "evaluatedAt": "評価時刻",

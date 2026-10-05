@@ -7,7 +7,10 @@ export const certificateCopy = {
     "scope": "Verifica formato, duplicati, validità, firme candidate, CA, keyCertSign e un nome DNS facoltativo. Non convalida percorsi RFC 5280 completi, fiducia del client, revoca o sicurezza del rilascio.",
     "inputs": "Certificati da controllare",
     "samplesLabel": "Esempi di certificati sintetici",
-    "loadSample": "Carica e controlla",
+    "loadSample": "Prova un esempio",
+    "samplesHelp": "Scegli un insieme di certificati sintetici pubblici per compilare i campi. Poi avvia il controllo con il relativo pulsante.",
+    "closeExamples": "Chiudi esempi",
+    "evidenceTitle": "Evidenze",
     "pem": "Certificati PEM",
     "pemHelp": "Solo blocchi CERTIFICATE e spazi; massimo {{maximum}} certificati e {{kib}} KiB. Chiavi private rifiutate.",
     "bytes": "{{current}} / {{maximum}} byte",
@@ -97,6 +100,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "Richiesta non valida. Controlla PEM, nome host e posizione finale.",
       "INVALID_TIME": "Ora di valutazione dell’ambiente non valida."
     },
+    "graphScrollHelp": "Su schermi stretti, scorri il diagramma in orizzontale per leggere ogni certificato.",
     "evidence": {
       "fingerprintSha256": "Impronta SHA-256",
       "evaluatedAt": "Ora di valutazione",

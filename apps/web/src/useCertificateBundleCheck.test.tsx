@@ -11,7 +11,7 @@ const example = CERTIFICATE_BUNDLE_EXAMPLES[0]!;
 function setup(checker: typeof checkCertificateBundle) {
   const complete = vi.fn();
   const hook = renderHook(() => {
-    const [draft, change] = useState<CertificateBundleDraft>({ request: example.request, sampleName: 'normal', result: null, error: null });
+    const [draft, change] = useState<CertificateBundleDraft>({ request: example.request, result: null, error: null });
     return { ...useCertificateBundleCheck(draft, change, complete, checker), draft };
   });
   return { ...hook, complete };

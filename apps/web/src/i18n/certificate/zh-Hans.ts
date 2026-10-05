@@ -7,7 +7,10 @@ export const certificateCopy = {
     "scope": "检查解析、重复、有效期、候选签名、CA 和 keyCertSign 约束及可选 DNS 主机名。不执行完整 RFC 5280 路径验证、客户端信任或吊销检查，不能证明部署安全。",
     "inputs": "输入证书包",
     "samplesLabel": "合成证书样例",
-    "loadSample": "加载并检查",
+    "loadSample": "试用示例",
+    "samplesHelp": "选择一个公开合成证书包填入输入。准备好后，点击“检查证书包”执行检查。",
+    "closeExamples": "关闭示例",
+    "evidenceTitle": "证据",
     "pem": "PEM 证书",
     "pemHelp": "只接受 CERTIFICATE 块及块间空白；最多 {{maximum}} 张、{{kib}} KiB。私钥会被拒绝。",
     "bytes": "{{current}} / {{maximum}} 字节",
@@ -97,6 +100,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "请求无效。请检查 PEM、主机名和叶证书原始位置。",
       "INVALID_TIME": "运行环境的评估时间无效。"
     },
+    "graphScrollHelp": "窄屏下可在关系图内左右滚动，查看每张证书。",
     "evidence": {
       "fingerprintSha256": "SHA-256 指纹",
       "evaluatedAt": "评估时间",

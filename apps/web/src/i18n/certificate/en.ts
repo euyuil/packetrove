@@ -7,7 +7,10 @@ export const certificateCopy = {
     "scope": "Checks parsing, duplicates, validity, candidate signatures, CA and keyCertSign constraints, and an optional DNS hostname. Does not validate full RFC 5280 paths, client trust, revocation, or deployment safety.",
     "inputs": "Certificate input",
     "samplesLabel": "Synthetic certificate examples",
-    "loadSample": "Load and check",
+    "loadSample": "Try an example",
+    "samplesHelp": "Choose a public synthetic bundle to fill the inputs. Then use Check certificate bundle to run the check.",
+    "closeExamples": "Close examples",
+    "evidenceTitle": "Evidence",
     "pem": "PEM certificates",
     "pemHelp": "Only CERTIFICATE blocks and whitespace; up to {{maximum}} certificates and {{kib}} KiB. Private keys are rejected.",
     "bytes": "{{current}} / {{maximum}} bytes",
@@ -97,6 +100,7 @@ export const certificateCopy = {
       "INVALID_INPUT": "Invalid request. Review the PEM, hostname, and original leaf position.",
       "INVALID_TIME": "The runtime evaluation time is invalid."
     },
+    "graphScrollHelp": "On narrow screens, scroll the diagram horizontally to read every certificate.",
     "evidence": {
       "fingerprintSha256": "SHA-256 fingerprint",
       "evaluatedAt": "Evaluation time",
