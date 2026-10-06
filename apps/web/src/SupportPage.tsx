@@ -1,6 +1,6 @@
 import type { MouseEventHandler } from 'react';
 import { Anchor, Button, Group, Stack, Text, Title } from '@mantine/core';
-import { SUPPORT_EMAIL } from '@packetrove/contracts';
+import { SUPPORT_EMAIL, operationCatalog } from '@packetrove/contracts';
 import { useTranslation } from 'react-i18next';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
@@ -40,6 +40,12 @@ export function SupportPage({ onNavigate, documentationUrl }: {
     <Stack component="section" gap="sm" aria-labelledby="support-details-heading">
       <Title order={2} size="h3" id="support-details-heading">{t($ => $.support.detailsTitle)}</Title>
       <Text>{t($ => $.support.detailsBody)}</Text>
+    </Stack>
+    <Stack component="section" gap="sm" aria-labelledby="support-feedback-heading">
+      <Title order={2} size="h3" id="support-feedback-heading">{t($ => $.feedback.title)}</Title>
+      <Text>{t($ => $.feedback.availability, { name: operationCatalog.feedback.id })}</Text>
+      <Text>{t($ => $.feedback.authorization)}</Text>
+      <Anchor href={`${localizedPath(pagePaths.mcp, locale)}#mcp-feedback-heading`} onClick={onNavigate}>{t($ => $.mcp.navigation)}</Anchor>
     </Stack>
     <Stack component="section" gap="sm" aria-labelledby="support-guides-heading">
       <Title order={2} size="h3" id="support-guides-heading">{t($ => $.support.guidesTitle)}</Title>

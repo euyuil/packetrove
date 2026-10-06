@@ -1,10 +1,10 @@
-import type { ErrorCode, ToolId } from '@packetrove/contracts';
+import type { ErrorCode, FeedbackErrorCode, McpOperationId } from '@packetrove/contracts';
 import type { McpTrafficSource } from './automation-source';
 
 export type McpToolExecutionOutcome = { outcome: 'success' }
-  | { outcome: 'error'; error_code: ErrorCode };
+  | { outcome: 'error'; error_code: ErrorCode | FeedbackErrorCode };
 
-export function logMcpToolExecution(tool: ToolId, outcome: McpToolExecutionOutcome, source: McpTrafficSource) {
+export function logMcpToolExecution(tool: McpOperationId, outcome: McpToolExecutionOutcome, source: McpTrafficSource) {
   try {
     console.log({ event: 'mcp_tool_execution', tool, outcome: outcome.outcome,
       ...source,

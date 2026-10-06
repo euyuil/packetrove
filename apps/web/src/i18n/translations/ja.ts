@@ -1,4 +1,5 @@
 import { certificateCopy } from '../certificate/ja';
+import { feedbackCopy } from '../feedback/ja';
 import type { TranslationResource } from '../translation-resource';
 
 export const ja = {
@@ -7,6 +8,7 @@ export const ja = {
     switch: '日本語に切り替える', dismiss: '今はしない',
   },
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: '開発環境' },
@@ -67,7 +69,7 @@ export const ja = {
   },
   privacy: {
     "title": "プライバシーポリシー",
-    "updated": "最終更新：2026年10月4日。",
+    "updated": "最終更新：2026年10月5日。",
     "introduction": "本ポリシーは、AIプラグイン経由の利用を含むPacketroveのウェブサイト、Web API、CLI、リモートMCPサービスに適用されます。PacketroveはLiu Yueが管理しています。アカウントやAPIキーは不要です。",
     "cloudflarePolicy": "Cloudflareのプライバシーポリシー",
     "sections": {
@@ -78,6 +80,10 @@ export const ja = {
         "local": {
             "title": "ローカル計算とブラウザーの保存領域",
             "body": "ブラウザーの計算とオフラインCLIの計算では、入力と結果は端末内に留まります。計算の下書きはページのメモリーに保持されます。サイトは現在のタブのsessionStorageに言語提案を処理済みであることを示すフラグだけを保存し、アドレスや結果は保存しません。結果をコピーすると、システムのクリップボードに入ります。"
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "リモートツールの入力と結果",
@@ -408,7 +414,7 @@ export const ja = {
     errorsTitle: "結果の読み取りとエラー処理",
     results: "<code>structuredContent</code> またはテキストブロックの JSON を読み取ってください。アドレス数は十進数の文字列か任意精度整数として保持してください。大きな IPv6 の値を浮動小数点数に変換すると精度が失われます。",
     resourceLinkLabel: "成功した応答に含まれる任意のツールページリンク",
-    resultLinks: "成功した応答は <code>structuredContent</code> と最初の JSON テキストブロックに結果を保持し、英語のツールページへの任意の <code>resource_link</code> を追加します。リンクには入力や結果を含めず、計算内容を復元しません。表示、無視、リンクを開くかどうかはクライアントが決定し、自動表示や引用は保証されません。公開 IP ページを開くとブラウザの新しい接続を確認するため、MCP クライアントの接続とは異なる場合があります。エラー応答にツールページリンクは含まれません。",
+    resultLinks: "計算と照会に成功した応答は <code>structuredContent</code> と最初の JSON テキストブロックに結果を保持し、英語のツールページへの任意の <code>resource_link</code> を追加します。リンクには入力や結果を含めず、計算内容を復元しません。表示、無視、リンクを開くかどうかはクライアントが決定し、自動表示や引用は保証されません。公開 IP ページを開くとブラウザの新しい接続を確認するため、MCP クライアントの接続とは異なる場合があります。エラー応答にツールページリンクは含まれません。",
     errors: "<code>isError</code> が true の場合は再試行前にエラー JSON を確認してください。ユーザーの情報で <code>INVALID_INPUT</code> と <code>MIXED_ADDRESS_FAMILIES</code> を修正します。<code>CLIENT_IP_UNAVAILABLE</code> は信頼できる接続情報がないことを示すため、アドレスを推測しないでください。",
     technicalGuide: "リポジトリの MCP 技術ガイドを読む（英語）"
   },

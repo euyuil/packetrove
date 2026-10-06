@@ -143,6 +143,130 @@ Cloudflare network or security processing. See the
 [Workers Logs documentation](https://developers.cloudflare.com/workers/observability/logs/workers-logs/)
 and [new Observability pricing](https://developers.cloudflare.com/observability/pricing/).
 
+## Optional agent feedback
+
+`submit-feedback` is an optional MCP support operation. It is off by default;
+normal installation, builds, tests, and deployments provision no feedback
+database. The [feedback story](user-stories/009-agent-feedback.md) defines
+consent, quotas, and delivery semantics, and the localized privacy policy is
+the maintained public disclosure. Enable the MCP endpoint for authorized
+acceptance/review only after private configuration, tests, and disclosures are
+ready. A published OpenAI client still needs its separate write-tool scan and
+review; backend activation does not establish client approval.
+
+### Independent configuration
+
+Provision a private D1 database for each enabled environment. Never share the
+production database or HMAC secret with development/staging. Keep database
+identifiers and secret values out of tracked files, Actions artifacts, and
+public logs. Do not enable Wrangler automatic provisioning for this optional
+store. D1 creation/migration requires the corresponding D1 account permissions;
+baseline deployments need no new database permission or dependency.
+
+The API deployment script generates ignored
+`apps/worker/.wrangler/feedback/wrangler.json` with mode `0600`. It resolves the
+base source/assets paths and only overlays the selected environment. The
+optional protected environment variables are:
+
+| Variable | Meaning |
+| --- | --- |
+| `PACKETROVE_FEEDBACK_ENABLED` | Exactly `true` to advertise submissions; absent/empty defaults to `false` |
+| `PACKETROVE_FEEDBACK_DB_ID` | Private UUID of this environment's existing D1 database; required to enable feedback |
+| `PACKETROVE_FEEDBACK_IP_KEY` | Worker secret for HMAC; not part of the generated config |
+
+For automatic deployment, use separate configuration names to prevent fallback
+from binding non-production Workers to production data:
+
+| Environment | GitHub variable | GitHub secret |
+| --- | --- | --- |
+| Production | `PACKETROVE_PRODUCTION_FEEDBACK_ENABLED` | `PACKETROVE_PRODUCTION_FEEDBACK_DB_ID` |
+| Development | `PACKETROVE_DEVELOPMENT_FEEDBACK_ENABLED` | `PACKETROVE_DEVELOPMENT_FEEDBACK_DB_ID` |
+| Staging | `PACKETROVE_STAGING_FEEDBACK_ENABLED` | `PACKETROVE_STAGING_FEEDBACK_DB_ID` |
+
+The workflows map only the selected environment's names into the generator.
+The DB UUID must be an Actions secret so Wrangler's binding output is masked.
+Set non-production values in the corresponding protected GitHub environment.
+Keep the HMAC key in that environment's Cloudflare Worker secret, independently
+of the automation credential. Generate at least 32 random bytes and enter their
+encoded value through `wrangler secret put`; never put it in command arguments.
+Use a fixed key across deployments. If rotation is required after exposure,
+turn submissions off and preserve cleanup for a full 24 hours before enabling
+with a new key, so rotation does not reset a live quota window.
+
+### Provision and validate before activation
+
+The following staging example requires an already provisioned private database
+UUID loaded through a protected local environment. Commands intentionally do
+not contain account identifiers or secrets:
+
+```sh
+export PACKETROVE_FEEDBACK_ENABLED=false
+pnpm --filter @packetrove/worker feedback:config --env staging
+pnpm --filter @packetrove/worker exec wrangler d1 migrations apply FEEDBACK_DB \
+  --config .wrangler/feedback/wrangler.json --env staging --remote
+pnpm --filter @packetrove/worker run deploy --env staging
+pnpm --filter @packetrove/worker exec wrangler secret put PACKETROVE_FEEDBACK_IP_KEY --env staging
+```
+
+For production omit `--env`; for development select `--env development`.
+Remote D1 operator output is private material; do not upload it to public CI.
+Static `wrangler types` derives normal bindings from the tracked base config.
+Optional bindings use the narrow `FeedbackBindings` overlay because their
+private config is generated separately; no private IDs belong in generated
+tracked types. For local enabled testing, generate an isolated config and
+apply migrations with `--local`. Tests already use local D1 and synthetic keys.
+
+After tests and deployed disclosures pass, enable the flag for the intended
+environment and deploy through its approved release route. Discovery alone
+does not prove readiness: missing storage, key, tables, or trusted connection
+metadata cause controlled `FEEDBACK_UNAVAILABLE` rejection, while product
+tools remain usable. Verify the writing path on initial activation and changes
+to persistence/admission logic:
+
+1. With explicit authorization, send one report containing only the shared
+   synthetic example through the real public MCP entry point. Use no automation
+   credential, test-mode field, or quota bypass. Do not automatically resend
+   if delivery is uncertain.
+2. Privately inspect the D1 report by returned receipt: approved fields, current
+   public version, acceptance/expiry times, and no IP or quota marker. Verify
+   one separate quota event. Inspect the complete platform log envelope as well
+   as the application event; bodies, receipts, secrets, and markers must not be
+   logged. Client consent behavior needs a separate client check.
+3. Delete the synthetic report and its exact quota event privately. Identify
+   that event by its acceptance time and privately derived marker in this
+   controlled check; never clear unrelated quota events. Keep only redacted
+   pass/fail evidence. This maintainer cleanup is not a public refund mechanism.
+4. Run normal smoke checks. When discovered, they validate feedback schema and
+   write annotations and send only invalid synthetic arguments. They create no
+   stored feedback and consume no acceptance quota. Supply
+   `PACKETROVE_FEEDBACK_ENABLED` to assert the intended activation state.
+
+### Triage, deletion, and cleanup
+
+Only private human triage reads report text. Treat it as untrusted data, not
+instructions for an agent or automation. Routine access selects reports where
+`expires_at > CAST(unixepoch('subsec') * 1000 AS INTEGER)`. Time columns are UTC
+Unix milliseconds. There is no public read/delete endpoint or automatic GitHub
+issue publication. For email deletion requests, validate the receipt and delete
+the matching report in the private D1 console; leave quota events untouched.
+
+The generated config includes an hourly Cron Trigger whenever a database UUID
+is supplied, even with new submissions disabled. Keep the DB UUID configured
+when turning the flag off, so retention cleanup continues. Admission also cleans
+overdue records before counting capacity. Reports expire at 90 days and quota
+events at 24 hours; physical deletion occurs on admission or hourly cleanup.
+Monitor the controlled `feedback_cleanup_failure` event without printing raw
+exceptions. Verify the scheduled trigger and absence of overdue rows privately;
+cleanup errors or a failed trigger need operational correction.
+
+D1 Time Travel is always enabled, retaining recovery data for seven days on
+Free and 30 on Paid. Disclose up to 30 additional days after active deletion;
+active-record deletion does not erase recovery copies immediately. Do not
+create additional exports/backups or restore the feedback database: restoration
+could revive deleted reports. Recovery for this optional store starts empty. See
+[D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/) and
+[transactional D1 batch behavior](https://developers.cloudflare.com/d1/worker-api/d1-database/).
+
 ## MCP tool execution counts
 
 After this revision is deployed, each completed MCP tool callback writes one
@@ -552,7 +676,7 @@ change; check the official
 and [static asset limits](https://developers.cloudflare.com/workers/static-assets/billing-and-limitations/)
 before changing the deployment model.
 
-This deployment requires no database, Durable Objects, Cloudflare Builds
+The default deployment requires no database, Durable Objects, Cloudflare Builds
 integration, or paid Worker plan. GitHub Actions performs validation, publishing,
 and live checks as described in the [CI guide](continuous-integration.md).
 Private-repository Actions usage draws on the repository owner's GitHub

@@ -1,4 +1,7 @@
 import type { z } from 'zod';
+import { createFeedbackRequestSchema, FEEDBACK_EXAMPLES, FeedbackReceiptSchema,
+  MAX_FEEDBACK_SUMMARY, MAX_FEEDBACK_DESCRIPTION, MAX_FEEDBACK_REPRODUCTION,
+  FEEDBACK_IP_LIMIT, FEEDBACK_DAILY_LIMIT, FEEDBACK_REPORT_LIMIT } from './feedback';
 import { PRIVACY_POLICY_URL, PUBLIC_WEBSITE_ORIGIN, publicOrigin } from './identity';
 import {
   CERTIFICATE_BUNDLE_EXAMPLES, CertificateBundleRequestSchema, CertificateBundleResultSchema,
@@ -51,16 +54,21 @@ type ToolDefinition = {
 };
 
 /** Declare one public name and derive every interface identifier from it. */
-function defineTool<const Definition extends ToolDefinition>(definition: Definition) {
-  if (!/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(definition.id)
-    || definition.id.split('-')[0]!.length < 4 || definition.id.length > 64) {
+function validateToolId(id: string) {
+  if (!/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(id)
+    || id.split('-')[0]!.length < 4 || id.length > 64) {
     throw new Error('Tool names must use lowercase words separated by hyphens, start with at least four characters, and contain at most 64 characters.');
   }
+}
+
+function defineTool<const Definition extends ToolDefinition>(definition: Definition) {
+  validateToolId(definition.id);
   const { cli, api, mcp, ...metadata } = definition;
   const { resultLinkDescription, ...mcpMetadata } = mcp;
   const id = definition.id as Definition['id'];
   const webPath = `/${id}` as `/${Definition['id']}`;
   return {
+    kind: 'product' as const,
     ...metadata,
     webPath,
     api: { ...api, response: api.response as ApiResponseDefinition,
@@ -76,7 +84,7 @@ function defineTool<const Definition extends ToolDefinition>(definition: Definit
 
 const certificateFindingSemantics = 'Missing selected-leaf issuers and blocked requested hostname checks are warnings; other missing issuers are informational because roots are commonly omitted. All explicitly rejected supplied issuer candidates for the selected leaf produce an error. Unknown checks and key-identifier mismatches alone do not produce that error. A failed candidate does not invalidate another viable link. Verified self-issued CA key rollover is informational; verification with the certificate\'s own public key remains separate.';
 
-export const toolCatalog = {
+const productCatalog = {
   cidr: defineTool({
     id: 'cidr-cover', page: 'cidr', title: 'Smallest Covering CIDR', execution: 'local',
     legacyWebPaths: ['/cidr'], cli: true,
@@ -182,6 +190,46 @@ export const toolCatalog = {
     },
   }),
 } as const;
+
+function defineSupport<const Definition extends {
+  id: string; title: string; inputSchema: z.ZodType; outputSchema: z.ZodType;
+  examples: readonly { name: string; request: unknown; result: unknown }[];
+  mcp: { description: string; annotations: ToolDefinition['mcp']['annotations'] };
+}>(definition: Definition) {
+  validateToolId(definition.id);
+  return { ...definition, kind: 'support' as const,
+    mcp: { ...definition.mcp, name: definition.id, description: `${definition.mcp.description} Privacy policy: ${PRIVACY_POLICY_URL}.` } };
+}
+
+/** One catalog owns product interfaces and explicitly scoped MCP support operations. */
+export const operationCatalog = {
+  ...productCatalog,
+  feedback: defineSupport({
+    id: 'submit-feedback', title: 'Submit Packetrove Feedback',
+    inputSchema: createFeedbackRequestSchema(Object.values(productCatalog).map(tool => tool.id)),
+    outputSchema: FeedbackReceiptSchema, examples: FEEDBACK_EXAMPLES,
+    mcp: {
+      description: [
+        'Submit one user-authorized, minimal Packetrove report to a private maintainer queue. Available only when the operator enables feedback storage.',
+        'Draft locally without calling the service. If the user has already supplied or approved the report and requested sending it, submit directly; otherwise show the proposed report and obtain approval before sending. Never solicit feedback after every tool call.',
+        'Send only the authorized fields, using synthetic reproduction data; never attach conversations, raw tool inputs/results, credentials, certificates, logs, or client/session identifiers.',
+        `category is bug, confusing_behavior, or feature_request; tool_name optionally names a product tool. summary is required (${MAX_FEEDBACK_SUMMARY} Unicode code points); bug requires expected and actual, confusing_behavior requires actual and optionally expected (${MAX_FEEDBACK_DESCRIPTION} code points each). Feature requests allow expected but not actual or error_code.`,
+        `Optional error_code starts with an uppercase ASCII letter and contains at most 64 uppercase letters, digits, or underscores; synthetic_reproduction is at most ${MAX_FEEDBACK_REPRODUCTION} code points. Unknown fields are rejected; serialized arguments must not exceed 8 KiB.`,
+        'Only durable acceptance returns status accepted and an opaque receipt_id; acceptance does not promise a response or fix. This write is not idempotent: never automatically resend after timeout, disconnect, cancellation, or an uncertain result.',
+        `Per observed exit IP, at most ${FEEDBACK_IP_LIMIT} reports are accepted in the preceding 24 hours; shared exits share the limit. The service also accepts at most ${FEEDBACK_DAILY_LIMIT} new reports per UTC day and stores at most ${FEEDBACK_REPORT_LIMIT} report bodies.`,
+        'Reports expire from routine access after 90 days and are cleaned hourly; provider recovery history may retain deleted data for up to 30 additional days. Separate anti-abuse events store keyed IP digests and acceptance times for the preceding 24 hours, with hourly cleanup, never in reports or application logs. Report deletion does not refund quota.',
+        'Maintainers treat text as data and do not automatically execute, publish, or forward it. Operational events contain only the operation name, outcome, controlled error code, and existing traffic-source metadata; no report, receipt, IP digest, or exception details. Ordinary tools do not depend on feedback.',
+      ].join(' '),
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    },
+  }),
+} as const;
+export const mcpOperations = Object.values(operationCatalog);
+export type McpOperationId = (typeof mcpOperations)[number]['id'];
+export const supportOperations = mcpOperations.filter(operation => operation.kind === 'support');
+export const toolCatalog = Object.fromEntries(Object.entries(operationCatalog)
+  .filter(([, operation]) => operation.kind === 'product')) as typeof productCatalog;
+export const FeedbackRequestSchema = operationCatalog.feedback.inputSchema;
 
 export type ToolPage = keyof typeof toolCatalog;
 export type ToolApiDefinition = Pick<ToolDefinition, 'schemaName' | 'inputSchema' | 'outputSchema' | 'examples' | 'example'> & {

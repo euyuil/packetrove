@@ -13,6 +13,21 @@ paths, removed interface names, schemas, and shared example references.
 Existing exported constants derive their values from the catalog
 so existing imports remain compatible.
 
+## Support operations
+
+`operationCatalog` classifies entries as `product` or `support` and owns their
+canonical identities, schemas, examples, and MCP metadata. `tools` and
+`toolCatalog` project product entries for website, API, OpenAPI, and CLI.
+`mcpOperations` includes both kinds; `supportOperations` projects support.
+Identifiers remain unique across both kinds.
+
+Optional `submit-feedback` has an independent write executor and private
+storage contract. It has no website page, API endpoint, CLI command, or result
+resource link. Disabled installations omit it from discovery. Product tools
+keep their shared handlers and parity checks. The MCP guide explains conditional
+availability; the [feedback story](user-stories/009-agent-feedback.md) defines
+consent, delivery, and privacy acceptance.
+
 ## One public name per tool
 
 Declare a tool's canonical name once as its `id`. The catalog derives its
@@ -84,7 +99,7 @@ included; third-party listings are not changed.
 | Website navigation and homepage | Tool entries and localized titles and descriptions |
 | Website API documentation | Endpoint summaries and example requests and results |
 | Generated OpenAPI | Paths, methods, schemas, response formats, status descriptions, and examples |
-| API and MCP | Catalog-driven registration and the same request-scoped handler map |
+| API and MCP | Product registration and shared handlers; enabled MCP support uses its own write executor |
 | CLI | Enabled catalog entries, derived commands and usage, and exhaustive handler coverage |
 | MCP guide and tool pages | Catalog-derived examples rendered by `ToolMcpSection` and the generated repository guide |
 | Tests and production smoke checks | Actual endpoint, discovery, and documentation coverage against the catalog |
