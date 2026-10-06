@@ -204,7 +204,7 @@ export PACKETROVE_FEEDBACK_ENABLED=false
 pnpm --filter @packetrove/worker feedback:config --env staging
 pnpm --filter @packetrove/worker exec wrangler d1 migrations apply FEEDBACK_DB \
   --config .wrangler/feedback/wrangler.json --env staging --remote
-pnpm --filter @packetrove/worker deploy --env staging
+pnpm --filter @packetrove/worker run deploy --env staging
 pnpm --filter @packetrove/worker exec wrangler secret put PACKETROVE_FEEDBACK_IP_KEY --env staging
 ```
 
