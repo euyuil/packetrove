@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020.js';
 import sharp from 'sharp';
 import { Uint8ArrayReader, Uint8ArrayWriter, ZipReader, ZipWriter } from '@zip.js/zip.js';
-import { MCP_PATH, PACKETROVE_IDENTITY, PUBLIC_API_ORIGIN, tools } from '../packages/contracts/src/index';
+import { MCP_PATH, PACKETROVE_IDENTITY, PUBLIC_API_ORIGIN, mcpOperations } from '../packages/contracts/src/index';
 import pluginSchema from './schemas/agent-plugins/1.0.0/plugin.schema.json' with { type: 'json' };
 import mcpSchema from './schemas/agent-plugins/1.0.0/mcp.schema.json' with { type: 'json' };
 import { releaseVersion } from './cli-release';
@@ -25,7 +25,7 @@ const interfaceFields = [
 ];
 const requiredListingFields = ['developerName', 'websiteURL', 'supportURL', 'privacyPolicyURL', 'termsOfServiceURL'];
 const reviewCaseFields = ['description', 'prompt', 'tools_triggered', 'expected_behavior'];
-const mcpToolNames = new Set<string>(tools.map(tool => tool.mcp.name));
+const mcpToolNames = new Set<string>(mcpOperations.map(tool => tool.mcp.name));
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 const validatePluginSchema = ajv.compile(pluginSchema);
 const validateMcpSchema = ajv.compile(mcpSchema);

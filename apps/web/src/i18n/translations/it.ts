@@ -1,4 +1,5 @@
 import { certificateCopy } from '../certificate/it';
+import { feedbackCopy } from '../feedback/it';
 import type { TranslationResource } from '../translation-resource';
 
 export const it = {
@@ -7,6 +8,7 @@ export const it = {
     switch: 'Passa all’italiano', dismiss: 'Non ora',
   },
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: 'Ambiente di sviluppo' },
@@ -67,7 +69,7 @@ export const it = {
   },
   privacy: {
     "title": "Informativa sulla privacy",
-    "updated": "Ultimo aggiornamento: 4 ottobre 2026.",
+    "updated": "Ultimo aggiornamento: 5 ottobre 2026.",
     "introduction": "Questa informativa riguarda il sito web, la Web API, la CLI e il servizio MCP remoto di Packetrove, anche tramite plugin di IA. Packetrove è mantenuto da Liu Yue. Non servono un account o una chiave API.",
     "cloudflarePolicy": "Informativa sulla privacy di Cloudflare",
     "sections": {
@@ -78,6 +80,10 @@ export const it = {
         "local": {
             "title": "Calcoli locali e archiviazione del browser",
             "body": "I calcoli nel browser e quelli offline della CLI mantengono dati inseriti e risultati sul tuo dispositivo. Le bozze restano nella memoria della pagina. Il sito salva in sessionStorage solo un indicatore del suggerimento di lingua già gestito nella scheda corrente, senza indirizzi o risultati. Copiare un risultato lo inserisce negli appunti di sistema."
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "Dati e risultati degli strumenti remoti",
@@ -393,7 +399,7 @@ export const it = {
     errorsTitle: 'Leggere i risultati e gestire gli errori',
     results: 'Leggi <code>structuredContent</code> oppure il JSON nel blocco di testo. Conserva i conteggi come stringhe decimali o interi a precisione arbitraria; convertire grandi conteggi IPv6 in numeri in virgola mobile perde precisione.',
     resourceLinkLabel: "Link facoltativo alla pagina dello strumento nelle risposte riuscite",
-    resultLinks: "Le risposte riuscite mantengono il risultato in <code>structuredContent</code> e nel primo blocco di testo JSON, quindi aggiungono un <code>resource_link</code> facoltativo alla pagina inglese dello strumento. I link non contengono input o risultati e non ripristinano il calcolo. Ogni client decide se visualizzare, ignorare o aprire i link; la visualizzazione o citazione automatica non è garantita. Aprire la pagina IP pubblico verifica una nuova connessione del browser, che può differire dalla connessione del client MCP. Gli errori non includono link alla pagina dello strumento.",
+    resultLinks: "Le risposte riuscite di calcoli e ricerche mantengono il risultato in <code>structuredContent</code> e nel primo blocco di testo JSON, quindi aggiungono un <code>resource_link</code> facoltativo alla pagina inglese dello strumento. I link non contengono input o risultati e non ripristinano il calcolo. Ogni client decide se visualizzare, ignorare o aprire i link; la visualizzazione o citazione automatica non è garantita. Aprire la pagina IP pubblico verifica una nuova connessione del browser, che può differire dalla connessione del client MCP. Gli errori non includono link alla pagina dello strumento.",
     errors: 'Se <code>isError</code> è true, leggi l’errore JSON prima di riprovare. Correggi <code>INVALID_INPUT</code> e <code>MIXED_ADDRESS_FAMILIES</code> usando le informazioni dell’utente. <code>CLIENT_IP_UNAVAILABLE</code> indica che mancano metadati di connessione attendibili; non inventare un indirizzo.',
     technicalGuide: 'Leggi la guida tecnica MCP nel repository (in inglese)',
   },

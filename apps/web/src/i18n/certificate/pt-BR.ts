@@ -227,7 +227,7 @@ export const certificateCopy = {
     "title": "Verificador de certificados — Packetrove",
     "description": "Inspecione assinaturas PEM, validade, restrições e DNS SAN localmente com próximos passos. Sem envio ou validação completa de confiança."
   },
-  "remotePrivacy": "API e MCP remoto enviam IP, CIDR, limites de intervalos ou certificados PEM e nomes opcionais ao Packetrove. Processamento em memória, sem banco de dados ou histórico de resultados. Certificados e detalhes sensíveis ficam fora dos logs e da telemetria de erros. Não envie chaves privadas ou segredos. O cliente pode guardar resultados conforme suas políticas.",
+  "remotePrivacy": "API e MCP remoto enviam IP, CIDR, limites de intervalos ou certificados PEM e nomes opcionais ao Packetrove. Essas entradas de cálculos e consultas são processadas em memória, sem banco de dados ou histórico de resultados. Certificados e detalhes sensíveis ficam fora dos logs e da telemetria de erros. Não envie chaves privadas ou segredos. O cliente pode guardar resultados conforme suas políticas.",
   "discovery": {
     "title": "Perguntas sobre certificados",
     "mcpTitle": "Verificar certificados via MCP",

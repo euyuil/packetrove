@@ -227,7 +227,7 @@ export const certificateCopy = {
     "title": "Zertifikatsbündel-Prüfung — Packetrove",
     "description": "PEM-Signaturen, Gültigkeit, Ausstellerbedingungen und DNS SAN lokal mit konkreten Befunden prüfen. Kein Upload und keine vollständige Vertrauensprüfung."
   },
-  "remotePrivacy": "API und Remote-MCP senden IPs, CIDRs, Bereichsgrenzen oder PEM-Zertifikate und optionale Hostnamen an Packetrove. Verarbeitung nur im Arbeitsspeicher, ohne Datenbank oder Ergebnisverlauf. Zertifikatsinhalte und sensible Details gelangen nicht in Anwendungsprotokolle oder Fehlertelemetrie. Keine privaten Schlüssel oder Geheimnisse senden. Der Client kann Ergebnisse nach eigenen Regeln speichern.",
+  "remotePrivacy": "API und Remote-MCP senden IPs, CIDRs, Bereichsgrenzen oder PEM-Zertifikate und optionale Hostnamen an Packetrove. Diese Berechnungs- und Abfrageeingaben werden nur im Arbeitsspeicher verarbeitet, ohne Datenbank oder Ergebnisverlauf. Zertifikatsinhalte und sensible Details gelangen nicht in Anwendungsprotokolle oder Fehlertelemetrie. Keine privaten Schlüssel oder Geheimnisse senden. Der Client kann Ergebnisse nach eigenen Regeln speichern.",
   "discovery": {
     "title": "Fragen zu Zertifikatsbündeln",
     "mcpTitle": "Zertifikate über MCP prüfen",

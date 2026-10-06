@@ -1,8 +1,24 @@
 import { describe, expect, it } from 'vitest';
 import { createOpenApiDocument } from './openapi';
-import { cliTools, legacyToolPagePaths, PUBLIC_WEBSITE_ORIGIN, toolCatalog, tools } from './index';
+import { cliTools, legacyToolPagePaths, PUBLIC_WEBSITE_ORIGIN, toolCatalog, tools, mcpOperations, supportOperations } from './index';
 
 describe('shared tool catalog contracts', () => {
+  it('separates cataloged support operations from every product interface', () => {
+    expect(new Set(mcpOperations.map(operation => operation.id)).size).toBe(mcpOperations.length);
+    expect(mcpOperations.filter(operation => operation.kind === 'product')).toEqual(tools);
+    for (const operation of supportOperations) {
+      expect(operation.mcp.name).toBe(operation.id);
+      expect(operation.id).toMatch(/^[a-z]{4,}(?:-[a-z0-9]+)*$/);
+      expect(operation).not.toHaveProperty('webPath');
+      expect(operation).not.toHaveProperty('api');
+      expect(operation).not.toHaveProperty('cli');
+      expect(operation.mcp.annotations).toEqual({ readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false });
+      for (const example of operation.examples) {
+        expect(operation.inputSchema.safeParse(example.request).success).toBe(true);
+        expect(operation.outputSchema.safeParse(example.result).success).toBe(true);
+      }
+    }
+  });
   it('keeps interface identifiers unique and website names outside short locale prefixes', () => {
     for (const values of [tools.map(tool => tool.id), tools.map(tool => tool.webPath),
       tools.map(tool => tool.api.path), tools.map(tool => tool.api.operationId), tools.map(tool => tool.mcp.name),

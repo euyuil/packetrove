@@ -50,7 +50,7 @@ are outcomes to observe after deployment, not guarantees of this implementation.
   The guide is included in the sitemap. Hydration keeps existing behavior.
 - MCP descriptions explain intended uses and limits; schemas, annotations,
   names, structured errors, and calculation behavior retain their contracts.
-- Each successful MCP response retains the structured result and its first JSON
+- Each successful product-tool MCP response retains the structured result and its first JSON
   text block, then appends one standard `resource_link` for that tool. The shared
   catalog derives its canonical HTTPS destination and names; the default is the
   English page, independent of request language. CIDR covering links to its extra

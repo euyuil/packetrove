@@ -227,7 +227,7 @@ export const certificateCopy = {
     "title": "Comprobador de certificados — Packetrove",
     "description": "Inspecciona firmas PEM, vigencia, restricciones del emisor y DNS SAN localmente con próximos pasos. Sin subir datos ni validar toda la confianza."
   },
-  "remotePrivacy": "API y MCP remoto envían IP, CIDR, extremos de rangos o certificados PEM y nombres opcionales a Packetrove. Se procesan en memoria sin base de datos ni historial. El contenido de certificados y detalles sensibles no se incluyen en registros ni telemetría de errores. No envíes claves privadas ni secretos. El cliente puede conservar resultados según sus políticas.",
+  "remotePrivacy": "API y MCP remoto envían IP, CIDR, extremos de rangos o certificados PEM y nombres opcionales a Packetrove. Estas entradas de cálculos y consultas se procesan en memoria sin base de datos ni historial. El contenido de certificados y detalles sensibles no se incluyen en registros ni telemetría de errores. No envíes claves privadas ni secretos. El cliente puede conservar resultados según sus políticas.",
   "discovery": {
     "title": "Preguntas sobre certificados",
     "mcpTitle": "Comprobar certificados mediante MCP",

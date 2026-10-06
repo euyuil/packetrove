@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { localizedPath, pagePaths } from './i18n/routes';
 import { resolveLocale } from './i18n/locales';
 
-const sections = ['local', 'remote', 'connection', 'logs', 'providers', 'controls', 'correspondence', 'contact'] as const;
+const sections = ['local', 'remote', 'connection', 'feedback', 'logs', 'providers', 'controls', 'correspondence', 'contact'] as const;
 
 export function PrivacyPolicy({ onNavigate }: { onNavigate: MouseEventHandler<HTMLAnchorElement> }) {
   const { t, i18n } = useTranslation();

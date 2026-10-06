@@ -53,6 +53,23 @@ export function McpDocumentation({ onNavigate, documentationUrl, sourceUrl }: {
       <Text size="sm" c="dimmed">{guide.identity.presentation}</Text>
     </Stack>
     {guide.tools.map(tool => <ToolMcpSection key={tool.tool} tool={tool.tool} onNavigate={onNavigate} guide />)}
+    <Paper component="section" withBorder p={{ base: 'md', sm: 'xl' }} aria-labelledby="mcp-feedback-heading">
+      <Stack gap="sm">
+        <Title order={2} size="h3" id="mcp-feedback-heading">{guide.support.title}</Title>
+        <Text>{guide.support.availability}</Text>
+        <Text>{guide.support.authorization}</Text>
+        <Code>{guide.support.example.name}</Code>
+        <Text>{guide.support.inputs}</Text>
+        <Title order={3} size="h4">{guide.labels.arguments}</Title>
+        <Code block>{JSON.stringify(guide.support.example.arguments, null, 2)}</Code>
+        <Title order={3} size="h4">{guide.labels.exampleResult}</Title>
+        <Code block>{JSON.stringify(guide.support.example.result, null, 2)}</Code>
+        <Text>{guide.support.limits}</Text>
+        <Text>{guide.support.delivery}</Text>
+        <Text size="sm" c="dimmed">{guide.support.privacy}</Text>
+        <Anchor href={localizedPath(pagePaths.privacy, locale)} onClick={onNavigate}>{guide.deployment.privacyLabel}</Anchor>
+      </Stack>
+    </Paper>
     <Stack component="section" gap="sm" aria-labelledby="mcp-errors-heading">
       <Title order={2} size="h3" id="mcp-errors-heading">{guide.errorsTitle}</Title>
       <Text><InlineCode text={guide.results} /></Text>

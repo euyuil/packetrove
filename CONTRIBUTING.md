@@ -59,6 +59,12 @@ Production website builds use `https://api.packetrove.com`. See
 for changing API and website origins. To build or install the CLI from source,
 follow the [CLI guide](docs/integrations/cli.md#install-from-source).
 
+Optional agent feedback stays disabled in ordinary local development. Its tests
+use a local D1 database and synthetic inputs without production credentials.
+For an isolated enabled installation, follow the
+[feedback setup](docs/deployment.md#optional-agent-feedback); keep generated
+private configuration in the ignored `.wrangler` directory.
+
 ## Development conventions and checks
 
 The website uses React, Vite, and Mantine. Prefer Mantine components and layout

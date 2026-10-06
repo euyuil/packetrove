@@ -1,4 +1,5 @@
 import { certificateCopy } from '../certificate/ko';
+import { feedbackCopy } from '../feedback/ko';
 import type { TranslationResource } from '../translation-resource';
 
 export const ko = {
@@ -7,6 +8,7 @@ export const ko = {
     switch: '한국어로 전환', dismiss: '나중에',
   },
   certificate: certificateCopy.certificate,
+  feedback: feedbackCopy,
   common: {
     environment: {
       development: { label: 'DEV', description: '개발 환경' },
@@ -67,7 +69,7 @@ export const ko = {
   },
   privacy: {
     "title": "개인정보 처리방침",
-    "updated": "최종 업데이트: 2026년 10월 4일.",
+    "updated": "최종 업데이트: 2026년 10월 5일.",
     "introduction": "이 방침은 AI 플러그인을 통한 사용을 포함하여 Packetrove 웹사이트, Web API, CLI 및 원격 MCP 서비스에 적용됩니다. Packetrove는 Liu Yue가 관리합니다. 계정이나 API 키가 필요하지 않습니다.",
     "cloudflarePolicy": "Cloudflare 개인정보 처리방침",
     "sections": {
@@ -78,6 +80,10 @@ export const ko = {
         "local": {
             "title": "로컬 계산과 브라우저 저장소",
             "body": "브라우저 계산과 오프라인 CLI 계산의 입력 및 결과는 기기에 남습니다. 계산 초안은 페이지 메모리에 유지됩니다. 웹사이트는 현재 탭의 sessionStorage에 언어 제안을 처리했다는 표시만 저장하며, 주소나 결과는 저장하지 않습니다. 결과를 복사하면 시스템 클립보드에 들어갑니다."
+        },
+        "feedback": {
+            "title": feedbackCopy.privacyTitle,
+            "body": feedbackCopy.privacyBody
         },
         "remote": {
             "title": "원격 도구 입력과 결과",
@@ -392,7 +398,7 @@ export const ko = {
     errorsTitle: '결과 읽기 및 오류 처리',
     results: '<code>structuredContent</code> 또는 텍스트 블록의 JSON을 읽으세요. 주소 수는 십진수 문자열이나 임의 정밀도 정수로 유지하세요. 큰 IPv6 주소 수를 부동 소수점 숫자로 변환하면 정확도가 손실됩니다.',
     resourceLinkLabel: "성공 응답의 선택적 도구 페이지 링크",
-    resultLinks: "성공 응답은 <code>structuredContent</code>와 첫 번째 JSON 텍스트 블록에 결과를 유지하고 영어 도구 페이지로 연결되는 선택적 <code>resource_link</code>를 추가합니다. 링크에는 입력이나 결과가 없으며 계산을 복원하지 않습니다. 링크를 표시하거나 무시하거나 열지는 클라이언트가 결정하며 자동 표시나 인용은 보장되지 않습니다. 공용 IP 페이지를 열면 브라우저의 새 연결을 확인하므로 MCP 호출자의 연결과 다를 수 있습니다. 오류 응답에는 도구 페이지 링크가 없습니다.",
+    resultLinks: "계산과 조회의 성공 응답은 <code>structuredContent</code>와 첫 번째 JSON 텍스트 블록에 결과를 유지하고 영어 도구 페이지로 연결되는 선택적 <code>resource_link</code>를 추가합니다. 링크에는 입력이나 결과가 없으며 계산을 복원하지 않습니다. 링크를 표시하거나 무시하거나 열지는 클라이언트가 결정하며 자동 표시나 인용은 보장되지 않습니다. 공용 IP 페이지를 열면 브라우저의 새 연결을 확인하므로 MCP 호출자의 연결과 다를 수 있습니다. 오류 응답에는 도구 페이지 링크가 없습니다.",
     errors: '<code>isError</code>가 true이면 재시도 전에 오류 JSON을 읽으세요. 사용자 정보를 바탕으로 <code>INVALID_INPUT</code> 및 <code>MIXED_ADDRESS_FAMILIES</code>를 수정하세요. <code>CLIENT_IP_UNAVAILABLE</code>은 신뢰할 수 있는 연결 메타데이터가 없다는 뜻입니다. 주소를 임의로 만들지 마세요.',
     technicalGuide: '저장소의 MCP 기술 가이드 읽기 (영어)',
   },

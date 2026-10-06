@@ -10,7 +10,9 @@ import {
   CIDR_COVER_EXAMPLES, CIDR_COVER_PATH, CidrCoverResultSchema, ErrorResponseSchema, MCP_TOOL_NAME,
   getServiceIdentity, getToolResultLink, PACKETROVE_VERSION, PUBLIC_IP_PATH, PUBLIC_IP_TOOL_NAME, PublicIpResultSchema, MAX_SUBTRACTION_OUTPUTS, tools as catalogTools, isToolPage,
   CertificateBundleResultSchema, CERTIFICATE_BUNDLE_DIAGNOSTIC_SAMPLES,
+  mcpOperations, supportOperations, FeedbackErrorResponseSchema,
 } from '@packetrove/contracts';
+import { z } from 'zod';
 import { checkCertificateBundle } from '@packetrove/core/certificate-bundle';
 import { getPageMetadata } from '../../web/src/i18n/page-metadata';
 import { getWebsiteEnvironment } from '../../web/src/website-environment';
@@ -78,6 +80,37 @@ function assertMcpSuccessContent(content: unknown, tool: (typeof catalogTools)[n
   assert(isDeepStrictEqual(content, [
     { type: 'text', text: JSON.stringify(result) }, getToolResultLink(tool, origin),
   ]), `MCP must retain exact JSON text and a generic tool page link: ${tool.id}`);
+}
+
+function assertMcpDiscovery(discovered: Array<{ name: string; annotations?: unknown; inputSchema: unknown; outputSchema?: unknown }>) {
+  const names = discovered.map(tool => tool.name);
+  assert.equal(new Set(names).size, names.length, 'MCP names must be unique.');
+  for (const tool of catalogTools) assert(names.includes(tool.id), `Missing product tool: ${tool.id}`);
+  for (const tool of discovered) {
+    const definition = mcpOperations.find(operation => operation.id === tool.name);
+    assert(definition, 'Discovery contains an operation outside the catalog.');
+    if (definition.kind === 'support') {
+      assert.deepEqual(tool.annotations, definition.mcp.annotations, 'Support write annotations');
+      assert.deepEqual(tool.inputSchema, z.toJSONSchema(definition.inputSchema, { io: 'input' }), 'Support input contract');
+      assert.deepEqual(tool.outputSchema, z.toJSONSchema(definition.outputSchema, { io: 'output' }), 'Support receipt contract');
+    }
+  }
+  if (process.env.PACKETROVE_FEEDBACK_ENABLED !== undefined && process.env.PACKETROVE_FEEDBACK_ENABLED !== '') {
+    for (const operation of supportOperations) assert.equal(names.includes(operation.id),
+      process.env.PACKETROVE_FEEDBACK_ENABLED === 'true', 'Optional feedback activation must match configuration.');
+  }
+}
+
+async function checkSupportValidation(client: Client | LegacyClient, names: string[]) {
+  // Routine smoke checks intentionally cannot create stored reports or consume acceptance quotas.
+  for (const operation of supportOperations.filter(operation => names.includes(operation.id))) {
+    const result = LegacyCallToolResultSchema.parse(await client.callTool({ name: operation.id, arguments: {} }));
+    assert.equal(result.isError, true, 'Incomplete feedback must be rejected.');
+    assert.equal(result.content.length, 1, 'Feedback errors contain only their controlled JSON.');
+    const content = result.content[0];
+    assert(content?.type === 'text', 'Expected feedback error JSON.');
+    assert.equal(FeedbackErrorResponseSchema.parse(JSON.parse(content.text)).error.delivery, 'not_accepted');
+  }
 }
 
 // Certificate validity depends on the runtime clock; documentation uses a fixed
@@ -391,7 +424,8 @@ try {
   await client.connect(new StreamableHTTPClientTransport(new URL(`${apiOrigin}/mcp`), { fetch: mcpFetch }));
   assert.deepEqual(client.getServerVersion(), { ...serviceIdentity, version: PACKETROVE_VERSION }, 'Modern MCP service identity');
   const tools = (await client.listTools()).tools;
-  assert.deepEqual(tools.map(tool => tool.name).sort(), catalogTools.map(tool => tool.mcp.name).sort(), 'MCP catalog coverage');
+  assertMcpDiscovery(tools);
+  await checkSupportValidation(client, tools.map(tool => tool.name));
   for (const name of catalogTools.flatMap(tool => [...tool.removedInterfaces.mcpNames])) {
     await assert.rejects(client.callTool({ name, arguments: {} }), /not found/i, `Removed MCP tool must be rejected: ${name}`);
   }
@@ -427,8 +461,9 @@ try {
   // SDK 1.30 declares sessionId differently on its transport and interface.
   await legacyClient.connect(transport as LegacyTransportContract);
   assert.deepEqual(legacyClient.getServerVersion(), { ...serviceIdentity, version: PACKETROVE_VERSION }, 'Legacy MCP service identity');
-  assert.deepEqual((await legacyClient.listTools()).tools.map(tool => tool.name).sort(),
-    catalogTools.map(tool => tool.mcp.name).sort(), 'Legacy MCP catalog coverage');
+  const legacyTools = (await legacyClient.listTools()).tools;
+  assertMcpDiscovery(legacyTools);
+  await checkSupportValidation(legacyClient, legacyTools.map(tool => tool.name));
   const result = await legacyClient.callTool({ name: MCP_TOOL_NAME, arguments: example.request });
   assert.notEqual(result.isError, true);
   assert.deepEqual(result.structuredContent, example.result);

@@ -227,7 +227,7 @@ export const certificateCopy = {
     "title": "Vérification de certificats — Packetrove",
     "description": "Vérifiez localement signatures PEM, validité, contraintes et DNS SAN avec des constats exploitables. Sans envoi ni validation complète de confiance."
   },
-  "remotePrivacy": "Les appels API et MCP distants envoient IP, CIDR, bornes de plage ou certificats PEM et noms d’hôte facultatifs à Packetrove. Traitement en mémoire, sans base de données ni historique de résultats. Les certificats et leurs détails sensibles sont exclus des journaux applicatifs et de la télémétrie d’erreur. N’envoyez aucune clé privée ni secret. Le client peut conserver les résultats selon ses propres règles.",
+  "remotePrivacy": "Les appels API et MCP distants envoient IP, CIDR, bornes de plage ou certificats PEM et noms d’hôte facultatifs à Packetrove. Ces entrées de calcul et de recherche sont traitées en mémoire, sans base de données ni historique de résultats. Les certificats et leurs détails sensibles sont exclus des journaux applicatifs et de la télémétrie d’erreur. N’envoyez aucune clé privée ni secret. Le client peut conserver les résultats selon ses propres règles.",
   "discovery": {
     "title": "Questions sur les certificats",
     "mcpTitle": "Vérifier des certificats via MCP",

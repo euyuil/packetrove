@@ -1,4 +1,6 @@
-import { MCP_PATH, PACKETROVE_VERSION, getServiceIdentity, getToolResultLink, toolCatalog, tools, type ToolPage } from '@packetrove/contracts';
+import { MCP_PATH, PACKETROVE_VERSION, getServiceIdentity, getToolResultLink, toolCatalog, tools, operationCatalog,
+  MAX_FEEDBACK_SUMMARY, MAX_FEEDBACK_DESCRIPTION, MAX_FEEDBACK_REPRODUCTION,
+  FEEDBACK_IP_LIMIT, FEEDBACK_DAILY_LIMIT, FEEDBACK_REPORT_LIMIT, type ToolPage } from '@packetrove/contracts';
 import { getWebsiteOrigin } from './i18n/page-metadata';
 import workerManifest from '../../worker/package.json' with { type: 'json' };
 import { createInstance } from 'i18next';
@@ -97,6 +99,19 @@ export function getMcpGuide(locale: Locale, serverUrl: string, productVersion = 
       presentation: t($ => $.mcp.identityPresentation),
     },
     tools: toolContent,
+    support: {
+      title: t($ => $.feedback.title),
+      availability: t($ => $.feedback.availability, { name: operationCatalog.feedback.id }),
+      authorization: t($ => $.feedback.authorization),
+      inputs: t($ => $.feedback.inputs, { summaryLimit: MAX_FEEDBACK_SUMMARY,
+        descriptionLimit: MAX_FEEDBACK_DESCRIPTION, reproductionLimit: MAX_FEEDBACK_REPRODUCTION }),
+      limits: t($ => $.feedback.limits, { ipLimit: FEEDBACK_IP_LIMIT,
+        dailyLimit: FEEDBACK_DAILY_LIMIT, reportLimit: FEEDBACK_REPORT_LIMIT }),
+      delivery: t($ => $.feedback.delivery),
+      privacy: t($ => $.privacy.sections.feedback.body),
+      example: { name: operationCatalog.feedback.id, arguments: operationCatalog.feedback.examples[0].request,
+        result: operationCatalog.feedback.examples[0].result },
+    },
     labels: {
       toolName: t($ => $.mcp.toolName), serverAddress: t($ => $.home.serverAddress),
       arguments: t($ => $.mcp.arguments), exampleResult: t($ => $.mcp.exampleResult),

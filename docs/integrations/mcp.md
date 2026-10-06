@@ -451,11 +451,48 @@ A hosted AI client can return its own exit address. To inspect your browser conn
 
 [Check my browser’s public IP](https://packetrove.com/public-ip)
 
+## Optional agent feedback
+
+submit-feedback is an optional MCP support operation, disabled by default. Use it only when tools/list advertises it. It sends a private report for human review; website, Web API, and CLI submissions are unavailable.
+
+Submit only when the user requests or authorizes feedback. A report they supplied or approved can be sent directly. Show any newly composed report for approval first. Never attach conversation history or solicit reports after every call.
+
+Tool name: `submit-feedback`
+
+Choose category: bug, confusing_behavior, or feature_request. Provide summary and optionally tool_name or synthetic_reproduction. Bugs require expected and actual; confusing behavior requires actual. Feature requests may include expected, but not actual or error_code. Summary allows 256 Unicode code points, expected/actual 1024 each, and reproduction 2048. Optional error_code is an uppercase code. Unknown fields are rejected; serialized arguments must fit 8 KiB.
+
+### Example arguments
+
+```json
+{
+  "category": "confusing_behavior",
+  "tool_name": "cidr-cover",
+  "summary": "Explain why a covering CIDR can include additional addresses.",
+  "actual": "The result includes addresses beyond the supplied documentation inputs.",
+  "synthetic_reproduction": "Use documentation addresses 203.0.113.1 and 203.0.113.6."
+}
+```
+
+### Example result using documentation addresses
+
+```json
+{
+  "status": "accepted",
+  "receipt_id": "00000000-0000-4000-8000-000000000001"
+}
+```
+
+Each observed exit IP can submit 10 accepted reports in the preceding 24 hours. Shared exits share this quota. The service also limits acceptance to 100 reports per UTC day and 1000 stored reports. Feedback limits do not affect calculations or lookups.
+
+Success returns accepted and receipt_id, without a promised reply or fix. Known rejection returns delivery: not_accepted. Do not automatically retry timeouts, cancellation, or DELIVERY_UNCERTAIN: the report may already be stored. Reports are not deduplicated.
+
+When enabled, submit-feedback stores your authorized report and the public service version in a private Cloudflare D1 queue for human review. Use synthetic examples; exclude real network data, certificates, secrets, logs, and conversation history. Reports expire after 90 days, with hourly deletion. A keyed exit-IP marker and acceptance times are stored separately for the preceding 24 hours, with hourly cleanup; neither is attached to reports or logged. Deleting a report does not restore quota. D1 recovery backups may retain deleted material for up to 30 additional days. Request deletion by emailing the maintainer with your receipt. Reports are not published automatically.
+
 ## Read results and handle errors
 
 Read `structuredContent`, or the JSON in the text content block. Keep address counts as decimal strings or arbitrary-precision integers; converting large IPv6 counts to floating-point numbers loses precision.
 
-Successful responses keep the result in `structuredContent` and the first JSON text block, then add an optional `resource_link` to the English tool page. Links contain no inputs or results and do not restore your calculation. Clients choose whether to display, ignore, or open links; automatic rendering or citation is not guaranteed. Opening the public-IP page checks a new browser connection, which may differ from the MCP caller connection. Errors contain no tool page link.
+Successful calculation and lookup responses keep the result in `structuredContent` and the first JSON text block, then add an optional `resource_link` to the English tool page. Links contain no inputs or results and do not restore your calculation. Clients choose whether to display, ignore, or open links; automatic rendering or citation is not guaranteed. Opening the public-IP page checks a new browser connection, which may differ from the MCP caller connection. Errors contain no tool page link.
 
 If `isError` is true, read the error JSON before retrying. Correct `INVALID_INPUT` and `MIXED_ADDRESS_FAMILIES` using the user’s information. `CLIENT_IP_UNAVAILABLE` means trusted connection metadata is missing; do not invent an address.
 
