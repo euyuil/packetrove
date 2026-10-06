@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "packetrove",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Open-source IP address and CIDR tools for network calculations and public IP lookup.",
   "author": {
     "email": "hello@packetrove.com",

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.0](https://github.com/euyuil/packetrove/compare/0.6.0...0.7.0) (2026-10-06)
+
+
+### Features
+
+* **mcp:** add optional private feedback submissions ([#170](https://github.com/euyuil/packetrove/issues/170)) ([0249bb1](https://github.com/euyuil/packetrove/commit/0249bb18e2af96b33d5c4a83555dacddc2179c61))
+
 ## [0.6.0](https://github.com/euyuil/packetrove/compare/0.5.0...0.6.0) (2026-10-05)
 
 
