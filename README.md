@@ -90,8 +90,9 @@ and commands, see the [name migration guide](docs/tool-catalog.md#migration-to-f
   [deployment guide](docs/deployment.md#mcp-tool-execution-counts) describes the
   free-tier limits and per-tool queries.
 - Optional MCP `submit-feedback` is disabled by default. When enabled, it sends
-  a user-authorized synthetic report to a private queue, with separate IP-based
-  quotas and limited retention. See the [MCP guide](docs/integrations/mcp.md#optional-agent-feedback).
+  a user-authorized synthetic report to hello@packetrove.com by email, with
+  approximate IP-based quotas and mailbox retention managed manually. See the
+  [MCP guide](docs/integrations/mcp.md#optional-agent-feedback).
 - The [Privacy Policy](https://packetrove.com/privacy) describes remote input
   processing, browser storage, operational error logs, hosting, retention, and
   user choices. Cloudflare's platform processing is separate from application

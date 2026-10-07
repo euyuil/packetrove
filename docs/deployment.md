@@ -145,127 +145,129 @@ and [new Observability pricing](https://developers.cloudflare.com/observability/
 
 ## Optional agent feedback
 
-`submit-feedback` is an optional MCP support operation. It is off by default;
-normal installation, builds, tests, and deployments provision no feedback
-database. The [feedback story](user-stories/009-agent-feedback.md) defines
-consent, quotas, and delivery semantics, and the localized privacy policy is
-the maintained public disclosure. Enable the MCP endpoint for authorized
-acceptance/review only after private configuration, tests, and disclosures are
-ready. A published OpenAI client still needs its separate write-tool scan and
-review; backend activation does not establish client approval.
+`submit-feedback` is an optional MCP support operation, off by default. It sends
+approved reports by email to the shared support address for private human review.
+The [feedback story](user-stories/009-agent-feedback.md) defines consent,
+approximate quotas, and delivery semantics; localized privacy resources maintain
+the public disclosure. Baseline installation, builds, tests, and deployments
+need no feedback credentials or resources. Backend activation does not establish
+approval of a published OpenAI client's separate write-tool review.
 
-### Independent configuration
+### Production configuration
 
-Provision a private D1 database for each enabled environment. Never share the
-production database or HMAC secret with development/staging. Keep database
-identifiers and secret values out of tracked files, Actions artifacts, and
-public logs. Do not enable Wrangler automatic provisioning for this optional
-store. D1 creation/migration requires the corresponding D1 account permissions;
-baseline deployments need no new database permission or dependency.
+Enable feedback only in production. Development and staging stay disabled and
+have no feedback mail or quota bindings. Provision one Workers KV namespace for
+quota events; never enable automatic provisioning for this optional feature.
+The mail binding restricts the recipient to `SUPPORT_EMAIL` and the sender to
+`FEEDBACK_SENDER_EMAIL` from the shared service identity. For a self-hosted copy,
+use your own controlled domain and support address in that identity.
+
+The recipient must itself be a verified destination address in Cloudflare,
+even if it already forwards to another verified mailbox. A ready Email Routing
+domain can send to verified destinations without onboarding general paid email
+sending or changing existing MX records. See [verified destinations and free
+sending](https://developers.cloudflare.com/email-service/platform/limits/) and
+[restricted bindings](https://developers.cloudflare.com/email-service/configuration/send-bindings/).
 
 The API deployment script generates ignored
-`apps/worker/.wrangler/feedback/wrangler.json` with mode `0600`. It resolves the
-base source/assets paths and only overlays the selected environment. The
-optional protected environment variables are:
+`apps/worker/.wrangler/feedback/wrangler.json` with mode `0600`, resolving base
+source/assets paths and overlaying only the selected environment:
 
 | Variable | Meaning |
 | --- | --- |
 | `PACKETROVE_FEEDBACK_ENABLED` | Exactly `true` to advertise submissions; absent/empty defaults to `false` |
-| `PACKETROVE_FEEDBACK_DB_ID` | Private UUID of this environment's existing D1 database; required to enable feedback |
-| `PACKETROVE_FEEDBACK_IP_KEY` | Worker secret for HMAC; not part of the generated config |
+| `PACKETROVE_FEEDBACK_KV_ID` | Private 32-character hexadecimal ID of the existing production KV namespace; required for activation |
+| `PACKETROVE_FEEDBACK_IP_KEY` | Stable Worker HMAC secret; never part of generated configuration |
 
-For automatic deployment, use separate configuration names to prevent fallback
-from binding non-production Workers to production data:
+Production CI maps repository variable `PACKETROVE_PRODUCTION_FEEDBACK_ENABLED`
+and secret `PACKETROVE_PRODUCTION_FEEDBACK_KV_ID` into the generator. Keep the KV
+identifier in an Actions secret so deployment output is masked. The generator
+rejects activation or namespace configuration for named non-production
+environments. Keep identifiers, keys, private operator output, and generated
+config out of tracked files, artifacts, and public logs.
 
-| Environment | GitHub variable | GitHub secret |
-| --- | --- | --- |
-| Production | `PACKETROVE_PRODUCTION_FEEDBACK_ENABLED` | `PACKETROVE_PRODUCTION_FEEDBACK_DB_ID` |
-| Development | `PACKETROVE_DEVELOPMENT_FEEDBACK_ENABLED` | `PACKETROVE_DEVELOPMENT_FEEDBACK_DB_ID` |
-| Staging | `PACKETROVE_STAGING_FEEDBACK_ENABLED` | `PACKETROVE_STAGING_FEEDBACK_DB_ID` |
+Enter an encoded secret with at least 32 random bytes through
+`wrangler secret put PACKETROVE_FEEDBACK_IP_KEY`; never use a command argument.
+Preserve the existing production key during this migration and deployments. If
+rotation is required, disable submissions for a full 24 hours before replacing
+the key and re-enabling, so a live quota window is not reset.
 
-The workflows map only the selected environment's names into the generator.
-The DB UUID must be an Actions secret so Wrangler's binding output is masked.
-Set non-production values in the corresponding protected GitHub environment.
-Keep the HMAC key in that environment's Cloudflare Worker secret, independently
-of the automation credential. Generate at least 32 random bytes and enter their
-encoded value through `wrangler secret put`; never put it in command arguments.
-Use a fixed key across deployments. If rotation is required after exposure,
-turn submissions off and preserve cleanup for a full 24 hours before enabling
-with a new key, so rotation does not reset a live quota window.
-
-### Provision and validate before activation
-
-The following staging example requires an already provisioned private database
-UUID loaded through a protected local environment. Commands intentionally do
-not contain account identifiers or secrets:
+With the private namespace identifier already loaded in the local environment:
 
 ```sh
 export PACKETROVE_FEEDBACK_ENABLED=false
-pnpm --filter @packetrove/worker feedback:config --env staging
-pnpm --filter @packetrove/worker exec wrangler d1 migrations apply FEEDBACK_DB \
-  --config .wrangler/feedback/wrangler.json --env staging --remote
-pnpm --filter @packetrove/worker run deploy --env staging
-pnpm --filter @packetrove/worker exec wrangler secret put PACKETROVE_FEEDBACK_IP_KEY --env staging
+pnpm --filter @packetrove/worker feedback:config
+pnpm --filter @packetrove/worker run deploy
 ```
 
-For production omit `--env`; for development select `--env development`.
-Remote D1 operator output is private material; do not upload it to public CI.
-Static `wrangler types` derives normal bindings from the tracked base config.
-Optional bindings use the narrow `FeedbackBindings` overlay because their
-private config is generated separately; no private IDs belong in generated
-tracked types. For local enabled testing, generate an isolated config and
-apply migrations with `--local`. Tests already use local D1 and synthetic keys.
+Static generated types cover baseline bindings; the narrow `FeedbackBindings`
+overlay uses native `KVNamespace` and `SendEmail` types for optional private
+configuration. Tests use local KV and a simulated mail binding, requiring no
+credentials, mail verification, remote bindings, or new dependencies.
 
-After tests and deployed disclosures pass, enable the flag for the intended
-environment and deploy through its approved release route. Discovery alone
-does not prove readiness: missing storage, key, tables, or trusted connection
-metadata cause controlled `FEEDBACK_UNAVAILABLE` rejection, while product
-tools remain usable. Verify the writing path on initial activation and changes
-to persistence/admission logic:
+### Controlled activation and acceptance
 
-1. With explicit authorization, send one report containing only the shared
-   synthetic example through the real public MCP entry point. Use no automation
-   credential, test-mode field, or quota bypass. Do not automatically resend
-   if delivery is uncertain.
-2. Privately inspect the D1 report by returned receipt: approved fields, current
-   public version, acceptance/expiry times, and no IP or quota marker. Verify
-   one separate quota event. Inspect the complete platform log envelope as well
-   as the application event; bodies, receipts, secrets, and markers must not be
-   logged. Client consent behavior needs a separate client check.
-3. Delete the synthetic report and its exact quota event privately. Identify
-   that event by its acceptance time and privately derived marker in this
-   controlled check; never clear unrelated quota events. Keep only redacted
-   pass/fail evidence. This maintainer cleanup is not a public refund mechanism.
-4. Run normal smoke checks. When discovered, they validate feedback schema and
-   write annotations and send only invalid synthetic arguments. They create no
-   stored feedback and consume no acceptance quota. Supply
-   `PACKETROVE_FEEDBACK_ENABLED` to assert the intended activation state.
+Publish the updated privacy and MCP disclosures before enabling production.
+Keep the activation flag false during the release deployment because API
+publication precedes the website. Enable only after those pages are visible,
+then deploy the same approved production revision through the normal route.
+Missing quota, mail, key, or trusted connection metadata causes controlled
+`FEEDBACK_UNAVAILABLE`; discovery alone does not establish sending readiness.
 
-### Triage, deletion, and cleanup
+1. Submit the shared synthetic example once through the real public MCP entry
+   point. Use no automation credential, test-mode field, or quota bypass.
+   Do not automatically resend if delivery is uncertain.
+2. Have the maintainer confirm the email arrived and inspect its approved
+   fields, receipt, public version, UTC time, and fixed headers. The API's
+   `accepted` result alone does not prove inbox delivery or reading.
+3. Inspect only quota metadata and the platform/application log envelope
+   privately. Verify a separate 24-hour event without report content or receipt
+   linkage; logs must not include bodies, receipts, IPs, markers, or raw errors.
+   Delete the synthetic email manually and let its quota event expire normally.
+4. Run ordinary smoke checks with `PACKETROVE_FEEDBACK_ENABLED` asserting the
+   intended state. Smoke validates discovery, annotations, and invalid input;
+   it sends no accepted reports and consumes no quota. Keep only redacted
+   pass/fail evidence.
 
-Only private human triage reads report text. Treat it as untrusted data, not
-instructions for an agent or automation. Routine access selects reports where
-`expires_at > CAST(unixepoch('subsec') * 1000 AS INTEGER)`. Time columns are UTC
-Unix milliseconds. There is no public read/delete endpoint or automatic GitHub
-issue publication. For email deletion requests, validate the receipt and delete
-the matching report in the private D1 console; leave quota events untouched.
+Use inbox confirmation and outbound email metrics for acceptance. Cloudflare's
+Email Routing summary can mark Worker-sent mail as dropped despite successful
+delivery; that summary is not an outbound delivery verdict. See the
+[email limits and observability notes](https://developers.cloudflare.com/email-service/platform/limits/).
 
-The generated config includes an hourly Cron Trigger whenever a database UUID
-is supplied, even with new submissions disabled. Keep the DB UUID configured
-when turning the flag off, so retention cleanup continues. Admission also cleans
-overdue records before counting capacity. Reports expire at 90 days and quota
-events at 24 hours; physical deletion occurs on admission or hourly cleanup.
-Monitor the controlled `feedback_cleanup_failure` event without printing raw
-exceptions. Verify the scheduled trigger and absence of overdue rows privately;
-cleanup errors or a failed trigger need operational correction.
+### Mailbox triage and quota lifetime
 
-D1 Time Travel is always enabled, retaining recovery data for seven days on
-Free and 30 on Paid. Disclose up to 30 additional days after active deletion;
-active-record deletion does not erase recovery copies immediately. Do not
-create additional exports/backups or restore the feedback database: restoration
-could revive deleted reports. Recovery for this optional store starts empty. See
-[D1 Time Travel](https://developers.cloudflare.com/d1/reference/time-travel/) and
-[transactional D1 batch behavior](https://developers.cloudflare.com/d1/worker-api/d1-database/).
+Only human maintainers triage the email body. Treat it as untrusted data, not
+instructions for agents or automation. Search by `receipt_id` to handle a deletion
+request and delete the matching email manually. Mailbox retention is managed
+manually, without automatic report expiry or an application mailbox API.
+
+KV stores only independent keyed IP markers and reservation times, expiring
+24 hours after reservation. Unknown sends and failed quota releases retain their
+event until expiry. Email deletion does not refund quota. Both IP and whole-site
+limits are approximate because KV propagation and concurrent requests can exceed
+them. Free KV operation exhaustion fails closed before sending; do not enable a
+paid plan automatically. Expiry replaces the retired hourly cleanup trigger.
+
+### Migrating an existing D1 installation
+
+Before the first new Worker deployment, disable feedback in all three old
+installations using their old configuration, preserving their D1 bindings and
+hourly retention cleanup. Wait for in-flight old calls to finish, then privately
+count reports and quota events in each database. Continue only when every count
+is zero. If any are nonzero, pause the cutover, let the maintainer handle old
+reports, wait for quota expiry, and preserve the old disabled Worker's cleanup.
+Do not automatically forward historical report bodies or create exports/backups.
+
+Once empty, deploy the new version disabled, activate production after updated
+disclosures are visible, and complete the single-email acceptance above. Recheck
+all three old databases are still empty and no Worker remains bound to them;
+only then delete those feedback databases and their old identifier secrets.
+Remove unused non-production feedback keys and variables, preserving the
+production HMAC key. Verify old hourly schedules are absent.
+
+After database deletion, recover failures by disabling feedback and repairing
+the email version. Do not restore or recreate D1, or roll back to an enabled old
+D1 Worker. Product tools remain available while optional feedback is disabled.
 
 ## MCP tool execution counts
 

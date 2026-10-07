@@ -1,6 +1,7 @@
 // Shared service identity. Per-tool names, paths, and metadata belong to the tool catalog.
 export const PUBLIC_WEBSITE_ORIGIN = 'https://packetrove.com';
 export const SUPPORT_EMAIL = 'hello@packetrove.com';
+export const FEEDBACK_SENDER_EMAIL = 'feedback@packetrove.com';
 export const SUPPORT_PATH = '/support';
 export const SUPPORT_URL = new URL(SUPPORT_PATH, PUBLIC_WEBSITE_ORIGIN).href;
 export const TERMS_OF_SERVICE_PATH = '/terms';
