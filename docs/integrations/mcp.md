@@ -57,7 +57,7 @@ The server advertises the following service identity, with its release version. 
       ]
     }
   ],
-  "version": "0.7.0"
+  "version": "0.8.0"
 }
 ```
 
@@ -506,7 +506,7 @@ In a new directory, save the code below as `packetrove-example.mjs`, then run th
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
 const client = new Client(
-  { name: 'packetrove-example', version: "0.7.0" },
+  { name: 'packetrove-example', version: "0.8.0" },
   { versionNegotiation: { mode: 'auto' } },
 );
 try {
