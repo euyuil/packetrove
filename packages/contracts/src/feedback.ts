@@ -7,8 +7,6 @@ export const MAX_FEEDBACK_REPRODUCTION = 2048;
 export const FEEDBACK_IP_LIMIT = 10;
 export const FEEDBACK_WINDOW_SECONDS = 24 * 60 * 60;
 export const FEEDBACK_DAILY_LIMIT = 100;
-export const FEEDBACK_REPORT_LIMIT = 1000;
-export const FEEDBACK_RETENTION_SECONDS = 90 * FEEDBACK_WINDOW_SECONDS;
 
 function boundedText(maximum: number) {
   // JSON Schema counts Unicode code points; JavaScript string.length does not.

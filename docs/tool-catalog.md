@@ -21,8 +21,8 @@ canonical identities, schemas, examples, and MCP metadata. `tools` and
 `mcpOperations` includes both kinds; `supportOperations` projects support.
 Identifiers remain unique across both kinds.
 
-Optional `submit-feedback` has an independent write executor and private
-storage contract. It has no website page, API endpoint, CLI command, or result
+Optional `submit-feedback` has an independent email executor and approximate
+KV quota contract. It has no website page, API endpoint, CLI command, or result
 resource link. Disabled installations omit it from discovery. Product tools
 keep their shared handlers and parity checks. The MCP guide explains conditional
 availability; the [feedback story](user-stories/009-agent-feedback.md) defines

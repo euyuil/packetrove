@@ -1,8 +1,8 @@
 import type { z } from 'zod';
 import { createFeedbackRequestSchema, FEEDBACK_EXAMPLES, FeedbackReceiptSchema,
   MAX_FEEDBACK_SUMMARY, MAX_FEEDBACK_DESCRIPTION, MAX_FEEDBACK_REPRODUCTION,
-  FEEDBACK_IP_LIMIT, FEEDBACK_DAILY_LIMIT, FEEDBACK_REPORT_LIMIT } from './feedback';
-import { PRIVACY_POLICY_URL, PUBLIC_WEBSITE_ORIGIN, publicOrigin } from './identity';
+  FEEDBACK_IP_LIMIT, FEEDBACK_DAILY_LIMIT } from './feedback';
+import { PRIVACY_POLICY_URL, PUBLIC_WEBSITE_ORIGIN, SUPPORT_EMAIL, publicOrigin } from './identity';
 import {
   CERTIFICATE_BUNDLE_EXAMPLES, CertificateBundleRequestSchema, CertificateBundleResultSchema,
   MAX_PEM_BYTES, MAX_CERTIFICATES,
@@ -210,17 +210,17 @@ export const operationCatalog = {
     outputSchema: FeedbackReceiptSchema, examples: FEEDBACK_EXAMPLES,
     mcp: {
       description: [
-        'Submit one user-authorized, minimal Packetrove report to a private maintainer queue. Available only when the operator enables feedback storage.',
+        `Email one user-authorized, minimal Packetrove report to ${SUPPORT_EMAIL} for private human review. Available only when the operator enables feedback.`,
         'Draft locally without calling the service. If the user has already supplied or approved the report and requested sending it, submit directly; otherwise show the proposed report and obtain approval before sending. Never solicit feedback after every tool call.',
         'Send only the authorized fields, using synthetic reproduction data; never attach conversations, raw tool inputs/results, credentials, certificates, logs, or client/session identifiers.',
         `category is bug, confusing_behavior, or feature_request; tool_name optionally names a product tool. summary is required (${MAX_FEEDBACK_SUMMARY} Unicode code points); bug requires expected and actual, confusing_behavior requires actual and optionally expected (${MAX_FEEDBACK_DESCRIPTION} code points each). Feature requests allow expected but not actual or error_code.`,
         `Optional error_code starts with an uppercase ASCII letter and contains at most 64 uppercase letters, digits, or underscores; synthetic_reproduction is at most ${MAX_FEEDBACK_REPRODUCTION} code points. Unknown fields are rejected; serialized arguments must not exceed 8 KiB.`,
-        'Only durable acceptance returns status accepted and an opaque receipt_id; acceptance does not promise a response or fix. This write is not idempotent: never automatically resend after timeout, disconnect, cancellation, or an uncertain result.',
-        `Per observed exit IP, at most ${FEEDBACK_IP_LIMIT} reports are accepted in the preceding 24 hours; shared exits share the limit. The service also accepts at most ${FEEDBACK_DAILY_LIMIT} new reports per UTC day and stores at most ${FEEDBACK_REPORT_LIMIT} report bodies.`,
-        'Reports expire from routine access after 90 days and are cleaned hourly; provider recovery history may retain deleted data for up to 30 additional days. Separate anti-abuse events store keyed IP digests and acceptance times for the preceding 24 hours, with hourly cleanup, never in reports or application logs. Report deletion does not refund quota.',
+        'Status accepted and an opaque receipt_id mean the email service acknowledged submission, not inbox delivery or reading; acceptance does not promise a response or fix. This write is not idempotent: never automatically resend after timeout, disconnect, cancellation, or an uncertain result.',
+        `Approximate limits target ${FEEDBACK_IP_LIMIT} submissions per observed exit IP in the preceding 24 hours and ${FEEDBACK_DAILY_LIMIT} submissions per UTC day across the service. Shared exits share quota. KV propagation and concurrent requests can exceed either limit; uncertain sends or failed quota releases occupy quota until expiry.`,
+        'Cloudflare transmits approved reports by email; mailbox retention and deletion are managed manually by the maintainer, with no automatic report expiry. KV stores only separate keyed IP markers and reservation times, expiring after 24 hours, never report bodies or receipt links. Markers never appear in reports or application logs. Email deletion does not refund quota; request deletion with your receipt.',
         'Maintainers treat text as data and do not automatically execute, publish, or forward it. Operational events contain only the operation name, outcome, controlled error code, and existing traffic-source metadata; no report, receipt, IP digest, or exception details. Ordinary tools do not depend on feedback.',
       ].join(' '),
-      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
     },
   }),
 } as const;

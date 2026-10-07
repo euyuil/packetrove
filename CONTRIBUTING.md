@@ -60,7 +60,7 @@ for changing API and website origins. To build or install the CLI from source,
 follow the [CLI guide](docs/integrations/cli.md#install-from-source).
 
 Optional agent feedback stays disabled in ordinary local development. Its tests
-use a local D1 database and synthetic inputs without production credentials.
+use local KV, a simulated email sender, and synthetic inputs without production credentials.
 For an isolated enabled installation, follow the
 [feedback setup](docs/deployment.md#optional-agent-feedback); keep generated
 private configuration in the ignored `.wrangler` directory.
