@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/euyuil/packetrove/compare/0.7.0...0.8.0) (2026-10-07)
+
+
+### Changes
+
+* **feedback:** email reports with approximate KV quotas ([1b80ea8](https://github.com/euyuil/packetrove/commit/1b80ea8ac1642c363d5f4a786ce7fb9a46211f4d))
+
 ## [0.7.0](https://github.com/euyuil/packetrove/compare/0.6.0...0.7.0) (2026-10-06)
 
 

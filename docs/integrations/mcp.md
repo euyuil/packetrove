@@ -57,7 +57,7 @@ The server advertises the following service identity, with its release version. 
       ]
     }
   ],
-  "version": "0.7.0"
+  "version": "0.8.0"
 }
 ```
 
@@ -453,7 +453,7 @@ A hosted AI client can return its own exit address. To inspect your browser conn
 
 ## Optional agent feedback
 
-submit-feedback is an optional MCP support operation, disabled by default. Use it only when tools/list advertises it. It sends a private report for human review; website, Web API, and CLI submissions are unavailable.
+submit-feedback is an optional MCP support operation, disabled by default. Use it only when tools/list advertises it. It emails a private report to the maintainer for human review; website, Web API, and CLI submissions are unavailable.
 
 Submit only when the user requests or authorizes feedback. A report they supplied or approved can be sent directly. Show any newly composed report for approval first. Never attach conversation history or solicit reports after every call.
 
@@ -482,11 +482,11 @@ Choose category: bug, confusing_behavior, or feature_request. Provide summary an
 }
 ```
 
-Each observed exit IP can submit 10 accepted reports in the preceding 24 hours. Shared exits share this quota. The service also limits acceptance to 100 reports per UTC day and 1000 stored reports. Feedback limits do not affect calculations or lookups.
+Approximate limits target 10 submissions per observed exit IP in the preceding 24 hours and 100 submissions per UTC day across the service. Shared exits share quota. Concurrent requests and KV propagation can exceed either limit. Uncertain sends or failed quota releases occupy quota until expiry. Feedback limits do not affect calculations or lookups.
 
-Success returns accepted and receipt_id, without a promised reply or fix. Known rejection returns delivery: not_accepted. Do not automatically retry timeouts, cancellation, or DELIVERY_UNCERTAIN: the report may already be stored. Reports are not deduplicated.
+Success returns accepted and receipt_id: the email service acknowledged submission, not inbox delivery or reading. No reply or fix is promised. Known rejection returns delivery: not_accepted. Never automatically resend after timeout, cancellation, or DELIVERY_UNCERTAIN: the report may already have been emailed. Reports are not deduplicated.
 
-When enabled, submit-feedback stores your authorized report and the public service version in a private Cloudflare D1 queue for human review. Use synthetic examples; exclude real network data, certificates, secrets, logs, and conversation history. Reports expire after 90 days, with hourly deletion. A keyed exit-IP marker and acceptance times are stored separately for the preceding 24 hours, with hourly cleanup; neither is attached to reports or logged. Deleting a report does not restore quota. D1 recovery backups may retain deleted material for up to 30 additional days. Request deletion by emailing the maintainer with your receipt. Reports are not published automatically.
+When enabled, submit-feedback sends your authorized report, receipt, public service version, and submission time by email through Cloudflare to the maintainer for human review. Use synthetic examples; exclude real network data, certificates, secrets, logs, and conversation history. Mailbox retention and deletion are managed manually; reports have no automatic expiry. Cloudflare Workers KV separately stores only keyed exit-IP markers and reservation times, expiring after 24 hours, without report bodies or receipt links. Markers are neither attached to reports nor logged. Deleting an email does not restore quota. Request deletion by emailing the maintainer with your receipt. Reports are not published automatically.
 
 ## Read results and handle errors
 
@@ -506,7 +506,7 @@ In a new directory, save the code below as `packetrove-example.mjs`, then run th
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
 const client = new Client(
-  { name: 'packetrove-example', version: "0.7.0" },
+  { name: 'packetrove-example', version: "0.8.0" },
   { versionNegotiation: { mode: 'auto' } },
 );
 try {

@@ -12,7 +12,7 @@ describe('shared tool catalog contracts', () => {
       expect(operation).not.toHaveProperty('webPath');
       expect(operation).not.toHaveProperty('api');
       expect(operation).not.toHaveProperty('cli');
-      expect(operation.mcp.annotations).toEqual({ readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false });
+      expect(operation.mcp.annotations).toEqual({ readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true });
       for (const example of operation.examples) {
         expect(operation.inputSchema.safeParse(example.request).success).toBe(true);
         expect(operation.outputSchema.safeParse(example.result).success).toBe(true);

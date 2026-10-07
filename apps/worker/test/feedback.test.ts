@@ -1,143 +1,155 @@
 import { env } from 'cloudflare:workers';
-import { applyD1Migrations, type D1Migration } from 'cloudflare:test';
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 import { Client as LegacyClient } from '@modelcontextprotocol/sdk/client/index.js';
 import { StreamableHTTPClientTransport as LegacyTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import type { Transport as LegacyTransportContract } from '@modelcontextprotocol/sdk/shared/transport.js';
 import { CallToolResultSchema } from '@modelcontextprotocol/sdk/types.js';
-import { beforeEach, describe, expect, inject, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   FEEDBACK_EXAMPLES, FeedbackErrorResponseSchema, FeedbackReceiptSchema, MAX_FEEDBACK_BYTES,
+  FEEDBACK_WINDOW_SECONDS, PACKETROVE_VERSION, SUPPORT_EMAIL, FEEDBACK_SENDER_EMAIL,
   operationCatalog, tools, FeedbackRequestSchema,
 } from '@packetrove/contracts';
 import { z } from 'zod';
 import { createApp } from '../src/app';
-import { cleanupFeedback, createFeedbackExecutor, FeedbackError,
-  type FeedbackBindings, type FeedbackStore } from '../src/feedback';
+import { createFeedbackExecutor, FeedbackError, type FeedbackBindings } from '../src/feedback';
 import { createToolExecutionContext } from '../src/tool-context';
 
-declare module 'vitest' { interface ProvidedContext { feedbackMigrations: D1Migration[] } }
-const database = (env as FeedbackBindings).FEEDBACK_DB!;
-const bindings = { PACKETROVE_FEEDBACK_ENABLED: 'true', PACKETROVE_FEEDBACK_IP_KEY: 'x'.repeat(32), FEEDBACK_DB: database };
+const quota = (env as FeedbackBindings).FEEDBACK_QUOTA!;
+const send = vi.fn(async (_message: EmailMessage | EmailMessageBuilder) => ({ messageId: 'synthetic-email-id' }));
+const bindings = { PACKETROVE_FEEDBACK_ENABLED: 'true', PACKETROVE_FEEDBACK_IP_KEY: 'x'.repeat(32),
+  FEEDBACK_QUOTA: quota, FEEDBACK_EMAIL: { send } } satisfies FeedbackBindings;
 const report = FEEDBACK_EXAMPLES[0].request;
 const context = (ip = '203.0.113.1', signal?: AbortSignal) => createToolExecutionContext(
   new Request('http://localhost/mcp', { headers: { 'cf-connecting-ip': ip } }), signal);
-const counts = async () => ({
-  reports: (await database.prepare('SELECT COUNT(*) AS count FROM feedback_reports').first<{ count: number }>())!.count,
-  admissions: (await database.prepare('SELECT COUNT(*) AS count FROM feedback_admissions').first<{ count: number }>())!.count,
+const events = async () => (await quota.list<{ reserved_at: number }>({ prefix: 'q:' })).keys;
+const seed = async (name: string, reservedAt: number) => quota.put(name, '', {
+  expirationTtl: FEEDBACK_WINDOW_SECONDS, metadata: { reserved_at: reservedAt },
 });
 
 beforeEach(async () => {
-  await applyD1Migrations(database, inject('feedbackMigrations'));
-  await database.exec('DROP TRIGGER IF EXISTS synthetic_failure');
-  await database.batch([
-    database.prepare('DELETE FROM feedback_reports'),
-    database.prepare('DELETE FROM feedback_admissions'),
-  ]);
+  vi.restoreAllMocks();
+  send.mockReset().mockResolvedValue({ messageId: 'synthetic-email-id' });
+  for (const event of await events()) await quota.delete(event.name);
 });
 
-describe('private feedback admission', () => {
-  it('stores one bounded report and public version, with no IP or linking quota key', async () => {
-    const result = await createFeedbackExecutor(bindings)(report, context());
+describe('feedback mail and approximate quotas', () => {
+  it('emails approved fields with fixed headers and stores only an unlinked expiring quota event', async () => {
+    const result = await createFeedbackExecutor(bindings)(report, context('198.51.100.7'));
     expect(FeedbackReceiptSchema.parse(result)).toEqual(result);
-    const stored = await database.prepare('SELECT * FROM feedback_reports').first();
-    expect(JSON.parse(stored!.report as string)).toEqual(report);
-    expect(stored?.receipt_id).toBe(result.receipt_id);
-    expect(Object.keys(stored!).sort()).toEqual(['accepted_at', 'expires_at', 'receipt_id', 'report', 'service_version']);
-    const admission = await database.prepare('SELECT * FROM feedback_admissions').first<{ ip_digest: string; accepted_at: number }>();
-    expect(admission!.ip_digest).toMatch(/^[a-f0-9]{64}$/);
-    expect(JSON.stringify(admission)).not.toContain('203.0.113.1');
-    expect(await counts()).toEqual({ reports: 1, admissions: 1 });
+    const message = send.mock.calls[0]![0];
+    expect(message).toMatchObject({ from: FEEDBACK_SENDER_EMAIL, to: SUPPORT_EMAIL, subject: 'Packetrove feedback' });
+    expect(Object.keys(message).sort()).toEqual(['from', 'subject', 'text', 'to']);
+    if (!('text' in message)) throw new Error('Expected composed mail.');
+    const body = JSON.parse(message.text!);
+    expect(body).toEqual({ report, receipt_id: result.receipt_id, service_version: PACKETROVE_VERSION,
+      submitted_at: expect.any(String) });
+    expect(Number.isFinite(Date.parse(body.submitted_at))).toBe(true);
+    const stored = await events();
+    expect(stored).toHaveLength(1);
+    const event = stored[0]!;
+    expect(event.name).toMatch(/^q:[a-f0-9]{64}:[a-f0-9-]{36}$/);
+    expect(event.metadata).toEqual({ reserved_at: expect.any(Number) });
+    expect(event.expiration! - Date.now() / 1000).toBeGreaterThan(FEEDBACK_WINDOW_SECONDS - 10);
+    expect(await quota.get(event.name)).toBe('');
+    expect(JSON.stringify(stored)).not.toContain(result.receipt_id);
+    expect(message.text).not.toContain(event.name.split(':')[1]);
+    expect(message.text).not.toContain('198.51.100.7');
   });
-  it('atomically accepts only ten concurrent submissions for one exit IP', async () => {
-    const submit = createFeedbackExecutor(bindings);
-    const results = await Promise.allSettled(Array.from({ length: 15 }, () => submit(report, context())));
-    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(10);
-    for (const result of results) if (result.status === 'rejected') {
-      expect(result.reason).toBeInstanceOf(FeedbackError);
-      expect(result.reason.toResponse()).toMatchObject({ error: { code: 'RATE_LIMITED', delivery: 'not_accepted' } });
-      expect(result.reason.retryAfter).toBeGreaterThan(0);
-    }
-    expect(await counts()).toEqual({ reports: 10, admissions: 10 });
-  });
-  it('uses a rolling window and canonical IPv6 rather than dates or spelling', async () => {
-    const submit = createFeedbackExecutor(bindings);
-    for (let index = 0; index < 10; index++) await submit(report, context('2001:db8::1'));
-    await expect(submit(report, context('2001:0DB8:0000:0000:0000:0000:0000:0001'))).rejects.toMatchObject({ code: 'RATE_LIMITED' });
-    // Still inside the previous 24 hours, regardless of whether UTC midnight passed.
-    await database.prepare("UPDATE feedback_admissions SET accepted_at = CAST(unixepoch('subsec') * 1000 AS INTEGER) - 86340000").run();
-    await expect(submit(report, context('2001:db8::1'))).rejects.toMatchObject({ code: 'RATE_LIMITED' });
-    await database.prepare("UPDATE feedback_admissions SET accepted_at = CAST(unixepoch('subsec') * 1000 AS INTEGER) - 86400000").run();
-    await expect(submit(report, context('2001:db8::1'))).resolves.toMatchObject({ status: 'accepted' });
-    expect((await counts()).admissions).toBe(1);
-  });
-  it('does not refund quota when reports are deleted, and leaves other exits independent', async () => {
+  it('rejects the eleventh sequential submission once ten events are visible', async () => {
     const submit = createFeedbackExecutor(bindings);
     for (let index = 0; index < 10; index++) await submit(report, context());
-    await database.prepare('DELETE FROM feedback_reports').run();
-    await expect(submit(report, context())).rejects.toMatchObject({ code: 'RATE_LIMITED' });
-    await expect(submit(report, context('203.0.113.2'))).resolves.toMatchObject({ status: 'accepted' });
-    expect(await counts()).toEqual({ reports: 1, admissions: 11 });
+    await expect(submit(report, context())).rejects.toMatchObject({ code: 'RATE_LIMITED', delivery: 'not_accepted' });
+    expect(await events()).toHaveLength(10);
+    expect(send).toHaveBeenCalledTimes(10);
   });
-  it('enforces the global daily budget without storing rejected connection markers', async () => {
-    await database.batch(Array.from({ length: 100 }, () => database.prepare(
-      "INSERT INTO feedback_admissions VALUES ('synthetic-other-exit', CAST(unixepoch('subsec') * 1000 AS INTEGER))")));
-    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ code: 'RATE_LIMITED' });
-    expect(await counts()).toEqual({ reports: 0, admissions: 100 });
+  it('keeps independent events under concurrency without promising an exact hard cap', async () => {
+    const results = await Promise.allSettled(Array.from({ length: 15 }, () => createFeedbackExecutor(bindings)(report, context())));
+    const accepted = results.filter(result => result.status === 'fulfilled').length;
+    expect(accepted).toBeGreaterThanOrEqual(10);
+    expect(await events()).toHaveLength(accepted);
+    expect(send).toHaveBeenCalledTimes(accepted);
+    expect(new Set((await events()).map(event => event.name)).size).toBe(accepted);
   });
-  it('enforces the global daily budget atomically across concurrent exit IPs', async () => {
-    await database.batch(Array.from({ length: 99 }, () => database.prepare(
-      "INSERT INTO feedback_admissions VALUES ('synthetic-other-exit', CAST(unixepoch('subsec') * 1000 AS INTEGER))")));
+  it('uses a rolling window across UTC midnight and canonical full IPv6 addresses', async () => {
+    const midnight = Date.UTC(2026, 9, 7);
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(midnight - 1000);
     const submit = createFeedbackExecutor(bindings);
-    const results = await Promise.allSettled(Array.from({ length: 15 }, (_, index) => submit(report, context(`203.0.113.${index + 1}`))));
-    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1);
-    expect(await counts()).toEqual({ reports: 1, admissions: 100 });
+    for (let index = 0; index < 10; index++) await submit(report, context('2001:db8::1'));
+    clock.mockReturnValue(midnight + 1000);
+    await expect(submit(report, context('2001:0DB8:0000:0000:0000:0000:0000:0001'))).rejects.toMatchObject({ code: 'RATE_LIMITED' });
+    clock.mockReturnValue(midnight - 1000 + FEEDBACK_WINDOW_SECONDS * 1000);
+    await expect(submit(report, context('2001:db8::1'))).resolves.toMatchObject({ status: 'accepted' });
   });
-  it('bounds all stored bodies, including bodies waiting for expiry cleanup', async () => {
-    await database.batch(Array.from({ length: 1000 }, (_, index) => database.prepare(
-      "INSERT INTO feedback_reports VALUES (?, ?, ?, CAST(unixepoch('subsec') * 1000 AS INTEGER), CAST(unixepoch('subsec') * 1000 AS INTEGER) + 1000)")
-      .bind(String(index), '{}', 'synthetic')));
-    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ code: 'FEEDBACK_UNAVAILABLE' });
-    expect(await counts()).toEqual({ reports: 1000, admissions: 0 });
-    await database.prepare("UPDATE feedback_reports SET expires_at = CAST(unixepoch('subsec') * 1000 AS INTEGER)").run();
+  it('checks the whole-service UTC day quota and permits the next UTC day', async () => {
+    const midnight = Date.UTC(2026, 9, 7);
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(midnight - 1000);
+    for (let index = 0; index < 100; index++) await seed(`q:synthetic-other:${index}`, midnight - 1000);
+    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ code: 'RATE_LIMITED' });
+    expect(send).not.toHaveBeenCalled();
+    clock.mockReturnValue(midnight + 1000);
     await expect(createFeedbackExecutor(bindings)(report, context())).resolves.toMatchObject({ status: 'accepted' });
-    expect(await counts()).toEqual({ reports: 1, admissions: 1 });
   });
-  it('cleans old quota events on admission without relying on cron', async () => {
-    await database.batch(Array.from({ length: 300 }, () => database.prepare(
-      "INSERT INTO feedback_admissions VALUES ('synthetic-expired-exit', CAST(unixepoch('subsec') * 1000 AS INTEGER) - 86400000)")));
-    await createFeedbackExecutor(bindings)(report, context());
-    expect(await counts()).toEqual({ reports: 1, admissions: 1 });
+  it('continues after an empty page with a cursor and observes later quota events', async () => {
+    const list = vi.spyOn(quota, 'list')
+      .mockResolvedValueOnce({ keys: [], list_complete: false, cursor: 'synthetic-next', cacheStatus: null })
+      .mockResolvedValueOnce({ keys: Array.from({ length: 100 }, (_, index) => ({
+        name: `q:synthetic-other:${index}`, metadata: { reserved_at: Date.now() },
+      })), list_complete: true, cacheStatus: null });
+    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ code: 'RATE_LIMITED' });
+    expect(list.mock.calls).toEqual([[{ prefix: 'q:' }], [{ prefix: 'q:', cursor: 'synthetic-next' }]]);
+    expect(send).not.toHaveBeenCalled();
   });
-  it('rolls the complete transaction back if quota recording fails', async () => {
-    await database.exec("CREATE TRIGGER synthetic_failure BEFORE INSERT ON feedback_admissions BEGIN SELECT RAISE(ABORT, 'synthetic failure'); END;");
-    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ code: 'DELIVERY_UNCERTAIN', delivery: 'unknown' });
-    expect(await counts()).toEqual({ reports: 0, admissions: 0 });
+  it.each(['list', 'put'] as const)('does not send when KV %s fails, even after an uncertain write', async method => {
+    vi.spyOn(quota, method).mockRejectedValue(new Error('synthetic private quota error'));
+    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ code: 'FEEDBACK_UNAVAILABLE', delivery: 'not_accepted' });
+    expect(send).not.toHaveBeenCalled();
   });
-  it('cleans expired reports and quota separately when submissions are disabled', async () => {
-    await createFeedbackExecutor(bindings)(report, context());
-    await database.prepare("UPDATE feedback_reports SET expires_at = CAST(unixepoch('subsec') * 1000 AS INTEGER)").run();
-    await cleanupFeedback(database);
-    expect(await counts()).toEqual({ reports: 0, admissions: 1 });
-    await database.prepare("UPDATE feedback_admissions SET accepted_at = CAST(unixepoch('subsec') * 1000 AS INTEGER) - 86400000").run();
-    await cleanupFeedback(database);
-    expect(await counts()).toEqual({ reports: 0, admissions: 0 });
+  it.each(['E_SENDER_NOT_VERIFIED', 'E_RECIPIENT_NOT_ALLOWED', 'E_RATE_LIMIT_EXCEEDED'])('releases only its own event after a known %s rejection', async code => {
+    await seed('q:synthetic-other:keep', Date.now());
+    send.mockRejectedValue(Object.assign(new Error('synthetic private email error'), { code }));
+    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ code: 'FEEDBACK_UNAVAILABLE', delivery: 'not_accepted' });
+    expect((await events()).map(event => event.name)).toEqual(['q:synthetic-other:keep']);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+  it.each(['E_DELIVERY_FAILED', 'E_INTERNAL_SERVER_ERROR', 'UNKNOWN'])('retains quota and never resends after ambiguous %s failure', async code => {
+    send.mockRejectedValue(Object.assign(new Error('synthetic private email error'), { code }));
+    const error = await createFeedbackExecutor(bindings)(report, context()).catch(error => error as FeedbackError);
+    expect((error as FeedbackError).toResponse()).toMatchObject({ error: { code: 'DELIVERY_UNCERTAIN', delivery: 'unknown' } });
+    expect(JSON.stringify(error)).not.toContain('synthetic private');
+    expect(await events()).toHaveLength(1);
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+  it('keeps a conservative quota event when a known rejection cannot release it', async () => {
+    send.mockRejectedValue(Object.assign(new Error('synthetic rejection'), { code: 'E_RECIPIENT_NOT_ALLOWED' }));
+    vi.spyOn(quota, 'delete').mockRejectedValue(new Error('synthetic release error'));
+    await expect(createFeedbackExecutor(bindings)(report, context())).rejects.toMatchObject({ delivery: 'not_accepted' });
+    expect(await events()).toHaveLength(1);
+  });
+  it('does not refund acceptance when mail is removed or send is called again', async () => {
+    const submit = createFeedbackExecutor(bindings);
+    await submit(report, context());
+    await submit(report, context());
+    expect(await events()).toHaveLength(2);
+    expect(send).toHaveBeenCalledTimes(2);
   });
   it('fails closed without trusted metadata or configuration and respects Pseudo IPv4', async () => {
     const missing = createToolExecutionContext(new Request('http://localhost/mcp', { headers: { 'x-forwarded-for': '203.0.113.1' } }));
     await expect(createFeedbackExecutor(bindings)(report, missing)).rejects.toMatchObject({ code: 'FEEDBACK_UNAVAILABLE' });
-    await expect(createFeedbackExecutor({ PACKETROVE_FEEDBACK_ENABLED: 'true', FEEDBACK_DB: database })(report, context())).rejects.toMatchObject({ code: 'FEEDBACK_UNAVAILABLE' });
+    await expect(createFeedbackExecutor({ PACKETROVE_FEEDBACK_ENABLED: 'true', FEEDBACK_QUOTA: quota,
+      PACKETROVE_FEEDBACK_IP_KEY: bindings.PACKETROVE_FEEDBACK_IP_KEY })(report, context())).rejects.toMatchObject({ code: 'FEEDBACK_UNAVAILABLE' });
+    await expect(createFeedbackExecutor({ PACKETROVE_FEEDBACK_ENABLED: 'true', FEEDBACK_QUOTA: quota,
+      FEEDBACK_EMAIL: { send } })(report, context())).rejects.toMatchObject({ code: 'FEEDBACK_UNAVAILABLE' });
     const pseudo = createToolExecutionContext(new Request('http://localhost/mcp', {
       headers: { 'cf-connecting-ip': '240.0.0.1', 'cf-connecting-ipv6': '2001:db8::1' },
     }));
     await createFeedbackExecutor(bindings)(report, pseudo);
     await createFeedbackExecutor(bindings)(report, context('2001:db8::1'));
-    const distinct = await database.prepare('SELECT COUNT(DISTINCT ip_digest) AS count FROM feedback_admissions').first<{ count: number }>();
-    expect(distinct?.count).toBe(1);
+    expect(new Set((await events()).map(event => event.name.split(':')[1])).size).toBe(1);
   });
 });
 
-describe('feedback validation and write cancellation', () => {
+describe('feedback validation and cancellation', () => {
   it.each([
     { ...report, category: 'other' }, { ...report, tool_name: 'invented-tool' },
     { ...report, 'synthetic-sensitive-unknown-field': 'synthetic secret' },
@@ -149,32 +161,31 @@ describe('feedback validation and write cancellation', () => {
     const error = await createFeedbackExecutor(bindings)(input, context()).catch(error => error as FeedbackError);
     expect(error).toBeInstanceOf(FeedbackError);
     expect(JSON.stringify((error as FeedbackError).toResponse())).not.toContain('synthetic-sensitive');
-    expect(await counts()).toEqual({ reports: 0, admissions: 0 });
+    expect(await events()).toHaveLength(0);
+    expect(send).not.toHaveBeenCalled();
   });
   it('counts Unicode code points and enforces the actual serialized byte budget', async () => {
     expect(FeedbackRequestSchema.safeParse({ category: 'feature_request', summary: '😀'.repeat(256) }).success).toBe(true);
     const large = { category: 'bug', summary: '😀'.repeat(256), expected: '😀'.repeat(1024), actual: '😀'.repeat(1024) };
     expect(new TextEncoder().encode(JSON.stringify(large)).byteLength).toBeGreaterThan(MAX_FEEDBACK_BYTES);
     await expect(createFeedbackExecutor(bindings)(large, context())).rejects.toMatchObject({ code: 'PAYLOAD_TOO_LARGE' });
+    expect(send).not.toHaveBeenCalled();
   });
-  it('does not start a cancelled write, but preserves success after commit', async () => {
+  it('does not send a cancelled report but preserves acknowledgement after sending', async () => {
     const controller = new AbortController();
-    const accept = vi.fn(async () => { controller.abort('synthetic abort reason'); return { accepted: true as const }; });
-    const store: FeedbackStore = { ready: async () => {}, accept, hasReceipt: async () => false };
-    const submit = createFeedbackExecutor(bindings, store);
+    send.mockImplementation(async () => { controller.abort('synthetic abort reason'); return { messageId: 'synthetic-email-id' }; });
+    const submit = createFeedbackExecutor(bindings);
     await expect(submit(report, context('203.0.113.1', controller.signal))).resolves.toMatchObject({ status: 'accepted' });
     await expect(submit(report, context('203.0.113.1', controller.signal))).rejects.toMatchObject({ delivery: 'not_accepted' });
-    expect(accept).toHaveBeenCalledTimes(1);
+    expect(send).toHaveBeenCalledTimes(1);
   });
-  it.each([false, true])('handles a lost acknowledgement with receipt present=%s without resending', async present => {
-    const accept = vi.fn(async () => { throw new Error('synthetic private exception'); });
-    const store: FeedbackStore = { ready: async () => {}, accept, hasReceipt: async () => present };
-    const result = await createFeedbackExecutor(bindings, store)(report, context()).catch(error => error as FeedbackError);
-    if (present) expect(result).toMatchObject({ status: 'accepted' });
-    else expect((result as FeedbackError).toResponse()).toEqual({ error: {
-      code: 'DELIVERY_UNCERTAIN', delivery: 'unknown', message: 'The report may have been accepted. Do not automatically resubmit.',
-    } });
-    expect(accept).toHaveBeenCalledTimes(1);
+  it('releases a reservation if cancellation arrives during KV admission', async () => {
+    const controller = new AbortController();
+    const put = quota.put.bind(quota);
+    vi.spyOn(quota, 'put').mockImplementation(async (...args) => { await put(...args); controller.abort(); });
+    await expect(createFeedbackExecutor(bindings)(report, context('203.0.113.1', controller.signal))).rejects.toMatchObject({ delivery: 'not_accepted' });
+    expect(send).not.toHaveBeenCalled();
+    expect(await events()).toHaveLength(0);
   });
 });
 
@@ -212,7 +223,8 @@ it.each(['modern', 'legacy'] as const)('discovers and submits optional support t
     expect(JSON.stringify(invalid)).not.toContain('synthetic secret');
     expect(JSON.stringify(log.mock.calls)).not.toContain(report.summary);
     expect(JSON.stringify(log.mock.calls)).not.toContain('203.0.113.1');
-    expect(await counts()).toEqual({ reports: 1, admissions: 1 });
+    expect(await events()).toHaveLength(1);
+    expect(send).toHaveBeenCalledTimes(1);
     const api = await app.fetch(new Request(`http://localhost/v1/${operationCatalog.feedback.id}`), { ...env, ...bindings });
     expect(api.status).toBe(404);
     feedbackSettings = { PACKETROVE_FEEDBACK_ENABLED: 'true' };
@@ -226,6 +238,7 @@ it.each(['modern', 'legacy'] as const)('discovers and submits optional support t
     expect(calculation.structuredContent).toEqual(product.example.result);
     feedbackSettings = {};
     expect((await client.listTools()).tools.map(tool => tool.name)).toEqual(tools.map(tool => tool.id));
-    expect(await counts()).toEqual({ reports: 1, admissions: 1 });
+    expect(await events()).toHaveLength(1);
+    expect(send).toHaveBeenCalledTimes(1);
   } finally { await client.close(); log.mockRestore(); }
 });

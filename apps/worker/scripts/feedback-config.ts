@@ -3,34 +3,35 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { experimental_readRawConfig, type Unstable_RawConfig as RawConfig } from 'wrangler';
+import { SUPPORT_EMAIL, FEEDBACK_SENDER_EMAIL } from '@packetrove/contracts';
 
 type Environment = 'development' | 'staging';
 const workerDirectory = fileURLToPath(new URL('../', import.meta.url));
 export const privateConfigPath = resolve(workerDirectory, '.wrangler/feedback/wrangler.json');
 
-/** Keep private database identifiers outside tracked configuration and build artifacts. */
+/** Keep private namespace identifiers outside tracked configuration and build artifacts. */
 export function createFeedbackConfig(base: RawConfig, variables: NodeJS.ProcessEnv,
   directory: string, environment?: Environment): RawConfig {
   const enabled = variables.PACKETROVE_FEEDBACK_ENABLED || 'false';
-  const databaseId = variables.PACKETROVE_FEEDBACK_DB_ID;
+  const namespaceId = variables.PACKETROVE_FEEDBACK_KV_ID;
   if (!['true', 'false'].includes(enabled)) throw new Error('PACKETROVE_FEEDBACK_ENABLED must be true or false.');
-  if (databaseId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(databaseId)) {
-    throw new Error('PACKETROVE_FEEDBACK_DB_ID must be a database UUID.');
+  if (namespaceId && !/^[0-9a-f]{32}$/i.test(namespaceId)) {
+    throw new Error('PACKETROVE_FEEDBACK_KV_ID must be a KV namespace identifier.');
   }
-  if (enabled === 'true' && !databaseId) throw new Error('Feedback activation requires PACKETROVE_FEEDBACK_DB_ID.');
+  if (environment && (enabled === 'true' || namespaceId)) throw new Error('Feedback mail and quota bindings are production-only.');
+  if (enabled === 'true' && !namespaceId) throw new Error('Feedback activation requires PACKETROVE_FEEDBACK_KV_ID.');
   const config = structuredClone(base);
   if (config.main) config.main = resolve(directory, config.main);
   if (config.assets?.directory) config.assets.directory = resolve(directory, config.assets.directory);
   const target = environment ? config.env?.[environment] : config;
   if (!target) throw new Error('The selected deployment environment is not configured.');
   target.vars = { ...target.vars, PACKETROVE_FEEDBACK_ENABLED: enabled };
-  if (databaseId) {
-    target.d1_databases = [...(target.d1_databases ?? []), {
-      binding: 'FEEDBACK_DB', database_name: `packetrove-feedback-${environment ?? 'production'}`,
-      database_id: databaseId, migrations_dir: resolve(directory, 'migrations'),
-    }];
-    // Retention cleanup must keep running even when new submissions are turned off.
-    target.triggers = { crons: [...new Set([...(target.triggers?.crons ?? []), '0 * * * *'])] };
+  // Explicitly remove the retired feedback cleanup trigger on deployment.
+  target.triggers = { crons: [] };
+  if (namespaceId) {
+    target.kv_namespaces = [...(target.kv_namespaces ?? []), { binding: 'FEEDBACK_QUOTA', id: namespaceId }];
+    target.send_email = [...(target.send_email ?? []), { name: 'FEEDBACK_EMAIL',
+      destination_address: SUPPORT_EMAIL, allowed_sender_addresses: [FEEDBACK_SENDER_EMAIL] }];
   }
   return config;
 }

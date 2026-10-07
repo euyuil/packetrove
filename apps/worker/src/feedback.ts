@@ -1,7 +1,6 @@
 import {
-  FeedbackRequestSchema, MAX_FEEDBACK_BYTES, PACKETROVE_VERSION,
+  FeedbackRequestSchema, MAX_FEEDBACK_BYTES, PACKETROVE_VERSION, SUPPORT_EMAIL, FEEDBACK_SENDER_EMAIL,
   FEEDBACK_IP_LIMIT, FEEDBACK_WINDOW_SECONDS, FEEDBACK_DAILY_LIMIT,
-  FEEDBACK_REPORT_LIMIT, FEEDBACK_RETENTION_SECONDS,
   type FeedbackErrorCode, type FeedbackErrorResponse, type FeedbackReceipt,
 } from '@packetrove/contracts';
 import { smallestCoveringCidr } from '@packetrove/core';
@@ -11,7 +10,8 @@ import type { ToolExecutionContext } from './tool-context';
 export type FeedbackBindings = {
   PACKETROVE_FEEDBACK_ENABLED?: string;
   PACKETROVE_FEEDBACK_IP_KEY?: string;
-  FEEDBACK_DB?: D1Database;
+  FEEDBACK_QUOTA?: KVNamespace;
+  FEEDBACK_EMAIL?: SendEmail;
 };
 export class FeedbackError extends Error {
   constructor(readonly code: FeedbackErrorCode, message: string,
@@ -25,65 +25,65 @@ export class FeedbackError extends Error {
 }
 
 export type FeedbackExecutor = (input: unknown, context: ToolExecutionContext) => Promise<FeedbackReceipt>;
-type AdmissionResult = { accepted: true } | { accepted: false; ipCount: number; dailyCount: number; reportCount: number; retryAfter: number };
-export interface FeedbackStore {
-  ready(): Promise<void>;
-  accept(receiptId: string, report: string, ipDigest: string): Promise<AdmissionResult>;
-  hasReceipt(receiptId: string): Promise<boolean>;
+type QuotaMetadata = { reserved_at: number };
+
+/** Immutable events avoid concurrent overwrites and KV's same-key write limit. */
+async function reserveQuota(quota: KVNamespace, digest: string): Promise<string> {
+  const now = Date.now();
+  const cutoff = now - FEEDBACK_WINDOW_SECONDS * 1000;
+  const dayStart = Math.floor(now / 86400000) * 86400000;
+  const prefix = `q:${digest}:`;
+  let ipCount = 0;
+  let dailyCount = 0;
+  let cursor: string | undefined;
+  do {
+    const page = await quota.list<QuotaMetadata>({ prefix: 'q:', ...(cursor ? { cursor } : {}) });
+    for (const key of page.keys) {
+      const reservedAt = key.metadata?.reserved_at;
+      if (typeof reservedAt !== 'number' || !Number.isSafeInteger(reservedAt)) {
+        throw new Error('Feedback quota metadata is unavailable.');
+      }
+      if (reservedAt <= cutoff || (key.expiration !== undefined && key.expiration * 1000 <= now)) continue;
+      if (key.name.startsWith(prefix)) ipCount++;
+      if (reservedAt >= dayStart) dailyCount++;
+      if (ipCount >= FEEDBACK_IP_LIMIT) {
+        throw new FeedbackError('RATE_LIMITED', 'This exit IP has reached the approximate feedback limit for the preceding 24 hours.');
+      }
+      if (dailyCount >= FEEDBACK_DAILY_LIMIT) {
+        throw new FeedbackError('RATE_LIMITED', 'The service has reached its approximate daily feedback limit.');
+      }
+    }
+    if (page.list_complete) break;
+    if (!page.cursor || page.cursor === cursor) throw new Error('Feedback quota pagination is unavailable.');
+    cursor = page.cursor;
+  } while (true);
+  const eventKey = `${prefix}${crypto.randomUUID()}`;
+  await quota.put(eventKey, '', { expirationTtl: FEEDBACK_WINDOW_SECONDS, metadata: { reserved_at: now } });
+  return eventKey;
 }
 
-const now = "CAST(unixepoch('subsec') * 1000 AS INTEGER)";
-const cutoff = `${now} - ${FEEDBACK_WINDOW_SECONDS * 1000}`;
-const dayStart = `(${now} / 86400000) * 86400000`;
-const cleanupSql = [
-  `DELETE FROM feedback_reports WHERE expires_at <= ${now}`,
-  `DELETE FROM feedback_admissions WHERE accepted_at <= ${cutoff}`,
-];
-
-/** Primary-only transactional admission: rejected calls never create IP buckets. */
-export function createD1FeedbackStore(database: D1Database): FeedbackStore {
-  const db = database.withSession('first-primary');
-  return {
-    async ready() {
-      const tables = await db.prepare("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name IN ('feedback_reports', 'feedback_admissions')").first<{ count: number }>();
-      if (tables?.count !== 2) throw new Error('Feedback storage is not initialized.');
-    },
-    async accept(receiptId, report, ipDigest) {
-      const results = await db.batch([
-        ...cleanupSql.map(sql => db.prepare(sql)),
-        db.prepare(`INSERT INTO feedback_reports (receipt_id, report, service_version, accepted_at, expires_at)
-          SELECT ?, ?, ?, ${now}, ${now} + ${FEEDBACK_RETENTION_SECONDS * 1000}
-          WHERE (SELECT COUNT(*) FROM feedback_reports) < ${FEEDBACK_REPORT_LIMIT}
-            AND (SELECT COUNT(*) FROM feedback_admissions WHERE accepted_at >= ${dayStart}) < ${FEEDBACK_DAILY_LIMIT}
-            AND (SELECT COUNT(*) FROM feedback_admissions WHERE ip_digest = ? AND accepted_at > ${cutoff}) < ${FEEDBACK_IP_LIMIT}
-          RETURNING receipt_id`).bind(receiptId, report, PACKETROVE_VERSION, ipDigest),
-        db.prepare(`INSERT INTO feedback_admissions (ip_digest, accepted_at)
-          SELECT ?, accepted_at FROM feedback_reports WHERE receipt_id = ?`).bind(ipDigest, receiptId),
-        db.prepare(`SELECT
-          (SELECT COUNT(*) FROM feedback_reports) AS reportCount,
-          (SELECT COUNT(*) FROM feedback_admissions WHERE accepted_at >= ${dayStart}) AS dailyCount,
-          COUNT(*) AS ipCount,
-          MAX(1, COALESCE(MIN(accepted_at) + ${FEEDBACK_WINDOW_SECONDS * 1000} - ${now}, 1)) AS retryAfter
-          FROM feedback_admissions WHERE ip_digest = ? AND accepted_at > ${cutoff}`).bind(ipDigest),
-      ]);
-      if (results.some(result => !result.success)) throw new Error('Feedback transaction did not complete.');
-      if (results[2]!.results.length) return { accepted: true };
-      const counts = results[4]!.results[0] as { ipCount: number; dailyCount: number; reportCount: number; retryAfter: number };
-      return { accepted: false, ...counts, retryAfter: Math.ceil(counts.retryAfter / 1000) };
-    },
-    async hasReceipt(receiptId) {
-      return (await db.prepare('SELECT receipt_id FROM feedback_reports WHERE receipt_id = ?').bind(receiptId).first()) !== null;
-    },
-  };
+async function releaseQuota(quota: KVNamespace, eventKey: string) {
+  try { await quota.delete(eventKey); }
+  catch { /* A failed release conservatively occupies quota until its 24-hour expiry. */ }
 }
+
+// Only documented pre-delivery rejections establish that no email was accepted.
+const knownRejections = new Set([
+  'E_VALIDATION_ERROR', 'E_FIELD_MISSING', 'E_TOO_MANY_RECIPIENTS', 'E_TOO_MANY_ATTACHMENTS',
+  'E_SENDER_NOT_VERIFIED', 'E_RECIPIENT_NOT_ALLOWED', 'E_RECIPIENT_SUPPRESSED',
+  'E_SENDER_DOMAIN_NOT_AVAILABLE', 'E_CONTENT_TOO_LARGE', 'E_RATE_LIMIT_EXCEEDED',
+  'E_DAILY_LIMIT_EXCEEDED', 'E_HEADER_NOT_ALLOWED', 'E_HEADER_USE_API_FIELD',
+  'E_HEADER_VALUE_INVALID', 'E_HEADER_VALUE_TOO_LONG', 'E_HEADER_NAME_INVALID',
+  'E_HEADERS_TOO_LARGE', 'E_HEADERS_TOO_MANY',
+]);
 
 function cancelled(context: ToolExecutionContext) {
-  if (context.signal.aborted) throw new FeedbackError('FEEDBACK_UNAVAILABLE', 'Submission was cancelled before acceptance.');
+  if (context.signal.aborted) throw new FeedbackError('FEEDBACK_UNAVAILABLE', 'Submission was cancelled before sending.');
 }
 
-export function createFeedbackExecutor(bindings: FeedbackBindings, suppliedStore?: FeedbackStore): FeedbackExecutor {
+export function createFeedbackExecutor(bindings: FeedbackBindings): FeedbackExecutor {
   return async (input, context) => {
-    // Validate in this controlled boundary, never expose Zod's caller-controlled messages or keys.
+    // Never expose Zod's caller-controlled messages or keys.
     const parsed = FeedbackRequestSchema.safeParse(input);
     if (!parsed.success) throw new FeedbackError('INVALID_INPUT', 'Use the documented feedback category, fields, and limits. Unknown fields are rejected.');
     const report = JSON.stringify(parsed.data);
@@ -92,53 +92,47 @@ export function createFeedbackExecutor(bindings: FeedbackBindings, suppliedStore
     }
     cancelled(context);
     const secret = bindings.PACKETROVE_FEEDBACK_IP_KEY;
-    if (bindings.PACKETROVE_FEEDBACK_ENABLED !== 'true' || (!suppliedStore && !bindings.FEEDBACK_DB)
+    const quota = bindings.FEEDBACK_QUOTA;
+    const email = bindings.FEEDBACK_EMAIL;
+    if (bindings.PACKETROVE_FEEDBACK_ENABLED !== 'true' || !quota || !email
       || !secret || new TextEncoder().encode(secret).byteLength < 32) {
       throw new FeedbackError('FEEDBACK_UNAVAILABLE', 'Private feedback is unavailable. Use the existing support channel.');
     }
-    let store: FeedbackStore;
-    let digest: string;
+    let eventKey: string;
     try {
-      // Reuse trusted edge / Pseudo IPv4 resolution, then canonicalize equivalent IPv6 spellings.
+      // Reuse trusted edge / Pseudo IPv4 resolution and canonicalize full IPv6 addresses.
       const address = smallestCoveringCidr({ inputs: [getPublicIp(context.connection).ip] }).range.first;
       const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret),
         { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
       const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(address));
-      digest = Array.from(new Uint8Array(signature), value => value.toString(16).padStart(2, '0')).join('');
-      store = suppliedStore ?? createD1FeedbackStore(bindings.FEEDBACK_DB!);
-      await store.ready();
-    } catch {
-      throw new FeedbackError('FEEDBACK_UNAVAILABLE', 'Private feedback storage or trusted connection metadata is unavailable.');
+      const digest = Array.from(new Uint8Array(signature), value => value.toString(16).padStart(2, '0')).join('');
+      cancelled(context);
+      eventKey = await reserveQuota(quota, digest);
+    } catch (error) {
+      if (error instanceof FeedbackError) throw error;
+      // Even an uncertain KV write cannot imply mail delivery: send() has not started.
+      throw new FeedbackError('FEEDBACK_UNAVAILABLE', 'Feedback quota or trusted connection metadata is unavailable.');
     }
-    cancelled(context);
+    if (context.signal.aborted) {
+      await releaseQuota(quota, eventKey);
+      cancelled(context);
+    }
     const receiptId = crypto.randomUUID();
-    let admission: AdmissionResult;
     try {
-      admission = await store.accept(receiptId, report, digest);
-    } catch {
-      // A positive primary lookup can recover a lost acknowledgement. Absence cannot prove rollback.
-      try {
-        if (await store.hasReceipt(receiptId)) return { status: 'accepted', receipt_id: receiptId };
-      } catch { /* Preserve uncertain delivery without logging exception or request data. */ }
-      throw new FeedbackError('DELIVERY_UNCERTAIN', 'The report may have been accepted. Do not automatically resubmit.', 'unknown');
+      await email.send({
+        from: FEEDBACK_SENDER_EMAIL, to: SUPPORT_EMAIL, subject: 'Packetrove feedback',
+        text: JSON.stringify({ receipt_id: receiptId, service_version: PACKETROVE_VERSION,
+          submitted_at: new Date().toISOString(), report: parsed.data }, null, 2),
+      });
+    } catch (error) {
+      if (error instanceof Error && 'code' in error && typeof error.code === 'string' && knownRejections.has(error.code)) {
+        await releaseQuota(quota, eventKey);
+        throw new FeedbackError('FEEDBACK_UNAVAILABLE', 'The email service rejected the report before delivery.');
+      }
+      // SMTP failures and lost acknowledgements cannot safely establish non-delivery.
+      throw new FeedbackError('DELIVERY_UNCERTAIN', 'The report may have been emailed. Do not automatically resubmit.', 'unknown');
     }
-    // Unlike calculation execution, cancellation after commit cannot turn acceptance into failure.
-    if (admission.accepted) return { status: 'accepted', receipt_id: receiptId };
-    if (admission.ipCount >= FEEDBACK_IP_LIMIT) {
-      throw new FeedbackError('RATE_LIMITED', 'This exit IP has reached 10 accepted reports in the preceding 24 hours.',
-        'not_accepted', Math.min(FEEDBACK_WINDOW_SECONDS, Math.max(1, admission.retryAfter)));
-    }
-    if (admission.dailyCount >= FEEDBACK_DAILY_LIMIT) {
-      throw new FeedbackError('RATE_LIMITED', 'The service has reached its daily feedback acceptance limit.');
-    }
-    throw new FeedbackError('FEEDBACK_UNAVAILABLE', 'The private feedback queue cannot accept another report.');
+    // Cancellation after sending cannot turn acknowledged acceptance into failure.
+    return { status: 'accepted', receipt_id: receiptId };
   };
-}
-
-/** Cleanup remains active when submissions are disabled; it never reads or logs report bodies. */
-export async function cleanupFeedback(database: D1Database) {
-  const db = database.withSession('first-primary');
-  const tables = await db.prepare("SELECT COUNT(*) AS count FROM sqlite_master WHERE type = 'table' AND name IN ('feedback_reports', 'feedback_admissions')").first<{ count: number }>();
-  if (!tables?.count) return; // An uninitialized, disabled installation has nothing to retain.
-  await db.batch(cleanupSql.map(sql => db.prepare(sql)));
 }
