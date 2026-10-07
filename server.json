@@ -3,7 +3,7 @@
   "name": "io.github.euyuil/packetrove",
   "title": "Packetrove",
   "description": "Open-source IP address and CIDR tools for network calculations and public IP lookup.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "repository": {
     "url": "https://github.com/euyuil/packetrove",
     "source": "github"
