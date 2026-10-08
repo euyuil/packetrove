@@ -232,6 +232,27 @@ commit diagram, environment mapping, manual release procedure, and rollout.
   remains a separate decision. Automation does not grant permission to bypass
   branch protection or merge without owner authorization.
 
+## Release approval
+
+- Obtain separate, explicit owner approval for each release after presenting a
+  reviewable readiness summary: version, full candidate or PR head SHA, PR link,
+  change scope, applicable checks and staging results, and production impact.
+- Ask and wait for the owner's affirmative reply before promotion or any hotfix
+  or release-metadata PR merge into `main`, because main CI deploys production.
+  Do not start `publish` or `publish-hotfix` without that release approval.
+- Design or plan approval, "Implement the plan", "proceed", and ordinary feature
+  PR merge approval do not authorize a release, even when the plan mentions
+  rollout. Entering `accepted_sha` or dispatching a workflow is not owner approval.
+- Approval covers only the reviewed version, candidate and rollout scope. New
+  candidate commits or changed scope require renewed approval. The expected
+  merge commit produced by an approved promotion does not require another reply.
+- Once approved, complete deployment, tags, GitHub Release, CLI publication,
+  synchronization and cleanup within that scope. Retry the same approved
+  candidate and immutable artifacts without repeatedly requesting approval.
+- This is an agent conduct rule. Current PR rules require zero approving reviews;
+  the release workflow has no separate required human approval gate. Do not
+  describe this policy as platform enforcement.
+
 ## Pull request workflow
 
 Apply the merge policy above to every repository change, including documentation,
@@ -253,7 +274,8 @@ pull request destination explicitly.
   merge commit titles and lifecycle merge commit titles.
 - Merge only within the owner's authorization and after all applicable repository
   requirements are satisfied. Task-wide or workflow authorization applies to
-  the PRs within that scope; opening a PR alone is not permission to merge it.
+  the PRs within that scope, subject to the separate release approval above;
+  opening a PR alone is not permission to merge it.
 - Squash-merge daily development, candidate fixes, and hotfix PRs. Use a normal
   merge commit for release promotion and synchronization; never squash or rebase
   those operations. A true fast-forward remains permitted through an approved

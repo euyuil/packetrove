@@ -31,9 +31,10 @@ then opens a promotion PR. Candidate preparation and staging deployment publish
 neither a tag nor npm.
 
 Complete the public-material and package review required by
-[AGENTS.md](../AGENTS.md) before publication. After staging acceptance, **Publish**
-with the exact candidate SHA authorizes promotion using a merge commit. The
-action waits for that merged `main` revision's production deployment and live
+[AGENTS.md](../AGENTS.md) before publication. After staging acceptance and
+[separate explicit owner release approval](development-and-releases.md#release-approval),
+run **Publish** with the exact candidate SHA to execute promotion using a merge
+commit. The action waits for that merged `main` revision's production deployment and live
 checks, creates the immutable plain `<version>` tag and GitHub Release, and
 waits for [`publish-cli.yml`](../.github/workflows/publish-cli.yml) to verify the
 CLI. It then synchronizes `main` into `develop` through a normal merge PR and

@@ -151,5 +151,7 @@ squash or rebase them. A true fast-forward remains permitted through an approved
 route. Use **Manual Packetrove release** for candidate preparation, publication,
 and synchronization. GitHub's standard merge option creates a merge commit.
 Merges must be within the maintainer's authorization and satisfy required checks.
+Every release requires [separate explicit owner approval](docs/development-and-releases.md#release-approval)
+before updating `main`; approval to implement a plan does not authorize publication.
 Validated branch updates deploy the corresponding environment; PR checks do not
 deploy services.
