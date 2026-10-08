@@ -92,8 +92,35 @@ without a separate Advanced Certificate Manager subscription. See
 Run **Manual Packetrove release** on `main`. Its two stages separate candidate
 preparation from acceptance and publication. The action uses the repository's
 release App, retains required checks, and records every created or merged PR
-in its run summary. The maintainer's authorized execution permits the action
-to merge the PRs for that operation.
+in its run summary. Candidate preparation and publication have separate
+authorization boundaries.
+
+### Release approval
+
+Before each release, the agent must present the version, full candidate or PR
+head SHA, PR link, change scope, applicable validation and staging results, and
+production impact, then ask for and receive separate explicit owner approval.
+Complete the work and applicable checks first. For a candidate release, include
+successful staging verification; for a hotfix, identify any checks that can only
+run after deployment.
+
+Approval of a design, implementation or rollout plan, "Implement the plan",
+"proceed", or an ordinary feature PR merge is not release approval. The owner
+must approve the reviewed release before promotion or any hotfix or
+release-metadata PR merge into `main`, because main CI automatically deploys
+production. Dispatching `publish` or supplying `accepted_sha` cannot substitute
+for that approval.
+
+Approval covers one reviewed version, candidate and rollout scope. Changed
+candidate commits or scope require renewed approval. The resulting promotion
+merge commit and subsequent deployment, tags, GitHub Release, CLI publication,
+synchronization, cleanup and retries of the same approved artifacts can proceed
+without another confirmation. Preparation alone does not authorize publication.
+
+This rule governs agents; the current GitHub PR rules require zero approving
+reviews and the release workflow has no separate required human approval gate.
+
+### Preparation and publication
 
 1. **Prepare:** Choose `action=prepare` and an explicit next stable `version`.
    Optionally select a validated `develop` `source_sha`; otherwise use its current
@@ -107,10 +134,11 @@ to merge the PRs for that operation.
    relevant changelog additions. Development continues on `develop`. Record the
    accepted candidate SHA. New candidate commits require renewed acceptance;
    new `main` commits must first be synchronized into the candidate.
-3. **Publish:** After staging acceptance, run `action=publish` with the same
+3. **Publish:** After staging acceptance and explicit owner release approval,
+   run `action=publish` with the same
    `version` and the full 40-character `accepted_sha`. The Action verifies the recorded
    revisions and latest required checks, then merges the pull request with a
-   merge commit. This trigger authorizes publication of that candidate.
+   merge commit and executes the approved publication of that candidate.
 4. Deploy and verify the resulting `main` revision. After success, tag that exact
    revision, create its GitHub Release, and publish the CLI at the same version.
 5. The Action opens a synchronization
